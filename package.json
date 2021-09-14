@@ -1,0 +1,27 @@
+{
+    "scripts": {
+        "client": "cd aiko-client && npm run dev",
+        "build:watch": "cd server && tsc --watch",
+        "server": "cd server/dist && nodemon server.js",
+        "dev": "concurrently --kill-others-on-fail \"npm run build:watch\" \"npm run server \" \"npm run client\""
+    },
+    "dependencies": {
+        "@types/express": "^4.17.13",
+        "@types/multer": "^1.4.7",
+        "concurrently": "^6.2.1",
+        "create-next-app": "^11.1.2",
+        "express": "^4.17.1",
+        "multer": "^1.4.3",
+        "mysql2": "^2.3.0",
+        "typescript": "^4.4.3"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^4.31.1",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-import": "^2.24.2",
+        "eslint-plugin-prettier": "^4.0.0",
+        "nodemon": "^2.0.12",
+        "prettier": "^2.4.0"
+    }
+}
