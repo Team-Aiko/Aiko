@@ -1,12 +1,13 @@
 import {Response} from 'express';
+import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
 
 interface IAccountService {
-    checkDuplicateNickname(nickname: string, res: Response): void;
+    checkDuplicateNickname(nickname: string): Promise<void>;
 }
 
 const accountServce: IAccountService = {
-    checkDuplicateNickname(nickname, res) {
+    checkDuplicateNickname(nickname) {
         const sql = `select 
             COUNT(*)
         from
@@ -14,11 +15,17 @@ const accountServce: IAccountService = {
         where
             NICKNAME = ?
         `;
+        return (async () => {
+            let data: any;
 
-        conn.query(sql, [nickname], (err, result, field) => {
-            if (err) throw err;
-            console.log(result);
-        });
+            await conn.query(sql, [nickname], (err, result, field) => {
+                if (err) throw err;
+                data = JSON.parse(JSON.stringify(result as RowDataPacket[]))[0];
+                console.log('🚀 ~ file: accountService.ts ~ line 22 ~ conn.query ~ data', data);
+            });
+
+            return data;
+        })();
     },
 };
 

@@ -112,7 +112,6 @@ function Signup() {
 
     const checkValidationNickname = e => {
         const typedNickname = e.target.value;
-        console.log('🚀 ~ file: signup.js ~ line 115 ~ Signup ~ typedNickname', typedNickname);
         const url = '/api/account/checkDuplicateNickname?nickname=' + typedNickname;
 
         get(url)
