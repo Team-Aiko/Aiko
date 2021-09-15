@@ -1,5 +1,7 @@
 import express from 'express';
 import multer from 'multer';
+import next from '../../aiko-client/node_modules/next';
+import {createProxyMiddleware} from 'http-proxy-middleware';
 import route from './routers';
 
 const app = express();
@@ -12,7 +14,7 @@ app.use('/images', express.static('./upload'));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-// * routing
+// * routing!
 app.use('/api', route);
 
 // * proxy port
