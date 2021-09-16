@@ -1,6 +1,8 @@
 export interface userTable {
     USER_PK: number;
     NICKNAME: string;
+    PASSWORD: string;
+    SALT: string;
     FIRST_NAME: string;
     LAST_NAME: string;
     EMAIL: string;
@@ -17,4 +19,9 @@ export interface CompanyTable {
     COMPANY_PK: number;
     COMPANY_NAME: string;
     CREATE_DATE: number;
+}
+
+export interface CountryTable {
+    COUNTRY_PK: number;
+    COUNTRY_NAME: string;
 }

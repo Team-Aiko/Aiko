@@ -3,5 +3,9 @@ node_modules
 
 # database
 database.json
+
 # Transcompiled javascript in backend part
 dist
+
+# uploaded files
+upload

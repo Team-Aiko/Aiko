@@ -4,13 +4,18 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 120%;
+    height: 150%;
 }
 
 .resizing {
     height: 80%;
 }
-
+.btnWrapper {
+    flex-direction: row;
+}
+.btnWrapper > button {
+    margin: 10px;
+}
 .formDiv {
     display: flex;
     flex-direction: column;
