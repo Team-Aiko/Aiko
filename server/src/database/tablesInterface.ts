@@ -12,3 +12,9 @@ export interface userTable {
     DEPARTMENT_PK: number;
     PROFILE_FILE_NAME: string;
 }
+
+export interface CompanyTable {
+    COMPANY_PK: number;
+    COMPANY_NAME: string;
+    CREATE_DATE: number;
+}

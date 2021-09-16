@@ -3,11 +3,11 @@ import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
 
 interface IAccountService {
-    checkDuplicateNickname(nickname: string): Promise<void>;
+    checkDuplicateNickname(nickname: string, res: Response): Promise<void>;
 }
 
 const accountServce: IAccountService = {
-    checkDuplicateNickname(nickname) {
+    checkDuplicateNickname(nickname, res) {
         const sql = `select 
             COUNT(*)
         from
@@ -18,13 +18,12 @@ const accountServce: IAccountService = {
         return (async () => {
             let data: any;
 
-            await conn.query(sql, [nickname], (err, result, field) => {
+            conn.query(sql, [nickname], (err, result, field) => {
                 if (err) throw err;
                 data = JSON.parse(JSON.stringify(result as RowDataPacket[]))[0];
                 console.log('🚀 ~ file: accountService.ts ~ line 22 ~ conn.query ~ data', data);
+                res.send(data);
             });
-
-            return data;
         })();
     },
 };
