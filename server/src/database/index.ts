@@ -10,7 +10,7 @@ interface IConf {
     database: string;
 }
 
-const data = fs.readFileSync(__dirname + '\\database.json', 'utf8');
+const data = fs.readFileSync(__dirname + '/database.json', 'utf8');
 const conf = JSON.parse(data) as PoolOptions;
 const pool = mysql.createPool(conf);
 const conn = mysqlBasic.createConnection(conf);

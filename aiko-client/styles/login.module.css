@@ -1,0 +1,114 @@
+.container{
+    width:100%;
+    height:1024px;
+    background-color:rgb(44, 65, 121);
+    display:flex;
+}
+
+.login{
+    width:80%;
+    height:60%;
+    background-color:white;
+    border-radius:10px;
+    margin: auto;
+    overflow:hidden;
+    max-width:800px;
+    max-height:700px;
+}
+
+.name{
+    text-align:center;
+    margin-top:50px;
+}
+
+.logincontainer{
+    display:flex;
+    justify-content: center;
+    margin-top: 0px;
+    text-align:center;
+}
+
+.account{
+    width:40%;
+    height:400px;;
+    background-color:rgb(255, 255, 255);
+    align-items:center;
+    text-align:center;
+    padding-top:70px;
+}
+
+.idpw{
+    width:40%;
+    height:400px;
+    background-color:rgb(255, 255, 255);
+    padding-top:50px;
+    align-items:center;
+}
+
+.image{
+    border-radius:40px;
+    max-width:300px;
+    max-height:500px;
+}
+
+.idinput{
+    padding:10px;
+    border-radius:5px;
+    border-left-width:0;
+    border-right-width:0;
+    border-top-width:0;
+    border-bottom-width:1;
+    display:block;
+    margin:auto;
+
+}
+
+.pwinput{
+    margin-top:10px;
+    padding:10px;
+    border-radius:5px;
+    border-left-width:0;
+    border-right-width:0;
+    border-top-width:0;
+    border-bottom-width:1;
+    display:block;
+    margin:auto;
+}
+
+
+.checkcontainer{
+    margin-top:33px;
+    align-items:center;
+    text-align:center;
+}
+
+.check{
+    display:inline;
+    margin:auto;
+    margin-left:-38px;
+}
+
+.remember{
+    display:inline;
+    margin:auto 0 0 10px;
+}
+
+.clear{
+    clear:both;
+}
+
+.create{
+    margin-top:30px;
+    text-decoration: underline;
+    font-weight:bold;
+    font-size: 20px;
+    cursor:pointer;
+}
+
+.loginbtn{
+    border-radius:20px;
+    background-color:rgb(255, 166, 0);
+    color:white;
+    border:0;
+    cursor:pointer;
+}
