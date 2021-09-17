@@ -35,6 +35,7 @@ export default function ContainerComp() {
 }
 
 function Signup() {
+    const classes = useStyles();
     const [image, setImage] = useState('../static/testImages/kotone.png');
     const [fileObj, setFileObj] = useState(undefined);
     const [step, setStep] = useState(0);
@@ -53,8 +54,6 @@ function Signup() {
     const [errPwCf, setErrPwCf] = useState(true);
     const [errEmail, setErrEmail] = useState(true);
     const [errCompanyName, setErrCompanyName] = useState(true);
-    const [bundle, setBundle] = useState({});
-    const classes = useStyles();
     const [position, setPosition] = useState(-1);
     const [companyName, setCompanyName] = useState('');
     const [countryName, setCountryName] = useState('');
@@ -184,12 +183,10 @@ function Signup() {
             const url = '/api/company/getCompanyList?str=' + company;
             get(url).then(res => {
                 const data = res.data;
-                console.log('🚀 ~ file: signup.js ~ line 181 ~ get ~ data', data);
                 const refinedData = data.map(curr => {
-                    curr.COMPANY_NAME += ` COMPANY_ID: ${curr.COMPANY_PK}`;
+                    curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
                     return curr;
                 });
-                console.log('🚀 ~ file: signup.js ~ line 185 ~ get ~ refinedData', refinedData);
                 setCompanyList(refinedData);
             });
         }
@@ -216,16 +213,30 @@ function Signup() {
         setCountryName(country);
     };
 
-    const fixCountry = e => {
-        const targetCountry = countryList[e.target.value];
-        if (targetCountry) setCountryPK(targetCountry.COUNTRY_PK);
-        console.log('🚀 ~ file: signup.js ~ line 220 ~ Signup ~ targetCountry', targetCountry);
+    const fixCountry = (e, val) => {
+        let targetCountry;
+        countryList.some(curr => {
+            if (curr.COUNTRY_NAME === val) {
+                targetCountry = curr.COUNTRY_PK;
+                console.log('🚀 ~ file: signup.js ~ line 221 ~ fixCountry ~ targetCountry', targetCountry);
+                return true;
+            }
+        });
+        setCountryPK(targetCountry);
     };
 
-    const fixCompany = e => {
-        const targetCompany = companyList[e.target.value];
-        if (targetCompany) setCompanyPK(targetCompany.COMPANY_PK);
-        console.log('🚀 ~ file: signup.js ~ line 226 ~ Signup ~ targetCompany', targetCompany);
+    const fixCompany = (e, val) => {
+        console.log('실행중?');
+        let targetCompany;
+        companyList.some(curr => {
+            if (curr.COMPANY_NAME === val) {
+                targetCompany = curr.COMPANY_PK;
+                setCompanyPK(targetCompany);
+                setErrCompanyName(false);
+                console.log('🚀 ~ file: signup.js ~ line 232 ~ fixCompany ~ targetCompany', targetCompany);
+                return true;
+            }
+        });
     };
 
     const handleSubmit = () => {
@@ -244,25 +255,25 @@ function Signup() {
             return;
         }
 
+        const packet = {
+            header: position,
+            firstName: firstName,
+            lastName: lastName,
+            profile: image,
+            nickname: nickname,
+            email: email,
+            countryPK: countryPK,
+            tel: tel,
+            pw: pw,
+            position: position,
+            companyName: companyName,
+            companyPK: companyPK,
+        };
+
         if (position === 0) {
             // owner
             const form = new FormData();
             totalValidation = isValidFirst && errCompanyName;
-            const packet = {
-                header: position,
-                firstName: firstName,
-                lastName: lastName,
-                profile: image,
-                nickname: nickname,
-                email: email,
-                countryPK: countryPK,
-                tel: tel,
-                pw: pw,
-                position: position,
-                companyName: companyName,
-                companyPK: companyPK,
-            };
-
             form.append('obj', JSON.stringify(packet));
             form.append('image', fileObj);
             const config = {
@@ -287,18 +298,6 @@ function Signup() {
             totalValidation = isValidFirst;
             if (totalValidation) {
                 const form = new FormData();
-                const packet = {
-                    header: position,
-                    firstName: firstName,
-                    lastName: lastName,
-                    nickname: nickname,
-                    email: email,
-                    countryPK: countryPK,
-                    pw: pw,
-                    position: position,
-                    companyName: undefined,
-                    companyPK: companyPK,
-                };
                 form.append('obj', JSON.stringify(packet));
                 form.append('image', fileObj);
                 const config = {
@@ -310,6 +309,7 @@ function Signup() {
                     .then(res => {
                         const isSuccess = res.data;
                         console.log('🚀 ~ file: signup.js ~ line 283 ~ handleSubmit ~ isSuccess', isSuccess);
+                        if (isSuccess) Router.push('/');
                     })
                     .catch(err => console.log(err));
             }
@@ -326,7 +326,7 @@ function Signup() {
                         <Container maxWidth='sm' style={{display: step === 0 ? 'block' : 'none'}}>
                             <Typography
                                 component='div'
-                                style={{backgroundColor: '#FFFFFF', height: '110vh', width: '70vh'}}
+                                style={{backgroundColor: '#FFFFFF', height: '160vh', width: '70vh'}}
                             >
                                 <div className={styles.formDiv}>
                                     <Avatar
@@ -393,7 +393,6 @@ function Signup() {
                                                         <span
                                                             key={index}
                                                             style={{fontWeight: part.highlight ? 700 : 400}}
-                                                            id={`country-${part.text}`}
                                                         >
                                                             {part.text}
                                                         </span>
@@ -431,7 +430,7 @@ function Signup() {
                                         />
                                     ) : (
                                         <Autocomplete
-                                            id='company_list'
+                                            id='Company'
                                             onInputChange={fixCompany}
                                             style={{width: 222.667}}
                                             options={companyList}
