@@ -29,4 +29,9 @@ router.post('/signup', upload.single('image'), (req, res) => {
     accountService.signup(data, imageRoute, res);
 });
 
+router.get('/grantLoginAuth', (req, res) => {
+    const {id} = req.query as {id: string};
+    accountService.grantLoginAuth(parseInt(id), res);
+});
+
 export default router;

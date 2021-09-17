@@ -32,6 +32,13 @@ create table COUNTRY_TABLE (
 	COUNTRY_NAME VARCHAR(100) not null
 );
 
+-- LOGIN AUTH TABLE
+create table LOGIN_AUTH_TABLE (
+	LOGIN_AUTH_PK INT primary key auto_increment,
+	USER_PK INT not null,
+	UUID VARCHAR(512) not null
+);
+
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('AB', 10000);

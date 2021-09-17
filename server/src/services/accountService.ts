@@ -1,8 +1,18 @@
-import {Response} from 'express';
+import {json, Response} from 'express';
 import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
 import {ISignup} from '../database/jsonForms';
-import {CountryTable} from '../database/tablesInterface';
+import {CountryTable, LoginAuthTable} from '../database/tablesInterface';
+import nodemailer from 'nodemailer';
+import smtpPool from 'nodemailer-smtp-pool';
+import {v1} from 'uuid';
+import fs from 'fs';
+
+// * mailer
+const emailConfig = JSON.parse(fs.readFileSync(__dirname + '/mailConfig.json', 'utf8')) as smtpPool.SmtpPoolOptions;
+const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
+
+// * password security
 const pbkdf2Password = require('pbkdf2-password') as Function;
 const hasher: IHasher = pbkdf2Password();
 interface HasherCallback {
@@ -17,6 +27,7 @@ interface IAccountService {
     checkDuplicateEmail(email: string, res: Response): void;
     getCountryList(str: string, res: Response): void;
     signup(data: ISignup, imageRoute: string | null, res: Response): any;
+    grantLoginAuth(id: number, res: Response): void;
 }
 
 const accountServce: IAccountService = {
@@ -63,19 +74,19 @@ const accountServce: IAccountService = {
     },
     signup(data, imageRoute, res) {
         console.log('메소드 진입');
-        if (data.header === 0) {
-            // owner case
-            (async () => {
-                const [hash, salt] = await new Promise<String[]>((resolve, reject) => {
-                    hasher({password: data.pw}, (err, pw, salt, hash) => {
-                        if (err) throw err;
 
-                        resolve([hash, salt]);
-                    });
+        (async () => {
+            const [hash, salt] = await new Promise<String[]>((resolve, reject) => {
+                hasher({password: data.pw}, (err, pw, salt, hash) => {
+                    if (err) throw err;
+
+                    resolve([hash, salt]);
                 });
-                console.log('해셔통과');
-                const connection = await pool.getConnection();
-                try {
+            });
+            const connection = await pool.getConnection();
+
+            try {
+                if (data.position === 0) {
                     const sql1 = `insert into COMPANY_TABLE (
                         COMPANY_NAME,
                         CREATE_DATE
@@ -115,30 +126,7 @@ const accountServce: IAccountService = {
                         companyPk,
                         imageRoute,
                     ]);
-
-                    connection.commit();
-                    res.send(true);
-                } catch (e) {
-                    console.log(e);
-                    console.log('에러롤백');
-                    connection.rollback();
-                    res.send(false);
-                } finally {
-                    connection.release();
-                }
-            })();
-        } else if (data.header === 1) {
-            // member case
-            (async () => {
-                const [hash, salt] = await new Promise<String[]>((resolve, reject) => {
-                    hasher({password: data.pw}, (err, pw, salt, hash) => {
-                        if (err) throw err;
-
-                        resolve([hash, salt]);
-                    });
-                });
-                const connection = await pool.getConnection();
-                try {
+                } else if (data.position === 1) {
                     const sql = `insert into USER_TABLE (
                         NICKNAME,
                         PASSWORD,
@@ -165,18 +153,69 @@ const accountServce: IAccountService = {
                         data.companyPK,
                         imageRoute,
                     ]);
+                }
 
+                // * auth email process
+                const sql = `select LAST_INSERT_ID()`;
+                const [rows] = await connection.query(sql);
+                const userPk = JSON.parse(JSON.stringify(rows))[0]['LAST_INSERT_ID()'] as number;
+                const uuid = v1();
+                const sql2 = `insert into LOGIN_AUTH_TABLE (USER_PK, UUID) values (?,?)`;
+
+                await connection.query(sql2, [userPk, uuid]);
+
+                const mailOpt = {
+                    from: JSON.parse(fs.readFileSync(__dirname + '/emailBotAddress.json', 'utf8'))
+                        .botEmailAddress as string,
+                    to: data.email,
+                    subject: '[Aiko] Auth Email',
+                    text: `Please link to this address: http://localhost:5000/api/account/grantLoginAuth?id=${uuid}`,
+                };
+
+                smtpTransporter.sendMail(mailOpt, (err, response) => {
+                    if (err) throw err;
+                    console.log('Message send: ', response);
+                    smtpTransporter.close();
                     connection.commit();
                     res.send(true);
-                } catch (e) {
-                    console.log(e);
-                    connection.rollback();
-                    res.send(false);
-                } finally {
-                    connection.release();
-                }
-            })();
-        }
+                });
+            } catch (e) {
+                console.log(e);
+                connection.rollback();
+            } finally {
+                connection.release();
+            }
+        })();
+    },
+    grantLoginAuth(id, res) {
+        (async () => {
+            const connection = await pool.getConnection();
+
+            try {
+                const sql1 = `select 
+                    *
+                from 
+                    LOGIN_AUTH_TABLE 
+                where
+                    UUID = ?`;
+                const [rows] = await connection.query(sql1, [id]);
+                console.log('🚀 ~ file: accountService.ts ~ line 203 ~ rows', rows);
+                const result = JSON.parse(JSON.stringify(rows))[0] as LoginAuthTable;
+
+                const sql2 = `
+                update USER_TABLE
+                SET IS_VERIFIED = 1
+                WHERE USER_PK = ?`;
+                await connection.query(sql2, [result.USER_PK]);
+                connection.commit();
+                res.send(true);
+            } catch (e) {
+                connection.rollback();
+                res.send(false);
+            } finally {
+                connection.release();
+            }
+        })();
     },
 };
 
