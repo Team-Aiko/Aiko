@@ -222,14 +222,14 @@ const accountServce: IAccountService = {
     login(data, res) {
         const sql = `select 
             USER_PK,
-            NICKNAME
+            NICKNAME,
             PASSWORD,
             SALT,
             IS_VERIFIED
         from 
             USER_TABLE
         where
-            USER_PK = ?
+            NICKNAME = ?
             AND
             IS_VERIFIED = 1`;
         conn.query(sql, data.NICKNAME, (err, result, field) => {
@@ -239,8 +239,11 @@ const accountServce: IAccountService = {
                 UserTable,
                 'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED'
             >[];
+            console.log('🚀 ~ file: accountService.ts ~ line 239 ~ conn.query ~ selected', selected);
             hasher({password: data.PASSWORD, salt: selected[0].SALT}, (arr, pw, salt, hash) => {
                 const flag = selected[0].PASSWORD === hash;
+                console.log(selected[0].PASSWORD);
+                console.log(hash);
 
                 const packet = {
                     header: flag,
