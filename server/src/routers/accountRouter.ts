@@ -34,4 +34,12 @@ router.get('/grantLoginAuth', (req, res) => {
     accountService.grantLoginAuth(parseInt(id), res);
 });
 
+router.post('/login', (req, res) => {
+    const data = {
+        NICKNAME: req.body.NICKNAME,
+        PASSWORD: req.body.PASSWORD,
+    };
+    accountService.login(data, res);
+});
+
 export default router;

@@ -1,6 +1,7 @@
 import {json, Response} from 'express';
 import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
+import {UserTable} from '../database/tablesInterface';
 import {ISignup} from '../database/jsonForms';
 import {CountryTable, LoginAuthTable} from '../database/tablesInterface';
 import nodemailer from 'nodemailer';
@@ -19,7 +20,7 @@ interface HasherCallback {
     (err: any, pw: string, salt: string, hash: string): void;
 }
 interface IHasher {
-    (pwObj: {password: string}, callback: HasherCallback): void;
+    (pwObj: {password: string; salt?: string}, callback: HasherCallback): void;
 }
 
 interface IAccountService {
@@ -28,6 +29,7 @@ interface IAccountService {
     getCountryList(str: string, res: Response): void;
     signup(data: ISignup, imageRoute: string | null, res: Response): any;
     grantLoginAuth(id: number, res: Response): void;
+    login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response): void;
 }
 
 const accountServce: IAccountService = {
@@ -216,6 +218,39 @@ const accountServce: IAccountService = {
                 connection.release();
             }
         })();
+    },
+    login(data, res) {
+        const sql = `select 
+            USER_PK,
+            NICKNAME
+            PASSWORD,
+            SALT,
+            IS_VERIFIED
+        from 
+            USER_TABLE
+        where
+            USER_PK = ?
+            AND
+            IS_VERIFIED = 1`;
+        conn.query(sql, data.NICKNAME, (err, result, field) => {
+            if (err) throw err;
+
+            const selected = JSON.parse(JSON.stringify(result)) as Pick<
+                UserTable,
+                'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED'
+            >[];
+            hasher({password: data.PASSWORD, salt: selected[0].SALT}, (arr, pw, salt, hash) => {
+                const flag = selected[0].PASSWORD === hash;
+
+                const packet = {
+                    header: flag,
+                    USER_PK: flag ? selected[0].USER_PK : undefined,
+                    NICKNAME: flag ? selected[0].NICKNAME : undefined,
+                };
+
+                res.send(packet);
+            });
+        });
     },
 };
 

@@ -1,4 +1,4 @@
-export interface userTable {
+export interface UserTable {
     USER_PK: number;
     NICKNAME: string;
     PASSWORD: string;
