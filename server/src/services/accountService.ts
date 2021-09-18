@@ -23,6 +23,12 @@ interface IHasher {
     (pwObj: {password: string; salt?: string}, callback: HasherCallback): void;
 }
 
+interface IPacket {
+    header: boolean;
+    USER_PK: number | undefined;
+    NICKNAME: string | undefined;
+}
+
 interface IAccountService {
     checkDuplicateNickname(nickname: string, res: Response): void;
     checkDuplicateEmail(email: string, res: Response): void;
@@ -240,12 +246,23 @@ const accountServce: IAccountService = {
                 'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED'
             >[];
             console.log('🚀 ~ file: accountService.ts ~ line 239 ~ conn.query ~ selected', selected);
+
+            if (!selected.length) {
+                const packet: IPacket = {
+                    header: false,
+                    NICKNAME: undefined,
+                    USER_PK: undefined,
+                };
+                res.send(packet);
+                return;
+            }
+
             hasher({password: data.PASSWORD, salt: selected[0].SALT}, (arr, pw, salt, hash) => {
                 const flag = selected[0].PASSWORD === hash;
                 console.log(selected[0].PASSWORD);
                 console.log(hash);
 
-                const packet = {
+                const packet: IPacket = {
                     header: flag,
                     USER_PK: flag ? selected[0].USER_PK : undefined,
                     NICKNAME: flag ? selected[0].NICKNAME : undefined,
