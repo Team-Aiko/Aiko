@@ -34,8 +34,8 @@ return (
                         </div>
 
                     </div>
-                
-                    <div className={styles.logincontainer}>
+                    
+                    <div className={styles.lastcontainer}>
                         <p onClick={open} className={styles.create}>Create an Account</p>
                         <button className={styles.loginbtn}>Log In</button>
                     </div>
