@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import styles from '../styles/signup.module.css';
 import {makeStyles} from '@material-ui/core/styles';
@@ -62,15 +62,13 @@ function Signup() {
     const [companyList, setCompanyList] = useState([]);
     const [countryList, setCountryList] = useState([]);
 
-    const handleFileUploader = () => {
+    const handleFileUploader = useCallback(() => {
         const uploader = document.getElementById('profileFile');
         uploader.click();
-    };
+    }, []);
 
-    const handleFileChange = () => {
+    const handleFileChange = useCallback(() => {
         const uploader = document.getElementById('profileFile');
-        const fileName = uploader.files[0].name;
-        const fileSize = uploader.files[0].size;
         const {isValid, errMessage} = files.imageValid(uploader.files[0], '3mb');
 
         if (isValid) {
@@ -78,9 +76,9 @@ function Signup() {
             setImage(imageURL);
             setFileObj(uploader.files[0]);
         }
-    };
+    }, []);
 
-    const checkValidationStrings = e => {
+    const checkValidationStrings = useCallback(e => {
         const str = e.target.value;
         const id = e.target.id;
 
@@ -111,26 +109,29 @@ function Signup() {
                 setErrTel(!isValidPhoneNum);
                 break;
         }
-    };
+    }, []);
 
-    const checkValidationPw = e => {
+    const checkValidationPw = useCallback(e => {
         const pw = e.target.value;
         const {isValid, errMessage} = account.cValid(pw, 8, 30, ['special, capital, number']);
 
         setErrPw(!isValid);
         setPw(pw);
-    };
+    }, []);
 
-    const checkValidationPwCf = e => {
-        const typedPwCf = e.target.value;
-        const {isValid} = account.confirmPw(pw, typedPwCf);
-        console.log('🚀 ~ file: signup.js ~ line 144 ~ Signup ~ isValid', isValid);
+    const checkValidationPwCf = useCallback(
+        e => {
+            const typedPwCf = e.target.value;
+            const {isValid} = account.confirmPw(pw, typedPwCf);
+            console.log('🚀 ~ file: signup.js ~ line 144 ~ Signup ~ isValid', isValid);
 
-        setErrPwCf(!isValid);
-        setPwCf(typedPwCf);
-    };
+            setErrPwCf(!isValid);
+            setPwCf(typedPwCf);
+        },
+        [pw],
+    );
 
-    const checkValidationEmail = e => {
+    const checkValidationEmail = useCallback(e => {
         const typedEmail = e.target.value;
         const isValid = account.fullEmailValid(typedEmail);
         console.log('🚀 ~ file: signup.js ~ line 160 ~ Signup ~ isValid', isValid);
@@ -147,10 +148,17 @@ function Signup() {
         }
 
         setEmail(typedEmail);
-    };
+    }, []);
 
-    const checkValidationNickname = e => {
+    const checkValidationNickname = useCallback(e => {
         const typedNickname = e.target.value;
+        const {isValid, errMessage} = account.cValid(typedNickname, 5, 20, 'no_special', 'no_capital');
+
+        if (!isValid) {
+            setErrNickname(!isValid);
+            return;
+        }
+
         const url = '/api/account/checkDuplicateNickname?nickname=' + typedNickname;
 
         get(url)
@@ -160,23 +168,23 @@ function Signup() {
                 setNickname(typedNickname);
             })
             .catch(e => console.log(e));
-    };
+    }, []);
 
-    const goToNextStep = () => {
+    const goToNextStep = useCallback(() => {
         console.log('goto next step');
         setStep(step + 1);
-    };
+    }, [step]);
 
-    const goToPreviousStep = () => {
+    const goToPreviousStep = useCallback(() => {
         setStep(step - 1);
-    };
+    }, [step]);
 
-    const handlePositionChange = e => {
+    const handlePositionChange = useCallback(e => {
         const id = parseInt(e.target.value);
         setPosition(id); // -1: none, 0: owner, 1: member
-    };
+    }, []);
 
-    const handleChangeCompany = e => {
+    const handleChangeCompany = useCallback(e => {
         const company = e.target.value;
 
         if (company.length === 1) {
@@ -196,9 +204,9 @@ function Signup() {
         if (!company) {
             setErrCompanyName(true);
         }
-    };
+    }, []);
 
-    const handleCountry = e => {
+    const handleCountry = useCallback(e => {
         const country = e.target.value;
         console.log('🚀 ~ file: signup.js ~ line 203 ~ Signup ~ country', country);
 
@@ -211,9 +219,9 @@ function Signup() {
         }
 
         setCountryName(country);
-    };
+    }, []);
 
-    const fixCountry = (e, val) => {
+    const fixCountry = useCallback((e, val) => {
         let targetCountry;
         countryList.some(curr => {
             if (curr.COUNTRY_NAME === val) {
@@ -223,13 +231,13 @@ function Signup() {
             }
         });
         setCountryPK(targetCountry);
-    };
+    }, []);
 
-    const fixCompany = (e, val) => {
-        console.log('실행중?');
+    const fixCompany = useCallback((e, val) => {
+        console.log('🚀 ~ file: signup.js ~ line 230 ~ fixCompany ~ val', val);
         let targetCompany;
         companyList.some(curr => {
-            if (curr.COMPANY_NAME === val) {
+            if (curr.COMPANY_PK === val) {
                 targetCompany = curr.COMPANY_PK;
                 setCompanyPK(targetCompany);
                 setErrCompanyName(false);
@@ -237,7 +245,7 @@ function Signup() {
                 return true;
             }
         });
-    };
+    }, []);
 
     const handleSubmit = () => {
         const isValidFirst =

@@ -1,5 +1,6 @@
 {
     "scripts": {
+        "update:deps": "npm i && cd aiko-client && npm i",
         "client": "cd aiko-client && npm run dev",
         "build:watch": "cd server && tsc --watch",
         "server": "cd server/dist && nodemon server.js",
