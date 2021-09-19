@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: row;
+}
+
+.leftSide {
+    flex-grow: 2;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.rightSide {
+    flex-grow: 5;
+    height: 100%;
+    background-color: darkslategray;
+    display: flex;
+    flex-direction: column;
+}
+
+.rightSide > .rightSideTop {
+    flex-grow: 2;
+    width: 100%;
+    background-color: coral;
+}
+
+.rightSide > .rightSideBottom {
+    flex-grow: 10;
+    width: 100%;
+    background-color: yellowgreen;
+}

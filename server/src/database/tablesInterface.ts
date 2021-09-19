@@ -32,3 +32,11 @@ export interface LoginAuthTable {
     USER_PK: number;
     UUID: string;
 }
+
+export interface DepartmentTable {
+    DEPARTMENT_PK: number;
+    DEPARTMENT_NAME: string;
+    COMPANY_PK: number;
+    PARENT_PK: number;
+    DEPTH: number;
+}

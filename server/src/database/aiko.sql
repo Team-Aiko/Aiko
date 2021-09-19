@@ -39,6 +39,15 @@ create table LOGIN_AUTH_TABLE (
 	UUID VARCHAR(512) not null
 );
 
+-- DEPARTMENT TABLE
+create table DEPARTMENT_TABLE (
+	DEPARTMENT_PK INT primary key auto_increment,
+	DEPARTMENT_NAME VARCHAR(60) not null,
+	COMPANY_PK INT not null,
+	PARENT_PK INT,
+	DEPTH INT not null default 0
+);
+
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('AB', 10000);

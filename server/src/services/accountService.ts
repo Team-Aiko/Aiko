@@ -27,6 +27,7 @@ interface IPacket {
     header: boolean;
     USER_PK: number | undefined;
     NICKNAME: string | undefined;
+    COMPANY_PK: number | undefined;
 }
 
 interface IAccountService {
@@ -103,7 +104,8 @@ const accountServce: IAccountService = {
                         ?
                     )`;
                     const sql2 = `select LAST_INSERT_ID()`;
-                    const sql3 = `insert into USER_TABLE (
+                    const sql3 = `insert into DEPARTMENT_TABLE (DEPARTMENT_NAME, COMPANY_PK, DEPTH) values (?,?,?)`;
+                    const sql4 = `insert into USER_TABLE (
                         NICKNAME,
                         PASSWORD,
                         SALT,
@@ -116,12 +118,19 @@ const accountServce: IAccountService = {
                         COMPANY_PK,
                         PROFILE_FILE_NAME
                     ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+
+                    // insert company row
                     await connection.query(sql1, [data.companyName, Math.floor(new Date().getTime() / 1000)]);
 
+                    // select company row pk
                     const [rows] = await connection.query(sql2);
                     const companyPk = JSON.parse(JSON.stringify(rows))[0]['LAST_INSERT_ID()'] as number;
 
-                    await connection.query(sql3, [
+                    // insert department row (owner)
+                    await connection.query(sql3, ['OWNER', companyPk, 0]);
+
+                    // insert user row
+                    await connection.query(sql4, [
                         data.nickname,
                         hash,
                         salt,
@@ -231,6 +240,7 @@ const accountServce: IAccountService = {
             NICKNAME,
             PASSWORD,
             SALT,
+            COMPANY_PK,
             IS_VERIFIED
         from 
             USER_TABLE
@@ -243,7 +253,7 @@ const accountServce: IAccountService = {
 
             const selected = JSON.parse(JSON.stringify(result)) as Pick<
                 UserTable,
-                'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED'
+                'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED' | 'COMPANY_PK'
             >[];
             console.log('🚀 ~ file: accountService.ts ~ line 239 ~ conn.query ~ selected', selected);
 
@@ -252,6 +262,7 @@ const accountServce: IAccountService = {
                     header: false,
                     NICKNAME: undefined,
                     USER_PK: undefined,
+                    COMPANY_PK: undefined,
                 };
                 res.send(packet);
                 return;
@@ -266,6 +277,7 @@ const accountServce: IAccountService = {
                     header: flag,
                     USER_PK: flag ? selected[0].USER_PK : undefined,
                     NICKNAME: flag ? selected[0].NICKNAME : undefined,
+                    COMPANY_PK: flag ? selected[0].COMPANY_PK : undefined,
                 };
 
                 res.send(packet);
