@@ -4,11 +4,15 @@ import Image from 'next/image';
 import loginPic from '../public/images/image.png';
 import Router from 'next/router';
 
-const login = () => {
+const Login = () => {
 
 const open = function() {
     Router.push('/signup');
 };
+
+const find = function() {
+    Router.push('/forgot')
+}
 
 return (
         <div>
@@ -29,6 +33,7 @@ return (
                             <div className={styles.checkcontainer}>
                                 <input className={styles.check} type="checkbox"></input>
                                 <p className={styles.remember}>Remember Me</p>
+                                <p onClick={find} className={styles.forgot}>Forgot ID/PW?</p>
                                 <div className={styles.clear}></div>
                             </div>
                         </div>
@@ -46,4 +51,4 @@ return (
     )
 }
 
-export default login
+export default Login

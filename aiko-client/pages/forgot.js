@@ -7,11 +7,11 @@ import findPic from '../public/images/question.png';
 
 
 
-function Forgot() {
+const Forgot = () => {
 
-const opencode = function() {
-    Router.push('/verification');
-}
+let opencode=function() {
+    Router.push('/verification')
+};
 
   return (
     <div>
@@ -25,7 +25,7 @@ const opencode = function() {
                         height={160}></Image>
                         </div>
 
-                        <h2>Enter the email address<br></br>associated with your account</h2>
+                        <h2>Enter the email address<br/>associated with your account</h2>
                         <p>We will email you a code to reset your password</p>
                         <input className={styles.emailaddress} type="text" placeholder="Your email address"></input>
       
@@ -36,7 +36,7 @@ const opencode = function() {
                 </div>
         </div>
     </div>
-  )
+  );
 
 }
 
