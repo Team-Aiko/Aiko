@@ -1,6 +1,6 @@
-import React from 'react'
-import styles from '../styles/login.module.css'
-import Image from 'next/image'
+import React from 'react';
+import styles from '../styles/login.module.css';
+import Image from 'next/image';
 import loginPic from '../public/images/image.png';
 import Router from 'next/router';
 
