@@ -5,3 +5,7 @@ Content-Type: application/json
     "NICKNAME":"aivyss",
     "PASSWORD":"test1"
 }
+
+###
+GET http://localhost:5000/api/company/getOrganizationTree?id=5
+

@@ -8,4 +8,9 @@ router.get('/getCompanyList', (req, res) => {
     companyService.getCompanyList(str as string, res);
 });
 
+router.get('/getOrganizationTree', (req, res) => {
+    const {id} = req.query;
+    companyService.getOrganizationTree(Number(id), res);
+});
+
 export default router;
