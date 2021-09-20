@@ -3,7 +3,8 @@
         "client": "cd aiko-client && npm run dev",
         "build:watch": "cd server && tsc --watch",
         "server": "cd server/dist && nodemon server.js",
-        "dev": "concurrently --kill-others-on-fail \"npm run build:watch\" \"npm run server \" \"npm run client\""
+        "dev": "concurrently --kill-others-on-fail \"npm run build:watch\" \"npm run server \" \"npm run client\"",
+        "lint": "eslint ."
     },
     "dependencies": {
         "@emotion/react": "^11.4.1",
