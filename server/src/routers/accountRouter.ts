@@ -1,6 +1,6 @@
 import express from 'express';
 import accountService from '../services/accountService';
-import {ISignup} from '../database/jsonForms';
+import {ISignup, IResetPw} from '../database/jsonForms';
 import multer from 'multer';
 
 const upload = multer({dest: '../../upload', limits: {fileSize: 3 * 1024 * 1024}});
@@ -44,18 +44,18 @@ router.post('/login', (req, res) => {
 
 router.post('/findNickname', (req, res) => {
     const {email} = req.body;
-    console.log('🚀 ~ file:accountRouter.ts ~ line 47 ~ router.post ~ email', email);
     accountService.findNickname(email, res);
 });
 
 router.post('/requestResetPassword', (req, res) => {
     const {email} = req.body;
+    console.log('🚀 ~ file:accountRouter.ts ~ line 53 ~ router.post ~ email', email);
     accountService.requestResetPassword(email, res);
 });
 
-router.get('/resetPassword', (req, res) => {
-    const {id} = req.query;
-    accountService.resetPassword(id as string, res);
+router.post('/resetPassword', (req, res) => {
+    const {uuid, password}: IResetPw = req.body;
+    accountService.resetPassword(uuid, password, res);
 });
 
 export default router;

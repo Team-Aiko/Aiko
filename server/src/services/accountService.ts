@@ -3,7 +3,7 @@ import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
 import {UserTable} from '../database/tablesInterface';
 import {ISignup} from '../database/jsonForms';
-import {CountryTable, LoginAuthTable} from '../database/tablesInterface';
+import {CountryTable, LoginAuthTable, ResetPwTable} from '../database/tablesInterface';
 import nodemailer from 'nodemailer';
 import smtpPool from 'nodemailer-smtp-pool';
 import {v1} from 'uuid';
@@ -39,10 +39,10 @@ interface IAccountService {
     login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response): void;
     findNickname(email: string, res: Response): void;
     requestResetPassword(email: string, res: Response): void;
-    resetPassword(id: string, res: Response): void;
+    resetPassword(uuid: string, password: string, res: Response): void;
 }
 
-const accountServce: IAccountService = {
+const accountService: IAccountService = {
     checkDuplicateNickname(nickname, res) {
         const sql = `select 
             COUNT(*)
@@ -330,17 +330,17 @@ const accountServce: IAccountService = {
                 }
 
                 const userPk = result[0].USER_PK;
+                console.log('🚀 ~ file: accountService.ts ~ line 333 ~ userPk', userPk);
                 const uuid = v1();
-                const sqlOne = `select user_pk from LOGIN_AUTH_TABLE where user_pk = ?`;
+                const sqlOne = `select * from RESET_PW_TABLE where USER_PK = ?`;
                 [rows] = await connection.query(sqlOne, [userPk]);
+                console.log('🚀 ~ file: accountService.ts ~ line 336 ~ rows', rows);
 
-                if ((rows as RowDataPacket[]).length <= 0) {
-                    const sqlTwo = `update LOGIN_AUTH_TABLE 
-                        set uuid = ?
-                        where USER_PK = ?`;
-                    await connection.query(sqlTwo, [uuid, userPk]);
+                if ((rows as RowDataPacket[]).length > 5) {
+                    res.send(false);
+                    throw 'EXCEED_MAXIMUM_TRY';
                 } else {
-                    const sqlTwo = `insert into LOGIN_AUTH_TABLE (USER_PK, UUID) values (?,?)`;
+                    const sqlTwo = `insert into RESET_PW_TABLE (USER_PK, UUID) values (?,?)`;
                     await connection.query(sqlTwo, [userPk, uuid]);
                 }
 
@@ -352,28 +352,26 @@ const accountServce: IAccountService = {
                     text: `
                     IF YOU DO NOT REQUEST THIS, JUST IGNORE.
 
-                    Please link to this address: http://localhost:5000/api/account/resetPassword?id=${uuid}`,
+                    Please link to this address: http://localhost:3000/reset-password/${uuid}`,
                 };
 
-                try {
-                    smtpTransporter.sendMail(mailOpt, (err, response) => {
-                        if (err) {
-                            res.send(false);
-                            throw err;
-                        }
+                console.log('파트1');
+                smtpTransporter.sendMail(mailOpt, (err, response) => {
+                    if (err) {
+                        res.send(false);
+                        console.log('파트2');
+                        throw err;
+                    }
 
-                        console.log('Message send: ', response);
-                        smtpTransporter.close();
-                        connection.commit();
-                        res.send(true);
-                    });
-                } catch (e) {
-                    throw e;
-                } finally {
+                    console.log('Message send: ', response);
                     smtpTransporter.close();
-                }
+                    connection.commit();
+                    res.send(true);
+                    console.log('파트3');
+                });
             } catch (e) {
                 console.log(e);
+                console.log('파트5');
                 connection.rollback();
                 res.send(false);
             } finally {
@@ -381,7 +379,49 @@ const accountServce: IAccountService = {
             }
         })();
     },
-    resetPassword(id, res) {},
+    resetPassword(uuid, pw, res) {
+        (async () => {
+            const connection = await pool.getConnection();
+
+            try {
+                const sql1 = `select USER_PK from RESET_PW_TABLE where UUID = ?`;
+                const [rows] = JSON.parse(JSON.stringify(await connection.query(sql1, [uuid]))) as {
+                    USER_PK: number;
+                }[][];
+                console.log('🚀 ~ file: accountService.ts ~ line 389 ~ rows', rows);
+                if (rows.length <= 0) throw 'NO_MATCHING_USER';
+
+                const userPk = rows[0].USER_PK;
+                console.log('🚀 ~ file: accountService.ts ~ line 393 ~ userPk', userPk);
+
+                const sql2 = `update USER_TABLE
+                    set PASSWORD = ?, SALT = ?
+                    where USER_PK = ?`;
+                const {hash, salt} = await new Promise<{hash: string; salt: string}>((resolve, reject) => {
+                    hasher({password: pw}, (err, pw, salt, hash) => {
+                        resolve({hash, salt});
+                    });
+                });
+                console.log('🚀 ~ file: accountService.ts ~ line 399 ~ hash', hash);
+                console.log('🚀 ~ file: accountService.ts ~ line 399 ~ salt', salt);
+
+                await connection.query(sql2, [hash, salt, userPk]);
+
+                const sql3 = `delete from RESET_PW_TABLE where USER_PK = ?`;
+                await connection.query(sql3, [userPk]);
+
+                connection.commit();
+                res.send(true);
+            } catch (e) {
+                res.send(false);
+
+                console.log(e);
+                connection.rollback();
+            } finally {
+                connection.release();
+            }
+        })();
+    },
 };
 
-export default accountServce;
+export default accountService;

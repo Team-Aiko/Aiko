@@ -40,3 +40,9 @@ export interface DepartmentTable {
     PARENT_PK: number;
     DEPTH: number;
 }
+
+export interface ResetPwTable {
+    RESET_PK: number;
+    USER_PK: number;
+    UUID: string;
+}

@@ -11,3 +11,8 @@ export interface ISignup {
     companyPK: number;
     companyName: string | undefined;
 }
+
+export interface IResetPw {
+    uuid: string;
+    password: string;
+}
