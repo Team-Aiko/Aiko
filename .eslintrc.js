@@ -1,29 +1,33 @@
 module.exports = {
-    env: {
-        browser: true,
-        es2021: true,
-        node: true,
+    'env': {
+        "browser": true,
+        "es2021": true,
+        "node": true
     },
-    extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'airbnb'],
-    parser: '@typescript-eslint/parser',
-    parserOptions: {
-        ecmaFeatures: {
-            jsx: true,
+    'extends': [
+        "eslint:recommended",
+        'airbnb',
+        "prettier",
+        "plugin:react/recommended"
+    ],
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
         },
-        ecmaVersion: 12,
-        sourceType: 'module',
+        "ecmaVersion": 12,
+        "sourceType": "module"
     },
-    plugins: ['@typescript-eslint', 'prettier'],
-    rules: {
-        indent: ['error', 4],
+    "plugins": [
+        "react",
+        "prettier"
+    ],
+    "rules": {
+        quotes: ["error", "single"],
         'no-unused-vars': 'warn',
-        'prettier/prettier': ['error', {endOfLine: 'auto'}],
+        'prettier/prettier': 'error',
         'no-console': 'off',
         'func-names': 'off',
         'object-shorthand': 'off',
         'class-methods-use-this': 'off',
-        'max-len': ['error', 120, 2],
-        'no-underscore-dangle': 'off',
-        'max-classes-per-file': 'off',
-    },
+    }
 };
