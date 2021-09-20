@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
+import Router from 'next/router';
 import {alpha, makeStyles} from '@material-ui/core/styles';
-import {Menu, MenuItem, Badge, InputBase, AppBar, Toolbar, IconButton, Typography} from '@material-ui/core';
+import {Menu, MenuItem, Badge, InputBase, AppBar, Toolbar, IconButton, Typography, Button} from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
@@ -83,7 +84,7 @@ function PComp() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-
+    const [userPk, setUserPk] = useState(undefined);
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
@@ -103,6 +104,14 @@ function PComp() {
     const handleMobileMenuOpen = event => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
+
+    const handleSignup = useCallback(() => {
+        Router.push('/signup');
+    }, []);
+
+    const handleLogin = useCallback(() => {
+        Router.push('/login');
+    }, []);
 
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
@@ -147,19 +156,35 @@ function PComp() {
                 </IconButton>
                 <p>Notifications</p>
             </MenuItem>
-            <MenuItem onClick={handleProfileMenuOpen}>
-                <IconButton
-                    aria-label='account of current user'
-                    aria-controls='primary-search-account-menu'
-                    aria-haspopup='true'
-                    color='inherit'
-                >
-                    <AccountCircle />
-                </IconButton>
-                <p>Profile</p>
-            </MenuItem>
+            {userPk ? (
+                <MenuItem onClick={handleProfileMenuOpen}>
+                    <IconButton
+                        aria-label='account of current user'
+                        aria-controls='primary-search-account-menu'
+                        aria-haspopup='true'
+                        color='inherit'
+                    >
+                        <AccountCircle />
+                    </IconButton>
+                    <p>Profile</p>
+                </MenuItem>
+            ) : null}
         </Menu>
     );
+    const accountBtns = (
+        <React.Fragment>
+            <Button variant='contained' color='secondary' onClick={handleSignup}>
+                Signup
+            </Button>
+            <Button variant='contained' onClick={handleLogin}>
+                Login
+            </Button>
+        </React.Fragment>
+    );
+
+    useEffect(() => {
+        setUserPk(sessionStorage.getItem('USER_PK'));
+    }, []);
 
     return (
         <div className={classes.grow}>
@@ -185,39 +210,49 @@ function PComp() {
                         />
                     </div>
                     <div className={classes.grow} />
-                    <div className={classes.sectionDesktop}>
-                        <IconButton aria-label='show 4 new mails' color='inherit'>
-                            <Badge badgeContent={4} color='secondary'>
-                                <MailIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton aria-label='show 17 new notifications' color='inherit'>
-                            <Badge badgeContent={17} color='secondary'>
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton
-                            edge='end'
-                            aria-label='account of current user'
-                            aria-controls={menuId}
-                            aria-haspopup='true'
-                            onClick={handleProfileMenuOpen}
-                            color='inherit'
-                        >
-                            <AccountCircle />
-                        </IconButton>
-                    </div>
-                    <div className={classes.sectionMobile}>
-                        <IconButton
-                            aria-label='show more'
-                            aria-controls={mobileMenuId}
-                            aria-haspopup='true'
-                            onClick={handleMobileMenuOpen}
-                            color='inherit'
-                        >
-                            <MoreIcon />
-                        </IconButton>
-                    </div>
+
+                    {userPk ? (
+                        <React.Fragment>
+                            <div className={classes.sectionDesktop}>
+                                <IconButton aria-label='show 4 new mails' color='inherit'>
+                                    <Badge badgeContent={4} color='secondary'>
+                                        <MailIcon />
+                                    </Badge>
+                                </IconButton>
+                                <IconButton aria-label='show 17 new notifications' color='inherit'>
+                                    <Badge badgeContent={17} color='secondary'>
+                                        <NotificationsIcon />
+                                    </Badge>
+                                </IconButton>
+                                <IconButton
+                                    edge='end'
+                                    aria-label='account of current user'
+                                    aria-controls={menuId}
+                                    aria-haspopup='true'
+                                    onClick={handleProfileMenuOpen}
+                                    color='inherit'
+                                >
+                                    <AccountCircle />
+                                </IconButton>
+                            </div>
+                            <div className={classes.sectionMobile}>
+                                <IconButton
+                                    aria-label='show more'
+                                    aria-controls={mobileMenuId}
+                                    aria-haspopup='true'
+                                    onClick={handleMobileMenuOpen}
+                                    color='inherit'
+                                >
+                                    <MoreIcon />
+                                </IconButton>
+                            </div>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <div className={classes.sectionDesktop}>{accountBtns}</div>
+                            <div className={classes.sectionMobile}>{accountBtns}</div>
+                        </React.Fragment>
+                    )}
                 </Toolbar>
             </AppBar>
             {renderMobileMenu}

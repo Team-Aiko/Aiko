@@ -4,9 +4,5 @@ import TopNav from '../components/commons/TopNav';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
-    return (
-        <div>
-            <TopNav />
-        </div>
-    );
+    return <div></div>;
 }
