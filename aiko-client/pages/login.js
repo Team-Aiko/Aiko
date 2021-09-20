@@ -23,8 +23,7 @@ return (
                     
                     <div className={styles.logincontainer}>
                         <div className={styles.account}>
-                            <Image className={styles.image} width={300}
-                            height={180} src={loginPic}></Image>
+                            <Image className={styles.image} width={300} height={180} src={loginPic}></Image>
                         </div>
 
                         <div className={styles.idpw}>
