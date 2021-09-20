@@ -14,7 +14,6 @@
 .rightSide {
     flex-grow: 5;
     height: 100%;
-    background-color: darkslategray;
     display: flex;
     flex-direction: column;
 }
@@ -22,11 +21,9 @@
 .rightSide > .rightSideTop {
     flex-grow: 2;
     width: 100%;
-    background-color: coral;
 }
 
 .rightSide > .rightSideBottom {
     flex-grow: 10;
     width: 100%;
-    background-color: yellowgreen;
 }

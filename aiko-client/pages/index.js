@@ -1,7 +1,12 @@
 import Head from 'next/head';
 import Image from 'next/image';
+import TopNav from '../components/commons/TopNav';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
-    return <div>create-next-app</div>;
+    return (
+        <div>
+            <TopNav />
+        </div>
+    );
 }

@@ -9,3 +9,6 @@ dist
 
 # uploaded files
 upload
+
+# rest test
+restTest.rest

@@ -221,31 +221,37 @@ function Signup() {
         setCountryName(country);
     }, []);
 
-    const fixCountry = useCallback((e, val) => {
-        let targetCountry;
-        countryList.some(curr => {
-            if (curr.COUNTRY_NAME === val) {
-                targetCountry = curr.COUNTRY_PK;
-                console.log('🚀 ~ file: signup.js ~ line 221 ~ fixCountry ~ targetCountry', targetCountry);
-                return true;
-            }
-        });
-        setCountryPK(targetCountry);
-    }, []);
+    const fixCountry = useCallback(
+        (e, val) => {
+            let targetCountry;
+            countryList.some(curr => {
+                if (curr.COUNTRY_NAME === val) {
+                    targetCountry = curr.COUNTRY_PK;
+                    console.log('🚀 ~ file: signup.js ~ line 221 ~ fixCountry ~ targetCountry', targetCountry);
+                    return true;
+                }
+            });
+            setCountryPK(targetCountry);
+        },
+        [countryList],
+    );
 
-    const fixCompany = useCallback((e, val) => {
-        console.log('🚀 ~ file: signup.js ~ line 230 ~ fixCompany ~ val', val);
-        let targetCompany;
-        companyList.some(curr => {
-            if (curr.COMPANY_PK === val) {
-                targetCompany = curr.COMPANY_PK;
-                setCompanyPK(targetCompany);
-                setErrCompanyName(false);
-                console.log('🚀 ~ file: signup.js ~ line 232 ~ fixCompany ~ targetCompany', targetCompany);
-                return true;
-            }
-        });
-    }, []);
+    const fixCompany = useCallback(
+        (e, val) => {
+            console.log('🚀 ~ file: signup.js ~ line 230 ~ fixCompany ~ val', val);
+            let targetCompany;
+            companyList.some(curr => {
+                if (curr.COMPANY_PK === val) {
+                    targetCompany = curr.COMPANY_PK;
+                    setCompanyPK(targetCompany);
+                    setErrCompanyName(false);
+                    console.log('🚀 ~ file: signup.js ~ line 232 ~ fixCompany ~ targetCompany', targetCompany);
+                    return true;
+                }
+            });
+        },
+        [companyList],
+    );
 
     const handleSubmit = () => {
         const isValidFirst =
