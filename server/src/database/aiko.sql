@@ -36,7 +36,7 @@ create table COUNTRY_TABLE (
 create table LOGIN_AUTH_TABLE (
 	LOGIN_AUTH_PK INT primary key auto_increment,
 	USER_PK INT not null,
-	UUID VARCHAR(512) not null
+	UUID VARCHAR(512) not null,
 );
 
 -- DEPARTMENT TABLE

@@ -31,7 +31,7 @@ router.post('/signup', upload.single('image'), (req, res) => {
 
 router.get('/grantLoginAuth', (req, res) => {
     const {id} = req.query as {id: string};
-    accountService.grantLoginAuth(parseInt(id), res);
+    accountService.grantLoginAuth(id, res);
 });
 
 router.post('/login', (req, res) => {
@@ -40,6 +40,22 @@ router.post('/login', (req, res) => {
         PASSWORD: req.body.PASSWORD,
     };
     accountService.login(data, res);
+});
+
+router.post('/findNickname', (req, res) => {
+    const {email} = req.body;
+    console.log('🚀 ~ file:accountRouter.ts ~ line 47 ~ router.post ~ email', email);
+    accountService.findNickname(email, res);
+});
+
+router.post('/requestResetPassword', (req, res) => {
+    const {email} = req.body;
+    accountService.requestResetPassword(email, res);
+});
+
+router.get('/resetPassword', (req, res) => {
+    const {id} = req.query;
+    accountService.resetPassword(id as string, res);
 });
 
 export default router;

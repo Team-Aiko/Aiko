@@ -35,8 +35,11 @@ interface IAccountService {
     checkDuplicateEmail(email: string, res: Response): void;
     getCountryList(str: string, res: Response): void;
     signup(data: ISignup, imageRoute: string | null, res: Response): any;
-    grantLoginAuth(id: number, res: Response): void;
+    grantLoginAuth(id: string, res: Response): void;
     login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response): void;
+    findNickname(email: string, res: Response): void;
+    requestResetPassword(email: string, res: Response): void;
+    resetPassword(id: string, res: Response): void;
 }
 
 const accountServce: IAccountService = {
@@ -284,6 +287,101 @@ const accountServce: IAccountService = {
             });
         });
     },
+    findNickname(email, res) {
+        const sql = `select NICKNAME from USER_TABLE where email = ?`;
+
+        conn.query(sql, [email], (err, result, field) => {
+            if (err) {
+                res.send(false);
+                throw err;
+            }
+
+            const rows = JSON.parse(JSON.stringify(result)) as {NICKNAME: string}[];
+            const mailOpt = {
+                from: JSON.parse(fs.readFileSync(__dirname + '/emailBotAddress.json', 'utf8'))
+                    .botEmailAddress as string,
+                to: email,
+                subject: '[Aiko] We will show you your nickname!',
+                text: `Your Nickname: ${rows[0].NICKNAME}`,
+            };
+
+            smtpTransporter.sendMail(mailOpt, (err, response) => {
+                if (err) {
+                    res.send(false);
+                    throw err;
+                }
+
+                console.log('Message send: ', response);
+                smtpTransporter.close();
+                res.send(true);
+            });
+        });
+    },
+    requestResetPassword(email, res) {
+        (async () => {
+            const connection = await pool.getConnection();
+            try {
+                const sql = `select USER_PK from USER_TABLE where email = ?`;
+                let [rows] = await connection.query(sql, [email]);
+                const result = JSON.parse(JSON.stringify(rows)) as Pick<UserTable, 'USER_PK'>[];
+                if (result.length <= 0) {
+                    res.send(false);
+                    throw 'NO_USER_INFO';
+                }
+
+                const userPk = result[0].USER_PK;
+                const uuid = v1();
+                const sqlOne = `select user_pk from LOGIN_AUTH_TABLE where user_pk = ?`;
+                [rows] = await connection.query(sqlOne, [userPk]);
+
+                if ((rows as RowDataPacket[]).length <= 0) {
+                    const sqlTwo = `update LOGIN_AUTH_TABLE 
+                        set uuid = ?
+                        where USER_PK = ?`;
+                    await connection.query(sqlTwo, [uuid, userPk]);
+                } else {
+                    const sqlTwo = `insert into LOGIN_AUTH_TABLE (USER_PK, UUID) values (?,?)`;
+                    await connection.query(sqlTwo, [userPk, uuid]);
+                }
+
+                const mailOpt = {
+                    from: JSON.parse(fs.readFileSync(__dirname + '/emailBotAddress.json', 'utf8'))
+                        .botEmailAddress as string,
+                    to: email,
+                    subject: '[Aiko] We got a request of reset password.',
+                    text: `
+                    IF YOU DO NOT REQUEST THIS, JUST IGNORE.
+
+                    Please link to this address: http://localhost:5000/api/account/resetPassword?id=${uuid}`,
+                };
+
+                try {
+                    smtpTransporter.sendMail(mailOpt, (err, response) => {
+                        if (err) {
+                            res.send(false);
+                            throw err;
+                        }
+
+                        console.log('Message send: ', response);
+                        smtpTransporter.close();
+                        connection.commit();
+                        res.send(true);
+                    });
+                } catch (e) {
+                    throw e;
+                } finally {
+                    smtpTransporter.close();
+                }
+            } catch (e) {
+                console.log(e);
+                connection.rollback();
+                res.send(false);
+            } finally {
+                connection.release();
+            }
+        })();
+    },
+    resetPassword(id, res) {},
 };
 
 export default accountServce;
