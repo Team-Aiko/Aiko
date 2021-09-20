@@ -97,18 +97,40 @@
     clear:both;
 }
 
+.Logincontainer{
+    vertical-align:middle;
+    display:flex;
+    display:inline-block;
+}
+
+.lastcontainer{
+    margin-top:-50px;
+}
+
 .create{
     margin-top:30px;
     text-decoration: underline;
     font-weight:bold;
     font-size: 20px;
     cursor:pointer;
+    text-align:center;
 }
+
 
 .loginbtn{
     border-radius:20px;
     background-color:rgb(255, 166, 0);
     color:white;
     border:0;
+    cursor:pointer;
+    display:block;
+    margin:auto;
+    padding:10px 30px
+}
+
+.forgot{
+    font-size:13px;
+    color:rgb(49, 49, 255);
+    margin-right:20px;
     cursor:pointer;
 }

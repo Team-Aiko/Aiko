@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "scripts": {
         "update:deps": "npm i && cd aiko-client && npm i",
         "client": "cd aiko-client && npm run dev",

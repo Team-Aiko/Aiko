@@ -1,4 +1,5 @@
 import React, {useState, useCallback} from 'react';
+import React from 'react';
 import styles from '../styles/login.module.css';
 import Image from 'next/image';
 import loginPic from '../public/images/image.png';
@@ -54,7 +55,11 @@ const login = () => {
         Router.push('/signup');
     }, []);
 
-    return (
+const find = function() {
+    Router.push('/forgot')
+}
+
+return (
         <div>
             <div className={styles.container}>
                 <div className={styles.login}>
@@ -86,18 +91,16 @@ const login = () => {
                             <div className={styles.checkcontainer}>
                                 <input className={styles.check} type='checkbox'></input>
                                 <p className={styles.remember}>Remember Me</p>
+                                <p onClick={find} className={styles.forgot}>Forgot ID/PW?</p>
                                 <div className={styles.clear}></div>
                             </div>
                         </div>
                     </div>
 
-                    <div className={styles.logincontainer}>
-                        <p onClick={open} className={styles.create}>
-                            Create an Account
-                        </p>
-                        <button className={styles.loginbtn} onClick={handleLogin}>
-                            Log In
-                        </button>
+                    
+                    <div className={styles.lastcontainer}>
+                        <p onClick={open} className={styles.create}>Create an Account</p>
+                        <button className={styles.loginbtn}>Log In</button>
                     </div>
                 </div>
             </div>
@@ -105,4 +108,4 @@ const login = () => {
     );
 };
 
-export default login;
+export default Login
