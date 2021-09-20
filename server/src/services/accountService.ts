@@ -8,13 +8,13 @@ import nodemailer from 'nodemailer';
 import smtpPool from 'nodemailer-smtp-pool';
 import {v1} from 'uuid';
 import fs from 'fs';
+import pbkdf2Password from 'pbkdf2-password';
 
 // * mailer
 const emailConfig = JSON.parse(fs.readFileSync(__dirname + '/mailConfig.json', 'utf8')) as smtpPool.SmtpPoolOptions;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 // * password security
-const pbkdf2Password = require('pbkdf2-password') as Function;
 const hasher: IHasher = pbkdf2Password();
 interface HasherCallback {
     (err: any, pw: string, salt: string, hash: string): void;
@@ -53,7 +53,7 @@ const accountService: IAccountService = {
 
         conn.query(sql, [nickname], (err, result, field) => {
             if (err) throw err;
-            let data = JSON.parse(JSON.stringify(result as RowDataPacket[]))[0];
+            const data = JSON.parse(JSON.stringify(result as RowDataPacket[]))[0];
             console.log('🚀 ~ file: accountService.ts ~ line 22 ~ conn.query ~ data', data);
             res.send(data);
         });
@@ -88,7 +88,7 @@ const accountService: IAccountService = {
         console.log('메소드 진입');
 
         (async () => {
-            const [hash, salt] = await new Promise<String[]>((resolve, reject) => {
+            const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
                 hasher({password: data.pw}, (err, pw, salt, hash) => {
                     if (err) throw err;
 
