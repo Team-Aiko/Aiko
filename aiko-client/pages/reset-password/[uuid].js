@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
-import {useRouter, userRouter, push} from 'next/router';
-import {CssBaseline, Button, Container, TextField, Typography} from '@material-ui/core';
-import {account} from 'web-snippets';
-import {post} from 'axios';
+import React, { useState } from 'react';
+import { useRouter, push } from 'next/router';
+import { CssBaseline, Button, Container, TextField, Typography } from '@material-ui/core';
+import { account } from 'web-snippets';
+import { post } from 'axios';
 import styles from '../../styles/signup.module.css';
 
 export default function ResetPassword() {
     const router = useRouter();
-    const {uuid} = router.query;
+    const { uuid } = router.query;
     const [pw, setPw] = useState('');
     const [pwCf, setPwCf] = useState('');
     const [pwErr, setPwErr] = useState(false);
@@ -16,7 +16,7 @@ export default function ResetPassword() {
     const checkValidationStrings = e => {
         const id = e.target.id;
         const text = e.target.value;
-        const {isValid} = account.cValid(text, 8, 30, 'special', 'capital', 'number');
+        const { isValid } = account.cValid(text, 8, 30, 'special', 'capital', 'number');
 
         if (id === 'pw') {
             setPw(text);
@@ -61,7 +61,10 @@ export default function ResetPassword() {
                     <CssBaseline />
 
                     <Container maxWidth='sm'>
-                        <Typography component='div' style={{backgroundColor: '#FFFFFF', height: '50vh', width: '70vh'}}>
+                        <Typography
+                            component='div'
+                            style={{ backgroundColor: '#FFFFFF', height: '50vh', width: '70vh' }}
+                        >
                             <div className={styles.formDiv}>
                                 <TextField
                                     id='pw'

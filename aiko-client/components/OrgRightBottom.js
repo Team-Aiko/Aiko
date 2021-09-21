@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import React, { useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 
 // * Container Component
 export default function CComp(props) {
@@ -32,7 +32,7 @@ function PComp(props) {
     ];
     return (
         <React.Fragment>
-            <div style={{height: 400, width: '100%'}}>
+            <div style={{ height: 400, width: '100%' }}>
                 <DataGrid rows={[]} columns={column} />
             </div>
         </React.Fragment>

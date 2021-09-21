@@ -1,14 +1,21 @@
-import { createAction, createReducer } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-const handleSideNav = createAction('popup/handleSideNav');
+// * Initial States
 const initialState = {
     sideNavIsOpen: false,
 };
 
-const popupReducer = createReducer(initialState, builder => {
-    builder.addCase(handleSideNav, (state, action) => {
-        state.sideNavIsOpen = action.payload;
-    });
+// * slice
+const popupSlice = createSlice({
+    name: 'popupReducer',
+    initialState,
+    reducers: {
+        handleSideNav(state, action) {
+            // payload: boolean
+            state.sideNavIsOpen = action.payload;
+        },
+    },
 });
 
-export default popupReducer;
+export const { handleSideNav } = popupSlice.actions;
+export default popupSlice.reducer;

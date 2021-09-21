@@ -1,13 +1,16 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Router from 'next/router';
-import {alpha, makeStyles} from '@material-ui/core/styles';
-import {Menu, MenuItem, Badge, InputBase, AppBar, Toolbar, IconButton, Typography, Button} from '@material-ui/core';
+import { alpha, makeStyles } from '@material-ui/core/styles';
+import { Menu, MenuItem, Badge, InputBase, AppBar, Toolbar, IconButton, Typography, Button } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
+import { handleSideNav } from '../../_redux/popupReducer';
+import { useSelector, useDispatch } from 'react-redux';
+import SideNav from './SideNav';
 
 // * CSS Styles
 const useStyles = makeStyles(theme => ({
@@ -76,11 +79,15 @@ const useStyles = makeStyles(theme => ({
 
 // * Container Component
 export default function CComp() {
-    return <PComp />;
+    const sideNavIsOpen = useSelector(state => state.popupReducer.sideNavIsOpen);
+    console.log('🚀 ~ file: TopNav.js ~ line 82 ~ CComp ~ sideNavIsOpen', sideNavIsOpen);
+    const dispatch = useDispatch();
+
+    return <PComp sideNavIsOpen={sideNavIsOpen} dispatch={dispatch} handleSideNav={handleSideNav} />;
 }
 
 // * Presentational component
-function PComp() {
+function PComp(props) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
@@ -113,14 +120,19 @@ function PComp() {
         Router.push('/login');
     }, []);
 
+    const handleSideNav = useCallback(() => {
+        console.log('실행됨?');
+        props.dispatch(props.handleSideNav(true));
+    }, []);
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
             anchorEl={anchorEl}
-            anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             id={menuId}
             keepMounted
-            transformOrigin={{vertical: 'top', horizontal: 'right'}}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
@@ -133,10 +145,10 @@ function PComp() {
     const renderMobileMenu = (
         <Menu
             anchorEl={mobileMoreAnchorEl}
-            anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             id={mobileMenuId}
             keepMounted
-            transformOrigin={{vertical: 'top', horizontal: 'right'}}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
@@ -190,7 +202,13 @@ function PComp() {
         <div className={classes.grow}>
             <AppBar position='static'>
                 <Toolbar>
-                    <IconButton edge='start' className={classes.menuButton} color='inherit' aria-label='open drawer'>
+                    <IconButton
+                        edge='start'
+                        className={classes.menuButton}
+                        color='inherit'
+                        aria-label='open drawer'
+                        onClick={handleSideNav}
+                    >
                         <MenuIcon />
                     </IconButton>
                     <Typography className={classes.title} variant='h6' noWrap>
@@ -206,7 +224,7 @@ function PComp() {
                                 root: classes.inputRoot,
                                 input: classes.inputInput,
                             }}
-                            inputProps={{'aria-label': 'search'}}
+                            inputProps={{ 'aria-label': 'search' }}
                         />
                     </div>
                     <div className={classes.grow} />
@@ -257,6 +275,7 @@ function PComp() {
             </AppBar>
             {renderMobileMenu}
             {renderMenu}
+            <SideNav />
         </div>
     );
 }
