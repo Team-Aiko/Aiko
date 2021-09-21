@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { SvgIcon, Collapse } from '@material-ui/core';
 import { alpha, makeStyles, withStyles } from '@material-ui/core/styles';
-import { TreeView, TreeItem } from '@material-ui/lab/TreeView';
+import { TreeView, TreeItem } from '@material-ui/lab';
 import { ControlPoint, RemoveCircleOutline } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { get } from 'axios';
@@ -17,25 +17,36 @@ const useStyles = makeStyles({
 });
 
 // * Container Component
-export default function ContainerComp({ organizeTree }) {
-    console.log('🚀 ~ file: OrganizationTree.js ~ line 21 ~ ContainerComp ~ organizeTree', organizeTree);
+export default function ContainerComp() {
     const userInfoState = useSelector(state => state.accountReducer);
+    const [organizeTree, setOrganizeTree] = useState([]);
+    console.log('🚀 ~ file: OrganizationTree.js ~ line 21 ~ ContainerComp ~ organizeTree', organizeTree);
+
+    useEffect(() => {
+        (async () => {
+            if (userInfoState.COMPANY_PK) {
+                const url = '/api/company/getOrganizationTree?id=' + userInfoState.COMPANY_PK;
+                const { data } = await get(url);
+                setOrganizeTree(data);
+            }
+        })();
+    }, [userInfoState]);
 
     return <OrganizationTree userInfoState={userInfoState} organizeTree={organizeTree} />;
 }
 
-// * data fetching
-export async function getStaticProps(context) {
-    const userInfoState = useSelector(state => state.accountReducer);
-    const url = '/api/company/getOrganizationTree?id=' + userInfoState.COMPANY_PK;
-    const { data } = await get(url);
+// * data fetching -> 아 이해함 이건 최초 빌드 될 때네 deprecated
+// export async function getStaticProps(context) {
+//     const userInfoState = useSelector(state => state.accountReducer);
+//     const url = '/api/company/getOrganizationTree?id=' + userInfoState.COMPANY_PK;
+//     const { data } = await get(url);
 
-    return {
-        props: {
-            organizeTree: data,
-        },
-    };
-}
+//     return {
+//         props: {
+//             organizeTree: data,
+//         },
+//     };
+// }
 
 // * Presentational Component
 function RenderNode(props) {
@@ -45,8 +56,8 @@ function RenderNode(props) {
                 {props.children.map(curr => {
                     return (
                         <RenderNode
-                            key={curr.myself.DEPARTMENT_PK}
-                            id={curr.myself.DEPARTMENT_PK}
+                            key={curr.DEPARTMENT_PK}
+                            id={curr.DEPARTMENT_PK}
                             myself={{
                                 DEPARTMENT_PK: curr.DEPARTMENT_PK,
                                 DEPARTMENT_NAME: curr.DEPARTMENT_NAME,
@@ -54,7 +65,7 @@ function RenderNode(props) {
                                 PARENT_PK: curr.PARENT_PK,
                                 DEPTH: curr.DEPTH,
                             }}
-                            children={curr.children}
+                            children={curr.CHILDREN}
                         />
                     );
                 })}
@@ -67,7 +78,8 @@ function RenderNode(props) {
 
 function OrganizationTree(props) {
     const classes = useStyles();
-    const { userInfoState } = props;
+    const { userInfoState, organizeTree } = props;
+    console.log('🚀 ~ file: OrganizationTree.js ~ line 82 ~ OrganizationTree ~ organizeTree', organizeTree);
 
     return (
         <TreeView
@@ -77,16 +89,22 @@ function OrganizationTree(props) {
             defaultExpandIcon={<PlusSquare />}
             defaultEndIcon={<CloseSquare />}
         >
-            <RenderNode
-                myself={{
-                    DEPARTMENT_PK: props.organizeTree.DEPARTMENT_PK,
-                    DEPARTMENT_NAME: props.organizeTree.DEPARTMENT_NAME,
-                    COMPANY_PK: props.organizeTree.COMPANY_PK,
-                    PARENT_PK: props.organizeTree.PARENT_PK,
-                    DEPTH: props.organizeTree.DEPTH,
-                }}
-                children={props.organizeTree.CHILDREN}
-            />
+            {props.organizeTree.length ? (
+                <React.Fragment>
+                    <RenderNode
+                        myself={{
+                            DEPARTMENT_PK: organizeTree[0].DEPARTMENT_PK,
+                            DEPARTMENT_NAME: organizeTree[0].DEPARTMENT_NAME,
+                            COMPANY_PK: organizeTree[0].COMPANY_PK,
+                            PARENT_PK: organizeTree[0].PARENT_PK,
+                            DEPTH: organizeTree[0].DEPTH,
+                        }}
+                        children={organizeTree[0].CHILDREN}
+                    />
+                </React.Fragment>
+            ) : (
+                <React.Fragment />
+            )}
         </TreeView>
     );
 }
