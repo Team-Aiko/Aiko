@@ -1,12 +1,94 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import SvgIcon from '@material-ui/core/SvgIcon';
+import { SvgIcon, Collapse } from '@material-ui/core';
 import { alpha, makeStyles, withStyles } from '@material-ui/core/styles';
-import TreeView from '@material-ui/lab/TreeView';
-import TreeItem from '@material-ui/lab/TreeItem';
-import Collapse from '@material-ui/core/Collapse';
-
+import { TreeView, TreeItem } from '@material-ui/lab/TreeView';
 import { ControlPoint, RemoveCircleOutline } from '@material-ui/icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { get } from 'axios';
+
+// * CSS Styles
+const useStyles = makeStyles({
+    root: {
+        height: 264,
+        flexGrow: 1,
+        maxWidth: 400,
+    },
+});
+
+// * Container Component
+export default function ContainerComp({ organizeTree }) {
+    const userInfoState = useSelector(state => state.accountReducer);
+
+    return <OrganizationTree userInfoState={userInfoState} organizeTree={organizeTree} />;
+}
+
+// * data fetching
+export async function getStaticProps(context) {
+    const userInfoState = useSelector(state => state.accountReducer);
+    const url = '/api/company/getOrganizationTree?id=' + userInfoState.COMPANY_PK;
+    const { data } = await get(url);
+
+    return {
+        props: {
+            organizeTree: data,
+        },
+    };
+}
+
+// * Presentational Component
+function RenderNode(props) {
+    if (props.children.length) {
+        return (
+            <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME}>
+                {props.children.map(curr => {
+                    return (
+                        <RenderNode
+                            key={curr.myself.DEPARTMENT_PK}
+                            id={curr.myself.DEPARTMENT_PK}
+                            myself={{
+                                DEPARTMENT_PK: curr.DEPARTMENT_PK,
+                                DEPARTMENT_NAME: curr.DEPARTMENT_NAME,
+                                COMPANY_PK: curr.COMPANY_PK,
+                                PARENT_PK: curr.PARENT_PK,
+                                DEPTH: curr.DEPTH,
+                            }}
+                            children={curr.children}
+                        />
+                    );
+                })}
+            </StyledTreeItem>
+        );
+    } else {
+        return <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME} />;
+    }
+}
+
+function OrganizationTree(props) {
+    const classes = useStyles();
+    const { userInfoState } = props;
+
+    return (
+        <TreeView
+            className={classes.root}
+            defaultExpanded={['1']}
+            defaultCollapseIcon={<MinusSquare />}
+            defaultExpandIcon={<PlusSquare />}
+            defaultEndIcon={<CloseSquare />}
+        >
+            <RenderNode
+                myself={{
+                    DEPARTMENT_PK: props.data.DEPARTMENT_PK,
+                    DEPARTMENT_NAME: props.data.DEPARTMENT_NAME,
+                    COMPANY_PK: props.data.COMPANY_PK,
+                    PARENT_PK: props.data.PARENT_PK,
+                    DEPTH: props.data.DEPTH,
+                }}
+                children={props.data.CHILDREN}
+            />
+        </TreeView>
+    );
+}
 
 function MinusSquare(props) {
     return (
@@ -48,13 +130,6 @@ function TransitionComponent(props) {
     );
 }
 
-TransitionComponent.propTypes = {
-    /**
-     * Show the component; triggers the enter or exit states
-     */
-    in: PropTypes.bool,
-};
-
 const StyledTreeItem = withStyles(theme => ({
     iconContainer: {
         '& .close': {
@@ -68,87 +143,9 @@ const StyledTreeItem = withStyles(theme => ({
     },
 }))(props => <TreeItem {...props} TransitionComponent={TransitionComponent} />);
 
-const useStyles = makeStyles({
-    root: {
-        height: 264,
-        flexGrow: 1,
-        maxWidth: 400,
-    },
-});
-
-export default function ContainerComp(props) {
-    return <OrganizationTree companyPK={props.companyPK} />;
-}
-
-function RenderNode(props) {
-    if (props.children.length) {
-        return (
-            <StyledTreeItem nodeId={props.myself.pk.toString()} label={props.myself.department}>
-                {props.children.map(curr => {
-                    return (
-                        <RenderNode
-                            key={curr.myself.pk}
-                            id={curr.myself.pk}
-                            myself={curr.myself}
-                            children={curr.children}
-                        />
-                    );
-                })}
-            </StyledTreeItem>
-        );
-    } else {
-        return <StyledTreeItem nodeId={props.myself.pk.toString()} label={props.myself.department} />;
-    }
-}
-
-function OrganizationTree(props) {
-    const classes = useStyles();
-    const companyPK = props.companyPK;
-
-    return (
-        <TreeView
-            className={classes.root}
-            defaultExpanded={['1']}
-            defaultCollapseIcon={<MinusSquare />}
-            defaultExpandIcon={<PlusSquare />}
-            defaultEndIcon={<CloseSquare />}
-        >
-            <RenderNode
-                myself={{ department: '할배', pk: 1 }}
-                children={[
-                    {
-                        myself: { department: '아빠', pk: 2 },
-                        children: [
-                            { myself: { department: '자식1', pk: 4 }, children: [] },
-                            { myself: { department: '자식2', pk: 5 }, children: [] },
-                            { myself: { department: '자식3', pk: 6 }, children: [] },
-                        ],
-                    },
-                    {
-                        myself: { department: '작은아빠', pk: 3 },
-                        children: [
-                            {
-                                myself: { department: '사촌1', pk: 7 },
-                                children: [
-                                    {
-                                        myself: { department: '이건뭐냐', pk: 11 },
-                                        children: [
-                                            { myself: { department: '이건fasd', pk: 15 }, children: [] },
-                                            { myself: { department: '이건', pk: 16 }, children: [] },
-                                            { myself: { department: '이건we', pk: 17 }, children: [] },
-                                        ],
-                                    },
-                                    { myself: { department: '이건뭐sy', pk: 12 }, children: [] },
-                                    { myself: { department: '이건뭐매', pk: 13 }, children: [] },
-                                ],
-                            },
-                            { myself: { department: '사촌2', pk: 8 }, children: [] },
-                            { myself: { department: '사촌3', pk: 9 }, children: [] },
-                            { myself: { department: '사촌4', pk: 10 }, children: [] },
-                        ],
-                    },
-                ]}
-            />
-        </TreeView>
-    );
-}
+TransitionComponent.propTypes = {
+    /**
+     * Show the component; triggers the enter or exit states
+     */
+    in: PropTypes.bool,
+};

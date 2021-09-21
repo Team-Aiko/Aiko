@@ -21,7 +21,12 @@ export default function CComp(props) {
     const sideNavIsOpen = useSelector(state => state.popupReducer.sideNavIsOpen);
     console.log('🚀 ~ file: SideNav.js ~ line 22 ~ CComp ~ sideNavIsOpen', sideNavIsOpen);
     const dispatch = useDispatch();
-    return <PComp sideNavIsOpen={sideNavIsOpen} dispatch={dispatch} handleSideNav={handleSideNav} />;
+
+    const handleSideNav = bools => {
+        dispatch(handleSideNav(bools));
+    };
+
+    return <PComp sideNavIsOpen={sideNavIsOpen} handleSideNav={handleSideNav} />;
 }
 
 // * Presentational component
@@ -29,7 +34,7 @@ function PComp(props) {
     const classes = useStyles();
 
     const closeDrawer = () => {
-        props.dispatch(props.handleSideNav(false));
+        props.handleSideNav(false);
     };
 
     return (

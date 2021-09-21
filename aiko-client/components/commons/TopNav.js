@@ -80,10 +80,15 @@ const useStyles = makeStyles(theme => ({
 // * Container Component
 export default function CComp() {
     const sideNavIsOpen = useSelector(state => state.popupReducer.sideNavIsOpen);
-    console.log('🚀 ~ file: TopNav.js ~ line 82 ~ CComp ~ sideNavIsOpen', sideNavIsOpen);
+    const userInfo = useSelector(state => state.accountReducer);
+    console.log('🚀 ~ file: TopNav.js ~ line 84 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
 
-    return <PComp sideNavIsOpen={sideNavIsOpen} dispatch={dispatch} handleSideNav={handleSideNav} />;
+    const handleSideNav = bools => {
+        dispatch(handleSideNav(bools));
+    };
+
+    return <PComp sideNavIsOpen={sideNavIsOpen} handleSideNav={handleSideNav} userInfo={userInfo} />;
 }
 
 // * Presentational component
@@ -91,9 +96,10 @@ function PComp(props) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-    const [userPk, setUserPk] = useState(undefined);
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+    const userPk = props.userInfo.USER_PK;
+    console.log('🚀 ~ file: TopNav.js ~ line 101 ~ PComp ~ userPk', userPk);
 
     const handleProfileMenuOpen = event => {
         setAnchorEl(event.currentTarget);
@@ -121,8 +127,7 @@ function PComp(props) {
     }, []);
 
     const handleSideNav = useCallback(() => {
-        console.log('실행됨?');
-        props.dispatch(props.handleSideNav(true));
+        props.handleSideNav(true);
     }, []);
 
     const menuId = 'primary-search-account-menu';
@@ -193,10 +198,6 @@ function PComp(props) {
             </Button>
         </React.Fragment>
     );
-
-    useEffect(() => {
-        setUserPk(sessionStorage.getItem('USER_PK'));
-    }, []);
 
     return (
         <div className={classes.grow}>

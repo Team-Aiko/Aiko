@@ -4,8 +4,18 @@ import Image from 'next/image';
 import loginPic from '../public/images/image.png';
 import Router from 'next/router';
 import { post } from 'axios';
+import { setUserInfo } from '../_redux/accountReducer';
+import { useSelector, useDispatch } from 'react-redux';
 
-const login = () => {
+export default function CComp() {
+    const dispatch = useDispatch();
+    const setInfo = userInfo => {
+        dispatch(setUserInfo(userInfo));
+    };
+    return <Login setUserInfo={setInfo} />;
+}
+
+function Login(props) {
     const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
 
@@ -19,7 +29,7 @@ const login = () => {
         setPassword(typedPassword);
     }, []);
 
-    const handleLogin = useCallback(() => {
+    const handleLogin = () => {
         const url = '/api/account/login';
         const data = {
             NICKNAME: nickname,
@@ -34,9 +44,13 @@ const login = () => {
         post(url, data, config)
             .then(res => {
                 const data = res.data;
-                if (data.header) {
-                    sessionStorage.setItem('USER_PK', data.USER_PK);
-                    sessionStorage.setItem('NICKNAME', data.NICKNAME);
+                if (data.header /*login result : boolean*/) {
+                    console.log('대체 머선129');
+                    props.setUserInfo({
+                        USER_PK: data.USER_PK,
+                        NICKNAME: data.NICKNAME,
+                        COMPANY_PK: data.COMPANY_PK,
+                    });
                     Router.push('/');
                 } else {
                     alert('not valid user');
@@ -48,7 +62,7 @@ const login = () => {
                 document.getElementById('pw').value = '';
             })
             .catch(err => console.log(err));
-    }, [nickname, password]);
+    };
 
     const open = useCallback(function () {
         Router.push('/signup');
@@ -102,12 +116,12 @@ const login = () => {
                         <p onClick={open} className={styles.create}>
                             Create an Account
                         </p>
-                        <button className={styles.loginbtn}>Log In</button>
+                        <button className={styles.loginbtn} onClick={handleLogin}>
+                            Log In
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
-
-export default login;
+}
