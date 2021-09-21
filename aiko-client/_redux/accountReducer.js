@@ -14,7 +14,9 @@ const accountSlice = createSlice({
     reducers: {
         setUserInfo(state, action) {
             // payload {USER_PK, COMPANY_PK, NICKNAME}
-            state = action.payload;
+            Object.keys(action.payload).map(curr => {
+                state[curr] = action.payload[curr];
+            });
         },
     },
 });
