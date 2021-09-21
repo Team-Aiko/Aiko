@@ -18,6 +18,7 @@ const useStyles = makeStyles({
 
 // * Container Component
 export default function ContainerComp({ organizeTree }) {
+    console.log('🚀 ~ file: OrganizationTree.js ~ line 21 ~ ContainerComp ~ organizeTree', organizeTree);
     const userInfoState = useSelector(state => state.accountReducer);
 
     return <OrganizationTree userInfoState={userInfoState} organizeTree={organizeTree} />;
@@ -78,13 +79,13 @@ function OrganizationTree(props) {
         >
             <RenderNode
                 myself={{
-                    DEPARTMENT_PK: props.data.DEPARTMENT_PK,
-                    DEPARTMENT_NAME: props.data.DEPARTMENT_NAME,
-                    COMPANY_PK: props.data.COMPANY_PK,
-                    PARENT_PK: props.data.PARENT_PK,
-                    DEPTH: props.data.DEPTH,
+                    DEPARTMENT_PK: props.organizeTree.DEPARTMENT_PK,
+                    DEPARTMENT_NAME: props.organizeTree.DEPARTMENT_NAME,
+                    COMPANY_PK: props.organizeTree.COMPANY_PK,
+                    PARENT_PK: props.organizeTree.PARENT_PK,
+                    DEPTH: props.organizeTree.DEPTH,
                 }}
-                children={props.data.CHILDREN}
+                children={props.organizeTree.CHILDREN}
             />
         </TreeView>
     );

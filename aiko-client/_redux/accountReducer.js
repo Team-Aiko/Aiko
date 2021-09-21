@@ -14,10 +14,7 @@ const accountSlice = createSlice({
     reducers: {
         setUserInfo(state, action) {
             // payload {USER_PK, COMPANY_PK, NICKNAME}
-            console.log('안넘어와?: ', action.payload);
-            state.COMPANY_PK = action.payload.COMPANY_PK;
-            state.NICKNAME = action.payload.NICKNAME;
-            state.USER_PK = action.payload.USER_PK;
+            state = action.payload;
         },
     },
 });
