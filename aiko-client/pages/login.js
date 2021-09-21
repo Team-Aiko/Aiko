@@ -1,10 +1,9 @@
-import React, {useState, useCallback} from 'react';
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import styles from '../styles/login.module.css';
 import Image from 'next/image';
 import loginPic from '../public/images/image.png';
 import Router from 'next/router';
-import {post} from 'axios';
+import { post } from 'axios';
 
 const login = () => {
     const [nickname, setNickname] = useState('');
@@ -55,11 +54,11 @@ const login = () => {
         Router.push('/signup');
     }, []);
 
-const find = function() {
-    Router.push('/forgot')
-}
+    const find = function () {
+        Router.push('/forgot');
+    };
 
-return (
+    return (
         <div>
             <div className={styles.container}>
                 <div className={styles.login}>
@@ -91,15 +90,18 @@ return (
                             <div className={styles.checkcontainer}>
                                 <input className={styles.check} type='checkbox'></input>
                                 <p className={styles.remember}>Remember Me</p>
-                                <p onClick={find} className={styles.forgot}>Forgot ID/PW?</p>
+                                <p onClick={find} className={styles.forgot}>
+                                    Forgot ID/PW?
+                                </p>
                                 <div className={styles.clear}></div>
                             </div>
                         </div>
                     </div>
 
-                    
                     <div className={styles.lastcontainer}>
-                        <p onClick={open} className={styles.create}>Create an Account</p>
+                        <p onClick={open} className={styles.create}>
+                            Create an Account
+                        </p>
                         <button className={styles.loginbtn}>Log In</button>
                     </div>
                 </div>
@@ -108,4 +110,4 @@ return (
     );
 };
 
-export default Login
+export default login;
