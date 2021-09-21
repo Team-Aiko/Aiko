@@ -5,7 +5,7 @@ import { setOneMem } from '../_redux/businessReducer';
 
 // * Container Component
 export default function CComp(props) {
-    const deptMember = useSelector(state => state.businessReducer.deptMems);
+    const deptMember = useSelector(state => state.businessReducer.deptMember);
     const dispatch = useDispatch();
 
     const handleOneMem = oneMem => {
@@ -21,22 +21,27 @@ function PComp(props) {
         {
             field: 'NAME',
             headerName: 'name',
-            width: 70,
+            width: 150,
         },
         {
             field: 'DEPARTMENT_PK',
-            headerName: 'department id',
-            width: 10,
+            headerName: 'dept. ID',
+            width: 150,
         },
         {
             field: 'DEPARTMENT_NAME',
-            headerName: 'dpt. name',
-            width: 10,
+            headerName: 'dept. name',
+            width: 150,
         },
         {
             field: 'EMAIL',
             headerName: 'email',
-            width: 100,
+            width: 200,
+        },
+        {
+            field: 'TEL',
+            headerName: 'tel',
+            width: 200,
         },
     ];
 
@@ -44,15 +49,16 @@ function PComp(props) {
     let refinedRows = [];
     if (rows && rows.length > 0) {
         refinedRows = rows.map(curr => {
-            curr.NAME = curr.FIRST_NAME + curr.LAST_NAME;
-            return curr;
+            const temp = { ...curr };
+            temp.NAME = curr.FIRST_NAME + curr.LAST_NAME;
+            temp.id = curr.USER_PK;
+            return temp;
         });
     }
-    console.log('🚀 ~ file: OrgRightBottom.js ~ line 45 ~ PComp ~ rows', rows);
     return (
         <React.Fragment>
             <div style={{ height: 400, width: '100%' }}>
-                <DataGrid rows={[]} columns={columns} />
+                <DataGrid rows={refinedRows} columns={columns} />
             </div>
         </React.Fragment>
     );

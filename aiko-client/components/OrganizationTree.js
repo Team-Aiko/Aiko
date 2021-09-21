@@ -70,8 +70,6 @@ export default function ContainerComp() {
 function OrganizationTree(props) {
     const classes = useStyles();
     const { userInfoState, organizeTree } = props;
-    console.log('🚀 ~ file: OrganizationTree.js ~ line 82 ~ OrganizationTree ~ organizeTree', organizeTree);
-
     return (
         <TreeView
             className={classes.root}
@@ -108,8 +106,8 @@ function RenderNode(props) {
             <StyledTreeItem
                 nodeId={props.myself.DEPARTMENT_PK.toString()}
                 label={props.myself.DEPARTMENT_NAME}
-                handleDeptMems={props.handleDeptMems}
                 handleDeptPK={props.handleDeptPK}
+                handleDeptMems={props.handleDeptMems}
             >
                 {props.children.map(curr => {
                     return (
@@ -124,13 +122,22 @@ function RenderNode(props) {
                                 DEPTH: curr.DEPTH,
                             }}
                             children={curr.CHILDREN}
+                            handleDeptMems={props.handleDeptMems}
+                            handleDeptPK={props.handleDeptPK}
                         />
                     );
                 })}
             </StyledTreeItem>
         );
     } else {
-        return <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME} />;
+        return (
+            <StyledTreeItem
+                nodeId={props.myself.DEPARTMENT_PK.toString()}
+                label={props.myself.DEPARTMENT_NAME}
+                handleDeptMems={props.handleDeptMems}
+                handleDeptPK={props.handleDeptPK}
+            />
+        );
     }
 } // Tree bootstrap component
 
