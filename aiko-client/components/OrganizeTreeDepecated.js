@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {Paper} from '@material-ui/core';
-import {makeStyles} from '@material-ui/core/styles';
-import moduleStyles from '../styles/OrganizeTree.module.css';
+/* eslint-disable import/no-unresolved */
+import React, { useEffect, useState } from 'react';
+import { Paper } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import { get } from 'axios';
 import classnames from 'classnames';
-import {get} from 'axios';
+import moduleStyles from '../styles/OrganizeTree.module.css';
 
 // * CSS Styles
 const useStyles = makeStyles(theme => ({
@@ -73,10 +74,10 @@ function RenderNode(props) {
                     </Paper>
                     {props.children && doc ? (
                         <React.Fragment>
-                            <div style={{width: '100%'}}>
+                            <div style={{ width: '100%' }}>
                                 <svg width='100%' height='40px'>
                                     {props.children.map(curr => {
-                                        let {horizontal1, horizontal2, height} = getAxis(
+                                        let { horizontal1, horizontal2, height } = getAxis(
                                             props.myself.pk,
                                             curr.myself.pk,
                                         );
@@ -118,31 +119,31 @@ function Organize(props) {
         <div>
             <div className={classes.root}>
                 <RenderNode
-                    myself={{department: '할배', pk: 1}}
+                    myself={{ department: '할배', pk: 1 }}
                     children={[
                         {
-                            myself: {department: '아빠', pk: 2},
+                            myself: { department: '아빠', pk: 2 },
                             children: [
                                 {
-                                    myself: {department: '자식1', pk: 4},
+                                    myself: { department: '자식1', pk: 4 },
                                 },
                                 {
-                                    myself: {department: '자식2', pk: 5},
+                                    myself: { department: '자식2', pk: 5 },
                                 },
                                 {
-                                    myself: {department: '자식3', pk: 6},
+                                    myself: { department: '자식3', pk: 6 },
                                 },
                             ],
                         },
                         {
-                            myself: {department: '작은아빠', pk: 3},
+                            myself: { department: '작은아빠', pk: 3 },
                             children: [
                                 {
-                                    myself: {department: '사촌1', pk: 7},
+                                    myself: { department: '사촌1', pk: 7 },
                                 },
-                                {myself: {department: '사촌2', pk: 8}},
-                                {myself: {department: '사촌3', pk: 9}},
-                                {myself: {department: '사촌4', pk: 10}},
+                                { myself: { department: '사촌2', pk: 8 } },
+                                { myself: { department: '사촌3', pk: 9 } },
+                                { myself: { department: '사촌4', pk: 10 } },
                             ],
                         },
                     ]}

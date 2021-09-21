@@ -4,8 +4,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    extends: ['plugin:react/recommended', 'airbnb'],
-    parser: 'babel-eslint',
+    extends: ['prettier', 'eslint:recommended', 'plugin:react/recommended', 'airbnb'],
     parserOptions: {
         ecmaFeatures: {
             jsx: true,
@@ -13,11 +12,13 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
     },
-    plugins: ['react'],
+    plugins: ['react', 'prettier'],
     rules: {
         indent: ['error', 4],
         'no-unused-vars': 'warn',
-        'prettier/prettier': ['error', {endOfLine: 'auto'}],
+        'prettier/prettier': ['error', { endOfLine: 'auto' }],
+        'react/jsx-indent': ['on', 'tab' | 3, { checkAttributes: true, indentLogicalExpressions: true }],
+        'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
         'no-console': 'off',
         'func-names': 'off',
         'object-shorthand': 'off',
@@ -25,6 +26,5 @@ module.exports = {
         'max-len': ['error', 120, 2],
         'no-underscore-dangle': 'off',
         'max-classes-per-file': 'off',
-        'object-curly-spacing': 'off',
     },
 };

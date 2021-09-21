@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import moduleStyles from '../styles/components/OrgRightTop.module.css';
-import {makeStyles} from '@material-ui/core';
-import {TextField, Button} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import { TextField, Button } from '@material-ui/core';
 
 // * CSS Button Styles
 const useStyles = makeStyles(theme => ({
@@ -39,14 +39,14 @@ function PComp(props) {
             <TextField
                 id='department_plate'
                 label='Label'
-                style={{margin: 8}}
+                style={{ margin: 8 }}
                 placeholder='Placeholder'
                 fullWidth
                 margin='normal'
                 InputLabelProps={{
                     shrink: true,
                 }}
-                inputProps={{readOnly: toggleEditor}}
+                inputProps={{ readOnly: toggleEditor }}
                 onChange={editDptName}
             />
             <div>
