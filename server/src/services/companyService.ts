@@ -1,12 +1,14 @@
 import {Response} from 'express';
 import {RowDataPacket} from 'mysql2';
 import {conn, pool} from '../database';
+import {UserTable} from '../database/tablesInterface';
 import {CompanyTable} from '../database/tablesInterface';
 import {DepartmentTable} from '../database/tablesInterface';
 
 interface ICompanyService {
     getCompanyList(str: string, res: Response): void;
     getOrganizationTree(id: number, res: Response): void;
+    getDepartmentMembers(deptId: number, res: Response): void;
 }
 
 interface Node extends DepartmentTable {
@@ -63,6 +65,63 @@ const companyService: ICompanyService = {
                 res.send(depthZero);
             } catch (e) {
                 console.log(e);
+            } finally {
+                connection.release();
+            }
+        })();
+    },
+    getDepartmentMembers(deptId, res) {
+        console.log('이거 실행하는거 맞지?');
+        (async () => {
+            const connection = await pool.getConnection();
+            try {
+                const sqlOne = `
+                with recursive DEPARTMENT_TREE as (
+                    select
+                        *
+                    from DEPARTMENT_TABLE
+                    where DEPARTMENT_PK = ?
+                    union all
+                    select
+                        D1.*
+                    from
+                        DEPARTMENT_TABLE AS D1, DEPARTMENT_TREE AS D2
+                    where
+                        D1.PARENT_PK = D2.DEPARTMENT_PK
+                )
+                select * from DEPARTMENT_TREE`;
+                const sqlTwo = `select 
+                    U.USER_PK,
+                    U.FIRST_NAME,
+                    U.LAST_NAME,
+                    U.EMAIL,
+                    U.TEL,
+                    U.DEPARTMENT_PK,
+                    D.DEPARTMENT_NAME
+                from USER_TABLE U, DEPARTMENT_TABLE D 
+                where 
+                    U.DEPARTMENT_PK = D.DEPARTMENT_PK
+                    AND
+                    D.DEPARTMENT_PK = ?`;
+                const [rows] = JSON.parse(
+                    JSON.stringify(await connection.query(sqlOne, [deptId])),
+                ) as DepartmentTable[][];
+                const temp2DRows = await Promise.all(
+                    rows.map(async curr => {
+                        return JSON.parse(
+                            JSON.stringify(await connection.query(sqlTwo, [curr.DEPARTMENT_PK])),
+                        )[0] as UserTable[];
+                    }),
+                );
+                let memRows: UserTable[] = [];
+                temp2DRows.forEach(curr => {
+                    memRows = memRows.concat(curr);
+                });
+                console.log('🚀 ~ file: companyService.ts ~ line 112 ~ memRows', memRows);
+
+                res.send(memRows);
+            } catch (e) {
+                throw e;
             } finally {
                 connection.release();
             }

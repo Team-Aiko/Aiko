@@ -4,8 +4,11 @@ import { SvgIcon, Collapse } from '@material-ui/core';
 import { alpha, makeStyles, withStyles } from '@material-ui/core/styles';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { ControlPoint, RemoveCircleOutline } from '@material-ui/icons';
-import { useDispatch, useSelector } from 'react-redux';
 import { get } from 'axios';
+
+// * Redux import
+import { useDispatch, useSelector } from 'react-redux';
+import { setDeptMember, setDeptPK } from '../_redux/businessReducer';
 
 // * CSS Styles
 const useStyles = makeStyles({
@@ -19,8 +22,16 @@ const useStyles = makeStyles({
 // * Container Component
 export default function ContainerComp() {
     const userInfoState = useSelector(state => state.accountReducer);
+    const dispatch = useDispatch();
     const [organizeTree, setOrganizeTree] = useState([]);
-    console.log('🚀 ~ file: OrganizationTree.js ~ line 21 ~ ContainerComp ~ organizeTree', organizeTree);
+
+    const handleDeptPK = deptPK => {
+        dispatch(setDeptPK(deptPK));
+    };
+
+    const handleDeptMems = memsArr => {
+        dispatch(setDeptMember(memsArr));
+    };
 
     useEffect(() => {
         (async () => {
@@ -32,7 +43,14 @@ export default function ContainerComp() {
         })();
     }, [userInfoState]);
 
-    return <OrganizationTree userInfoState={userInfoState} organizeTree={organizeTree} />;
+    return (
+        <OrganizationTree
+            handleDeptMems={handleDeptMems}
+            handleDeptPK={handleDeptPK}
+            userInfoState={userInfoState}
+            organizeTree={organizeTree}
+        />
+    );
 }
 
 // * data fetching -> 아 이해함 이건 최초 빌드 될 때네 deprecated
@@ -49,33 +67,6 @@ export default function ContainerComp() {
 // }
 
 // * Presentational Component
-function RenderNode(props) {
-    if (props.children.length) {
-        return (
-            <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME}>
-                {props.children.map(curr => {
-                    return (
-                        <RenderNode
-                            key={curr.DEPARTMENT_PK}
-                            id={curr.DEPARTMENT_PK}
-                            myself={{
-                                DEPARTMENT_PK: curr.DEPARTMENT_PK,
-                                DEPARTMENT_NAME: curr.DEPARTMENT_NAME,
-                                COMPANY_PK: curr.COMPANY_PK,
-                                PARENT_PK: curr.PARENT_PK,
-                                DEPTH: curr.DEPTH,
-                            }}
-                            children={curr.CHILDREN}
-                        />
-                    );
-                })}
-            </StyledTreeItem>
-        );
-    } else {
-        return <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME} />;
-    }
-}
-
 function OrganizationTree(props) {
     const classes = useStyles();
     const { userInfoState, organizeTree } = props;
@@ -100,6 +91,8 @@ function OrganizationTree(props) {
                             DEPTH: organizeTree[0].DEPTH,
                         }}
                         children={organizeTree[0].CHILDREN}
+                        handleDeptMems={props.handleDeptMems}
+                        handleDeptPK={props.handleDeptPK}
                     />
                 </React.Fragment>
             ) : (
@@ -108,6 +101,38 @@ function OrganizationTree(props) {
         </TreeView>
     );
 }
+
+function RenderNode(props) {
+    if (props.children.length) {
+        return (
+            <StyledTreeItem
+                nodeId={props.myself.DEPARTMENT_PK.toString()}
+                label={props.myself.DEPARTMENT_NAME}
+                handleDeptMems={props.handleDeptMems}
+                handleDeptPK={props.handleDeptPK}
+            >
+                {props.children.map(curr => {
+                    return (
+                        <RenderNode
+                            key={curr.DEPARTMENT_PK}
+                            id={curr.DEPARTMENT_PK}
+                            myself={{
+                                DEPARTMENT_PK: curr.DEPARTMENT_PK,
+                                DEPARTMENT_NAME: curr.DEPARTMENT_NAME,
+                                COMPANY_PK: curr.COMPANY_PK,
+                                PARENT_PK: curr.PARENT_PK,
+                                DEPTH: curr.DEPTH,
+                            }}
+                            children={curr.CHILDREN}
+                        />
+                    );
+                })}
+            </StyledTreeItem>
+        );
+    } else {
+        return <StyledTreeItem nodeId={props.myself.DEPARTMENT_PK.toString()} label={props.myself.DEPARTMENT_NAME} />;
+    }
+} // Tree bootstrap component
 
 function MinusSquare(props) {
     return (
@@ -160,7 +185,28 @@ const StyledTreeItem = withStyles(theme => ({
         paddingLeft: 18,
         borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
     },
-}))(props => <TreeItem {...props} TransitionComponent={TransitionComponent} />);
+}))(props => (
+    <div
+        onClick={e => {
+            e.stopPropagation();
+            setTargetDepartment(props.nodeId, props.handleDeptPK, props.handleDeptMems);
+        }}
+    >
+        <TreeItem {...props} TransitionComponent={TransitionComponent} />
+    </div>
+));
+
+// * Redux Business function
+const setTargetDepartment = (deptId, handleDeptPK, handleDeptMems) => {
+    const url = '/api/company/getDepartmentMembers?deptId=' + deptId;
+    handleDeptPK(deptId);
+    get(url)
+        .then(res => {
+            const data = res.data;
+            handleDeptMems(data);
+        })
+        .catch(err => console.log(err));
+};
 
 TransitionComponent.propTypes = {
     /**

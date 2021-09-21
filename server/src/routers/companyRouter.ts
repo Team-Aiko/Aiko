@@ -13,4 +13,9 @@ router.get('/getOrganizationTree', (req, res) => {
     companyService.getOrganizationTree(Number(id), res);
 });
 
+router.get('/getDepartmentMembers', (req, res) => {
+    const {deptId} = req.query;
+    companyService.getDepartmentMembers(Number(deptId), res);
+});
+
 export default router;
