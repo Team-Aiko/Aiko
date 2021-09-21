@@ -84,11 +84,11 @@ export default function CComp() {
     console.log('🚀 ~ file: TopNav.js ~ line 84 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
 
-    const handleSideNav = bools => {
+    const handleNav = bools => {
         dispatch(handleSideNav(bools));
     };
 
-    return <PComp sideNavIsOpen={sideNavIsOpen} handleSideNav={handleSideNav} userInfo={userInfo} />;
+    return <PComp sideNavIsOpen={sideNavIsOpen} handleSideNav={handleNav} userInfo={userInfo} />;
 }
 
 // * Presentational component
