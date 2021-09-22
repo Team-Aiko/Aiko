@@ -1,11 +1,7 @@
 import secretKeys from './secretKeyEnum';
-import { SignOptions } from 'jsonwebtoken';
+import { SignOptions, DecodeOptions } from 'jsonwebtoken';
+import { ISecretKey } from './jwtInterfaces';
 import { Algorithm } from 'jsonwebtoken';
-
-interface ISecretKey {
-    secretKey: string;
-    options: SignOptions;
-}
 
 const algorithm: Algorithm = 'HS256';
 
@@ -18,4 +14,9 @@ const loginSecretKey: ISecretKey = {
     },
 };
 
-export { loginSecretKey };
+const decodeOpt: DecodeOptions = {
+    complete: true,
+    json: true,
+};
+
+export { loginSecretKey, decodeOpt };

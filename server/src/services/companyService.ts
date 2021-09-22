@@ -24,10 +24,15 @@ const companyService: ICompanyService = {
             res.send(rows);
         });
     },
-    getOrganizationTree(id, res) {
+    getOrganizationTree(id, userInfo, res) {
         (async () => {
             const connection = await pool.getConnection();
             try {
+                if (id !== userInfo.COMPANY_PK) {
+                    // 데이터 위변조.
+                    res.send([]);
+                }
+
                 let depth = 0;
                 const sql = `select
                     *
@@ -56,6 +61,7 @@ const companyService: ICompanyService = {
                 res.send(depthZero);
             } catch (e) {
                 console.log(e);
+                res.send([]);
             } finally {
                 connection.release();
             }

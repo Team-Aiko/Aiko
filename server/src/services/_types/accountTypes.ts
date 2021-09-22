@@ -1,4 +1,4 @@
-import { UserTable, DepartmentTable } from '../../database/tablesInterface';
+import { UserTable, DepartmentTable, CompanyTable } from '../../database/tablesInterface';
 import { Response } from 'express';
 
 // * interfaces & Types
@@ -23,7 +23,7 @@ export interface IAccountService {
     findNickname(email: string, res: Response): void;
     requestResetPassword(email: string, res: Response): void;
     resetPassword(uuid: string, password: string, res: Response): void;
-    generateLoginToken(userData: LoginSelectData): string;
+    generateLoginToken(userData: SelectData): string;
 }
 
 export interface ISignup {
@@ -50,7 +50,8 @@ export type LoginSelectData = Pick<
     'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'COMPANY_PK' | 'DEPARTMENT_PK' | 'EMAIL'
 >;
 export type DepartmentSelectData = Pick<DepartmentTable, 'DEPARTMENT_NAME'>;
-export type SelectData = LoginSelectData & DepartmentSelectData;
+export type CompanySelectData = Pick<CompanyTable, 'COMPANY_NAME'>;
+export type SelectData = LoginSelectData & DepartmentSelectData & CompanySelectData;
 export interface SuccessPacket extends BasePacket {
     userInfo: Omit<SelectData, 'PASSWORD' | 'SALT'>;
 }

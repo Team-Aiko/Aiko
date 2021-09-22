@@ -1,3 +1,3 @@
-import jwtMiddleware from './jwtMiddleware';
+import { decodeToken, verifyToken } from './jwtMiddleware';
 
-export { jwtMiddleware };
+export { decodeToken, verifyToken };

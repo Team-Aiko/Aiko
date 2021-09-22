@@ -1,20 +1,22 @@
 import express from 'express';
 import companyService from '../services/companyService';
-import { jwtMiddleware } from '../services/_middlewares';
+import { decodeToken, verifyToken } from '../services/_middlewares';
+import { SelectData } from '../services/_types/accountTypes';
 
 const router = express.Router();
 
-router.get('/getCompanyList', jwtMiddleware, (req, res) => {
+router.get('/getCompanyList', (req, res) => {
     const { str } = req.query;
     companyService.getCompanyList(str as string, res);
 });
 
-router.get('/getOrganizationTree', jwtMiddleware, (req, res) => {
+router.get('/getOrganizationTree', decodeToken, (req, res) => {
     const { id } = req.query;
-    companyService.getOrganizationTree(Number(id), res);
+    const userInfo = req.body.jwtPayload as SelectData;
+    companyService.getOrganizationTree(Number(id), userInfo, res);
 });
 
-router.get('/getDepartmentMembers', jwtMiddleware, (req, res) => {
+router.get('/getDepartmentMembers', decodeToken, (req, res) => {
     const { deptId } = req.query;
     companyService.getDepartmentMembers(Number(deptId), res);
 });

@@ -232,11 +232,14 @@ const accountService: IAccountService = {
             U.SALT,
             U.COMPANY_PK,
             U.DEPARTMENT_PK,
-            D.DEPARTMENT_NAME
+            D.DEPARTMENT_NAME,
+            C.COMPANY_NAME
         from
             USER_TABLE U
         LEFT OUTER JOIN DEPARTMENT_TABLE D
-            ON U.DEPARTMENT_PK = D.DEPARTMENT_PK
+            on U.DEPARTMENT_PK = D.DEPARTMENT_PK
+        LEFT OUTER JOIN COMPANY_TABLE C
+            on U.COMPANY_PK = C.COMPANY_PK
         where
             NICKNAME = ?
             AND
@@ -254,11 +257,10 @@ const accountService: IAccountService = {
                 res.send(packet);
                 return;
             }
+
             const user = selected[0];
             hasher({ password: data.PASSWORD, salt: user.SALT }, (arr, pw, salt, hash) => {
                 const flag = user.PASSWORD === hash;
-                console.log(user.PASSWORD);
-                console.log(hash);
 
                 if (!flag) {
                     const packet: BasePacket = {
@@ -270,16 +272,9 @@ const accountService: IAccountService = {
 
                 const packet: SuccessPacket = {
                     header: flag,
-                    userInfo: {
-                        COMPANY_PK: user.COMPANY_PK,
-                        DEPARTMENT_NAME: user.DEPARTMENT_NAME,
-                        DEPARTMENT_PK: user.DEPARTMENT_PK,
-                        EMAIL: user.EMAIL,
-                        NICKNAME: user.NICKNAME,
-                        USER_PK: user.USER_PK,
-                    },
+                    userInfo: { ...user },
                 };
-                res.cookie('TOKEN', this.generateLoginToken(user), { maxAge: 60 * 60 * 24 * 365 });
+                res.cookie('TOKEN', this.generateLoginToken(user), { httpOnly: true, maxAge: 60 * 60 * 24 * 365 });
                 res.send(packet);
             });
         });
@@ -399,8 +394,6 @@ const accountService: IAccountService = {
                         resolve({ hash, salt });
                     });
                 });
-                console.log('🚀 ~ file: accountService.ts ~ line 399 ~ hash', hash);
-                console.log('🚀 ~ file: accountService.ts ~ line 399 ~ salt', salt);
 
                 await connection.query(sql2, [hash, salt, userPk]);
 
@@ -420,12 +413,7 @@ const accountService: IAccountService = {
         })();
     },
     generateLoginToken(userData) {
-        const packet = {
-            USER_PK: userData.USER_PK,
-            COMPANY_PK: userData.COMPANY_PK,
-            DEPARTMENT_PK: userData.DEPARTMENT_PK,
-        };
-        const token = jwt.sign(packet, loginSecretKey.secretKey, loginSecretKey.options);
+        const token = jwt.sign(userData, loginSecretKey.secretKey, loginSecretKey.options);
 
         return token;
     },
