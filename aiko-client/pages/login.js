@@ -1,37 +1,42 @@
 import React, { useState, useCallback } from 'react';
-import styles from '../styles/login.module.css';
-import Image from 'next/image';
-import loginPic from '../public/images/image.png';
 import Router from 'next/router';
+import Image from 'next/image';
+import PropTypes from 'prop-types';
 import { post } from 'axios';
-import { setUserInfo } from '../_redux/accountReducer';
 import { useSelector, useDispatch } from 'react-redux';
+import { setUserInfo, setLoginToken } from '../_redux/accountReducer';
+import styles from '../styles/login.module.css';
+import loginPic from '../public/images/image.png';
+import { ReactPropTypes } from 'react';
 
 export default function CComp() {
     const dispatch = useDispatch();
-    const setInfo = userInfo => {
+    const setInfo = (userInfo) => {
         dispatch(setUserInfo(userInfo));
     };
-    return <Login setUserInfo={setInfo} />;
+    const setToken = (token) => {
+        dispatch(setLoginToken(token));
+    };
+    return <Login setUserInfo={setInfo} setLoginToken={setToken} />;
 }
 
 function Login(props) {
     const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
 
-    const onChangeNickname = useCallback(e => {
+    const onChangeNickname = useCallback((e) => {
         const typedNickname = e.target.value;
         setNickname(typedNickname);
     }, []);
 
-    const onChangePassword = useCallback(e => {
+    const onChangePassword = useCallback((e) => {
         const typedPassword = e.target.value;
         setPassword(typedPassword);
     }, []);
 
     const handleLogin = () => {
         const url = '/api/account/login';
-        const data = {
+        const packet = {
             NICKNAME: nickname,
             PASSWORD: password,
         };
@@ -41,16 +46,13 @@ function Login(props) {
             },
         };
 
-        post(url, data, config)
-            .then(res => {
-                const data = res.data;
+        (async () => {
+            try {
+                const { data } = await post(url, packet, config);
+                console.log('🚀 ~ file: login.js ~ line 52 ~ data', data);
                 if (data.header /*login result : boolean*/) {
-                    console.log('대체 머선129');
-                    props.setUserInfo({
-                        USER_PK: data.USER_PK,
-                        NICKNAME: data.NICKNAME,
-                        COMPANY_PK: data.COMPANY_PK,
-                    });
+                    props.setLoginToken(data.token);
+                    props.setUserInfo(data.userInfo);
                     Router.push('/');
                 } else {
                     alert('not valid user');
@@ -60,8 +62,10 @@ function Login(props) {
                 setPassword('');
                 document.getElementById('id').value = '';
                 document.getElementById('pw').value = '';
-            })
-            .catch(err => console.log(err));
+            } catch (err) {
+                console.log(err);
+            }
+        })();
     };
 
     const open = useCallback(function () {
@@ -125,3 +129,7 @@ function Login(props) {
         </div>
     );
 }
+
+Login.propTypes = {
+    setLoginToken: PropTypes.func.isRequired,
+};

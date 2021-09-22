@@ -21,15 +21,15 @@ const useStyles = makeStyles({
 
 // * Container Component
 export default function ContainerComp() {
-    const userInfoState = useSelector(state => state.accountReducer);
+    const userInfoState = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
     const [organizeTree, setOrganizeTree] = useState([]);
 
-    const handleDeptPK = deptPK => {
+    const handleDeptPK = (deptPK) => {
         dispatch(setDeptPK(deptPK));
     };
 
-    const handleDeptMems = memsArr => {
+    const handleDeptMems = (memsArr) => {
         dispatch(setDeptMember(memsArr));
     };
 
@@ -109,7 +109,7 @@ function RenderNode(props) {
                 handleDeptPK={props.handleDeptPK}
                 handleDeptMems={props.handleDeptMems}
             >
-                {props.children.map(curr => {
+                {props.children.map((curr) => {
                     return (
                         <RenderNode
                             key={curr.DEPARTMENT_PK}
@@ -181,7 +181,7 @@ function TransitionComponent(props) {
     );
 }
 
-const StyledTreeItem = withStyles(theme => ({
+const StyledTreeItem = withStyles((theme) => ({
     iconContainer: {
         '& .close': {
             opacity: 0.3,
@@ -192,9 +192,9 @@ const StyledTreeItem = withStyles(theme => ({
         paddingLeft: 18,
         borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
     },
-}))(props => (
+}))((props) => (
     <div
-        onClick={e => {
+        onClick={(e) => {
             e.stopPropagation();
             setTargetDepartment(props.nodeId, props.handleDeptPK, props.handleDeptMems);
         }}
@@ -208,11 +208,11 @@ const setTargetDepartment = (deptId, handleDeptPK, handleDeptMems) => {
     const url = '/api/company/getDepartmentMembers?deptId=' + deptId;
     handleDeptPK(deptId);
     get(url)
-        .then(res => {
+        .then((res) => {
             const data = res.data;
             handleDeptMems(data);
         })
-        .catch(err => console.log(err));
+        .catch((err) => console.log(err));
 };
 
 TransitionComponent.propTypes = {

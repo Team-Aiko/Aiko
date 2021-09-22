@@ -1,46 +1,31 @@
-import {json, Response} from 'express';
-import {RowDataPacket} from 'mysql2';
-import {conn, pool} from '../database';
-import {UserTable} from '../database/tablesInterface';
-import {ISignup} from '../database/jsonForms';
-import {CountryTable, LoginAuthTable, ResetPwTable} from '../database/tablesInterface';
-import nodemailer from 'nodemailer';
+import { json, Response } from 'express';
+import { RowDataPacket } from 'mysql2';
+import { conn, pool } from '../database';
+import { UserTable, DepartmentTable } from '../database/tablesInterface';
+// * DB Table Types
+import { CountryTable, LoginAuthTable, ResetPwTable } from '../database/tablesInterface';
+// * mailer
+import nodemailer, { SendMailOptions } from 'nodemailer';
 import smtpPool from 'nodemailer-smtp-pool';
-import {v1} from 'uuid';
+// * UUID generator
+import { v1 } from 'uuid';
+// * file reader
 import fs from 'fs';
-import pbkdf2Password from 'pbkdf2-password';
+// * json web token
+import jwt from 'jsonwebtoken';
+import { loginSecretKey } from './_jwt/_config/secretKey';
+// * custom types
+import { IAccountService, IHasher, BasePacket, SelectData, SuccessPacket } from './accountTypes';
 
 // * mailer
 const emailConfig = JSON.parse(fs.readFileSync(__dirname + '/mailConfig.json', 'utf8')) as smtpPool.SmtpPoolOptions;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 // * password security
+// No Types library
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pbkdf2Password = require('pbkdf2-password');
 const hasher: IHasher = pbkdf2Password();
-interface HasherCallback {
-    (err: any, pw: string, salt: string, hash: string): void;
-}
-interface IHasher {
-    (pwObj: {password: string; salt?: string}, callback: HasherCallback): void;
-}
-
-interface IPacket {
-    header: boolean;
-    USER_PK: number | undefined;
-    NICKNAME: string | undefined;
-    COMPANY_PK: number | undefined;
-}
-
-interface IAccountService {
-    checkDuplicateNickname(nickname: string, res: Response): void;
-    checkDuplicateEmail(email: string, res: Response): void;
-    getCountryList(str: string, res: Response): void;
-    signup(data: ISignup, imageRoute: string | null, res: Response): any;
-    grantLoginAuth(id: string, res: Response): void;
-    login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response): void;
-    findNickname(email: string, res: Response): void;
-    requestResetPassword(email: string, res: Response): void;
-    resetPassword(uuid: string, password: string, res: Response): void;
-}
 
 const accountService: IAccountService = {
     checkDuplicateNickname(nickname, res) {
@@ -89,7 +74,7 @@ const accountService: IAccountService = {
 
         (async () => {
             const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
-                hasher({password: data.pw}, (err, pw, salt, hash) => {
+                hasher({ password: data.pw }, (err, pw, salt, hash) => {
                     if (err) throw err;
 
                     resolve([hash, salt]);
@@ -238,15 +223,18 @@ const accountService: IAccountService = {
         })();
     },
     login(data, res) {
-        const sql = `select 
-            USER_PK,
-            NICKNAME,
-            PASSWORD,
-            SALT,
-            COMPANY_PK,
-            IS_VERIFIED
-        from 
-            USER_TABLE
+        const sql = `select
+            U.USER_PK,
+            U.NICKNAME,
+            U.PASSWORD,
+            U.SALT,
+            U.COMPANY_PK,
+            U.DEPARTMENT_PK,
+            D.DEPARTMENT_NAME
+        from
+            USER_TABLE U
+        LEFT OUTER JOIN DEPARTMENT_TABLE D
+            ON U.DEPARTMENT_PK = D.DEPARTMENT_PK
         where
             NICKNAME = ?
             AND
@@ -254,33 +242,43 @@ const accountService: IAccountService = {
         conn.query(sql, data.NICKNAME, (err, result, field) => {
             if (err) throw err;
 
-            const selected = JSON.parse(JSON.stringify(result)) as Pick<
-                UserTable,
-                'USER_PK' | 'NICKNAME' | 'PASSWORD' | 'SALT' | 'IS_VERIFIED' | 'COMPANY_PK'
-            >[];
+            const selected = JSON.parse(JSON.stringify(result)) as SelectData[];
             console.log('🚀 ~ file: accountService.ts ~ line 239 ~ conn.query ~ selected', selected);
 
             if (!selected.length) {
-                const packet: IPacket = {
+                const packet: BasePacket = {
                     header: false,
-                    NICKNAME: undefined,
-                    USER_PK: undefined,
-                    COMPANY_PK: undefined,
+                    token: undefined,
                 };
                 res.send(packet);
                 return;
             }
-
-            hasher({password: data.PASSWORD, salt: selected[0].SALT}, (arr, pw, salt, hash) => {
-                const flag = selected[0].PASSWORD === hash;
-                console.log(selected[0].PASSWORD);
+            const user = selected[0];
+            hasher({ password: data.PASSWORD, salt: user.SALT }, (arr, pw, salt, hash) => {
+                const flag = user.PASSWORD === hash;
+                console.log(user.PASSWORD);
                 console.log(hash);
 
-                const packet: IPacket = {
+                if (!flag) {
+                    const packet: BasePacket = {
+                        header: false,
+                        token: undefined,
+                    };
+                    res.send(packet);
+                    return;
+                }
+
+                const packet: SuccessPacket = {
                     header: flag,
-                    USER_PK: flag ? selected[0].USER_PK : undefined,
-                    NICKNAME: flag ? selected[0].NICKNAME : undefined,
-                    COMPANY_PK: flag ? selected[0].COMPANY_PK : undefined,
+                    token: this.generateLoginToken(user),
+                    userInfo: {
+                        COMPANY_PK: user.COMPANY_PK,
+                        DEPARTMENT_NAME: user.DEPARTMENT_NAME,
+                        DEPARTMENT_PK: user.DEPARTMENT_PK,
+                        EMAIL: user.EMAIL,
+                        NICKNAME: user.NICKNAME,
+                        USER_PK: user.USER_PK,
+                    },
                 };
 
                 res.send(packet);
@@ -296,7 +294,7 @@ const accountService: IAccountService = {
                 throw err;
             }
 
-            const rows = JSON.parse(JSON.stringify(result)) as {NICKNAME: string}[];
+            const rows = JSON.parse(JSON.stringify(result)) as { NICKNAME: string }[];
             const mailOpt = {
                 from: JSON.parse(fs.readFileSync(__dirname + '/emailBotAddress.json', 'utf8'))
                     .botEmailAddress as string,
@@ -344,7 +342,7 @@ const accountService: IAccountService = {
                     await connection.query(sqlTwo, [userPk, uuid]);
                 }
 
-                const mailOpt = {
+                const mailOpt: SendMailOptions = {
                     from: JSON.parse(fs.readFileSync(__dirname + '/emailBotAddress.json', 'utf8'))
                         .botEmailAddress as string,
                     to: email,
@@ -397,9 +395,9 @@ const accountService: IAccountService = {
                 const sql2 = `update USER_TABLE
                     set PASSWORD = ?, SALT = ?
                     where USER_PK = ?`;
-                const {hash, salt} = await new Promise<{hash: string; salt: string}>((resolve, reject) => {
-                    hasher({password: pw}, (err, pw, salt, hash) => {
-                        resolve({hash, salt});
+                const { hash, salt } = await new Promise<{ hash: string; salt: string }>((resolve, reject) => {
+                    hasher({ password: pw }, (err, pw, salt, hash) => {
+                        resolve({ hash, salt });
                     });
                 });
                 console.log('🚀 ~ file: accountService.ts ~ line 399 ~ hash', hash);
@@ -421,6 +419,18 @@ const accountService: IAccountService = {
                 connection.release();
             }
         })();
+    },
+    generateLoginToken(userData) {
+        const packet = {
+            NICKNAME: userData.NICKNAME,
+            USER_PK: userData.USER_PK,
+            EMAIL: userData.EMAIL,
+            COMPANY_PK: userData.COMPANY_PK,
+            DEPARTMENT_PK: userData.DEPARTMENT_PK,
+        };
+        const token = jwt.sign(packet, loginSecretKey.secretKey, loginSecretKey.options);
+
+        return token;
     },
 };
 

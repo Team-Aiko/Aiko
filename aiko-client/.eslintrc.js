@@ -17,7 +17,7 @@ module.exports = {
         indent: ['error', 4],
         'no-unused-vars': 'warn',
         'prettier/prettier': ['error', { endOfLine: 'auto' }],
-        'react/jsx-indent': ['on', 'tab' | 3, { checkAttributes: true, indentLogicalExpressions: true }],
+        'react/jsx-indent': ['error', 4],
         'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
         'no-console': 'off',
         'func-names': 'off',

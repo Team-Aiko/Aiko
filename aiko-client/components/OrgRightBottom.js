@@ -5,10 +5,10 @@ import { setOneMem } from '../_redux/businessReducer';
 
 // * Container Component
 export default function CComp(props) {
-    const deptMember = useSelector(state => state.businessReducer.deptMember);
+    const deptMember = useSelector((state) => state.businessReducer.deptMember);
     const dispatch = useDispatch();
 
-    const handleOneMem = oneMem => {
+    const handleOneMem = (oneMem) => {
         dispatch(setOneMem(oneMem));
     };
 
@@ -48,18 +48,23 @@ function PComp(props) {
     const rows = props.deptMember;
     let refinedRows = [];
     if (rows && rows.length > 0) {
-        refinedRows = rows.map(curr => {
+        refinedRows = rows.map((curr) => {
             const temp = { ...curr };
             temp.NAME = curr.FIRST_NAME + curr.LAST_NAME;
             temp.id = curr.USER_PK;
             return temp;
         });
     }
+
+    const handleShowSpecific = (param, event) => {
+        const userPK = param.id;
+        console.log('🚀 ~ file: OrgRightBottom.js ~ line 61 ~ handleShowSpecific ~ userPK', userPK);
+    };
     return (
-        <React.Fragment>
+        <>
             <div style={{ height: 400, width: '100%' }}>
-                <DataGrid rows={refinedRows} columns={columns} />
+                <DataGrid rows={refinedRows} columns={columns} onCellClick={handleShowSpecific} />
             </div>
-        </React.Fragment>
+        </>
     );
 }
