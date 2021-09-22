@@ -9,7 +9,6 @@ const initialState = {
     EMAIL: '',
     NICKNAME: undefined, // string
     USER_PK: undefined, // number
-    loginToken: undefined, // token string
 };
 
 // * slice
@@ -18,16 +17,13 @@ const accountSlice = createSlice({
     initialState,
     reducers: {
         setUserInfo(state, action) {
-            // payload {USER_PK, COMPANY_PK, NICKNAME}
+            // payload {USER_PK, COMPANY_PK, NICKNAME, DEPARTMENT_PK, DEPARTMENT_NAME, EMAIL}
             Object.keys(action.payload).forEach((curr) => {
                 state[curr] = action.payload[curr];
             });
         },
-        setLoginToken(state, action) {
-            state.loginToken = action.payload;
-        },
     },
 });
 
-export const { setUserInfo, setLoginToken } = accountSlice.actions;
+export const { setUserInfo } = accountSlice.actions;
 export default accountSlice.reducer;

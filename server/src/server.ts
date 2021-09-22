@@ -1,6 +1,8 @@
 import express from 'express';
 import next from '../../aiko-client/node_modules/next';
-import {createProxyMiddleware} from 'http-proxy-middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import cookieParser from 'cookie-parser';
+
 import route from './routers';
 
 const app = express();
@@ -10,7 +12,10 @@ app.use('/images', express.static('./upload'));
 
 // * encoding & json
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
+
+// * Cookie
+app.use(cookieParser());
 
 // * routing!
 app.use('/api', route);

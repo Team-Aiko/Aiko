@@ -4,20 +4,16 @@ import Image from 'next/image';
 import PropTypes from 'prop-types';
 import { post } from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
-import { setUserInfo, setLoginToken } from '../_redux/accountReducer';
+import { setUserInfo } from '../_redux/accountReducer';
 import styles from '../styles/login.module.css';
 import loginPic from '../public/images/image.png';
-import { ReactPropTypes } from 'react';
 
 export default function CComp() {
     const dispatch = useDispatch();
     const setInfo = (userInfo) => {
         dispatch(setUserInfo(userInfo));
     };
-    const setToken = (token) => {
-        dispatch(setLoginToken(token));
-    };
-    return <Login setUserInfo={setInfo} setLoginToken={setToken} />;
+    return <Login setUserInfo={setInfo} />;
 }
 
 function Login(props) {
@@ -50,8 +46,7 @@ function Login(props) {
             try {
                 const { data } = await post(url, packet, config);
                 console.log('🚀 ~ file: login.js ~ line 52 ~ data', data);
-                if (data.header /*login result : boolean*/) {
-                    props.setLoginToken(data.token);
+                if (data.header /* login result : boolean */) {
                     props.setUserInfo(data.userInfo);
                     Router.push('/');
                 } else {
@@ -131,5 +126,5 @@ function Login(props) {
 }
 
 Login.propTypes = {
-    setLoginToken: PropTypes.func.isRequired,
+    setUserInfo: PropTypes.func.isRequired,
 };

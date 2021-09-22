@@ -1,7 +1,13 @@
+// * Backend framework
 import express from 'express';
+// * Service
 import accountService from '../services/accountService';
-import { ISignup, IResetPw } from '../database/jsonForms';
+import { ISignup, IResetPw } from '../services/_types/accountTypes';
+// * file middleware
 import multer from 'multer';
+
+// * jwt middleware
+import { jwtMiddleware } from '../services/_middlewares';
 
 const upload = multer({ dest: '../../upload', limits: { fileSize: 3 * 1024 * 1024 } });
 

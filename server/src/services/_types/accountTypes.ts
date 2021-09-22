@@ -1,4 +1,4 @@
-import { UserTable, DepartmentTable } from '../database/tablesInterface';
+import { UserTable, DepartmentTable } from '../../database/tablesInterface';
 import { Response } from 'express';
 
 // * interfaces & Types
@@ -11,7 +11,6 @@ export interface IHasher {
 
 export interface BasePacket {
     header: boolean;
-    token: string | undefined;
 }
 
 export interface IAccountService {

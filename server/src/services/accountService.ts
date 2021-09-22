@@ -1,4 +1,6 @@
+// * Backend
 import { json, Response } from 'express';
+// * Database
 import { RowDataPacket } from 'mysql2';
 import { conn, pool } from '../database';
 import { UserTable, DepartmentTable } from '../database/tablesInterface';
@@ -13,9 +15,9 @@ import { v1 } from 'uuid';
 import fs from 'fs';
 // * json web token
 import jwt from 'jsonwebtoken';
-import { loginSecretKey } from './_jwt/_config/secretKey';
+import { loginSecretKey } from './_jwt/secretKey';
 // * custom types
-import { IAccountService, IHasher, BasePacket, SelectData, SuccessPacket } from './accountTypes';
+import { IAccountService, IHasher, BasePacket, SelectData, SuccessPacket } from './_types/accountTypes';
 
 // * mailer
 const emailConfig = JSON.parse(fs.readFileSync(__dirname + '/mailConfig.json', 'utf8')) as smtpPool.SmtpPoolOptions;
@@ -248,7 +250,6 @@ const accountService: IAccountService = {
             if (!selected.length) {
                 const packet: BasePacket = {
                     header: false,
-                    token: undefined,
                 };
                 res.send(packet);
                 return;
@@ -262,7 +263,6 @@ const accountService: IAccountService = {
                 if (!flag) {
                     const packet: BasePacket = {
                         header: false,
-                        token: undefined,
                     };
                     res.send(packet);
                     return;
@@ -270,7 +270,6 @@ const accountService: IAccountService = {
 
                 const packet: SuccessPacket = {
                     header: flag,
-                    token: this.generateLoginToken(user),
                     userInfo: {
                         COMPANY_PK: user.COMPANY_PK,
                         DEPARTMENT_NAME: user.DEPARTMENT_NAME,
@@ -280,7 +279,7 @@ const accountService: IAccountService = {
                         USER_PK: user.USER_PK,
                     },
                 };
-
+                res.cookie('TOKEN', this.generateLoginToken(user), { maxAge: 60 * 60 * 24 * 365 });
                 res.send(packet);
             });
         });
@@ -422,9 +421,7 @@ const accountService: IAccountService = {
     },
     generateLoginToken(userData) {
         const packet = {
-            NICKNAME: userData.NICKNAME,
             USER_PK: userData.USER_PK,
-            EMAIL: userData.EMAIL,
             COMPANY_PK: userData.COMPANY_PK,
             DEPARTMENT_PK: userData.DEPARTMENT_PK,
         };
