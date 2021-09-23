@@ -12,14 +12,16 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
     },
-    plugins: ['prettier', 'react'],
+    plugins: ['react', 'prettier'],
     rules: {
         indent: ['error', 4],
+        'prettier/prettier': ['error', { singleQuote: true, endOfLine: 'auto' }],
         'no-unused-vars': 'warn',
-        'prettier/prettier': ['error', { endOfLine: 'auto' }],
         'react/jsx-indent': ['error', 4],
+        'jsx-quotes': ['error', 'prefer-single'],
         'react/jsx-indent-props': ['error', 4],
         'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
+        'react/forbid-prop-types': ['error', { forbid: [], checkContextTypes: true, checkChildContextTypes: true }],
         'no-console': 'off',
         'func-names': 'off',
         'object-shorthand': 'off',
@@ -27,5 +29,14 @@ module.exports = {
         'max-len': ['error', 120, 2],
         'no-underscore-dangle': 'off',
         'max-classes-per-file': 'off',
+        'object-curly-newline': [
+            'off',
+            {
+                ObjectExpression: 'always',
+                ObjectPattern: { multiline: true },
+                ImportDeclaration: 'never',
+                ExportDeclaration: { multiline: true, minProperties: 3 },
+            },
+        ],
     },
 };

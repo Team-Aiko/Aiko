@@ -67,16 +67,19 @@ const companyService: ICompanyService = {
             }
         })();
     },
-    getDepartmentMembers(deptId, res) {
+    getDepartmentMembers(deptId, userInfo, res) {
+        const { COMPANY_PK } = userInfo;
+
         (async () => {
             const connection = await pool.getConnection();
+
             try {
                 const sqlOne = `
                 with recursive DEPARTMENT_TREE as (
                     select
                         *
                     from DEPARTMENT_TABLE
-                    where DEPARTMENT_PK = ?
+                    where DEPARTMENT_PK = ? AND COMPANY_PK = ?
                     union all
                     select
                         D1.*
@@ -99,8 +102,9 @@ const companyService: ICompanyService = {
                     U.DEPARTMENT_PK = D.DEPARTMENT_PK
                     AND
                     D.DEPARTMENT_PK = ?`;
+
                 const [rows] = JSON.parse(
-                    JSON.stringify(await connection.query(sqlOne, [deptId])),
+                    JSON.stringify(await connection.query(sqlOne, [deptId, COMPANY_PK])),
                 ) as DepartmentTable[][];
                 const temp2DRows = await Promise.all(
                     rows.map(async (curr) => {

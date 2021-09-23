@@ -18,7 +18,8 @@ router.get('/getOrganizationTree', decodeToken, (req, res) => {
 
 router.get('/getDepartmentMembers', decodeToken, (req, res) => {
     const { deptId } = req.query;
-    companyService.getDepartmentMembers(Number(deptId), res);
+    const userInfo = req.body.jwtPayload;
+    companyService.getDepartmentMembers(Number(deptId), userInfo, res);
 });
 
 export default router;
