@@ -1,10 +1,12 @@
 // * Backend framework
 import express from 'express';
+// * file middleware
+import multer from 'multer';
 // * Service
 import accountService from '../services/accountService';
 import { ISignup, IResetPw } from '../services/_types/accountTypes';
-// * file middleware
-import multer from 'multer';
+// * jwt
+import { decodeToken } from '../services/_middlewares';
 
 const upload = multer({ dest: '../../upload', limits: { fileSize: 3 * 1024 * 1024 } });
 
@@ -63,6 +65,11 @@ router.post('/requestResetPassword', (req, res) => {
 router.post('/resetPassword', (req, res) => {
     const { uuid, password }: IResetPw = req.body;
     accountService.resetPassword(uuid, password, res);
+});
+
+router.post('/getUserInfo', (req, res) => {
+    const { userPK, TOKEN } = req.body;
+    accountService.getUser(Number(userPK), TOKEN, res);
 });
 
 export default router;

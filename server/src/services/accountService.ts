@@ -275,6 +275,8 @@ const accountService: IAccountService = {
                     userInfo: { ...user },
                 };
                 res.cookie('TOKEN', this.generateLoginToken(user), { httpOnly: true, maxAge: 60 * 60 * 24 * 365 });
+                res.cookie('test1', '테스트1');
+                res.cookie('test2', '테스트2');
                 res.send(packet);
             });
         });
@@ -421,6 +423,41 @@ const accountService: IAccountService = {
         const token = jwt.sign(userData, loginSecretKey.secretKey, loginSecretKey.options);
 
         return token;
+    },
+    getUser(userPK, token, res) {
+        const payload = jwt.decode(token, loginSecretKey.decodeOpt) as jwt.JwtPayload;
+        const userInfo = payload.payload as SelectData;
+        const sqlOne = `select
+            U.USER_PK,
+            U.DEPARTMENT_PK,
+            U.COMPANY_PK,
+            U.FIRST_NAME,
+            U.LAST_NAME,
+            U.TEL,
+            U.EMAIL,
+            D.DEPARTMENT_NAME,
+            U.PROFILE_FILE_NAME
+        from
+            USER_TABLE U
+        LEFT OUTER JOIN DEPARTMENT_TABLE D
+            ON U.DEPARTMENT_PK = D.DEPARTMENT_PK
+        where
+            USER_PK = ?`;
+        conn.query(sqlOne, [userPK], (err, result, field) => {
+            if (err) throw err;
+            type ResultData = SelectData & { TEL: string };
+
+            const rows = JSON.parse(JSON.stringify(result)) as ResultData[];
+            console.log('🚀 ~ file: accountService.ts ~ line 452 ~ conn.query ~ rows', rows);
+            const flag = rows.length > 0 && rows[0].COMPANY_PK === userInfo.COMPANY_PK;
+            console.log('🚀 ~ file: accountService.ts ~ line 453 ~ conn.query ~ flag', flag);
+            flag
+                ? res.send(rows[0])
+                : res.status(401).json({
+                      code: 401,
+                      message: 'NOT_VALID_USER OR NO_SEARCH_RESULT',
+                  });
+        });
     },
 };
 

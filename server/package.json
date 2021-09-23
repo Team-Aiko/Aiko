@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "lint": "eslint **/*.ts --quiet"
+        "lint": "eslint **/*.ts --fix"
     },
     "dependencies": {
         "cookie-parser": "^1.4.5",

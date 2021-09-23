@@ -4,7 +4,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    extends: ['prettier', 'plugin:@typescript-eslint/recommended'],
+    extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
     parser: '@typescript-eslint/parser',
     parserOptions: {
         ecmaFeatures: {
@@ -13,9 +13,9 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: 'module',
     },
-    plugins: ['@typescript-eslint', 'prettier'],
+    plugins: ['prettier', '@typescript-eslint'],
     rules: {
-        indent: ['error', 4],
+        // indent: ['error', 4],
         'no-unused-vars': 'warn',
         'prettier/prettier': ['error', { endOfLine: 'auto' }],
         'no-console': 'off',

@@ -1,5 +1,4 @@
 import secretKeys from './secretKeyEnum';
-import { SignOptions, DecodeOptions } from 'jsonwebtoken';
 import { ISecretKey } from './jwtInterfaces';
 import { Algorithm } from 'jsonwebtoken';
 
@@ -12,11 +11,10 @@ const loginSecretKey: ISecretKey = {
         expiresIn: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
         issuer: 'Aiko',
     },
+    decodeOpt: {
+        complete: true,
+        json: true,
+    },
 };
 
-const decodeOpt: DecodeOptions = {
-    complete: true,
-    json: true,
-};
-
-export { loginSecretKey, decodeOpt };
+export { loginSecretKey };

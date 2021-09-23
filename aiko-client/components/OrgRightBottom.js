@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import Router from 'next/router';
+import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
 import { useSelector, useDispatch } from 'react-redux';
+import { get } from 'axios';
 import { setOneMem } from '../_redux/businessReducer';
 
 // * Container Component
@@ -44,8 +47,8 @@ function PComp(props) {
             width: 200,
         },
     ];
-
-    const rows = props.deptMember;
+    const { deptMember } = props;
+    const rows = deptMember;
     let refinedRows = [];
     if (rows && rows.length > 0) {
         refinedRows = rows.map((curr) => {
@@ -58,8 +61,9 @@ function PComp(props) {
 
     const handleShowSpecific = (param, event) => {
         const userPK = param.id;
-        console.log('🚀 ~ file: OrgRightBottom.js ~ line 61 ~ handleShowSpecific ~ userPK', userPK);
+        Router.push(`/member/${userPK}`);
     };
+
     return (
         <>
             <div style={{ height: 400, width: '100%' }}>
@@ -68,3 +72,7 @@ function PComp(props) {
         </>
     );
 }
+
+PComp.propTypes = {
+    deptMember: PropTypes.array.isRequired,
+};

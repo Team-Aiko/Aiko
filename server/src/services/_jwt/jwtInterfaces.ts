@@ -1,9 +1,10 @@
-import { SignOptions } from 'jsonwebtoken';
+import { SignOptions, DecodeOptions } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 export interface ISecretKey {
     secretKey: string;
     options: SignOptions;
+    decodeOpt: DecodeOptions;
 }
 
 export interface IVerifyToken {

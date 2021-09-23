@@ -1,6 +1,4 @@
 import express from 'express';
-import next from '../../aiko-client/node_modules/next';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import cookieParser from 'cookie-parser';
 
 import route from './routers';

@@ -25,6 +25,7 @@ export interface IAccountService {
     requestResetPassword(email: string, res: Response): void;
     resetPassword(uuid: string, password: string, res: Response): void;
     generateLoginToken(userData: SelectData): string;
+    getUser(userPK: number, TOKEN: string, res: Response): void;
 }
 
 export interface ISignup {

@@ -1,5 +1,5 @@
 import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { loginSecretKey, decodeOpt } from '../_jwt/secretKey';
+import { loginSecretKey } from '../_jwt/secretKey';
 import { IDecodeToken, IVerifyToken } from '../_jwt/jwtInterfaces';
 
 const verifyToken: IVerifyToken = (req, res, next) => {
@@ -29,7 +29,7 @@ const verifyToken: IVerifyToken = (req, res, next) => {
 const decodeToken: IDecodeToken = (req, res, next) => {
     try {
         const { TOKEN } = req.cookies;
-        const decode = jwt.decode(TOKEN, decodeOpt) as jwt.JwtPayload;
+        const decode = jwt.decode(TOKEN, loginSecretKey.decodeOpt) as jwt.JwtPayload;
         req.body.jwtPayload = decode.payload;
         next();
     } catch (e) {
