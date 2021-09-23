@@ -279,6 +279,11 @@ const accountService: IAccountService = {
             });
         });
     },
+    logout(res) {
+        // delete jwt
+        res.cookie('TOKEN', null);
+        res.send(true);
+    },
     findNickname(email, res) {
         const sql = `select NICKNAME from USER_TABLE where email = ?`;
 

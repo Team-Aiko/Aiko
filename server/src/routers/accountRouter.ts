@@ -6,9 +6,6 @@ import { ISignup, IResetPw } from '../services/_types/accountTypes';
 // * file middleware
 import multer from 'multer';
 
-// * jwt middleware
-import { jwtMiddleware } from '../services/_middlewares';
-
 const upload = multer({ dest: '../../upload', limits: { fileSize: 3 * 1024 * 1024 } });
 
 const router = express.Router();
@@ -46,6 +43,10 @@ router.post('/login', (req, res) => {
         PASSWORD: req.body.PASSWORD,
     };
     accountService.login(data, res);
+});
+
+router.get('/logout', (req, res) => {
+    accountService.logout(res);
 });
 
 router.post('/findNickname', (req, res) => {

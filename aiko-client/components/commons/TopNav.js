@@ -8,12 +8,15 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
-import { handleSideNav } from '../../_redux/popupReducer';
 import { useSelector, useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
+import { get } from 'axios';
+import { handleSideNav } from '../../_redux/popupReducer';
+import { setUserInfo } from '../../_redux/accountReducer';
 import SideNav from './SideNav';
 
 // * CSS Styles
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     grow: {
         flexGrow: 1,
     },
@@ -79,16 +82,42 @@ const useStyles = makeStyles(theme => ({
 
 // * Container Component
 export default function CComp() {
-    const sideNavIsOpen = useSelector(state => state.popupReducer.sideNavIsOpen);
-    const userInfo = useSelector(state => state.accountReducer);
+    const userInfo = useSelector((state) => state.accountReducer);
     console.log('🚀 ~ file: TopNav.js ~ line 84 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
 
-    const handleNav = bools => {
+    const handleNav = (bools) => {
         dispatch(handleSideNav(bools));
     };
 
-    return <PComp sideNavIsOpen={sideNavIsOpen} handleSideNav={handleNav} userInfo={userInfo} />;
+    const handleLogout = () => {
+        (async () => {
+            try {
+                const url = '/api/account/logout';
+                const res = await get(url);
+                const flag = res.data;
+
+                if (!flag) throw new Error('NO_SERVER_RESPONSE');
+
+                dispatch(
+                    setUserInfo({
+                        COMPANY_PK: undefined, // number
+                        DEPARTMENT_NAME: '',
+                        DEPARTMENT_PK: undefined, // number
+                        EMAIL: '',
+                        NICKNAME: undefined, // string
+                        USER_PK: undefined, // number
+                    }),
+                );
+
+                Router.push('/');
+            } catch (e) {
+                console.log(e);
+            }
+        })();
+    };
+
+    return <PComp handleSideNav={handleNav} userInfo={userInfo} handleLogout={handleLogout} />;
 }
 
 // * Presentational component
@@ -98,10 +127,11 @@ function PComp(props) {
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-    const userPk = props.userInfo.USER_PK;
-    console.log('🚀 ~ file: TopNav.js ~ line 101 ~ PComp ~ userPk', userPk);
+    const { userInfo } = props;
+    const { USER_PK } = userInfo;
+    console.log('🚀 ~ file: TopNav.js ~ line 101 ~ PComp ~ USER_PK', USER_PK);
 
-    const handleProfileMenuOpen = event => {
+    const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -114,7 +144,13 @@ function PComp(props) {
         handleMobileMenuClose();
     };
 
-    const handleMobileMenuOpen = event => {
+    const handleLogout = () => {
+        setAnchorEl(null);
+        handleMobileMenuClose();
+        props.handleLogout();
+    };
+
+    const handleMobileMenuOpen = (event) => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
@@ -126,7 +162,7 @@ function PComp(props) {
         Router.push('/login');
     }, []);
 
-    const handleSideNav = useCallback(() => {
+    const handleSNav = useCallback(() => {
         props.handleSideNav(true);
     }, []);
 
@@ -143,6 +179,7 @@ function PComp(props) {
         >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
     );
 
@@ -173,7 +210,7 @@ function PComp(props) {
                 </IconButton>
                 <p>Notifications</p>
             </MenuItem>
-            {userPk ? (
+            {USER_PK ? (
                 <MenuItem onClick={handleProfileMenuOpen}>
                     <IconButton
                         aria-label='account of current user'
@@ -189,14 +226,14 @@ function PComp(props) {
         </Menu>
     );
     const accountBtns = (
-        <React.Fragment>
+        <>
             <Button variant='contained' color='secondary' onClick={handleSignup}>
                 Signup
             </Button>
             <Button variant='contained' onClick={handleLogin}>
                 Login
             </Button>
-        </React.Fragment>
+        </>
     );
 
     return (
@@ -208,7 +245,7 @@ function PComp(props) {
                         className={classes.menuButton}
                         color='inherit'
                         aria-label='open drawer'
-                        onClick={handleSideNav}
+                        onClick={handleSNav}
                     >
                         <MenuIcon />
                     </IconButton>
@@ -230,8 +267,8 @@ function PComp(props) {
                     </div>
                     <div className={classes.grow} />
 
-                    {userPk ? (
-                        <React.Fragment>
+                    {USER_PK ? (
+                        <>
                             <div className={classes.sectionDesktop}>
                                 <IconButton aria-label='show 4 new mails' color='inherit'>
                                     <Badge badgeContent={4} color='secondary'>
@@ -265,12 +302,12 @@ function PComp(props) {
                                     <MoreIcon />
                                 </IconButton>
                             </div>
-                        </React.Fragment>
+                        </>
                     ) : (
-                        <React.Fragment>
+                        <>
                             <div className={classes.sectionDesktop}>{accountBtns}</div>
                             <div className={classes.sectionMobile}>{accountBtns}</div>
-                        </React.Fragment>
+                        </>
                     )}
                 </Toolbar>
             </AppBar>
@@ -280,3 +317,9 @@ function PComp(props) {
         </div>
     );
 }
+
+PComp.propTypes = {
+    userInfo: PropTypes.object.isRequired,
+    handleSideNav: PropTypes.func.isRequired,
+    handleLogout: PropTypes.func.isRequired,
+};

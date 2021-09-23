@@ -20,6 +20,7 @@ export interface IAccountService {
     signup(data: ISignup, imageRoute: string | null, res: Response): any;
     grantLoginAuth(id: string, res: Response): void;
     login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response): void;
+    logout(res: Response): void;
     findNickname(email: string, res: Response): void;
     requestResetPassword(email: string, res: Response): void;
     resetPassword(uuid: string, password: string, res: Response): void;
