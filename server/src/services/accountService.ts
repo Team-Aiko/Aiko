@@ -26,8 +26,8 @@ const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 // * password security
 // No Types library
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const pbkdf2Password = require('pbkdf2-password');
-const hasher: IHasher = pbkdf2Password();
+import pbdkf2 from 'pbkdf2-pw';
+const hasher = pbdkf2();
 
 const accountService: IAccountService = {
     checkDuplicateNickname(nickname, res) {
