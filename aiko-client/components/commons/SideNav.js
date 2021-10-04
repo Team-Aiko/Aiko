@@ -19,11 +19,10 @@ const useStyles = makeStyles({
 
 // * Container Component
 export default function CComp(props) {
-    const sideNavIsOpen = useSelector(state => state.popupReducer.sideNavIsOpen);
-    console.log('🚀 ~ file: SideNav.js ~ line 22 ~ CComp ~ sideNavIsOpen', sideNavIsOpen);
+    const sideNavIsOpen = useSelector((state) => state.popupReducer.sideNavIsOpen);
     const dispatch = useDispatch();
 
-    const handleNav = bools => {
+    const handleNav = (bools) => {
         dispatch(handleSideNav(bools));
     };
 

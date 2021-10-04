@@ -46,3 +46,12 @@ export interface ResetPwTable {
     USER_PK: number;
     UUID: string;
 }
+
+export interface SocketTable {
+    SOCKET_PK: number;
+    SOCKET_ID: string;
+    USER_PK: number;
+}
+
+export type UserInfo = Pick<SocketTable, 'SOCKET_ID' | 'USER_PK'> &
+    Pick<UserTable, 'FIRST_NAME' | 'LAST_NAME' | 'NICKNAME'>;

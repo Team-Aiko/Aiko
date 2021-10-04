@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Router from 'next/router';
 import Image from 'next/image';
 import PropTypes from 'prop-types';
+import io from 'socket.io-client';
 import { post } from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserInfo } from '../_redux/accountReducer';
@@ -45,9 +46,20 @@ function Login(props) {
         (async () => {
             try {
                 const { data } = await post(url, packet, config);
-                console.log('🚀 ~ file: login.js ~ line 52 ~ data', data);
                 if (data.header /* login result : boolean */) {
                     props.setUserInfo(data.userInfo);
+                    const socket = io('http://localhost:5001/chat1');
+                    socket.emit('connected', { userId: data.userInfo.USER_PK });
+                    socket.on('connected', (message) => {
+                        console.log(message);
+                    });
+                    socket.on('send', (message) => {
+                        console.log(message);
+                    });
+                    socket.on('disconnect', () => {
+                        console.log('socket disconnected');
+                    });
+
                     Router.push('/');
                 } else {
                     alert('not valid user');
@@ -63,7 +75,7 @@ function Login(props) {
         })();
     };
 
-    const open = useCallback(function () {
+    const open = useCallback(() => {
         Router.push('/signup');
     }, []);
 
@@ -81,7 +93,7 @@ function Login(props) {
 
                     <div className={styles.logincontainer}>
                         <div className={styles.account}>
-                            <Image className={styles.image} width={300} height={180} src={loginPic}></Image>
+                            <Image className={styles.image} width={300} height={180} src={loginPic} />
                         </div>
 
                         <div className={styles.idpw}>
@@ -92,30 +104,33 @@ function Login(props) {
                                 type='text'
                                 placeholder='Username'
                                 onChange={onChangeNickname}
-                            ></input>
+                            />
                             <input
                                 id='pw'
                                 className={styles.pwinput}
                                 type='password'
                                 placeholder='Password'
                                 onChange={onChangePassword}
-                            ></input>
+                            />
                             <div className={styles.checkcontainer}>
-                                <input className={styles.check} type='checkbox'></input>
+                                <input className={styles.check} type='checkbox' />
                                 <p className={styles.remember}>Remember Me</p>
-                                <p onClick={find} className={styles.forgot}>
+
+                                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+                                <p onKeyDown={() => {}} onClick={find} className={styles.forgot}>
                                     Forgot ID/PW?
                                 </p>
-                                <div className={styles.clear}></div>
+                                <div className={styles.clear} />
                             </div>
                         </div>
                     </div>
 
                     <div className={styles.lastcontainer}>
-                        <p onClick={open} className={styles.create}>
+                        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+                        <p onKeyDown={() => {}} onClick={open} className={styles.create}>
                             Create an Account
                         </p>
-                        <button className={styles.loginbtn} onClick={handleLogin}>
+                        <button type='button' className={styles.loginbtn} onClick={handleLogin}>
                             Log In
                         </button>
                     </div>

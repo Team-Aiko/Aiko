@@ -83,7 +83,6 @@ const useStyles = makeStyles((theme) => ({
 // * Container Component
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
-    console.log('🚀 ~ file: TopNav.js ~ line 84 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
 
     const handleNav = (bools) => {
@@ -129,7 +128,6 @@ function PComp(props) {
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { userInfo } = props;
     const { USER_PK } = userInfo;
-    console.log('🚀 ~ file: TopNav.js ~ line 101 ~ PComp ~ USER_PK', USER_PK);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
