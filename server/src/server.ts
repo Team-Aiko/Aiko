@@ -1,4 +1,5 @@
 import express from 'express';
+import redis from 'redis';
 import cookieParser from 'cookie-parser';
 import http from 'http';
 import cors from 'cors';
@@ -26,6 +27,9 @@ app.use('/api', route);
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log('Listening on port= ', port));
 
+// * redis
+const client = redis.createClient();
+
 // * web socket
 interface IMessage {
     sendTo: number;
@@ -38,20 +42,21 @@ import { UserInfo } from './database/tablesInterface';
 import { Server, Socket } from 'socket.io';
 import socketService from './services/socketService';
 
-let userList: UserInfo[] = [];
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 const chat = io.of('/chat1');
 chat.on('connection', (socket) => {
     /**
      * Connection Process
+     *
      */
     console.log('실행중');
     socket.on('connected', async (connInfo: IConnection) => {
-        console.log('연결실행');
-        console.log(`connected Id: ${socket.id}`);
+        console.log(`socket connected, connected Id: ${socket.id}`);
         const userInfo = await socketService.addSocketId(connInfo.userId, socket.id);
-        userList.push(userInfo);
+        console.log('🚀 ~ file: server.ts ~ line 56 ~ socket.on ~ userInfo', userInfo);
+        // input user data to redis
+        client.hset('userList', userInfo.USER_PK.toString(), JSON.stringify(userInfo));
         socket.emit('connected', userInfo);
     });
 

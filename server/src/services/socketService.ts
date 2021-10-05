@@ -13,7 +13,9 @@ const socketService: ISocketService = {
                 S.USER_PK,
                 U.NICKNAME,
                 U.FIRST_NAME,
-                U.LAST_NAME
+                U.LAST_NAME,
+                U.COMPANY_PK,
+                U.DEPARTMENT_PK
             from
                 SOCKET_TABLE S, USER_TABLE U
             where
@@ -21,9 +23,9 @@ const socketService: ISocketService = {
                 and
                 U.USER_PK = S.USER_PK`;
             const results = await connection.query(sql, [userId]);
-            const rows = JSON.parse(JSON.stringify(results)) as UserInfo[];
+            const [rows, others] = JSON.parse(JSON.stringify(results));
 
-            return rows;
+            return rows as UserInfo[];
         } catch (e) {
             console.log(e);
             throw e;
