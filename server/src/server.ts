@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import http from 'http';
 import cors from 'cors';
 import route from './routers';
+import socketService from './services/socketService';
 
 const app = express();
 
@@ -29,44 +30,11 @@ app.listen(port, () => console.log('Listening on port= ', port));
 
 // * redis
 const client = redis.createClient();
+setInterval(() => {
+    // redis save process...
+    client.bgsave();
+}, 1000 * 60 * 60 * 24);
 
 // * web socket
-interface IMessage {
-    sendTo: number;
-    message: string;
-}
-interface IConnection {
-    userId: number;
-}
-import { UserInfo } from './database/tablesInterface';
-import { Server, Socket } from 'socket.io';
-import socketService from './services/socketService';
-
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
-const chat = io.of('/chat1');
-chat.on('connection', (socket) => {
-    /**
-     * Connection Process
-     *
-     */
-    console.log('실행중');
-    socket.on('connected', async (connInfo: IConnection) => {
-        console.log(`socket connected, connected Id: ${socket.id}`);
-        const userInfo = await socketService.addSocketId(connInfo.userId, socket.id);
-        console.log('🚀 ~ file: server.ts ~ line 56 ~ socket.on ~ userInfo', userInfo);
-        // input user data to redis
-        client.hset('userList', userInfo.USER_PK.toString(), JSON.stringify(userInfo));
-        socket.emit('connected', userInfo);
-    });
-
-    /**
-     * Send message process to specific one
-     */
-    socket.on('send', async (message: IMessage) => {
-        const rows = await socketService.findSocketId(message.sendTo);
-        const targetSocketId = rows[0].SOCKET_ID;
-        socket.to(targetSocketId).emit('send', message.message);
-    });
-});
-io.listen(5001);
+socketService.socketConnections(server, client);
