@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
+import { makeStyles, TextField, Button } from '@material-ui/core';
+import PropTypes from 'prop-types';
 import moduleStyles from '../styles/components/OrgRightTop.module.css';
-import { makeStyles } from '@material-ui/core';
-import { TextField, Button } from '@material-ui/core';
 
 // * CSS Button Styles
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     btnWrapper: {
         margin: theme.spacing(1),
     },
 }));
 // * Container comp
 export default function ContainerComp(props) {
-    return <PComp companyPK={props.companyPK} />;
+    const { companyPK } = props;
+    return <PComp companyPK={companyPK} />;
 }
+
+ContainerComp.propTypes = {
+    companyPK: PropTypes.number.isRequired,
+};
 
 // * Presentational Comp
 
 function PComp(props) {
-    const companyPk = props.companyPK;
     const classes = useStyles();
     const [toggleEditor, setToggleEditor] = useState(true);
     const [departmentName, setDepartmentName] = useState('');
 
-    const editDptName = e => {
+    const editDptName = (e) => {
         const text = e.target.value;
         setDepartmentName(text);
     };
@@ -35,7 +39,7 @@ function PComp(props) {
     };
 
     return (
-        <React.Fragment>
+        <>
             <TextField
                 id='department_plate'
                 label='Label'
@@ -63,6 +67,6 @@ function PComp(props) {
                     add-department
                 </Button>
             </div>
-        </React.Fragment>
+        </>
     );
 }

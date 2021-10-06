@@ -9,15 +9,15 @@ const socketService: ISocketService = {
         const connection = await pool.getConnection();
 
         try {
-            const sql = `
-            select
+            const sql = `select
                 S.SOCKET_ID,
                 S.USER_PK,
                 U.NICKNAME,
                 U.FIRST_NAME,
                 U.LAST_NAME,
                 U.COMPANY_PK,
-                U.DEPARTMENT_PK
+                U.DEPARTMENT_PK,
+                U.PROFILE_FILE_NAME
             from
                 SOCKET_TABLE S, USER_TABLE U
             where
@@ -74,6 +74,11 @@ const socketService: ISocketService = {
 
         return userInfo;
     },
+    /**
+     * socket connections
+     * @param server
+     * @param client
+     */
     socketConnections(server, client) {
         const io = new Server(server, { cors: { origin: '*' } });
         const chat = io.of('/chat1');

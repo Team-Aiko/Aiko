@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import Router from 'next/router';
+import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { ListItemText, ListItemIcon, Drawer, Button, List, ListItem } from '@material-ui/core';
 import { MeetingRoom, GroupAdd, Home, Create, Settings } from '@material-ui/icons';
@@ -31,6 +32,7 @@ export default function CComp(props) {
 
 // * Presentational component
 function PComp(props) {
+    const { sideNavIsOpen } = props;
     const classes = useStyles();
 
     const closeDrawer = () => {
@@ -45,8 +47,8 @@ function PComp(props) {
     };
 
     return (
-        <React.Fragment>
-            <Drawer open={props.sideNavIsOpen} onClose={closeDrawer}>
+        <>
+            <Drawer open={sideNavIsOpen} onClose={closeDrawer}>
                 <div className={clsx(classes.list)} role='presentation' onClick={closeDrawer} onKeyDown={closeDrawer}>
                     <List>
                         <ListItem button onClick={goToMain}>
@@ -76,6 +78,11 @@ function PComp(props) {
                     </List>
                 </div>
             </Drawer>
-        </React.Fragment>
+        </>
     );
 }
+
+PComp.propTypes = {
+    sideNavIsOpen: PropTypes.bool.isRequired,
+    handleSideNav: PropTypes.func.isRequired,
+};

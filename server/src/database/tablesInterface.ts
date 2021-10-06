@@ -54,4 +54,4 @@ export interface SocketTable {
 }
 
 export type UserInfo = Pick<SocketTable, 'SOCKET_ID' | 'USER_PK'> &
-    Pick<UserTable, 'FIRST_NAME' | 'LAST_NAME' | 'NICKNAME' | 'COMPANY_PK' | 'DEPARTMENT_PK'>;
+    Pick<UserTable, 'FIRST_NAME' | 'LAST_NAME' | 'NICKNAME' | 'COMPANY_PK' | 'DEPARTMENT_PK' | 'PROFILE_FILE_NAME'>;
