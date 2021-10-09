@@ -1,6 +1,6 @@
 import { DepartmentTable } from '../../database/tablesInterface';
 import { Response } from 'express';
-import { SelectData } from '../_types/accountTypes';
+import { SelectData } from './accountTypes';
 
 export interface ICompanyService {
     getCompanyList(str: string, res: Response): void;
