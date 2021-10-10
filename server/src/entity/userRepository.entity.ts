@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserTable } from '../interfaces';
 
-@Entity()
-export default class UserRepository {
+@Entity({ name: 'USER_TABLE' })
+export default class UserRepository implements UserTable {
     @PrimaryGeneratedColumn()
     USER_PK: number;
     @Column()
@@ -30,4 +31,6 @@ export default class UserRepository {
     DEPARTMENT_PK: number;
     @Column()
     PROFILE_FILE_NAME: string;
+    @Column()
+    COUNTRY: string;
 }

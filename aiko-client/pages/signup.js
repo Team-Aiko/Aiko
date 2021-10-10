@@ -1,10 +1,10 @@
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import styles from '../styles/signup.module.css';
-import {makeStyles} from '@material-ui/core/styles';
-import {Grow, Avatar, Button, Typography, Container, TextField} from '@material-ui/core';
-import {files, account, strings} from 'web-snippets';
-import {get, post} from 'axios';
+import { makeStyles } from '@material-ui/core/styles';
+import { Grow, Avatar, Button, Typography, Container, TextField } from '@material-ui/core';
+import { files, account, strings } from 'web-snippets';
+import { get, post } from 'axios';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
@@ -15,7 +15,7 @@ import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import Router from 'next/router';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     avatarStyle: {
         width: theme.spacing(10),
         height: theme.spacing(10),
@@ -69,7 +69,7 @@ function Signup() {
 
     const handleFileChange = useCallback(() => {
         const uploader = document.getElementById('profileFile');
-        const {isValid, errMessage} = files.imageValid(uploader.files[0], '3mb');
+        const { isValid, errMessage } = files.imageValid(uploader.files[0], '3mb');
 
         if (isValid) {
             const imageURL = URL.createObjectURL(uploader.files[0]);
@@ -78,7 +78,7 @@ function Signup() {
         }
     }, []);
 
-    const checkValidationStrings = useCallback(e => {
+    const checkValidationStrings = useCallback((e) => {
         const str = e.target.value;
         const id = e.target.id;
 
@@ -111,18 +111,18 @@ function Signup() {
         }
     }, []);
 
-    const checkValidationPw = useCallback(e => {
+    const checkValidationPw = useCallback((e) => {
         const pw = e.target.value;
-        const {isValid, errMessage} = account.cValid(pw, 8, 30, ['special, capital, number']);
+        const { isValid, errMessage } = account.cValid(pw, 8, 30, ['special, capital, number']);
 
         setErrPw(!isValid);
         setPw(pw);
     }, []);
 
     const checkValidationPwCf = useCallback(
-        e => {
+        (e) => {
             const typedPwCf = e.target.value;
-            const {isValid} = account.confirmPw(pw, typedPwCf);
+            const { isValid } = account.confirmPw(pw, typedPwCf);
             console.log('🚀 ~ file: signup.js ~ line 144 ~ Signup ~ isValid', isValid);
 
             setErrPwCf(!isValid);
@@ -131,7 +131,7 @@ function Signup() {
         [pw],
     );
 
-    const checkValidationEmail = useCallback(e => {
+    const checkValidationEmail = useCallback((e) => {
         const typedEmail = e.target.value;
         const isValid = account.fullEmailValid(typedEmail);
         console.log('🚀 ~ file: signup.js ~ line 160 ~ Signup ~ isValid', isValid);
@@ -140,7 +140,7 @@ function Signup() {
 
         if (isValid) {
             const url = '/api/account/checkDuplicateEmail?email=' + typedEmail;
-            get(url).then(res => {
+            get(url).then((res) => {
                 const data = res.data;
                 console.log('🚀 ~ file: signup.js ~ line 168 ~ get ~ data', data);
                 setErrEmail(data[0]['COUNT(*)'] !== 0);
@@ -150,9 +150,9 @@ function Signup() {
         setEmail(typedEmail);
     }, []);
 
-    const checkValidationNickname = useCallback(e => {
+    const checkValidationNickname = useCallback((e) => {
         const typedNickname = e.target.value;
-        const {isValid, errMessage} = account.cValid(typedNickname, 5, 20, 'no_special', 'no_capital');
+        const { isValid, errMessage } = account.cValid(typedNickname, 5, 20, 'no_special', 'no_capital');
 
         if (!isValid) {
             setErrNickname(!isValid);
@@ -162,12 +162,12 @@ function Signup() {
         const url = '/api/account/checkDuplicateNickname?nickname=' + typedNickname;
 
         get(url)
-            .then(res => {
+            .then((res) => {
                 const data = res.data;
-                setErrNickname(data['COUNT(*)'] !== 0);
+                setErrNickname(data !== 0);
                 setNickname(typedNickname);
             })
-            .catch(e => console.log(e));
+            .catch((e) => console.log(e));
     }, []);
 
     const goToNextStep = useCallback(() => {
@@ -179,19 +179,19 @@ function Signup() {
         setStep(step - 1);
     }, [step]);
 
-    const handlePositionChange = useCallback(e => {
+    const handlePositionChange = useCallback((e) => {
         const id = parseInt(e.target.value);
         setPosition(id); // -1: none, 0: owner, 1: member
     }, []);
 
-    const handleChangeCompany = useCallback(e => {
+    const handleChangeCompany = useCallback((e) => {
         const company = e.target.value;
 
         if (company.length === 1) {
             const url = '/api/company/getCompanyList?str=' + company;
-            get(url).then(res => {
+            get(url).then((res) => {
                 const data = res.data;
-                const refinedData = data.map(curr => {
+                const refinedData = data.map((curr) => {
                     curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
                     return curr;
                 });
@@ -206,13 +206,13 @@ function Signup() {
         }
     }, []);
 
-    const handleCountry = useCallback(e => {
+    const handleCountry = useCallback((e) => {
         const country = e.target.value;
         console.log('🚀 ~ file: signup.js ~ line 203 ~ Signup ~ country', country);
 
         if (country.length === 1) {
             const url = '/api/account/getCountryList?str=' + country;
-            get(url).then(res => {
+            get(url).then((res) => {
                 const data = res.data;
                 setCountryList(data);
             });
@@ -224,7 +224,7 @@ function Signup() {
     const fixCountry = useCallback(
         (e, val) => {
             let targetCountry;
-            countryList.some(curr => {
+            countryList.some((curr) => {
                 if (curr.COUNTRY_NAME === val) {
                     targetCountry = curr.COUNTRY_PK;
                     console.log('🚀 ~ file: signup.js ~ line 221 ~ fixCountry ~ targetCountry', targetCountry);
@@ -240,7 +240,7 @@ function Signup() {
         (e, val) => {
             console.log('🚀 ~ file: signup.js ~ line 230 ~ fixCompany ~ val', val);
             let targetCompany;
-            companyList.some(curr => {
+            companyList.some((curr) => {
                 if (curr.COMPANY_PK === val) {
                     targetCompany = curr.COMPANY_PK;
                     setCompanyPK(targetCompany);
@@ -296,12 +296,12 @@ function Signup() {
                 },
             };
             post(url, form, config)
-                .then(res => {
+                .then((res) => {
                     const isSuccess = res.data;
                     console.log('🚀 ~ file: signup.js ~ line 283 ~ handleSubmit ~ isSuccess', isSuccess);
                     if (isSuccess) Router.push('/');
                 })
-                .catch(err => console.log(err));
+                .catch((err) => console.log(err));
         } else {
             // member
             if (companyPK <= -1) {
@@ -320,12 +320,12 @@ function Signup() {
                     },
                 };
                 post(url, form, config)
-                    .then(res => {
+                    .then((res) => {
                         const isSuccess = res.data;
                         console.log('🚀 ~ file: signup.js ~ line 283 ~ handleSubmit ~ isSuccess', isSuccess);
                         if (isSuccess) Router.push('/');
                     })
-                    .catch(err => console.log(err));
+                    .catch((err) => console.log(err));
             }
         }
     };
@@ -337,10 +337,10 @@ function Signup() {
                     <CssBaseline />
                     {/* Step 1 */}
                     <Grow in={step === 0}>
-                        <Container maxWidth='sm' style={{display: step === 0 ? 'block' : 'none'}}>
+                        <Container maxWidth='sm' style={{ display: step === 0 ? 'block' : 'none' }}>
                             <Typography
                                 component='div'
-                                style={{backgroundColor: '#FFFFFF', height: '160vh', width: '70vh'}}
+                                style={{ backgroundColor: '#FFFFFF', height: '160vh', width: '70vh' }}
                             >
                                 <div className={styles.formDiv}>
                                     <Avatar
@@ -384,10 +384,10 @@ function Signup() {
                                     <Autocomplete
                                         id='Country'
                                         onInputChange={fixCountry}
-                                        style={{width: 222.667}}
+                                        style={{ width: 222.667 }}
                                         options={countryList}
-                                        getOptionLabel={option => option.COUNTRY_NAME}
-                                        renderInput={params => (
+                                        getOptionLabel={(option) => option.COUNTRY_NAME}
+                                        renderInput={(params) => (
                                             <TextField
                                                 {...params}
                                                 label='Country'
@@ -397,7 +397,7 @@ function Signup() {
                                                 onChange={handleCountry}
                                             />
                                         )}
-                                        renderOption={(option, {inputValue}) => {
+                                        renderOption={(option, { inputValue }) => {
                                             const matches = match(option.COUNTRY_NAME, inputValue);
                                             const parts = parse(option.COUNTRY_NAME, matches);
 
@@ -406,7 +406,7 @@ function Signup() {
                                                     {parts.map((part, index) => (
                                                         <span
                                                             key={index}
-                                                            style={{fontWeight: part.highlight ? 700 : 400}}
+                                                            style={{ fontWeight: part.highlight ? 700 : 400 }}
                                                         >
                                                             {part.text}
                                                         </span>
@@ -446,10 +446,10 @@ function Signup() {
                                         <Autocomplete
                                             id='Company'
                                             onInputChange={fixCompany}
-                                            style={{width: 222.667}}
+                                            style={{ width: 222.667 }}
                                             options={companyList}
-                                            getOptionLabel={option => option.COMPANY_NAME}
-                                            renderInput={params => (
+                                            getOptionLabel={(option) => option.COMPANY_NAME}
+                                            renderInput={(params) => (
                                                 <TextField
                                                     {...params}
                                                     label='Company'
@@ -460,7 +460,7 @@ function Signup() {
                                                     onChange={handleChangeCompany}
                                                 />
                                             )}
-                                            renderOption={(option, {inputValue}) => {
+                                            renderOption={(option, { inputValue }) => {
                                                 const matches = match(option.COMPANY_NAME, inputValue);
                                                 const parts = parse(option.COMPANY_NAME, matches);
 
@@ -469,7 +469,7 @@ function Signup() {
                                                         {parts.map((part, index) => (
                                                             <span
                                                                 key={index}
-                                                                style={{fontWeight: part.highlight ? 700 : 400}}
+                                                                style={{ fontWeight: part.highlight ? 700 : 400 }}
                                                             >
                                                                 {part.text}
                                                             </span>
@@ -488,17 +488,17 @@ function Signup() {
                                 type='file'
                                 name='file'
                                 id='profileFile'
-                                style={{display: 'none'}}
+                                style={{ display: 'none' }}
                                 onChange={handleFileChange}
                             />
                         </Container>
                     </Grow>
                     {/* step 2 */}
                     <Grow in={step === 1}>
-                        <Container maxWidth='sm' style={{display: step === 1 ? 'block' : 'none'}}>
+                        <Container maxWidth='sm' style={{ display: step === 1 ? 'block' : 'none' }}>
                             <Typography
                                 component='div'
-                                style={{backgroundColor: '#FFFFFF', height: '85vh', width: '70vh'}}
+                                style={{ backgroundColor: '#FFFFFF', height: '85vh', width: '70vh' }}
                             >
                                 <div className={styles.formDiv}>
                                     <Avatar

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
-import { ISignup, IAccountController } from '../interfaces/accountTypes';
+import { ISignup, IAccountController } from '../interfaces';
 import AccountService from '../services/account.service';
 
 @Controller('account')
