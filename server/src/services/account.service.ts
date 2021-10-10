@@ -66,7 +66,7 @@ export default class AccountService implements IAccountService {
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
         const result = this.countryRepo
             .createQueryBuilder('c')
-            .where('c.COUNTRY_NAME like = :countryName', { countryName: `${str}%` })
+            .where('c.COUNTRY_NAME like = countryName', { countryName: `${str}%` })
             .getMany();
         result.then((data) => res.send(data));
     }
@@ -181,13 +181,13 @@ export default class AccountService implements IAccountService {
             try {
                 const result1 = await this.loginAuthRepo
                     .createQueryBuilder('l')
-                    .where('l.UUID = :uuid', { uuid: id })
+                    .where('l.UUID = uuid', { uuid: id })
                     .getOne();
                 await getConnection()
                     .createQueryBuilder()
                     .update(UserRepository)
                     .set({ IS_VERIFIED: 1 })
-                    .where('USER_PK = :userPK', { userPK: result1.USER_PK });
+                    .where('USER_PK = userPK', { userPK: result1.USER_PK });
 
                 queryRunner.commitTransaction();
                 res.send(true);
@@ -203,11 +203,12 @@ export default class AccountService implements IAccountService {
         (async () => {
             const result = await getConnection()
                 .createQueryBuilder(UserRepository, 'u')
-                .leftJoinAndSelect(CompanyRepository, 'c', 'c.COMPANY_PK = :u.COMPANY_PK')
-                .leftJoinAndSelect(DepartmentRepository, 'd', 'd.DEPARTMENT_PK = :u.DEPARTMENT_PK')
-                .where('u.NICKNAME = :nickname', { nickname: data.NICKNAME })
-                .andWhere('u.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
+                .leftJoinAndSelect('u.company', 'c', 'u.COMPANY_PK = c.COMPANY_PK')
+                .leftJoinAndSelect('u.department', 'd', 'u.DEPARTMENT_PK = d.DEPARTMENT_PK')
+                .where('u.NICKNAME = nickname', { nickname: data.NICKNAME })
+                .andWhere('u.IS_VERIFIED = IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
+            console.log('login select = ', result);
 
             hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
                 const flag = result.PASSWORD === hash;
@@ -238,7 +239,7 @@ export default class AccountService implements IAccountService {
         try {
             const result = this.userRepo
                 .createQueryBuilder('u')
-                .where('u.EMAIL like = :email', { email: email })
+                .where('u.EMAIL like = email', { email: email })
                 .getOneOrFail();
 
             result.then((data) => {
@@ -279,13 +280,13 @@ export default class AccountService implements IAccountService {
             try {
                 const result1 = await this.userRepo
                     .createQueryBuilder('u')
-                    .where('u.EMAIL = :email', { email: email })
+                    .where('u.EMAIL = email', { email: email })
                     .getOneOrFail();
                 const { USER_PK } = result1;
                 const uuid = v1();
                 const result2 = await this.resetPwRepo
                     .createQueryBuilder('r')
-                    .where('r.USER_PK = :USER_PK', { USER_PK: USER_PK })
+                    .where('r.USER_PK = USER_PK', { USER_PK: USER_PK })
                     .getMany();
                 if (result2.length > 5) throw 'EXCEED_MAXIMUM_TRY'; // 5회 초과시 요청불가
 
@@ -341,7 +342,7 @@ export default class AccountService implements IAccountService {
             try {
                 const result1 = await this.resetPwRepo
                     .createQueryBuilder('r')
-                    .where('r.UUID = :uuid', { uuid: uuid })
+                    .where('r.UUID = uuid', { uuid: uuid })
                     .getOneOrFail();
                 const { USER_PK } = result1;
                 hasher({ password: password }, async (err, pw, salt, hash) => {
@@ -351,7 +352,7 @@ export default class AccountService implements IAccountService {
                         .createQueryBuilder()
                         .update(UserRepository)
                         .set({ PASSWORD: hash, SALT: salt })
-                        .where('USER_PK = :USER_PK', { USER_PK: USER_PK });
+                        .where('USER_PK = USER_PK', { USER_PK: USER_PK });
                     await queryRunner.commitTransaction();
                 });
             } catch (err) {
@@ -369,8 +370,8 @@ export default class AccountService implements IAccountService {
     getUser(userPK: number, TOKEN: string, res: Response<any, Record<string, any>>): void {
         this.userRepo
             .createQueryBuilder('u')
-            .leftJoinAndSelect(DepartmentRepository, 'd', 'd.DEPARTMENT_PK = :u.DEPARTMENT_PK')
-            .where('u.USER_PK = : USER_PK', { USER_PK: userPK })
+            .leftJoinAndSelect(DepartmentRepository, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
+            .where('u.USER_PK =  USER_PK', { USER_PK: userPK })
             .getOne()
             .then((data) => {
                 res.send(data);
