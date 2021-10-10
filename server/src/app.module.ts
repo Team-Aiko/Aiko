@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import fs from 'fs';
 import AccountModule from './modules/account.module';
+import VerifyJwt from './middlewares/verifyJwt';
+import DecodeJwt from './middlewares/decodeJwt';
 import { LoginAuthRepository, UserRepository } from './entity';
 
 // orm
@@ -23,8 +25,17 @@ const ormModule = TypeOrmModule.forRoot(config);
 @Module({
     imports: [AccountModule, ormModule],
 })
-export class AppModule {
+export class AppModule implements NestModule {
     constructor(private connection: Connection) {
         // database connection : connection
+    }
+
+    // middlewares
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(VerifyJwt).forRoutes({
+            path: '',
+            method: RequestMethod.ALL,
+        });
+        consumer.apply(DecodeJwt).forRoutes('company');
     }
 }

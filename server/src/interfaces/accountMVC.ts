@@ -1,13 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { UserTable, DepartmentTable, CompanyTable } from '../database/tablesInterface';
-import { Response, Request, Express } from 'express';
+import { Response, Request } from 'express';
+import { UserRepository } from '../entity';
 
 // * interfaces & Types
-export interface HasherCallback {
-    (err: any, pw: string, salt: string, hash: string): void;
-}
-export interface IHasher {
-    (pwObj: { password: string; salt?: string }, callback: HasherCallback): void;
-}
 
 export interface BasePacket {
     header: boolean;
@@ -39,7 +35,7 @@ export interface IAccountService {
     findNickname(email: string, res: Response): void;
     requestResetPassword(email: string, res: Response): void;
     resetPassword(uuid: string, password: string, res: Response): void;
-    generateLoginToken(userData: SelectData): string;
+    generateLoginToken(userData: UserRepository): string;
     getUser(userPK: number, TOKEN: string, res: Response): void;
 }
 
@@ -68,7 +64,6 @@ export type LoginSelectData = Pick<
 >;
 export type DepartmentSelectData = Pick<DepartmentTable, 'DEPARTMENT_NAME'>;
 export type CompanySelectData = Pick<CompanyTable, 'COMPANY_NAME'>;
-export type SelectData = LoginSelectData & DepartmentSelectData & CompanySelectData;
 export interface SuccessPacket extends BasePacket {
-    userInfo: Omit<SelectData, 'PASSWORD' | 'SALT'>;
+    userInfo: Omit<UserRepository, 'PASSWORD' | 'SALT'>;
 }

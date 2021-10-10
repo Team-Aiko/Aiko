@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { UserTable } from '../interfaces';
+import { CompanyRepository } from '.';
+import DeaprtmentRepository from './DepartmentRepository.entity';
 
 @Entity({ name: 'USER_TABLE' })
 export default class UserRepository implements UserTable {
@@ -30,7 +32,13 @@ export default class UserRepository implements UserTable {
     @Column()
     DEPARTMENT_PK: number;
     @Column()
+    COUNTRY_PK: number;
+    @Column()
     PROFILE_FILE_NAME: string;
     @Column()
     COUNTRY: string;
+    @ManyToOne((type) => CompanyRepository, (company) => company.COMPANY_PK)
+    company: CompanyRepository;
+    @ManyToOne((type) => DeaprtmentRepository, (company) => company.DEPARTMENT_PK)
+    department: DeaprtmentRepository;
 }

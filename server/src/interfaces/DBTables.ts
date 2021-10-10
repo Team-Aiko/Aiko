@@ -7,7 +7,7 @@ export interface UserTable {
     LAST_NAME: string;
     EMAIL: string;
     TEL: string;
-    COUNTRY: string;
+    COUNTRY_PK: number;
     CREATE_DATE: number;
     IS_DELETED: number;
     IS_VERIFIED: number;
