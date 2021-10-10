@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
-import { ISignup, IAccountController } from '../interfaces';
+import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
 
 @Controller('account')
@@ -10,13 +10,13 @@ export default class AccountController implements IAccountController {
 
     constructor(private accountService: AccountService) {}
 
-    @Get('checkDuplicatedNickname')
+    @Get('checkDuplicateNickname')
     checkDuplicateNickname(@Req() req: Request, @Res() res: Response): void {
         const { nickname } = req.query;
         this.accountService.checkDuplicateNickname(nickname as string, res);
     }
 
-    @Get('checkDuplicatedEmail')
+    @Get('checkDuplicateEmail')
     checkDuplicateEmail(@Req() req: Request, @Res() res: Response): void {
         const { email } = req.query;
         this.accountService.checkDuplicateEmail(email as string, res);
@@ -28,7 +28,7 @@ export default class AccountController implements IAccountController {
         this.accountService.getCountryList(str as string, res);
     }
 
-    @Post('/signup')
+    @Post('signup')
     @UseInterceptors(FileInterceptor('file'))
     signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response): void {
         const data = JSON.parse(req.body.obj) as ISignup;
@@ -36,31 +36,47 @@ export default class AccountController implements IAccountController {
         this.accountService.signup(data, imageRoute, res);
     }
 
+    @Get('grantLoginAuth')
     grantLoginAuth(@Req() req: Request, @Res() res: Response): void {
         const { id } = req.query;
         this.accountService.grantLoginAuth(id as string, res);
-        throw new Error('Method not implemented.');
     }
 
+    @Post('login')
     login(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+        const data = {
+            NICKNAME: req.body.NICKNAME,
+            PASSWORD: req.body.PASSWORD,
+        };
+        this.accountService.login(data, res);
     }
+
+    @Get('logout')
     logout(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+        this.accountService.logout(res);
     }
+
+    @Post('findNickname')
     findNickname(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+        const { email } = req.body;
+        this.accountService.findNickname(email, res);
     }
+
+    @Post('requestResetPassword')
     requestResetPassword(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+        const { email } = req.body;
+        this.accountService.requestResetPassword(email, res);
     }
+
+    @Post('resetPassword')
     resetPassword(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+        const { uuid, password }: IResetPw = req.body;
+        this.accountService.resetPassword(uuid, password, res);
     }
-    generateLoginToken(@Req() req: Request, @Res() res: Response): string {
-        throw new Error('Method not implemented.');
-    }
-    getUser(@Req() req: Request, @Res() res: Response): void {
-        throw new Error('Method not implemented.');
+
+    @Post('getUserInfo')
+    getUserInfo(@Req() req: Request, @Res() res: Response): void {
+        const { userPK, TOKEN } = req.body;
+        this.accountService.getUser(Number(userPK), TOKEN, res);
     }
 }
