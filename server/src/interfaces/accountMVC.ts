@@ -20,8 +20,6 @@ export interface IAccountController {
     findNickname(req: Request, res: Response): void;
     requestResetPassword(req: Request, res: Response): void;
     resetPassword(req: Request, res: Response): void;
-    generateLoginToken(req: Request, res: Response): string;
-    getUser(req: Request, res: Response): void;
 }
 
 export interface IAccountService {
