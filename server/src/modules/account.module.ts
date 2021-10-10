@@ -12,5 +12,6 @@ import AccountService from '../services/account.service';
     ],
     controllers: [AccountController],
     providers: [AccountService],
+    exports: [AccountService],
 })
-export class AccountModule {}
+export default class AccountModule {}

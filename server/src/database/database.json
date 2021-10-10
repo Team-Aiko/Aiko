@@ -1,7 +1,10 @@
 {
+    "type": "mysql",
     "host": "localhost",
-    "user": "root",
-    "password": "#1234",
-    "port": "3306",
-    "database": "aiko"
+    "port": 3306,
+    "username": "root",
+    "password": "비번",
+    "database": "aiko",
+    "entities": [],
+    "synchronize": true
 }

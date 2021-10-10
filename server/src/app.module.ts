@@ -1,10 +1,30 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Connection } from 'typeorm';
+import fs from 'fs';
+import AccountModule from './modules/account.module';
+import { LoginAuthRepository, UserRepository } from './entity';
+
+// orm
+const read = fs.readFileSync('./database/database.json', 'utf8');
+const parsed = JSON.parse(read);
+const config: TypeOrmModuleOptions = {
+    type: parsed.type,
+    host: parsed.host,
+    port: parsed.port,
+    username: parsed.username,
+    password: parsed.password,
+    database: parsed.database,
+    entities: [LoginAuthRepository, UserRepository],
+    synchronize: parsed.synchronize,
+};
+const ormModule = TypeOrmModule.forRoot(config);
 
 @Module({
-    imports: [],
-    controllers: [AppController],
-    providers: [AppService],
+    imports: [AccountModule, ormModule],
 })
-export class AppModule {}
+export class AppModule {
+    constructor(private connection: Connection) {
+        // database connection : connection
+    }
+}

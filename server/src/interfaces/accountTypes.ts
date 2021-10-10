@@ -1,5 +1,5 @@
-import { UserTable, DepartmentTable, CompanyTable } from '../../database/tablesInterface';
-import { Response } from 'express';
+import { UserTable, DepartmentTable, CompanyTable } from '../database/tablesInterface';
+import { Response, Request, Express } from 'express';
 
 // * interfaces & Types
 export interface HasherCallback {
@@ -13,9 +13,24 @@ export interface BasePacket {
     header: boolean;
 }
 
+export interface IAccountController {
+    checkDuplicateNickname(req: Request, res: Response): void;
+    checkDuplicateEmail(req: Request, res: Response): void;
+    getCountryList(req: Request, res: Response): void;
+    signup(req: Request, file: Express.Multer.File, res: Response): void;
+    grantLoginAuth(req: Request, res: Response): void;
+    login(req: Request, res: Response): void;
+    logout(req: Request, res: Response): void;
+    findNickname(req: Request, res: Response): void;
+    requestResetPassword(req: Request, res: Response): void;
+    resetPassword(req: Request, res: Response): void;
+    generateLoginToken(req: Request, res: Response): string;
+    getUser(req: Request, res: Response): void;
+}
+
 export interface IAccountService {
     checkDuplicateNickname(nickname: string, res: Response): void;
-    checkDuplicateEmail(email: string, res: Response): void;
+    checkDuplicateEmail(email: string, res: Response);
     getCountryList(str: string, res: Response): void;
     signup(data: ISignup, imageRoute: string | null, res: Response): any;
     grantLoginAuth(id: string, res: Response): void;
