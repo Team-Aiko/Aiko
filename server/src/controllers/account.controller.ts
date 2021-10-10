@@ -1,8 +1,6 @@
 import { Controller, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
 

@@ -2,10 +2,8 @@
     "scripts": {
         "update:deps": "npm i && cd aiko-client && npm i",
         "client": "cd aiko-client && npm run dev",
-        "build:watch": "cd server && npx tsc --watch",
-        "server": "cd server/dist && nodemon server.js",
-        "dev": "concurrently --kill-others-on-fail \"npm run build:watch\" \"npm run server \" \"npm run client\"",
-        "dev:server": "concurrently --kill-others-on-fail \"npm run build:watch\" \"npm run server \"",
+        "server": "cd server && npm run start",
+        "dev": "concurrently --kill-others-on-fail \"npm run server \" \"npm run client\"",
         "lint": "eslint **/*.ts --quiet"
     },
     "dependencies": {

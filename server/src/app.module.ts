@@ -49,7 +49,7 @@ export class AppModule implements NestModule {
     // middlewares
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(VerifyJwt).forRoutes({
-            path: '',
+            path: 'company',
             method: RequestMethod.ALL,
         });
         consumer.apply(DecodeJwt).forRoutes('company');
