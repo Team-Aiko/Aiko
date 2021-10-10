@@ -5,6 +5,13 @@ package-lock.json
 # database
 database.json
 
+# mailer
+mailConfig.json
+emailBotAddress.json
+
+# test
+test.js
+
 # Transcompiled javascript in backend part
 dist
 

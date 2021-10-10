@@ -1,44 +1,56 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { UserTable } from '../interfaces';
 import { CompanyRepository } from '.';
-import DeaprtmentRepository from './DepartmentRepository.entity';
+import { DepartmentRepository } from '.';
 
 @Entity({ name: 'USER_TABLE' })
 export default class UserRepository implements UserTable {
     @PrimaryGeneratedColumn()
     USER_PK: number;
-    @Column()
+
+    @Column({ type: 'varchar', length: 20, unique: true })
     NICKNAME: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 512, nullable: false })
     PASSWORD: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 128, nullable: false })
     SALT: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 20, nullable: false })
     FIRST_NAME: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 20, nullable: false })
     LAST_NAME: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 100, nullable: false })
     EMAIL: string;
-    @Column()
+
+    @Column({ type: 'varchar', length: 30, nullable: false })
     TEL: string;
-    @Column()
+
+    @Column({ type: 'integer', nullable: false })
     CREATE_DATE: number;
-    @Column({ default: 0 })
+
+    @Column({ type: 'integer', default: 0, nullable: false })
     IS_DELETED: number;
-    @Column({ default: 0 })
+
+    @Column({ type: 'integer', default: 0, nullable: false })
     IS_VERIFIED: number;
-    @Column()
+
+    @Column({ type: 'integer' })
     COMPANY_PK: number;
-    @Column()
+
+    @Column({ type: 'integer' })
     DEPARTMENT_PK: number;
-    @Column()
+
+    @Column({ type: 'integer', nullable: false })
     COUNTRY_PK: number;
-    @Column()
+
+    @Column({ type: 'varchar', length: 2000 })
     PROFILE_FILE_NAME: string;
-    @Column()
-    COUNTRY: string;
     @ManyToOne((type) => CompanyRepository, (company) => company.COMPANY_PK)
     company: CompanyRepository;
-    @ManyToOne((type) => DeaprtmentRepository, (company) => company.DEPARTMENT_PK)
-    department: DeaprtmentRepository;
+    @ManyToOne((type) => DepartmentRepository, (department) => department.DEPARTMENT_PK)
+    department: DepartmentRepository;
 }

@@ -1,6 +1,7 @@
 import { UserTable } from '../interfaces';
 
 export default class UserDTO implements UserTable {
+    COUNTRY_PK: number;
     USER_PK: number;
     NICKNAME: string;
     PASSWORD: string;
@@ -9,7 +10,6 @@ export default class UserDTO implements UserTable {
     LAST_NAME: string;
     EMAIL: string;
     TEL: string;
-    COUNTRY: string;
     CREATE_DATE: number;
     IS_DELETED: number;
     IS_VERIFIED: number;

@@ -6,5 +6,5 @@
     "password": "비번",
     "database": "aiko",
     "entities": [],
-    "synchronize": true
+    "synchronize": false
 }

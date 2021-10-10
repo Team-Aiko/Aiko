@@ -22,7 +22,6 @@ import {
     IResetPw,
     ISignup,
     LoginSelectData,
-    SelectData,
     SuccessPacket,
 } from './accountMVC';
 
@@ -35,6 +34,5 @@ export {
     IResetPw,
     ISignup,
     LoginSelectData,
-    SelectData,
     SuccessPacket,
 };
