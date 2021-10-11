@@ -1,6 +1,15 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+    JoinColumn,
+    OneToOne,
+    Column,
+    Entity,
+    PrimaryColumn,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    OneToMany,
+} from 'typeorm';
 import { UserTable } from '../interfaces';
-import { CompanyRepository } from '.';
+import { CompanyRepository, CountryRepository, LoginAuthRepository, ResetPwRepository } from '.';
 import { DepartmentRepository } from '.';
 
 @Entity({ name: 'USER_TABLE' })
@@ -45,12 +54,27 @@ export default class UserRepository implements UserTable {
     DEPARTMENT_PK: number;
 
     @Column({ type: 'integer', nullable: false })
+    @JoinColumn()
     COUNTRY_PK: number;
 
     @Column({ type: 'varchar', length: 2000 })
     PROFILE_FILE_NAME: string;
-    @ManyToOne((type) => CompanyRepository, (company) => company.COMPANY_PK)
+
+    @ManyToOne((type) => CompanyRepository, (company) => company.user)
+    @JoinColumn({ name: 'COMPANY_PK' })
     company: CompanyRepository;
-    @ManyToOne((type) => DepartmentRepository, (department) => department.DEPARTMENT_PK)
+
+    @ManyToOne((type) => DepartmentRepository, (department) => department.users)
+    @JoinColumn({ name: 'DEPARTMENT_PK' })
     department: DepartmentRepository;
+
+    @OneToOne((type) => LoginAuthRepository, (loginAuth) => loginAuth.user)
+    loginAuth: LoginAuthRepository;
+
+    @ManyToOne((type) => CountryRepository, (country) => country.users)
+    @JoinColumn({ name: 'COUNTRY_PK' })
+    country: CountryRepository;
+
+    @OneToMany((type) => ResetPwRepository, (resetPw) => resetPw.user)
+    resetPws: ResetPwRepository[];
 }

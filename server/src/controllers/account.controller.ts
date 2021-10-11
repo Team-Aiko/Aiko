@@ -76,10 +76,10 @@ export default class AccountController implements IAccountController {
     @Post('requestResetPassword')
     requestResetPassword(@Req() req: Request, @Res() res: Response): void {
         const { email } = req.body;
-        console.log(email);
         this.accountService.requestResetPassword(email, res);
     }
 
+    // ! check complete
     @Post('resetPassword')
     resetPassword(@Req() req: Request, @Res() res: Response): void {
         const { uuid, password }: IResetPw = req.body;

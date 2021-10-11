@@ -10,6 +10,7 @@ export default class ResetPwRepository implements ResetPwTable {
     USER_PK: number;
     @Column()
     UUID: string;
-    @ManyToOne((type) => UserRepository, (user) => user.USER_PK)
+
+    @ManyToOne((type) => UserRepository, (user) => user.resetPws)
     user: UserRepository;
 }

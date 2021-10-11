@@ -216,10 +216,10 @@ export default class AccountService implements IAccountService {
         (async () => {
             const result = await getConnection()
                 .createQueryBuilder(UserRepository, 'u')
-                .leftJoinAndSelect('u.company', 'c', 'u.COMPANY_PK = c.COMPANY_PK')
-                .leftJoinAndSelect('u.department', 'd', 'u.DEPARTMENT_PK = d.DEPARTMENT_PK')
+                .leftJoinAndSelect('u.company', 'company')
+                .leftJoinAndSelect('u.department', 'department')
                 .where('u.NICKNAME = :nickname', { nickname: data.NICKNAME })
-                .andWhere('u.IS_VERIFIED = IS_VERIFIED', { IS_VERIFIED: 1 })
+                .andWhere('u.IS_VERIFIED = :isVerified', { isVerified: 1 })
                 .getOneOrFail();
             console.log('login select = ', result);
 
@@ -293,7 +293,7 @@ export default class AccountService implements IAccountService {
             try {
                 const result1 = await this.userRepo
                     .createQueryBuilder('u')
-                    .where('u.EMAIL = email', { email: email })
+                    .where('u.EMAIL = :email', { email: email })
                     .getOneOrFail();
                 const { USER_PK } = result1;
                 const uuid = v1();
@@ -350,12 +350,13 @@ export default class AccountService implements IAccountService {
     }
     resetPassword(uuid: string, password: string, res: Response<any, Record<string, any>>): void {
         (async () => {
+            console.log(uuid, password);
             const queryRunner = getConnection().createQueryRunner();
             await queryRunner.startTransaction();
             try {
                 const result1 = await this.resetPwRepo
                     .createQueryBuilder('r')
-                    .where('r.UUID = uuid', { uuid: uuid })
+                    .where('r.UUID = :uuid', { uuid: uuid })
                     .getOneOrFail();
                 const { USER_PK } = result1;
                 hasher({ password: password }, async (err, pw, salt, hash) => {
@@ -365,12 +366,22 @@ export default class AccountService implements IAccountService {
                         .createQueryBuilder()
                         .update(UserRepository)
                         .set({ PASSWORD: hash, SALT: salt })
-                        .where('USER_PK = USER_PK', { USER_PK: USER_PK });
-                    await queryRunner.commitTransaction();
+                        .where('USER_PK = :userPK', { userPK: USER_PK })
+                        .execute();
+                    this.resetPwRepo
+                        .createQueryBuilder()
+                        .delete()
+                        .where('USER_PK = :userPK', { userPK: USER_PK })
+                        .execute();
+
+                    res.send(true);
                 });
             } catch (err) {
+                res.send(false);
                 await queryRunner.rollbackTransaction();
+                throw err;
             } finally {
+                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
@@ -385,7 +396,7 @@ export default class AccountService implements IAccountService {
         this.userRepo
             .createQueryBuilder('u')
             .leftJoinAndSelect(DepartmentRepository, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-            .where('u.USER_PK =  USER_PK', { USER_PK: userPK })
+            .where('u.USER_PK =  :userPK', { userPK: userPK })
             .getOne()
             .then((data) => {
                 res.send(data);

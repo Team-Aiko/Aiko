@@ -10,6 +10,7 @@ export default class CompanyRepository implements CompanyTable {
     COMPANY_NAME: string;
     @Column()
     CREATE_DATE: number;
-    @OneToMany((type) => UserRepository, (user) => user.COMPANY_PK)
-    user: UserRepository;
+
+    @OneToMany(() => UserRepository, (user) => user.company)
+    user: UserRepository[];
 }
