@@ -215,13 +215,23 @@ export default class AccountService implements IAccountService {
     login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response<any, Record<string, any>>): void {
         (async () => {
             const result = await getConnection()
-                .createQueryBuilder(UserRepository, 'u')
-                .leftJoinAndSelect('u.company', 'company')
-                .leftJoinAndSelect('u.department', 'department')
-                .where('u.NICKNAME = :nickname', { nickname: data.NICKNAME })
-                .andWhere('u.IS_VERIFIED = :isVerified', { isVerified: 1 })
+                .createQueryBuilder(UserRepository, 'U')
+                .select([
+                    'U.FIRST_NAME',
+                    'U.LAST_NAME',
+                    'U.EMAIL',
+                    'U.TEL',
+                    'U.COMPANY_PK',
+                    'U.DEPARTMENT_PK',
+                    'U.PASSWORD',
+                    'U.SALT',
+                    'U.NICKNAME',
+                ])
+                .leftJoinAndSelect('U.company', 'company')
+                .leftJoinAndSelect('U.department', 'department')
+                .where('U.NICKNAME = :nickname', { nickname: data.NICKNAME })
+                .andWhere('U.IS_VERIFIED = :isVerified', { isVerified: 1 })
                 .getOneOrFail();
-            console.log('login select = ', result);
 
             hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
                 const flag = result.PASSWORD === hash;
@@ -233,6 +243,10 @@ export default class AccountService implements IAccountService {
                     res.send(packet);
                     return;
                 }
+
+                // remove security informations
+                result.PASSWORD = '';
+                result.SALT = '';
 
                 const packet: SuccessPacket = {
                     header: flag,
