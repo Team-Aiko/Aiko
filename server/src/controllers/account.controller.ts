@@ -10,38 +10,46 @@ export default class AccountController implements IAccountController {
 
     constructor(private accountService: AccountService) {}
 
+    // ! check complete
     @Get('checkDuplicateNickname')
     checkDuplicateNickname(@Req() req: Request, @Res() res: Response): void {
         const { nickname } = req.query;
         this.accountService.checkDuplicateNickname(nickname as string, res);
     }
 
+    // ! check complete
     @Get('checkDuplicateEmail')
     checkDuplicateEmail(@Req() req: Request, @Res() res: Response): void {
         const { email } = req.query;
         this.accountService.checkDuplicateEmail(email as string, res);
     }
 
+    // ! check complete
     @Get('getCountryList')
     getCountryList(@Req() req: Request, @Res() res: Response): void {
         const { str } = req.query;
+        console.log(str);
         this.accountService.getCountryList(str as string, res);
     }
 
+    // ! check Complete
     @Post('signup')
     @UseInterceptors(FileInterceptor('file'))
     signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response): void {
+        console.log(req.body.obj);
         const data = JSON.parse(req.body.obj) as ISignup;
-        const imageRoute = file.filename;
+        const imageRoute = file?.filename;
         this.accountService.signup(data, imageRoute, res);
     }
 
+    // ! check complete
     @Get('grantLoginAuth')
     grantLoginAuth(@Req() req: Request, @Res() res: Response): void {
         const { id } = req.query;
         this.accountService.grantLoginAuth(id as string, res);
     }
 
+    // ! check complete
     @Post('login')
     login(@Req() req: Request, @Res() res: Response): void {
         const data = {
@@ -51,20 +59,24 @@ export default class AccountController implements IAccountController {
         this.accountService.login(data, res);
     }
 
+    // ! check complete
     @Get('logout')
     logout(@Req() req: Request, @Res() res: Response): void {
         this.accountService.logout(res);
     }
 
+    // ! check complete
     @Post('findNickname')
     findNickname(@Req() req: Request, @Res() res: Response): void {
         const { email } = req.body;
         this.accountService.findNickname(email, res);
     }
 
+    // ! check complete
     @Post('requestResetPassword')
     requestResetPassword(@Req() req: Request, @Res() res: Response): void {
         const { email } = req.body;
+        console.log(email);
         this.accountService.requestResetPassword(email, res);
     }
 

@@ -1,6 +1,7 @@
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable no-param-reassign */
 import React, { useState, useCallback } from 'react';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import styles from '../styles/signup.module.css';
 import { makeStyles } from '@material-ui/core/styles';
 import { Grow, Avatar, Button, Typography, Container, TextField } from '@material-ui/core';
 import { files, account, strings } from 'web-snippets';
@@ -14,6 +15,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import Router from 'next/router';
+import styles from '../styles/signup.module.css';
 
 const useStyles = makeStyles((theme) => ({
     avatarStyle: {
@@ -80,43 +82,49 @@ function Signup() {
 
     const checkValidationStrings = useCallback((e) => {
         const str = e.target.value;
-        const id = e.target.id;
+        const { id } = e.target;
 
         switch (id) {
-            case 'first_name':
+            case 'first_name': {
                 const obj1 = account.cValid(str, 0, 30);
 
                 if (!obj1.isValid) alert(obj1.errMessage);
                 setErrFirstName(!obj1.isValid);
                 setFirstName(str);
                 break;
-            case 'last_name':
+            }
+            case 'last_name': {
                 const obj2 = account.cValid(str, 0, 30);
 
                 if (!obj2.isValid) alert(obj2.errMessage);
                 setLastName(str);
                 setErrLastName(!obj2.isValid);
                 break;
-            case 'company_name':
+            }
+            case 'company_name': {
                 const obj3 = account.cValid(str, 0, 100);
                 setErrCompanyName(!obj3.isValid);
                 setCompanyName(str);
                 break;
-            case 'tel':
+            }
+            case 'tel': {
                 const isValidPhoneNum = account.cValidPhoneNum(str, 11) || account.cValidDashPhoneNum(str);
 
                 setTel(str);
                 setErrTel(!isValidPhoneNum);
                 break;
+            }
+            default:
+                break;
         }
     }, []);
 
     const checkValidationPw = useCallback((e) => {
-        const pw = e.target.value;
-        const { isValid, errMessage } = account.cValid(pw, 8, 30, ['special, capital, number']);
+        const typedPw = e.target.value;
+        const { isValid, errMessage } = account.cValid(typedPw, 8, 30, ['special, capital, number']);
 
         setErrPw(!isValid);
-        setPw(pw);
+        setPw(typedPw);
     }, []);
 
     const checkValidationPwCf = useCallback(
@@ -139,11 +147,12 @@ function Signup() {
         setErrEmail(!isValid);
 
         if (isValid) {
-            const url = '/api/account/checkDuplicateEmail?email=' + typedEmail;
+            const url = `/api/account/checkDuplicateEmail?email=${typedEmail}`;
             get(url).then((res) => {
-                const data = res.data;
+                const { data } = res;
                 console.log('🚀 ~ file: signup.js ~ line 168 ~ get ~ data', data);
-                setErrEmail(data[0]['COUNT(*)'] !== 0);
+                const flag = Boolean(data);
+                setErrEmail(flag);
             });
         }
 
@@ -159,15 +168,15 @@ function Signup() {
             return;
         }
 
-        const url = '/api/account/checkDuplicateNickname?nickname=' + typedNickname;
+        const url = `/api/account/checkDuplicateNickname?nickname=${typedNickname}`;
 
         get(url)
             .then((res) => {
-                const data = res.data;
-                setErrNickname(data !== 0);
+                const { data } = res;
+                setErrNickname(Number(data) !== 0);
                 setNickname(typedNickname);
             })
-            .catch((e) => console.log(e));
+            .catch((err) => console.log(err));
     }, []);
 
     const goToNextStep = useCallback(() => {
@@ -180,7 +189,7 @@ function Signup() {
     }, [step]);
 
     const handlePositionChange = useCallback((e) => {
-        const id = parseInt(e.target.value);
+        const id = Number(e.target.value);
         setPosition(id); // -1: none, 0: owner, 1: member
     }, []);
 
@@ -188,9 +197,9 @@ function Signup() {
         const company = e.target.value;
 
         if (company.length === 1) {
-            const url = '/api/company/getCompanyList?str=' + company;
+            const url = `/api/company/getCompanyList?str=${company}`;
             get(url).then((res) => {
-                const data = res.data;
+                const { data } = res;
                 const refinedData = data.map((curr) => {
                     curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
                     return curr;
@@ -211,9 +220,9 @@ function Signup() {
         console.log('🚀 ~ file: signup.js ~ line 203 ~ Signup ~ country', country);
 
         if (country.length === 1) {
-            const url = '/api/account/getCountryList?str=' + country;
+            const url = `/api/account/getCountryList?str=${country}`;
             get(url).then((res) => {
-                const data = res.data;
+                const { data } = res;
                 setCountryList(data);
             });
         }
@@ -230,6 +239,8 @@ function Signup() {
                     console.log('🚀 ~ file: signup.js ~ line 221 ~ fixCountry ~ targetCountry', targetCountry);
                     return true;
                 }
+
+                return false;
             });
             setCountryPK(targetCountry);
         },
@@ -248,12 +259,15 @@ function Signup() {
                     console.log('🚀 ~ file: signup.js ~ line 232 ~ fixCompany ~ targetCompany', targetCompany);
                     return true;
                 }
+
+                return false;
             });
         },
         [companyList],
     );
 
     const handleSubmit = () => {
+        // eslint-disable-next-line operator-linebreak
         const isValidFirst =
             !errFirstName && !errLastName && !errNickname && !errPw && !errPwCf && !errEmail && !errTel;
         const url = '/api/account/signup';
@@ -331,7 +345,7 @@ function Signup() {
     };
 
     return (
-        <React.Fragment>
+        <>
             <div className={styles.wrapper}>
                 <div className={styles.resizing}>
                     <CssBaseline />
@@ -405,6 +419,7 @@ function Signup() {
                                                 <div>
                                                     {parts.map((part, index) => (
                                                         <span
+                                                            // eslint-disable-next-line react/no-array-index-key
                                                             key={index}
                                                             style={{ fontWeight: part.highlight ? 700 : 400 }}
                                                         >
@@ -468,6 +483,7 @@ function Signup() {
                                                     <div>
                                                         {parts.map((part, index) => (
                                                             <span
+                                                                // eslint-disable-next-line react/no-array-index-key
                                                                 key={index}
                                                                 style={{ fontWeight: part.highlight ? 700 : 400 }}
                                                             >
@@ -547,6 +563,6 @@ function Signup() {
                     </Grow>
                 </div>
             </div>
-        </React.Fragment>
+        </>
     );
 }

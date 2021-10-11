@@ -4,6 +4,7 @@ import { query, Response } from 'express';
 // * Database
 import { Injectable } from '@nestjs/common';
 import { getManager, getConnection } from 'typeorm';
+import { ResultSetHeader } from 'mysql2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -26,7 +27,7 @@ import pbkdf2 from 'pbkdf2-pw';
 import * as fs from 'fs';
 import * as path from 'path';
 // * jwt
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { expireTime } from '../interfaces/jwt/jwtEnums';
 import { loginSecretKey } from '../interfaces/jwt/secretKey';
 // * others
@@ -66,8 +67,9 @@ export default class AccountService implements IAccountService {
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
         const result = this.countryRepo
             .createQueryBuilder('c')
-            .where('c.COUNTRY_NAME like = countryName', { countryName: `${str}%` })
+            .where('c.COUNTRY_NAME like :countryName', { countryName: `${str}%` })
             .getMany();
+        result.then((data) => console.log(data));
         result.then((data) => res.send(data));
     }
     signup(data: ISignup, imageRoute: string, res: Response<any, Record<string, any>>) {
@@ -92,18 +94,18 @@ export default class AccountService implements IAccountService {
                             COMPANY_NAME: data.companyName,
                             CREATE_DATE: Math.floor(new Date().getTime() / 1000),
                         })
-                        .returning('INSERTED.*') // get PK
                         .execute();
-                    const COMPANY_PK = result1.identifiers[0].id as number;
+                    const rawData1: ResultSetHeader = result1.raw;
+                    const COMPANY_PK = rawData1.insertId as number;
                     const result2 = await this.departmentRepo
                         .createQueryBuilder()
                         .insert()
                         .into(DepartmentRepository)
                         .values({ DEPARTMENT_NAME: 'OWNER', COMPANY_PK: COMPANY_PK, DEPTH: 0 })
-                        .returning('INSERTED.*')
                         .execute();
-                    const DEPARTMENT_PK = result2.identifiers[0].id as number;
-                    const result = await this.userRepo
+                    const rawData2: ResultSetHeader = result2.raw;
+                    const DEPARTMENT_PK = rawData2.insertId as number;
+                    const result3 = await this.userRepo
                         .createQueryBuilder()
                         .insert()
                         .into(UserRepository)
@@ -117,13 +119,14 @@ export default class AccountService implements IAccountService {
                             FIRST_NAME: data.firstName,
                             LAST_NAME: data.lastName,
                             COUNTRY_PK: data.countryPK,
+                            CREATE_DATE: Math.floor(new Date().getTime() / 1000),
                             IS_VERIFIED: 0,
                             IS_DELETED: 0,
                             TEL: data.tel,
                             PROFILE_FILE_NAME: imageRoute,
                         })
                         .execute();
-                    userPK = result.identifiers[0].id as number;
+                    userPK = (result3.raw as ResultSetHeader).insertId as number;
                 } else if (data.position === 1) {
                     const result = await this.userRepo
                         .createQueryBuilder()
@@ -143,11 +146,17 @@ export default class AccountService implements IAccountService {
                             PROFILE_FILE_NAME: imageRoute,
                         })
                         .execute();
-                    userPK = result.identifiers[0].id as number;
+                    userPK = (result.raw as ResultSetHeader).insertId as number;
                 }
 
                 // * email auth
                 const uuid = v1();
+                this.loginAuthRepo
+                    .createQueryBuilder('l')
+                    .insert()
+                    .into(LoginAuthRepository)
+                    .values({ USER_PK: userPK, UUID: uuid })
+                    .execute();
                 const mailOpt: SendMailOptions = {
                     from: JSON.parse(
                         fs.readFileSync(
@@ -157,25 +166,26 @@ export default class AccountService implements IAccountService {
                     ).botEmailAddress as string,
                     to: data.email,
                     subject: '[Aiko] Auth Email',
-                    text: `Please link to this address: http://localhost:5000/api/account/grantLoginAuth?id=${uuid}`,
+                    text: `Please link to this address: http://localhost:5000/account/grantLoginAuth?id=${uuid}`,
                 };
                 smtpTransporter.sendMail(mailOpt, async (err, response) => {
                     if (err) throw err;
 
                     smtpTransporter.close();
-                    await queryRunner.commitTransaction();
                     res.send(true);
                 });
             } catch (err) {
                 await queryRunner.rollbackTransaction();
                 throw err;
             } finally {
+                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
     }
     grantLoginAuth(id: string, res: Response<any, Record<string, any>>): void {
         (async () => {
+            console.log('uuid = ', id);
             const queryRunner = getConnection().createQueryRunner();
             await queryRunner.startTransaction();
             try {
@@ -183,19 +193,22 @@ export default class AccountService implements IAccountService {
                     .createQueryBuilder('l')
                     .where('l.UUID = uuid', { uuid: id })
                     .getOne();
-                await getConnection()
+                console.log('result1 = ', result1);
+
+                getConnection()
                     .createQueryBuilder()
                     .update(UserRepository)
                     .set({ IS_VERIFIED: 1 })
-                    .where('USER_PK = userPK', { userPK: result1.USER_PK });
+                    .where('USER_PK = :userPK', { userPK: result1.USER_PK })
+                    .execute();
 
-                queryRunner.commitTransaction();
+                await queryRunner.commitTransaction();
                 res.send(true);
             } catch (err) {
-                queryRunner.rollbackTransaction();
+                await queryRunner.rollbackTransaction();
                 res.send(false);
             } finally {
-                queryRunner.release();
+                await queryRunner.release();
             }
         })();
     }
@@ -205,7 +218,7 @@ export default class AccountService implements IAccountService {
                 .createQueryBuilder(UserRepository, 'u')
                 .leftJoinAndSelect('u.company', 'c', 'u.COMPANY_PK = c.COMPANY_PK')
                 .leftJoinAndSelect('u.department', 'd', 'u.DEPARTMENT_PK = d.DEPARTMENT_PK')
-                .where('u.NICKNAME = nickname', { nickname: data.NICKNAME })
+                .where('u.NICKNAME = :nickname', { nickname: data.NICKNAME })
                 .andWhere('u.IS_VERIFIED = IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
             console.log('login select = ', result);
@@ -239,7 +252,7 @@ export default class AccountService implements IAccountService {
         try {
             const result = this.userRepo
                 .createQueryBuilder('u')
-                .where('u.EMAIL like = email', { email: email })
+                .where('u.EMAIL = :email', { email: email })
                 .getOneOrFail();
 
             result.then((data) => {
@@ -322,7 +335,6 @@ export default class AccountService implements IAccountService {
 
                     console.log('Message send: ', response);
                     smtpTransporter.close();
-                    await queryRunner.commitTransaction();
                     res.send(true);
                     console.log('파트3');
                 });
@@ -331,6 +343,7 @@ export default class AccountService implements IAccountService {
                 res.send(false);
                 throw err;
             } finally {
+                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
@@ -363,7 +376,8 @@ export default class AccountService implements IAccountService {
         })();
     }
     generateLoginToken(userData: UserRepository): string {
-        const token = jwt.sign(userData, loginSecretKey.secretKey, loginSecretKey.options);
+        const data = { ...userData };
+        const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
 
         return token;
     }
@@ -379,8 +393,6 @@ export default class AccountService implements IAccountService {
     }
     checkDuplicateNickname(nickname: string, res: Response<any, Record<string, any>>): void {
         const result = this.userRepo.count({ NICKNAME: nickname });
-        result.then((count) => {
-            res.send(count);
-        });
+        result.then((count) => res.send(count.toString()));
     }
 }
