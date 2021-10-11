@@ -4,7 +4,14 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    extends: ['prettier', 'eslint:recommended', 'plugin:react/recommended', 'airbnb'],
+    extends: [
+        'eslint-config-prettier',
+        'prettier',
+        'eslint:recommended',
+        'plugin:react/recommended',
+        'airbnb',
+        'eslint-config-airbnb',
+    ],
     parserOptions: {
         ecmaFeatures: {
             jsx: true,
@@ -14,7 +21,7 @@ module.exports = {
     },
     plugins: ['react', 'prettier'],
     rules: {
-        indent: ['error', 4],
+        indent: ['error', 4, { SwitchCase: 1 }],
         'prettier/prettier': ['error', { singleQuote: true, endOfLine: 'auto' }],
         'no-unused-vars': 'warn',
         'react/jsx-indent': ['error', 4],

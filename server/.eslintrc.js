@@ -14,7 +14,7 @@ module.exports = {
     },
     ignorePatterns: ['.eslintrc.js'],
     rules: {
-        indent: ['error', 4],
+        // indent: ['error', 4],
         'no-unused-vars': 'warn',
         'prettier/prettier': ['error', { endOfLine: 'auto' }],
         'no-console': 'off',
