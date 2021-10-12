@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { UserTable, DepartmentTable, CompanyTable } from '../database/tablesInterface';
+import { UserTable, DepartmentTable, CompanyTable } from '.';
 import { Response, Request } from 'express';
 import { UserRepository } from '../entity';
 
