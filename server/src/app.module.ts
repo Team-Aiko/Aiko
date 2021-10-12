@@ -1,9 +1,13 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { Connection } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as Joi from 'joi';
+import * as config from 'config';
 import AccountModule from './modules/account.module';
+import ChatModule from './modules/chat.module';
 import VerifyJwt from './middlewares/verifyJwt';
 import DecodeJwt from './middlewares/decodeJwt';
 import {
@@ -14,18 +18,12 @@ import {
     DepartmentRepository,
     ResetPwRepository,
 } from './entity';
+import OneToOneMessageGateway from './gateway/message.gateway';
+import { RDBMSConfig } from './interfaces';
 
 // orm
-const read = fs.readFileSync(path.join(__dirname, 'database', 'database.json'), 'utf8');
-const parsed = JSON.parse(read);
-console.log('parsed = ', parsed);
-const config: TypeOrmModuleOptions = {
-    type: parsed.type,
-    host: parsed.host,
-    port: parsed.port,
-    username: parsed.username,
-    password: parsed.password,
-    database: parsed.database,
+const typeORMConfig: TypeOrmModuleOptions = {
+    ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
         UserRepository,
         LoginAuthRepository,
@@ -34,12 +32,12 @@ const config: TypeOrmModuleOptions = {
         DepartmentRepository,
         ResetPwRepository,
     ],
-    synchronize: parsed.synchronize,
 };
-const ormModule = TypeOrmModule.forRoot(config);
+const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, ormModule],
+    imports: [AccountModule, ORMModule, ChatModule],
+    providers: [OneToOneMessageGateway],
 })
 export class AppModule implements NestModule {
     constructor(private connection: Connection) {

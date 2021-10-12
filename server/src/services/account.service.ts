@@ -23,21 +23,26 @@ import * as smtpPool from 'nodemailer-smtp-pool';
 import { v1 } from 'uuid';
 // * pbdkf2-password
 import pbkdf2 from 'pbkdf2-pw';
-// * file reader
-import * as fs from 'fs';
-import * as path from 'path';
+// * config reader
+import * as config from 'config';
 // * jwt
 import * as jwt from 'jsonwebtoken';
 import { expireTime } from '../interfaces/jwt/jwtEnums';
 import { loginSecretKey } from '../interfaces/jwt/secretKey';
 // * others
-import { IAccountService, ISignup, UserTable } from '../interfaces';
-import { BasePacket, SuccessPacket } from '../interfaces/accountMVC';
+import {
+    IAccountService,
+    ISignup,
+    UserTable,
+    BasePacket,
+    SuccessPacket,
+    IMailConfig,
+    IMailBotConfig,
+} from '../interfaces';
 
 // * mailer
-const emailConfig = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '..', '..', 'dist', 'configs', 'mailConfig.json'), 'utf-8'),
-);
+const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
+const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 // * pbkdf2
@@ -158,12 +163,7 @@ export default class AccountService implements IAccountService {
                     .values({ USER_PK: userPK, UUID: uuid })
                     .execute();
                 const mailOpt: SendMailOptions = {
-                    from: JSON.parse(
-                        fs.readFileSync(
-                            path.join(__dirname, '..', '..', 'dist', 'configs', 'emailBotAddress.json'),
-                            'utf8',
-                        ),
-                    ).botEmailAddress as string,
+                    from: botEmailAddress,
                     to: data.email,
                     subject: '[Aiko] Auth Email',
                     text: `Please link to this address: http://localhost:5000/account/grantLoginAuth?id=${uuid}`,
@@ -272,12 +272,7 @@ export default class AccountService implements IAccountService {
             result.then((data) => {
                 const { NICKNAME } = data;
                 const mailOpt = {
-                    from: JSON.parse(
-                        fs.readFileSync(
-                            path.join(__dirname, '..', '..', 'dist', 'configs', 'emailBotAddress.json'),
-                            'utf8',
-                        ),
-                    ).botEmailAddress as string,
+                    from: botEmailAddress,
                     to: email,
                     subject: '[Aiko] We will show you your nickname!',
                     text: `Your Nickname: ${NICKNAME}`,
@@ -327,12 +322,7 @@ export default class AccountService implements IAccountService {
 
                 // sending mail process
                 const mailOpt: SendMailOptions = {
-                    from: JSON.parse(
-                        fs.readFileSync(
-                            path.join(__dirname, '..', '..', 'dist', 'configs', 'emailBotAddress.json'),
-                            'utf8',
-                        ),
-                    ).botEmailAddress as string,
+                    from: botEmailAddress,
                     to: email,
                     subject: '[Aiko] We got a request of reset password.',
                     text: `

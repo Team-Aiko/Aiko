@@ -9,7 +9,6 @@ import {
     UserInfo,
     UserTable,
 } from './DBTables';
-
 export { CompanyTable, CountryTable, DepartmentTable, LoginAuthTable, ResetPwTable, SocketTable, UserInfo, UserTable };
 
 // * MVC interfaces
@@ -24,7 +23,6 @@ import {
     LoginSelectData,
     SuccessPacket,
 } from './accountMVC';
-
 export {
     BasePacket,
     CompanySelectData,
@@ -36,3 +34,7 @@ export {
     LoginSelectData,
     SuccessPacket,
 };
+
+// other types
+import { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig } from './configInterfaces';
+export { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig };
