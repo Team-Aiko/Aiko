@@ -10,7 +10,7 @@ create table USER_TABLE (
 	LAST_NAME VARCHAR(20) not null,
 	EMAIL VARCHAR(100) not null,
 	TEL VARCHAR(30) not null,
-	COUNTRY INT not null,
+	COUNTRY_PK INT not null,
 	CREATE_DATE INT not null,
 	IS_DELETED INT not null default 0,
 	IS_VERIFIED INT not null default 0,
