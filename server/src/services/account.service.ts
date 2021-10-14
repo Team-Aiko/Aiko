@@ -168,17 +168,26 @@ export default class AccountService implements IAccountService {
                     subject: '[Aiko] Auth Email',
                     text: `Please link to this address: http://localhost:5000/account/grantLoginAuth?id=${uuid}`,
                 };
-                smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                    if (err) throw err;
 
-                    smtpTransporter.close();
-                    res.send(true);
-                });
+                res.send(
+                    await new Promise((resolve, reject) => {
+                        let flag = false;
+
+                        smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                            if (err) throw err;
+
+                            smtpTransporter.close();
+                            flag = true;
+                            resolve(flag);
+                        });
+                    }),
+                );
+
+                await queryRunner.commitTransaction();
             } catch (err) {
                 await queryRunner.rollbackTransaction();
                 throw err;
             } finally {
-                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
