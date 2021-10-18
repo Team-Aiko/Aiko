@@ -4,7 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import { deepOrange } from '@material-ui/core/colors';
 
-const useStyles = makeStyles((theme) => {
+const useStyles = makeStyles((theme) =>
     createStyles({
         messageRow: {
             display: 'flex',
@@ -19,7 +19,8 @@ const useStyles = makeStyles((theme) => {
             marginBottom: '10px',
             padding: '10px',
             backgroundColor: '#A8DDFD',
-            width: '60%', // height: "50px",
+            width: '60%',
+            //height: "50px",
             textAlign: 'left',
             font: "400 .9em 'Open Sans', sans-serif",
             border: '1px solid #97C6E3',
@@ -53,7 +54,8 @@ const useStyles = makeStyles((theme) => {
             marginBottom: '10px',
             padding: '10px',
             backgroundColor: '#f8e896',
-            width: '60%', // height: "50px",
+            width: '60%',
+            //height: "50px",
             textAlign: 'left',
             font: "400 .9em 'Open Sans', sans-serif",
             border: '1px solid #dfd087',
@@ -81,6 +83,7 @@ const useStyles = makeStyles((theme) => {
                 right: '-17px',
             },
         },
+
         messageContent: {
             padding: 0,
             margin: 0,
@@ -93,6 +96,7 @@ const useStyles = makeStyles((theme) => {
             bottom: '-3px',
             right: '5px',
         },
+
         orange: {
             color: theme.palette.getContrastText(deepOrange[500]),
             backgroundColor: deepOrange[500],
@@ -108,8 +112,8 @@ const useStyles = makeStyles((theme) => {
         displayName: {
             marginLeft: '20px',
         },
-    });
-});
+    }),
+);
 
 export const MessageLeft = (props) => {
     let { message, timestamp, photoURL, displayName } = props;

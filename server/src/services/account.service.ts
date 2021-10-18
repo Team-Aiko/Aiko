@@ -66,7 +66,7 @@ export default class AccountService implements IAccountService {
     ) {}
 
     checkDuplicateEmail(email: string, res: Response<any, Record<string, any>>): void {
-        const result = this.userRepo.findOne({ EMAIL: email });
+        const result = this.userRepo.count({ EMAIL: email });
         result.then((data) => res.send(data));
     }
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
@@ -74,7 +74,6 @@ export default class AccountService implements IAccountService {
             .createQueryBuilder('c')
             .where('c.COUNTRY_NAME like :countryName', { countryName: `${str}%` })
             .getMany();
-        result.then((data) => console.log(data));
         result.then((data) => res.send(data));
     }
     signup(data: ISignup, imageRoute: string, res: Response<any, Record<string, any>>) {
@@ -166,7 +165,7 @@ export default class AccountService implements IAccountService {
                     from: botEmailAddress,
                     to: data.email,
                     subject: '[Aiko] Auth Email',
-                    text: `Please link to this address: http://localhost:5000/account/grantLoginAuth?id=${uuid}`,
+                    text: `Please link to this address: http://localhost:5000/account/login-auth?id=${uuid}`,
                 };
 
                 res.send(
@@ -235,6 +234,7 @@ export default class AccountService implements IAccountService {
                     'U.PASSWORD',
                     'U.SALT',
                     'U.NICKNAME',
+                    'U.USER_PK',
                 ])
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')

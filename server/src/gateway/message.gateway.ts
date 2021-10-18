@@ -20,7 +20,7 @@ const appSettings = config.get<IWebSocketConfig>('WEB_SOCKET');
  * OnGatewayConnection: 특정 유저가 소켓에 접속할 때 실행되는 메소드
  * OnGatewayDisconnection: 특정 유저가 소켓에서 접속을 끊을 때 실행되는 메소드
  */
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     // 나중에 추가할 예정
     // @WebSocketServer()
@@ -33,18 +33,23 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
         this.logger.log('OneToOneMessageGateway initialized');
     }
 
+    @SubscribeMessage('handleConnection')
     handleConnection(client: Socket, ...args: any[]) {
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
-        this.logger.log('socket user connection: ', client.id);
+        console.log(args);
+        console.log('connection start!: ', client.id);
+        this.logger.log(`socket user connection: ${client.id}`);
     }
 
+    @SubscribeMessage('handleDisconnection')
     handleDisconnect(client: Socket) {
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
-        this.logger.log('socket user disconnection: ', client.id);
+        this.logger.log(`socket user disconnection: ${client.id}`);
+        console.log('client.id: ', client.id);
     }
 
     @SubscribeMessage('msgToServer')
