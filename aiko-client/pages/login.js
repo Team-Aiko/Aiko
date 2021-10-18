@@ -48,17 +48,7 @@ function Login(props) {
                 const { data } = await post(url, packet, config);
                 if (data.header /* login result : boolean */) {
                     props.setUserInfo(data.userInfo);
-                    const socket = io('http://localhost:5001/chat1');
-                    socket.emit('connected', { userId: data.userInfo.USER_PK });
-                    socket.on('connected', (message) => {
-                        console.log(message);
-                    });
-                    socket.on('send', (message) => {
-                        console.log(message);
-                    });
-                    socket.on('disconnect', () => {
-                        console.log('socket disconnected');
-                    });
+                    console.log(data.userInfo);
 
                     Router.push('/');
                 } else {

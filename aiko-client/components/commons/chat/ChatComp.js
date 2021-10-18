@@ -7,9 +7,11 @@ import { Paper } from '@material-ui/core';
 import { MessageLeft, MessageRight } from './Message';
 import TextInput from './TextInput';
 
-export default function CComp() {}
+export default function CComp() {
+    return <PComp />;
+}
 
-const useStyles = makeStyles((theme) => {
+const useStyles = makeStyles((theme) =>
     createStyles({
         paper: {
             width: '80vw',
@@ -42,47 +44,49 @@ const useStyles = makeStyles((theme) => {
             overflowY: 'scroll',
             height: 'calc( 100% - 80px )',
         },
-    });
-});
+    }),
+);
 
-export function PComp() {
+function PComp(props) {
     const classes = useStyles();
 
     return (
-        <div className={classes.container}>
-            <Paper className={classes.paper} zDepth={2}>
-                <Paper id='style-1' className={classes.messagesBody}>
-                    <MessageLeft
-                        message='あめんぼあかいなあいうえお'
-                        timestamp='MM/DD 00:00'
-                        photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
-                        displayName=''
-                        avatarDisp={true}
-                    />
-                    <MessageLeft
-                        message='xxxxxhttps://yahoo.co.jp xxxxxxxxxあめんぼあかいなあいうえおあいうえおかきくけこさぼあかいなあいうえおあいうえおかきくけこさぼあかいなあいうえおあいうえおかきくけこさいすせそ'
-                        timestamp='MM/DD 00:00'
-                        photoURL=''
-                        displayName='テスト'
-                        avatarDisp={false}
-                    />
-                    <MessageRight
-                        message='messageRあめんぼあかいなあいうえおあめんぼあかいなあいうえおあめんぼあかいなあいうえお'
-                        timestamp='MM/DD 00:00'
-                        photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
-                        displayName='まさりぶ'
-                        avatarDisp={true}
-                    />
-                    <MessageRight
-                        message='messageRあめんぼあかいなあいうえおあめんぼあかいなあいうえお'
-                        timestamp='MM/DD 00:00'
-                        photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
-                        displayName='まさりぶ'
-                        avatarDisp={false}
-                    />
+        <>
+            <div className={classes.container}>
+                <Paper className={classes.paper} zDepth={2}>
+                    <Paper id='style-1' className={classes.messagesBody}>
+                        <MessageLeft
+                            message='あめんぼあかいなあいうえお'
+                            timestamp='MM/DD 00:00'
+                            photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
+                            displayName=''
+                            avatarDisp={true}
+                        />
+                        <MessageLeft
+                            message='xxxxxhttps://yahoo.co.jp xxxxxxxxxあめんぼあかいなあいうえおあいうえおかきくけこさぼあかいなあいうえおあいうえおかきくけこさぼあかいなあいうえおあいうえおかきくけこさいすせそ'
+                            timestamp='MM/DD 00:00'
+                            photoURL=''
+                            displayName='テスト'
+                            avatarDisp={false}
+                        />
+                        <MessageRight
+                            message='messageRあめんぼあかいなあいうえおあめんぼあかいなあいうえおあめんぼあかいなあいうえお'
+                            timestamp='MM/DD 00:00'
+                            photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
+                            displayName='まさりぶ'
+                            avatarDisp={true}
+                        />
+                        <MessageRight
+                            message='messageRあめんぼあかいなあいうえおあめんぼあかいなあいうえお'
+                            timestamp='MM/DD 00:00'
+                            photoURL='https://lh3.googleusercontent.com/a-/AOh14Gi4vkKYlfrbJ0QLJTg_DLjcYyyK7fYoWRpz2r4s=s96-c'
+                            displayName='まさりぶ'
+                            avatarDisp={false}
+                        />
+                    </Paper>
+                    <TextInput />
                 </Paper>
-                <TextInput />
-            </Paper>
-        </div>
+            </div>
+        </>
     );
 }

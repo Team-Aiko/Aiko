@@ -220,7 +220,7 @@ function Signup() {
         console.log('🚀 ~ file: signup.js ~ line 203 ~ Signup ~ country', country);
 
         if (country.length === 1) {
-            const url = `/api/account/getCountryList?str=${country}`;
+            const url = `/api/account/country-list?str=${country}`;
             get(url).then((res) => {
                 const { data } = res;
                 setCountryList(data);

@@ -66,7 +66,7 @@ export default class AccountService implements IAccountService {
     ) {}
 
     checkDuplicateEmail(email: string, res: Response<any, Record<string, any>>): void {
-        const result = this.userRepo.findOne({ EMAIL: email });
+        const result = this.userRepo.count({ EMAIL: email });
         result.then((data) => res.send(data));
     }
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
@@ -74,7 +74,6 @@ export default class AccountService implements IAccountService {
             .createQueryBuilder('c')
             .where('c.COUNTRY_NAME like :countryName', { countryName: `${str}%` })
             .getMany();
-        result.then((data) => console.log(data));
         result.then((data) => res.send(data));
     }
     signup(data: ISignup, imageRoute: string, res: Response<any, Record<string, any>>) {
@@ -166,19 +165,28 @@ export default class AccountService implements IAccountService {
                     from: botEmailAddress,
                     to: data.email,
                     subject: '[Aiko] Auth Email',
-                    text: `Please link to this address: http://localhost:5000/account/grantLoginAuth?id=${uuid}`,
+                    text: `Please link to this address: http://localhost:5000/account/login-auth?id=${uuid}`,
                 };
-                smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                    if (err) throw err;
 
-                    smtpTransporter.close();
-                    res.send(true);
-                });
+                res.send(
+                    await new Promise((resolve, reject) => {
+                        let flag = false;
+
+                        smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                            if (err) throw err;
+
+                            smtpTransporter.close();
+                            flag = true;
+                            resolve(flag);
+                        });
+                    }),
+                );
+
+                await queryRunner.commitTransaction();
             } catch (err) {
                 await queryRunner.rollbackTransaction();
                 throw err;
             } finally {
-                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
@@ -226,6 +234,7 @@ export default class AccountService implements IAccountService {
                     'U.PASSWORD',
                     'U.SALT',
                     'U.NICKNAME',
+                    'U.USER_PK',
                 ])
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')
@@ -330,24 +339,26 @@ export default class AccountService implements IAccountService {
 
                     Please link to this address: http://localhost:3000/reset-password/${uuid}`,
                 };
-                smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                    if (err) {
-                        res.send(false);
-                        console.log('파트2');
-                        throw err;
-                    }
 
-                    console.log('Message send: ', response);
-                    smtpTransporter.close();
-                    res.send(true);
-                    console.log('파트3');
-                });
+                res.send(
+                    await new Promise((resolve, reject) => {
+                        let flag = false;
+                        smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                            if (err) throw err;
+
+                            smtpTransporter.close();
+                            flag = true;
+                            resolve(flag);
+                        });
+                    }),
+                );
+
+                await queryRunner.commitTransaction();
             } catch (err) {
                 await queryRunner.rollbackTransaction();
                 res.send(false);
                 throw err;
             } finally {
-                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();
@@ -363,29 +374,37 @@ export default class AccountService implements IAccountService {
                     .where('r.UUID = :uuid', { uuid: uuid })
                     .getOneOrFail();
                 const { USER_PK } = result1;
-                hasher({ password: password }, async (err, pw, salt, hash) => {
-                    if (err) throw err;
 
-                    getConnection()
-                        .createQueryBuilder()
-                        .update(UserRepository)
-                        .set({ PASSWORD: hash, SALT: salt })
-                        .where('USER_PK = :userPK', { userPK: USER_PK })
-                        .execute();
-                    this.resetPwRepo
-                        .createQueryBuilder()
-                        .delete()
-                        .where('USER_PK = :userPK', { userPK: USER_PK })
-                        .execute();
+                res.send(
+                    await new Promise((resolve, reject) => {
+                        let flag = false;
+                        hasher({ password: password }, async (err, pw, salt, hash) => {
+                            if (err) throw err;
 
-                    res.send(true);
-                });
+                            getConnection()
+                                .createQueryBuilder()
+                                .update(UserRepository)
+                                .set({ PASSWORD: hash, SALT: salt })
+                                .where('USER_PK = :userPK', { userPK: USER_PK })
+                                .execute();
+                            this.resetPwRepo
+                                .createQueryBuilder()
+                                .delete()
+                                .where('USER_PK = :userPK', { userPK: USER_PK })
+                                .execute();
+                            flag = true;
+
+                            resolve(flag);
+                        });
+                    }),
+                );
+
+                await queryRunner.commitTransaction();
             } catch (err) {
                 res.send(false);
                 await queryRunner.rollbackTransaction();
                 throw err;
             } finally {
-                await queryRunner.commitTransaction();
                 await queryRunner.release();
             }
         })();

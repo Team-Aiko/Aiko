@@ -25,10 +25,9 @@ export default class AccountController implements IAccountController {
     }
 
     // ! check complete
-    @Get('getCountryList')
+    @Get('country-list')
     getCountryList(@Req() req: Request, @Res() res: Response): void {
         const { str } = req.query;
-        console.log(str);
         this.accountService.getCountryList(str as string, res);
     }
 
@@ -43,7 +42,7 @@ export default class AccountController implements IAccountController {
     }
 
     // ! check complete
-    @Get('grantLoginAuth')
+    @Get('login-auth')
     grantLoginAuth(@Req() req: Request, @Res() res: Response): void {
         const { id } = req.query;
         this.accountService.grantLoginAuth(id as string, res);
