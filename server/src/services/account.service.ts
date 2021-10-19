@@ -67,7 +67,7 @@ export default class AccountService implements IAccountService {
 
     checkDuplicateEmail(email: string, res: Response<any, Record<string, any>>): void {
         const result = this.userRepo.count({ EMAIL: email });
-        result.then((data) => res.send(data));
+        result.then((data) => res.send(data.toString()));
     }
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
         const result = this.countryRepo
