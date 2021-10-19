@@ -54,7 +54,6 @@ export default class UserRepository implements UserTable {
     DEPARTMENT_PK: number;
 
     @Column({ type: 'integer', nullable: false })
-    @JoinColumn()
     COUNTRY_PK: number;
 
     @Column({ type: 'varchar', length: 2000 })
