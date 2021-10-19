@@ -1,13 +1,4 @@
-import {
-    JoinColumn,
-    OneToOne,
-    Column,
-    Entity,
-    PrimaryColumn,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    OneToMany,
-} from 'typeorm';
+import { JoinColumn, OneToOne, Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { UserTable } from '../interfaces';
 import { CompanyRepository, CountryRepository, LoginAuthRepository, ResetPwRepository, SocketRepository } from '.';
 import { DepartmentRepository } from '.';

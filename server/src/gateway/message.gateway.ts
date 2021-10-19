@@ -2,11 +2,9 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     OnGatewayInit,
-    WebSocketServer,
     OnGatewayConnection,
     OnGatewayDisconnect,
     WsResponse,
-    MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import * as config from 'config';

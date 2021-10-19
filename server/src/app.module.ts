@@ -1,10 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
 import { Connection } from 'typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as Joi from 'joi';
 import * as config from 'config';
 import AccountModule from './modules/account.module';
 import ChatModule from './modules/chat.module';

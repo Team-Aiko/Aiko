@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 import { ISocketService, UserInfo } from '../interfaces';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
-import { SocketRepository, UserRepository, CompanyRepository } from '../entity';
+import { SocketRepository, UserRepository } from '../entity';
 
 const client = createClient();
 setInterval(() => {

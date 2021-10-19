@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 // * http
-import { query, Response } from 'express';
+import { Response } from 'express';
 // * Database
 import { Injectable } from '@nestjs/common';
-import { getManager, getConnection } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
