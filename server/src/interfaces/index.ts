@@ -6,7 +6,6 @@ import {
     LoginAuthTable,
     ResetPwTable,
     SocketTable,
-    UserInfo,
     UserTable,
 } from './DBTables';
 export { CompanyTable, CountryTable, DepartmentTable, LoginAuthTable, ResetPwTable, SocketTable, UserInfo, UserTable };
@@ -22,6 +21,7 @@ import {
     ISignup,
     LoginSelectData,
     SuccessPacket,
+    UserInfo,
 } from './accountMVC';
 export {
     BasePacket,
@@ -34,6 +34,10 @@ export {
     LoginSelectData,
     SuccessPacket,
 };
+
+//* Redis interface
+import { ISocketService } from './socketMVC';
+export { ISocketService };
 
 // other types
 import { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig } from './configInterfaces';

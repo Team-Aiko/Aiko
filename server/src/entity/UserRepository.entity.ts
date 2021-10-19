@@ -9,7 +9,7 @@ import {
     OneToMany,
 } from 'typeorm';
 import { UserTable } from '../interfaces';
-import { CompanyRepository, CountryRepository, LoginAuthRepository, ResetPwRepository } from '.';
+import { CompanyRepository, CountryRepository, LoginAuthRepository, ResetPwRepository, SocketRepository } from '.';
 import { DepartmentRepository } from '.';
 
 @Entity({ name: 'USER_TABLE' })
@@ -76,4 +76,7 @@ export default class UserRepository implements UserTable {
 
     @OneToMany((type) => ResetPwRepository, (resetPw) => resetPw.user)
     resetPws: ResetPwRepository[];
+
+    @OneToOne(() => SocketRepository, (socket) => socket.user)
+    socket: SocketRepository;
 }

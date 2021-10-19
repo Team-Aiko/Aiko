@@ -4,6 +4,7 @@ import CountryRepository from './CountryRepository.entity';
 import ResetPwRepository from './ResetPwRepository.entity';
 import DepartmentRepository from './DepartmentRepository.entity';
 import CompanyRepository from './CompanyRepository.entity';
+import SocketRepository from './SocketRepository.entity';
 
 export {
     UserRepository,
@@ -12,4 +13,5 @@ export {
     ResetPwRepository,
     DepartmentRepository,
     CompanyRepository,
+    SocketRepository,
 };

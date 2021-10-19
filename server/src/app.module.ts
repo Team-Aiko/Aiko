@@ -17,6 +17,7 @@ import {
     CountryRepository,
     DepartmentRepository,
     ResetPwRepository,
+    SocketRepository,
 } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
@@ -31,6 +32,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
         CountryRepository,
         DepartmentRepository,
         ResetPwRepository,
+        SocketRepository,
     ],
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
