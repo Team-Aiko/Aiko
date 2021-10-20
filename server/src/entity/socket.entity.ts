@@ -1,9 +1,9 @@
 import { SocketTable } from '../interfaces';
 import { OneToOne, PrimaryGeneratedColumn, Column, Entity, JoinColumn } from 'typeorm';
-import { UserRepository } from '.';
+import { User } from '.';
 
 @Entity({ name: 'SOCKET_TABLE' })
-export default class SocketRepository implements SocketTable {
+export default class Socket implements SocketTable {
     @PrimaryGeneratedColumn()
     SOCKET_PK: number;
     @Column()
@@ -11,7 +11,7 @@ export default class SocketRepository implements SocketTable {
     @Column()
     USER_PK: number;
 
-    @OneToOne(() => UserRepository, (user) => user.socket)
+    @OneToOne(() => User, (user) => user.socket)
     @JoinColumn({ name: 'USER_PK' })
-    user: UserRepository;
+    user: User;
 }

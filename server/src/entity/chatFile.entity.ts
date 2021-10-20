@@ -1,9 +1,9 @@
 import { ChatFileTable } from 'src/interfaces';
 import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
-import { UserRepository } from '.';
+import { User } from '.';
 
 @Entity({ name: 'CHAT_FILE_TABLE' })
-export default class ChatFileRepository implements ChatFileTable {
+export default class ChatFile implements ChatFileTable {
     @PrimaryGeneratedColumn()
     CF_PK: number;
     @Column()
