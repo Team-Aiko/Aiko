@@ -6,7 +6,7 @@ export default class CompanyController {
     constructor(private companyService: CompanyService) {}
     @Get('/list')
     list(@Req() req, @Res() res): void {
-        const { str } = req.query;
-        this.companyService.list(str, res);
+        const { companyName } = req.query;
+        this.companyService.list(companyName, res);
     }
 }

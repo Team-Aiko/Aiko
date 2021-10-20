@@ -3,7 +3,7 @@ import { CompanyTable } from '../interfaces';
 import { User } from '.';
 
 @Entity({ name: 'COMPANY_TABLE' })
-export default class CompanySelectData implements CompanyTable {
+export default class Company implements CompanyTable {
     @PrimaryGeneratedColumn()
     COMPANY_PK: number;
     @Column()
