@@ -40,18 +40,20 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
         this.logger.log(`socket user connection: ${client.id}`);
-        const flag = this.socketService.addSocketId(client.id, userInfo);
-        const userListPromise = this.socketService.getMembers(userInfo.COMPANY_PK);
-        userListPromise
-            .then((data) => {
-                client.emit('connected', {
-                    header: flag,
-                    userList: data,
+        if (userInfo?.USER_PK) {
+            const flag = this.socketService.addSocketId(client.id, userInfo);
+            const userListPromise = this.socketService.getMembers(userInfo?.COMPANY_PK);
+            userListPromise
+                .then((data) => {
+                    client.emit('connected', {
+                        header: flag,
+                        userList: data,
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
                 });
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+        }
     }
 
     @SubscribeMessage('handleDisconnection')

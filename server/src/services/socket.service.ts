@@ -47,7 +47,7 @@ export default class SocketService implements ISocketService {
      */
     getMembers(companyPK: number) {
         return getConnection()
-            .createQueryBuilder(UserRepository, 'u')
+            .createQueryBuilder(UserRepository, 'U')
             .select(['U.USER_PK', 'U.DEPARTMENT_PK', 'U.FIRST_NAME', 'U.LAST_NAME', 'U.NICKNAME', 'D.DEPARTMENT_NAME'])
             .leftJoinAndSelect('U.socket', 'S')
             .leftJoinAndSelect('U.company', 'C')
@@ -97,7 +97,7 @@ export default class SocketService implements ISocketService {
                 .into(SocketRepository)
                 .values({
                     SOCKET_ID: socketId,
-                    USER_PK: userInfo.USER_PK,
+                    USER_PK: userInfo?.USER_PK,
                 })
                 .execute();
 
