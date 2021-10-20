@@ -2,7 +2,7 @@
     "scripts": {
         "update:deps": "npm i && cd aiko-client && npm i",
         "client": "cd aiko-client && npm run dev",
-        "server": "cd server && npm run start",
+        "server": "cd server && npm run start:dev",
         "dev": "concurrently --kill-others-on-fail \"npm run server \" \"npm run client\"",
         "lint": "eslint **/*.ts --quiet"
     },

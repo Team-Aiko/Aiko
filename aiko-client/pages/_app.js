@@ -5,6 +5,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import store, { persistor } from '../_redux/store';
 import TopNav from '../components/commons/TopNav';
+import ChatBtn from '../components/commons/chat/ChatBtn';
 
 // const theme = createTheme();
 
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }) {
                     <TopNav />
                     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                     <Component {...pageProps} />
+                    <ChatBtn />
                 </PersistGate>
             </ReduxProvider>
         </>
