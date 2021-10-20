@@ -19,7 +19,7 @@ export default class FileController implements IFileController {
      * @param s
      */
     @Post('files-on-chat-msg')
-    @UseInterceptors(FileInterceptor('file', { dest: '/chatFiles' }))
+    @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
     uploadFilesOnChatMsg(req: Request, file: Express.Multer.File, res: Response) {
         const fileName = file?.filename;
         const { sender, receiver } = req.body as { sender: number; receiver: number };

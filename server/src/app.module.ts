@@ -3,6 +3,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import * as config from 'config';
 import AccountModule from './modules/account.module';
+import FileModule from './modules/file.module';
 import ChatModule from './modules/chat.module';
 import VerifyJwt from './middlewares/verifyJwt';
 import DecodeJwt from './middlewares/decodeJwt';
@@ -14,6 +15,7 @@ import {
     DepartmentRepository,
     ResetPwRepository,
     SocketRepository,
+    ChatFileRepository,
 } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
@@ -29,12 +31,13 @@ const typeORMConfig: TypeOrmModuleOptions = {
         DepartmentRepository,
         ResetPwRepository,
         SocketRepository,
+        ChatFileRepository,
     ],
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, ORMModule, ChatModule],
+    imports: [AccountModule, ORMModule, ChatModule, FileModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule implements NestModule {
