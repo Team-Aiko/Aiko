@@ -2,20 +2,20 @@ import { IFileService } from 'src/interfaces';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
-import { ChatFileRepository } from 'src/entity';
+import { ChatFile } from 'src/entity';
 
 @Injectable()
 export default class FileService implements IFileService {
     constructor(
-        @InjectRepository(ChatFileRepository)
-        private chatFileRepo: Repository<ChatFileRepository>,
+        @InjectRepository(ChatFile)
+        private chatFileRepo: Repository<ChatFile>,
     ) {}
 
     async uploadFilesOnChatMsg(fileRoot: string, sender: number, receiver: number): Promise<number> {
         const rawResult = await this.chatFileRepo
             .createQueryBuilder()
             .insert()
-            .into(ChatFileRepository)
+            .into(ChatFile)
             .values({ FILE_ROOT: fileRoot, SENDER: sender, RECEIVER: receiver })
             .execute();
         return rawResult.raw.id;

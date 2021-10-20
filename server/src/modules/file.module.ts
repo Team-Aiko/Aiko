@@ -3,23 +3,14 @@ import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import FileController from 'src/controllers/file.controller';
 import FileService from 'src/services/file.service';
-import {
-    CompanyRepository,
-    DepartmentRepository,
-    CountryRepository,
-    LoginAuthRepository,
-    ResetPwRepository,
-    SocketRepository,
-    UserRepository,
-    ChatFileRepository,
-} from '../entity';
+import { Company, Department, Country, LoginAuth, ResetPw, Socket, User, ChatFile } from '../entity';
 
 @Module({
     imports: [
         MulterModule.register({
             dest: './files',
         }),
-        TypeOrmModule.forFeature([UserRepository, SocketRepository, ChatFileRepository]),
+        TypeOrmModule.forFeature([User, Socket, ChatFile]),
     ],
     controllers: [FileController],
     providers: [FileService],

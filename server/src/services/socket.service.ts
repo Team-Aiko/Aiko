@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 import { ISocketService, UserInfo } from '../interfaces';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
-import { SocketRepository, UserRepository } from '../entity';
+import { Socket, User } from '../entity';
 
 const client = createClient();
 setInterval(() => {
@@ -14,10 +14,10 @@ setInterval(() => {
 @Injectable()
 export default class SocketService implements ISocketService {
     constructor(
-        @InjectRepository(SocketRepository)
-        private socketRepo: Repository<SocketRepository>,
-        @InjectRepository(UserRepository)
-        private userRepo: Repository<UserRepository>,
+        @InjectRepository(Socket)
+        private socketRepo: Repository<Socket>,
+        @InjectRepository(User)
+        private userRepo: Repository<User>,
     ) {}
 
     /**
@@ -47,7 +47,7 @@ export default class SocketService implements ISocketService {
      */
     getMembers(companyPK: number) {
         return getConnection()
-            .createQueryBuilder(UserRepository, 'U')
+            .createQueryBuilder(User, 'U')
             .select(['U.USER_PK', 'U.DEPARTMENT_PK', 'U.FIRST_NAME', 'U.LAST_NAME', 'U.NICKNAME', 'D.DEPARTMENT_NAME'])
             .leftJoinAndSelect('U.socket', 'S')
             .leftJoinAndSelect('U.company', 'C')
@@ -94,7 +94,7 @@ export default class SocketService implements ISocketService {
             getConnection()
                 .createQueryBuilder()
                 .insert()
-                .into(SocketRepository)
+                .into(Socket)
                 .values({
                     SOCKET_ID: socketId,
                     USER_PK: userInfo?.USER_PK,

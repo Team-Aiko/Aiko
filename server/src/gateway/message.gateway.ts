@@ -62,8 +62,8 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
         this.logger.log(`socket user disconnection: ${client.id}`);
-        this.socketService.removeSocketId(client.id);
-        client.emit('userDisconnect', client.id);
+        if (client.id) this.socketService.removeSocketId(client.id);
+        client.emit('userDisconnect', client?.id);
     }
 
     @SubscribeMessage('msgToServer')

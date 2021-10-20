@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { UserTable, DepartmentTable, CompanyTable } from '.';
 import { Response, Request } from 'express';
-import { UserRepository } from '../entity';
+import { User } from '../entity';
 
 // * interfaces & Types
 
@@ -33,7 +33,7 @@ export interface IAccountService {
     findNickname(email: string, res: Response): void;
     requestResetPassword(email: string, res: Response): void;
     resetPassword(uuid: string, password: string, res: Response): void;
-    generateLoginToken(userData: UserRepository): string;
+    generateLoginToken(userData: User): string;
     getUser(userPK: number, TOKEN: string, res: Response): void;
 }
 
