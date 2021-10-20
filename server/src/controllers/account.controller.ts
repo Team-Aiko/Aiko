@@ -102,6 +102,7 @@ export default class AccountController {
             .then((data) => {
                 if ('token' in data) {
                     res.cookie('TOKEN', data.token);
+                    data.token = '';
                     res.send(getResPacket('OK', 200, 2000000, data));
                 } else {
                     res.send(getResPacket('error', 500, 5000002, data));
