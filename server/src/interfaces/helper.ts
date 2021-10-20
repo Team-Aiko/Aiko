@@ -4,5 +4,5 @@ export type IGetResPacket = <T>(
     description: string,
     httpCode: number,
     appCode: number,
-    data?: T,
+    result?: T,
 ) => IHttpError | IResponseData<T>;

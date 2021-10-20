@@ -5,5 +5,5 @@ export interface IHttpError {
 
 export interface IResponseData<T> extends IHttpError {
     appCode: number;
-    data: T;
+    result: T;
 }

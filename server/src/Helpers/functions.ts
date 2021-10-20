@@ -5,7 +5,7 @@ export const getResPacket: IGetResPacket = function <T>(
     description: string,
     httpCode: number,
     appCode: number,
-    data?: T,
+    result?: T,
 ): IHttpError | IResponseData<T> {
     let packet: IHttpError | IResponseData<T>;
 
@@ -21,7 +21,7 @@ export const getResPacket: IGetResPacket = function <T>(
             httpCode: httpCode,
             description: description,
             appCode: appCode,
-            data: data,
+            result: result,
         };
 
         return packet;
