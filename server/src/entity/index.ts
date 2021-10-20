@@ -1,15 +1,10 @@
-import UserRepository from './UserRepository.entity';
-import LoginAuthRepository from './LoginAuthRepository.entity';
-import CountryRepository from './CountryRepository.entity';
-import ResetPwRepository from './ResetPwRepository.entity';
-import DepartmentRepository from './DepartmentRepository.entity';
-import CompanyRepository from './CompanyRepository.entity';
+import User from './user.entity';
+import LoginAuth from './loginAuth.entity';
+import Country from './country.entity';
+import ResetPw from './resetPw.entity';
+import Department from './department.entity';
+import Company from './company.entity';
+import Socket from './socket.entity';
+import ChatFile from './chatFile.entity';
 
-export {
-    UserRepository,
-    LoginAuthRepository,
-    CountryRepository,
-    ResetPwRepository,
-    DepartmentRepository,
-    CompanyRepository,
-};
+export { User, LoginAuth, Country, ResetPw, Department, Company, Socket, ChatFile };

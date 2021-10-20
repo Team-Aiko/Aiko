@@ -1,4 +1,3 @@
-import { CountryRepository } from 'src/entity';
 import { CountryTable } from '../interfaces';
 
 export default class CountryDTO implements CountryTable {

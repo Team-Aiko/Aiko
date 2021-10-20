@@ -2,16 +2,16 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     OnGatewayInit,
-    WebSocketServer,
     OnGatewayConnection,
     OnGatewayDisconnect,
     WsResponse,
-    MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig } from 'src/interfaces';
+import { IWebSocketConfig, UserInfo } from 'src/interfaces';
+// * Redis
+import SocketService from '../services/socket.service';
 
 const appSettings = config.get<IWebSocketConfig>('WEB_SOCKET');
 
@@ -22,6 +22,7 @@ const appSettings = config.get<IWebSocketConfig>('WEB_SOCKET');
  */
 @WebSocketGateway({ cors: true })
 export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+    constructor(private socketService: SocketService) {}
     // 나중에 추가할 예정
     // @WebSocketServer()
     // wss: Server;
@@ -34,13 +35,25 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
     }
 
     @SubscribeMessage('handleConnection')
-    handleConnection(client: Socket, ...args: any[]) {
+    handleConnection(client: Socket, userInfo: UserInfo) {
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
-        console.log(args);
-        console.log('connection start!: ', client.id);
         this.logger.log(`socket user connection: ${client.id}`);
+        if (userInfo?.USER_PK) {
+            const flag = this.socketService.addSocketId(client.id, userInfo);
+            const userListPromise = this.socketService.getMembers(userInfo?.COMPANY_PK);
+            userListPromise
+                .then((data) => {
+                    client.emit('connected', {
+                        header: flag,
+                        userList: data,
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
     }
 
     @SubscribeMessage('handleDisconnection')
@@ -49,7 +62,8 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
         this.logger.log(`socket user disconnection: ${client.id}`);
-        console.log('client.id: ', client.id);
+        if (client.id) this.socketService.removeSocketId(client.id);
+        client.emit('userDisconnect', client?.id);
     }
 
     @SubscribeMessage('msgToServer')
@@ -58,23 +72,4 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
         // client.emit('msgToClient', payload); -> type unsafe emit
         return { event: 'msgToClient', data: payload }; // type safe emit
     }
-
-    // async handleConnection(socket: Socket) {
-    //     socket.id;
-    // }
-    // @WebSocketServer() server: Server;
-    // private logger = new Logger('OneToOneMessageGateway');
-    // private getClientQuery(client: Socket) {
-    //     return client.handshake.query as unknown as IClientQuery;
-    // }
-    // public async handleconnection(client: Socket) {
-    //     const { user_id } = this.getClientQuery(client);
-    //     return this.server.emit('event', { connected: user_id });
-    // }
-    // public async handleDisconnection(client: Socket) {
-    //     const { user_id } = this.getClientQuery(client);
-    //     const flag = this.server.emit('event', { disconnected: user_id });
-    //     this.server.disconnectSockets();
-    //     return flag;
-    // }
 }

@@ -1,19 +1,9 @@
-import {
-    JoinColumn,
-    OneToOne,
-    Column,
-    Entity,
-    PrimaryColumn,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    OneToMany,
-} from 'typeorm';
+import { JoinColumn, OneToOne, Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { UserTable } from '../interfaces';
-import { CompanyRepository, CountryRepository, LoginAuthRepository, ResetPwRepository } from '.';
-import { DepartmentRepository } from '.';
+import { Department, Company, Country, LoginAuth, ResetPw, Socket } from '.';
 
 @Entity({ name: 'USER_TABLE' })
-export default class UserRepository implements UserTable {
+export default class User implements UserTable {
     @PrimaryGeneratedColumn()
     USER_PK: number;
 
@@ -54,27 +44,29 @@ export default class UserRepository implements UserTable {
     DEPARTMENT_PK: number;
 
     @Column({ type: 'integer', nullable: false })
-    @JoinColumn()
     COUNTRY_PK: number;
 
     @Column({ type: 'varchar', length: 2000 })
     PROFILE_FILE_NAME: string;
 
-    @ManyToOne((type) => CompanyRepository, (company) => company.user)
+    @ManyToOne((type) => Company, (company) => company.user)
     @JoinColumn({ name: 'COMPANY_PK' })
-    company: CompanyRepository;
+    company: Company;
 
-    @ManyToOne((type) => DepartmentRepository, (department) => department.users)
+    @ManyToOne((type) => Department, (department) => department.users)
     @JoinColumn({ name: 'DEPARTMENT_PK' })
-    department: DepartmentRepository;
+    department: Department;
 
-    @OneToOne((type) => LoginAuthRepository, (loginAuth) => loginAuth.user)
-    loginAuth: LoginAuthRepository;
+    @OneToOne((type) => LoginAuth, (loginAuth) => loginAuth.user)
+    loginAuth: LoginAuth;
 
-    @ManyToOne((type) => CountryRepository, (country) => country.users)
+    @ManyToOne((type) => Country, (country) => country.users)
     @JoinColumn({ name: 'COUNTRY_PK' })
-    country: CountryRepository;
+    country: Country;
 
-    @OneToMany((type) => ResetPwRepository, (resetPw) => resetPw.user)
-    resetPws: ResetPwRepository[];
+    @OneToMany((type) => ResetPw, (resetPw) => resetPw.user)
+    resetPws: ResetPw[];
+
+    @OneToOne(() => Socket, (socket) => socket.user)
+    socket: Socket;
 }

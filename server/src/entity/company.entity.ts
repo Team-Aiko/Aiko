@@ -1,9 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { CompanyTable } from '../interfaces';
-import { UserRepository } from '.';
+import { User } from '.';
 
 @Entity({ name: 'COMPANY_TABLE' })
-export default class CompanyRepository implements CompanyTable {
+export default class CompanySelectData implements CompanyTable {
     @PrimaryGeneratedColumn()
     COMPANY_PK: number;
     @Column()
@@ -11,6 +11,6 @@ export default class CompanyRepository implements CompanyTable {
     @Column()
     CREATE_DATE: number;
 
-    @OneToMany(() => UserRepository, (user) => user.company)
-    user: UserRepository[];
+    @OneToMany(() => User, (user) => user.company)
+    user: User[];
 }

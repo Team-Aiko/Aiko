@@ -1,20 +1,13 @@
 /* eslint-disable no-unused-vars */
 // * http
-import { query, Response } from 'express';
+import { Response } from 'express';
 // * Database
 import { Injectable } from '@nestjs/common';
-import { getManager, getConnection } from 'typeorm';
+import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-    UserRepository,
-    LoginAuthRepository,
-    CountryRepository,
-    ResetPwRepository,
-    CompanyRepository,
-    DepartmentRepository,
-} from '../entity';
+import { User, LoginAuth, Country, ResetPw, Company, Department } from '../entity';
 // * mailer
 import * as nodemailer from 'nodemailer';
 import { SendMailOptions } from 'nodemailer';
@@ -51,23 +44,23 @@ const hasher = pbkdf2();
 @Injectable()
 export default class AccountService implements IAccountService {
     constructor(
-        @InjectRepository(UserRepository)
-        private userRepo: Repository<UserRepository>,
-        @InjectRepository(LoginAuthRepository)
-        private loginAuthRepo: Repository<LoginAuthRepository>,
-        @InjectRepository(CountryRepository)
-        private countryRepo: Repository<CountryRepository>,
-        @InjectRepository(ResetPwRepository)
-        private resetPwRepo: Repository<ResetPwRepository>,
-        @InjectRepository(CompanyRepository)
-        private companyRepo: Repository<CompanyRepository>,
-        @InjectRepository(DepartmentRepository)
-        private departmentRepo: Repository<DepartmentRepository>,
+        @InjectRepository(User)
+        private userRepo: Repository<User>,
+        @InjectRepository(LoginAuth)
+        private loginAuthRepo: Repository<LoginAuth>,
+        @InjectRepository(Country)
+        private countryRepo: Repository<Country>,
+        @InjectRepository(ResetPw)
+        private resetPwRepo: Repository<ResetPw>,
+        @InjectRepository(Company)
+        private companyRepo: Repository<Company>,
+        @InjectRepository(Department)
+        private departmentRepo: Repository<Department>,
     ) {}
 
     checkDuplicateEmail(email: string, res: Response<any, Record<string, any>>): void {
         const result = this.userRepo.count({ EMAIL: email });
-        result.then((data) => res.send(data));
+        result.then((data) => res.send(data.toString()));
     }
     getCountryList(str: string, res: Response<any, Record<string, any>>): void {
         const result = this.countryRepo
@@ -93,7 +86,7 @@ export default class AccountService implements IAccountService {
                     const result1 = await this.companyRepo
                         .createQueryBuilder()
                         .insert()
-                        .into(CompanyRepository)
+                        .into(Company)
                         .values({
                             COMPANY_NAME: data.companyName,
                             CREATE_DATE: Math.floor(new Date().getTime() / 1000),
@@ -104,7 +97,7 @@ export default class AccountService implements IAccountService {
                     const result2 = await this.departmentRepo
                         .createQueryBuilder()
                         .insert()
-                        .into(DepartmentRepository)
+                        .into(Department)
                         .values({ DEPARTMENT_NAME: 'OWNER', COMPANY_PK: COMPANY_PK, DEPTH: 0 })
                         .execute();
                     const rawData2: ResultSetHeader = result2.raw;
@@ -112,7 +105,7 @@ export default class AccountService implements IAccountService {
                     const result3 = await this.userRepo
                         .createQueryBuilder()
                         .insert()
-                        .into(UserRepository)
+                        .into(User)
                         .values({
                             NICKNAME: data.nickname,
                             PASSWORD: hash,
@@ -135,7 +128,7 @@ export default class AccountService implements IAccountService {
                     const result = await this.userRepo
                         .createQueryBuilder()
                         .insert()
-                        .into(UserRepository)
+                        .into(User)
                         .values({
                             NICKNAME: data.nickname,
                             PASSWORD: hash,
@@ -158,7 +151,7 @@ export default class AccountService implements IAccountService {
                 this.loginAuthRepo
                     .createQueryBuilder('l')
                     .insert()
-                    .into(LoginAuthRepository)
+                    .into(LoginAuth)
                     .values({ USER_PK: userPK, UUID: uuid })
                     .execute();
                 const mailOpt: SendMailOptions = {
@@ -205,7 +198,7 @@ export default class AccountService implements IAccountService {
 
                 getConnection()
                     .createQueryBuilder()
-                    .update(UserRepository)
+                    .update(User)
                     .set({ IS_VERIFIED: 1 })
                     .where('USER_PK = :userPK', { userPK: result1.USER_PK })
                     .execute();
@@ -223,7 +216,7 @@ export default class AccountService implements IAccountService {
     login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response<any, Record<string, any>>): void {
         (async () => {
             const result = await getConnection()
-                .createQueryBuilder(UserRepository, 'U')
+                .createQueryBuilder(User, 'U')
                 .select([
                     'U.FIRST_NAME',
                     'U.LAST_NAME',
@@ -325,7 +318,7 @@ export default class AccountService implements IAccountService {
                 this.resetPwRepo
                     .createQueryBuilder()
                     .insert()
-                    .into(ResetPwRepository)
+                    .into(ResetPw)
                     .values({ USER_PK: USER_PK, UUID: uuid })
                     .execute();
 
@@ -383,7 +376,7 @@ export default class AccountService implements IAccountService {
 
                             getConnection()
                                 .createQueryBuilder()
-                                .update(UserRepository)
+                                .update(User)
                                 .set({ PASSWORD: hash, SALT: salt })
                                 .where('USER_PK = :userPK', { userPK: USER_PK })
                                 .execute();
@@ -409,7 +402,7 @@ export default class AccountService implements IAccountService {
             }
         })();
     }
-    generateLoginToken(userData: UserRepository): string {
+    generateLoginToken(userData: User): string {
         const data = { ...userData };
         const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
 
@@ -418,7 +411,7 @@ export default class AccountService implements IAccountService {
     getUser(userPK: number, TOKEN: string, res: Response<any, Record<string, any>>): void {
         this.userRepo
             .createQueryBuilder('u')
-            .leftJoinAndSelect(DepartmentRepository, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
+            .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
             .where('u.USER_PK =  :userPK', { userPK: userPK })
             .getOne()
             .then((data) => {

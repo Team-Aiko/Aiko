@@ -1,15 +1,15 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { UserRepository } from '.';
+import { User } from '.';
 import { CountryTable } from '../interfaces';
 
 @Entity({ name: 'COUNTRY_TABLE' })
-export default class CountryRepository implements CountryTable {
+export default class Country implements CountryTable {
     @PrimaryGeneratedColumn()
     COUNTRY_PK: number;
 
     @Column()
     COUNTRY_NAME: string;
 
-    @OneToMany(() => UserRepository, (user) => user.country)
-    users: UserRepository[];
+    @OneToMany(() => User, (user) => user.country)
+    users: User[];
 }

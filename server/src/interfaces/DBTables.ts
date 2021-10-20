@@ -53,5 +53,9 @@ export interface SocketTable {
     USER_PK: number;
 }
 
-export type UserInfo = Pick<SocketTable, 'SOCKET_ID' | 'USER_PK'> &
-    Pick<UserTable, 'FIRST_NAME' | 'LAST_NAME' | 'NICKNAME' | 'COMPANY_PK' | 'DEPARTMENT_PK' | 'PROFILE_FILE_NAME'>;
+export interface ChatFileTable {
+    CF_PK: number;
+    SENDER: number;
+    RECEIVER: number;
+    FILE_ROOT: string;
+}
