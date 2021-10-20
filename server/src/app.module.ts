@@ -40,17 +40,17 @@ const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
     imports: [AccountModule, CompanyModule, ORMModule, ChatModule],
     providers: [OneToOneMessageGateway],
 })
-export class AppModule implements NestModule {
+export class AppModule {
     constructor(private connection: Connection) {
         // database connection : connection
     }
 
     // middlewares
-    configure(consumer: MiddlewareConsumer) {
-        consumer.apply(VerifyJwt).forRoutes({
-            path: 'company',
-            method: RequestMethod.ALL,
-        });
-        consumer.apply(DecodeJwt).forRoutes('company');
-    }
+    // configure(consumer: MiddlewareConsumer) {
+    //     consumer.apply(VerifyJwt).forRoutes({
+    //         path: 'company',
+    //         method: RequestMethod.ALL,
+    //     });
+    //     consumer.apply(DecodeJwt).forRoutes('company');
+    // }
 }
