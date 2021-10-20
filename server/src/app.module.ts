@@ -20,6 +20,7 @@ import {
 } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
+import CompanyModule from './modules/company.module';
 
 // orm
 const typeORMConfig: TypeOrmModuleOptions = {
@@ -36,7 +37,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, ORMModule, ChatModule],
+    imports: [AccountModule, CompanyModule, ORMModule, ChatModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule implements NestModule {
