@@ -3,7 +3,7 @@ import { User } from '.';
 import { DepartmentTable } from '../interfaces';
 
 @Entity({ name: 'DEPARTMENT_TABLE' })
-export default class Deaprtment implements DepartmentTable {
+export default class Department implements DepartmentTable {
     @PrimaryGeneratedColumn()
     DEPARTMENT_PK: number;
     @Column()

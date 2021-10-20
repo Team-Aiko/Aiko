@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { UserTable, DepartmentTable, CompanyTable } from '.';
 import { Response, Request } from 'express';
-import { User } from '../entity';
+import { User, Country } from '../entity';
 
 // * interfaces & Types
 
@@ -12,7 +12,7 @@ export interface BasePacket {
 export interface IAccountController {
     checkDuplicateNickname(req: Request, res: Response): void;
     checkDuplicateEmail(req: Request, res: Response): void;
-    getCountryList(req: Request, res: Response): void;
+    getCountryList(req: Request, res: Response): Promise<Country[]>;
     signup(req: Request, file: Express.Multer.File, res: Response): void;
     grantLoginAuth(req: Request, res: Response): void;
     login(req: Request, res: Response): void;
@@ -47,8 +47,9 @@ export interface ISignup {
     countryPK: number;
     pw: string;
     position: number;
-    companyPK: number;
-    companyName: string | undefined;
+    companyPK?: number;
+    companyName?: string;
+    departmentPK?: number;
 }
 
 export interface IResetPw {
@@ -65,4 +66,5 @@ export type CompanySelectData = Pick<CompanyTable, 'COMPANY_NAME'>;
 export type UserInfo = Omit<UserTable, 'PASSWORD' | 'SALT'>;
 export interface SuccessPacket extends BasePacket {
     userInfo: UserInfo;
+    token: string;
 }

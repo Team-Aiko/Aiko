@@ -1,9 +1,8 @@
 import { JoinColumn, OneToOne, Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
-import { UserTable } from '../interfaces';
 import { Department, Company, Country, LoginAuth, ResetPw, Socket } from '.';
 
 @Entity({ name: 'USER_TABLE' })
-export default class User implements UserTable {
+export default class User {
     @PrimaryGeneratedColumn()
     USER_PK: number;
 

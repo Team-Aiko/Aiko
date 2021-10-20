@@ -51,8 +51,8 @@ import { IFileController, IFileService } from './fileMVC';
 export { IFileController, IFileService };
 
 //* socket interface
-import { ISocketService } from './socketMVC';
-export { ISocketService };
+import { ISocketService, IOneToOnePacket } from './socketMVC';
+export { ISocketService, IOneToOnePacket };
 
 // response types
 import { IHttpError, IResponseData } from './responseInterfaces';
