@@ -5,6 +5,7 @@ import ResetPwRepository from './ResetPwRepository.entity';
 import DepartmentRepository from './DepartmentRepository.entity';
 import CompanyRepository from './CompanyRepository.entity';
 import SocketRepository from './SocketRepository.entity';
+import ChatFileRepository from './ChatFileRepository.entity';
 
 export {
     UserRepository,
@@ -14,4 +15,5 @@ export {
     DepartmentRepository,
     CompanyRepository,
     SocketRepository,
+    ChatFileRepository,
 };

@@ -7,3 +7,18 @@ export interface ISocketService {
     removeSocketId(socketId: string): boolean;
     getMembers(companyPK: number): any;
 }
+
+export interface IChatPacket {
+    sendTo: {
+        userPK: number;
+        socketID: string;
+    };
+    fromTo: {
+        userPK: number;
+        socketID: string;
+    };
+    data: {
+        msg: string;
+        file: string; // base64 encoded
+    };
+}

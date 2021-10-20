@@ -1,8 +1,9 @@
 export interface IHttpError {
-    statusCode: number;
+    httpCode: number;
     description: string;
 }
 
 export interface IResponseData<T> extends IHttpError {
+    appCode: number;
     data: T;
 }

@@ -7,8 +7,18 @@ import {
     ResetPwTable,
     SocketTable,
     UserTable,
+    ChatFileTable,
 } from './DBTables';
-export { CompanyTable, CountryTable, DepartmentTable, LoginAuthTable, ResetPwTable, SocketTable, UserInfo, UserTable };
+export {
+    CompanyTable,
+    CountryTable,
+    DepartmentTable,
+    LoginAuthTable,
+    ResetPwTable,
+    SocketTable,
+    ChatFileTable,
+    UserTable,
+};
 
 // * MVC interfaces
 import {
@@ -33,11 +43,24 @@ export {
     ISignup,
     LoginSelectData,
     SuccessPacket,
+    UserInfo,
 };
 
-//* Redis interface
+//* file api interfaces
+import { IFileController, IFileService } from './fileMVC';
+export { IFileController, IFileService };
+
+//* socket interface
 import { ISocketService } from './socketMVC';
 export { ISocketService };
+
+// response types
+import { IHttpError, IResponseData } from './responseInterfaces';
+export { IHttpError, IResponseData };
+
+// helpers
+import { IGetResPacket } from './helper';
+export { IGetResPacket };
 
 // other types
 import { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig } from './configInterfaces';
