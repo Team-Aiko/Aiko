@@ -3,12 +3,17 @@ import CompanyRepository from 'src/mapper/company.repository';
 import { getConnection } from 'typeorm';
 
 export default class CompanyService {
-    // company entity
-
-    async list(companyName: string, @Res() res) {
+    // 회사 리스트 출력
+    list(companyName: string) {
         const connection = getConnection();
         const company = connection.getCustomRepository(CompanyRepository);
-        const result = await company.list(companyName);
-        res.send(result);
+        const result = company.list(companyName);
+        return result;
+    }
+    organizationChart(companyName: string) {
+        const connection = getConnection();
+        const company = connection.getCustomRepository(CompanyRepository);
+        const result = company.organizationChart(companyName);
+        return result;
     }
 }
