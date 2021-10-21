@@ -8,6 +8,7 @@ import {
     SocketTable,
     UserTable,
     ChatFileTable,
+    OneToOneChatRoomTable,
 } from './DBTables';
 export {
     CompanyTable,
@@ -18,6 +19,7 @@ export {
     SocketTable,
     ChatFileTable,
     UserTable,
+    OneToOneChatRoomTable,
 };
 
 // * MVC interfaces
@@ -51,8 +53,8 @@ import { IFileController, IFileService } from './fileMVC';
 export { IFileController, IFileService };
 
 //* socket interface
-import { ISocketService } from './socketMVC';
-export { ISocketService };
+import { ISocketService, IOneToOnePacket } from './socketMVC';
+export { ISocketService, IOneToOnePacket };
 
 // response types
 import { IHttpError, IResponseData } from './responseInterfaces';

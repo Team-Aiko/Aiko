@@ -46,9 +46,11 @@ function Login(props) {
         (async () => {
             try {
                 const { data } = await post(url, packet, config);
-                if (data.header /* login result : boolean */) {
-                    props.setUserInfo(data.userInfo);
-                    console.log(data.userInfo);
+                const { result } = data;
+                console.log('🚀 ~ file: login.js ~ line 49 ~ data', data);
+                if (result.header /* login result : boolean */) {
+                    props.setUserInfo(result.userInfo);
+                    console.log(result.userInfo);
 
                     Router.push('/');
                 } else {

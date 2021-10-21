@@ -8,7 +8,7 @@ export interface ISocketService {
     getMembers(companyPK: number): any;
 }
 
-export interface IChatPacket {
+export interface IOneToOnePacket {
     sendTo: {
         userPK: number;
         socketID: string;
@@ -19,6 +19,6 @@ export interface IChatPacket {
     };
     data: {
         msg: string;
-        file: string; // base64 encoded
+        file: number; // CF_PK (database socket_table)
     };
 }

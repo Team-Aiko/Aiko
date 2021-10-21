@@ -5,11 +5,12 @@ import {
     OnGatewayConnection,
     OnGatewayDisconnect,
     WsResponse,
+    WebSocketServer,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig, UserInfo } from 'src/interfaces';
+import { IWebSocketConfig, UserInfo, IOneToOnePacket } from 'src/interfaces';
 // * Redis
 import SocketService from '../services/socket.service';
 
@@ -40,7 +41,7 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
         this.logger.log(`socket user connection: ${client.id}`);
-        if (userInfo?.USER_PK) {
+        if (client?.id && userInfo?.USER_PK) {
             const flag = this.socketService.addSocketId(client.id, userInfo);
             const userListPromise = this.socketService.getMembers(userInfo?.COMPANY_PK);
             userListPromise
@@ -61,15 +62,15 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
-        this.logger.log(`socket user disconnection: ${client.id}`);
-        if (client.id) this.socketService.removeSocketId(client.id);
-        client.emit('userDisconnect', client?.id);
+        if (client?.id) {
+            this.logger.log(`socket user disconnection: ${client.id}`);
+            this.socketService.removeSocketId(client.id);
+            client.emit('userDisconnect', client.id);
+        }
     }
 
     @SubscribeMessage('msgToServer')
-    handleMessage(client: Socket, payload: string): WsResponse<any> {
-        // this.wss.emit('msgToClient', payload); // 나중에 추가할 예정
-        // client.emit('msgToClient', payload); -> type unsafe emit
-        return { event: 'msgToClient', data: payload }; // type safe emit
+    handleMessage(client: Socket, payload: IOneToOnePacket): WsResponse<IOneToOnePacket> {
+        return { event: 'msgToClient', data: payload };
     }
 }

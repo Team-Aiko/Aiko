@@ -13,9 +13,11 @@ import { RDBMSConfig } from './interfaces';
 import CompanyModule from './modules/company.module';
 
 // orm
+console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile],
+    //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 

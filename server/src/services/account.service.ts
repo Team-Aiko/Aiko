@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ObjectType } from 'typeorm';
 import { User, LoginAuth, Country, ResetPw, Company, Department } from '../entity';
 // * mailer
 import * as nodemailer from 'nodemailer';
@@ -32,6 +32,16 @@ import {
     IMailConfig,
     IMailBotConfig,
 } from '../interfaces';
+import {
+    UserRepository,
+    CountryRepository,
+    ResetPwRepository,
+    LoginAuthRepository,
+    CompanyRepository,
+    DepartmentRepository,
+} from '../mapper';
+import { setFlagsFromString } from 'v8';
+import { getRepo } from 'src/Helpers/functions';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -42,118 +52,59 @@ const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 const hasher = pbkdf2();
 
 @Injectable()
-export default class AccountService implements IAccountService {
-    constructor(
-        @InjectRepository(User)
-        private userRepo: Repository<User>,
-        @InjectRepository(LoginAuth)
-        private loginAuthRepo: Repository<LoginAuth>,
-        @InjectRepository(Country)
-        private countryRepo: Repository<Country>,
-        @InjectRepository(ResetPw)
-        private resetPwRepo: Repository<ResetPw>,
-        @InjectRepository(Company)
-        private companyRepo: Repository<Company>,
-        @InjectRepository(Department)
-        private departmentRepo: Repository<Department>,
-    ) {}
+export default class AccountService {
+    // private userRepo = this.getRepo(UserRepository);
+    // private loginAuthRepo = this.getRepo(LoginAuthRepository);
+    // private countryRepo = this.getRepo(CountryRepository);
+    // private resetPwRepo = this.getRepo(ResetPwRepository);
+    // private companyRepo = this.getRepo(CompanyRepository);
+    // private departmentRepo = this.getRepo(DepartmentRepository);
 
-    checkDuplicateEmail(email: string, res: Response<any, Record<string, any>>): void {
-        const result = this.userRepo.count({ EMAIL: email });
-        result.then((data) => res.send(data.toString()));
+    async checkDuplicateEmail(email: string): Promise<number> {
+        return await getRepo(UserRepository).checkDuplicateEmail(email);
     }
-    getCountryList(str: string, res: Response<any, Record<string, any>>): void {
-        const result = this.countryRepo
-            .createQueryBuilder('c')
-            .where('c.COUNTRY_NAME like :countryName', { countryName: `${str}%` })
-            .getMany();
-        result.then((data) => res.send(data));
-    }
-    signup(data: ISignup, imageRoute: string, res: Response<any, Record<string, any>>) {
-        (async () => {
-            const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
-                hasher({ password: data.pw }, (err, pw, salt, hash) => {
-                    if (err) throw err;
 
-                    resolve([hash, salt]);
-                });
+    async getCountryList(str: string) {
+        return await getRepo(CountryRepository).getCountryList(str);
+    }
+
+    async signup(data: ISignup, imageRoute: string) {
+        const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
+            hasher({ password: data.pw }, (err, pw, salt, hash) => {
+                if (err) throw err;
+
+                resolve([hash, salt]);
             });
-            const queryRunner = getConnection().createQueryRunner();
-            queryRunner.startTransaction();
-            try {
-                let userPK: number;
-                if (data.position === 0) {
-                    const result1 = await this.companyRepo
-                        .createQueryBuilder()
-                        .insert()
-                        .into(Company)
-                        .values({
-                            COMPANY_NAME: data.companyName,
-                            CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                        })
-                        .execute();
-                    const rawData1: ResultSetHeader = result1.raw;
-                    const COMPANY_PK = rawData1.insertId as number;
-                    const result2 = await this.departmentRepo
-                        .createQueryBuilder()
-                        .insert()
-                        .into(Department)
-                        .values({ DEPARTMENT_NAME: 'OWNER', COMPANY_PK: COMPANY_PK, DEPTH: 0 })
-                        .execute();
-                    const rawData2: ResultSetHeader = result2.raw;
-                    const DEPARTMENT_PK = rawData2.insertId as number;
-                    const result3 = await this.userRepo
-                        .createQueryBuilder()
-                        .insert()
-                        .into(User)
-                        .values({
-                            NICKNAME: data.nickname,
-                            PASSWORD: hash,
-                            SALT: salt,
-                            COMPANY_PK: COMPANY_PK,
-                            DEPARTMENT_PK: DEPARTMENT_PK,
-                            EMAIL: data.email,
-                            FIRST_NAME: data.firstName,
-                            LAST_NAME: data.lastName,
-                            COUNTRY_PK: data.countryPK,
-                            CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                            IS_VERIFIED: 0,
-                            IS_DELETED: 0,
-                            TEL: data.tel,
-                            PROFILE_FILE_NAME: imageRoute,
-                        })
-                        .execute();
-                    userPK = (result3.raw as ResultSetHeader).insertId as number;
-                } else if (data.position === 1) {
-                    const result = await this.userRepo
-                        .createQueryBuilder()
-                        .insert()
-                        .into(User)
-                        .values({
-                            NICKNAME: data.nickname,
-                            PASSWORD: hash,
-                            SALT: salt,
-                            FIRST_NAME: data.firstName,
-                            LAST_NAME: data.lastName,
-                            EMAIL: data.email,
-                            TEL: data.tel,
-                            COUNTRY_PK: data.countryPK,
-                            CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                            COMPANY_PK: data.companyPK,
-                            PROFILE_FILE_NAME: imageRoute,
-                        })
-                        .execute();
-                    userPK = (result.raw as ResultSetHeader).insertId as number;
-                }
+        });
 
-                // * email auth
-                const uuid = v1();
-                this.loginAuthRepo
-                    .createQueryBuilder('l')
-                    .insert()
-                    .into(LoginAuth)
-                    .values({ USER_PK: userPK, UUID: uuid })
-                    .execute();
+        const queryRunner = getConnection().createQueryRunner();
+        queryRunner.startTransaction();
+        let flag = false;
+
+        try {
+            let userPK: number;
+            if (data.position === 0) {
+                const result1 = await getRepo(CompanyRepository).createCompany(data.companyName);
+                const rawData1: ResultSetHeader = result1.raw;
+                const COMPANY_PK = rawData1.insertId as number;
+                const result2 = await getRepo(DepartmentRepository).createOwnerRow(COMPANY_PK);
+                const rawData2: ResultSetHeader = result2.raw;
+                const DEPARTMENT_PK = rawData2.insertId as number;
+                data.companyPK = COMPANY_PK;
+                data.departmentPK = DEPARTMENT_PK;
+
+                const result3 = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
+                userPK = (result3.raw as ResultSetHeader).insertId as number;
+            } else if (data.position === 1) {
+                const result = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
+                userPK = (result.raw as ResultSetHeader).insertId as number;
+            }
+
+            // * email auth
+            const uuid = v1();
+            flag = await getRepo(LoginAuthRepository).createNewRow(uuid, userPK);
+
+            if (flag) {
                 const mailOpt: SendMailOptions = {
                     from: botEmailAddress,
                     to: data.email,
@@ -161,265 +112,215 @@ export default class AccountService implements IAccountService {
                     text: `Please link to this address: http://localhost:5000/account/login-auth?id=${uuid}`,
                 };
 
-                res.send(
-                    await new Promise((resolve, reject) => {
-                        let flag = false;
+                flag = await new Promise<boolean>((resolve, reject) => {
+                    smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                        if (err) {
+                            resolve(false);
+                            throw err;
+                        }
 
-                        smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                            if (err) throw err;
-
-                            smtpTransporter.close();
-                            flag = true;
-                            resolve(flag);
-                        });
-                    }),
-                );
-
-                await queryRunner.commitTransaction();
-            } catch (err) {
-                await queryRunner.rollbackTransaction();
-                throw err;
-            } finally {
-                await queryRunner.release();
+                        smtpTransporter.close();
+                        resolve(true);
+                    });
+                });
             }
-        })();
+
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+
+        return flag;
     }
-    grantLoginAuth(id: string, res: Response<any, Record<string, any>>): void {
-        (async () => {
-            console.log('uuid = ', id);
-            const queryRunner = getConnection().createQueryRunner();
-            await queryRunner.startTransaction();
-            try {
-                const result1 = await this.loginAuthRepo
-                    .createQueryBuilder('l')
-                    .where('l.UUID = uuid', { uuid: id })
-                    .getOne();
-                console.log('result1 = ', result1);
 
-                getConnection()
-                    .createQueryBuilder()
-                    .update(User)
-                    .set({ IS_VERIFIED: 1 })
-                    .where('USER_PK = :userPK', { userPK: result1.USER_PK })
-                    .execute();
+    async grantLoginAuth(uuid: string): Promise<boolean> {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+        let flag = false;
 
-                await queryRunner.commitTransaction();
-                res.send(true);
-            } catch (err) {
-                await queryRunner.rollbackTransaction();
-                res.send(false);
-            } finally {
-                await queryRunner.release();
-            }
-        })();
+        try {
+            const result = await getRepo(LoginAuthRepository).findUser(uuid);
+            flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
+
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            console.error(err);
+            await queryRunner.rollbackTransaction();
+        } finally {
+            await queryRunner.release();
+        }
+
+        return flag;
     }
-    login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>, res: Response<any, Record<string, any>>): void {
-        (async () => {
-            const result = await getConnection()
-                .createQueryBuilder(User, 'U')
-                .select([
-                    'U.FIRST_NAME',
-                    'U.LAST_NAME',
-                    'U.EMAIL',
-                    'U.TEL',
-                    'U.COMPANY_PK',
-                    'U.DEPARTMENT_PK',
-                    'U.PASSWORD',
-                    'U.SALT',
-                    'U.NICKNAME',
-                    'U.USER_PK',
-                ])
-                .leftJoinAndSelect('U.company', 'company')
-                .leftJoinAndSelect('U.department', 'department')
-                .where('U.NICKNAME = :nickname', { nickname: data.NICKNAME })
-                .andWhere('U.IS_VERIFIED = :isVerified', { isVerified: 1 })
-                .getOneOrFail();
 
+    async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
+        const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+        const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>((resolve, reject) => {
             hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
                 const flag = result.PASSWORD === hash;
 
                 if (!flag) {
-                    const packet: BasePacket = {
+                    const bundle: BasePacket = {
                         header: false,
                     };
-                    res.send(packet);
-                    return;
+                    resolve(bundle);
                 }
 
                 // remove security informations
                 result.PASSWORD = '';
                 result.SALT = '';
 
-                const packet: SuccessPacket = {
+                const bundle: SuccessPacket = {
                     header: flag,
                     userInfo: { ...result },
+                    token: this.generateLoginToken(result),
                 };
 
-                res.cookie('TOKEN', this.generateLoginToken(result), { httpOnly: true, maxAge: expireTime.THREE_HOUR });
-                res.send(packet);
+                resolve(bundle);
+
+                /**
+                 * res.cookie('TOKEN',
+                 * this.generateLoginToken(result),
+                 *  { httpOnly: true, maxAge: expireTime.THREE_HOUR });
+                 *
+                 */
+                // res.send(bundle);
             });
-        })();
+        });
+
+        return packet;
     }
-    logout(res: Response<any, Record<string, any>>): void {
-        res.cookie('TOKEN', null);
-        res.send(true);
-    }
-    findNickname(email: string, res: Response<any, Record<string, any>>): void {
+
+    async findNickname(email: string): Promise<boolean> {
+        let flag = false;
+
         try {
-            const result = this.userRepo
-                .createQueryBuilder('u')
-                .where('u.EMAIL = :email', { email: email })
-                .getOneOrFail();
+            const result = await getRepo(UserRepository).findNickname(email);
 
-            result.then((data) => {
-                const { NICKNAME } = data;
-                const mailOpt = {
-                    from: botEmailAddress,
-                    to: email,
-                    subject: '[Aiko] We will show you your nickname!',
-                    text: `Your Nickname: ${NICKNAME}`,
-                };
+            const { NICKNAME } = result;
+            const mailOpt = {
+                from: botEmailAddress,
+                to: email,
+                subject: '[Aiko] We will show you your nickname!',
+                text: `Your Nickname: ${NICKNAME}`,
+            };
 
+            flag = await new Promise<boolean>((resolve, reject) => {
                 smtpTransporter.sendMail(mailOpt, (err, response) => {
                     if (err) {
-                        res.send(false);
+                        resolve(false);
                         throw err;
                     }
 
                     console.log('Message send: ', response);
                     smtpTransporter.close();
-                    res.send(true);
+                    resolve(true);
                 });
             });
+
+            flag = true;
         } catch (err) {
-            res.send(false);
-            throw err;
+            console.error(err);
         }
+
+        return flag;
     }
-    requestResetPassword(email: string, res: Response<any, Record<string, any>>): void {
-        (async () => {
-            const queryRunner = getConnection().createQueryRunner();
+
+    async requestResetPassword(email: string): Promise<boolean> {
+        const queryRunner = getConnection().createQueryRunner();
+        let returnVal = false;
+        try {
             await queryRunner.startTransaction();
 
-            try {
-                const result1 = await this.userRepo
-                    .createQueryBuilder('u')
-                    .where('u.EMAIL = :email', { email: email })
-                    .getOneOrFail();
-                const { USER_PK } = result1;
-                const uuid = v1();
-                const result2 = await this.resetPwRepo
-                    .createQueryBuilder('r')
-                    .where('r.USER_PK = USER_PK', { USER_PK: USER_PK })
-                    .getMany();
-                if (result2.length > 5) throw 'EXCEED_MAXIMUM_TRY'; // 5회 초과시 요청불가
+            const result1 = await getRepo(UserRepository).getUserInfoWithEmail(email);
+            const { USER_PK } = result1;
+            const uuid = v1();
+            const result2 = await getRepo(ResetPwRepository).getRequestCount(USER_PK);
+            if (result2 > 5) throw new Error('request Exceed');
+            const result3 = await getRepo(ResetPwRepository).insertRequestLog(USER_PK, uuid);
+            if (!result3) throw new Error('database insert error');
 
-                // insert request info
-                this.resetPwRepo
-                    .createQueryBuilder()
-                    .insert()
-                    .into(ResetPw)
-                    .values({ USER_PK: USER_PK, UUID: uuid })
-                    .execute();
-
-                // sending mail process
-                const mailOpt: SendMailOptions = {
-                    from: botEmailAddress,
-                    to: email,
-                    subject: '[Aiko] We got a request of reset password.',
-                    text: `
+            const mailOpt: SendMailOptions = {
+                from: botEmailAddress,
+                to: email,
+                subject: '[Aiko] We got a request of reset password.',
+                text: `
                     IF YOU DO NOT REQUEST THIS, JUST IGNORE.
 
                     Please link to this address: http://localhost:3000/reset-password/${uuid}`,
-                };
+            };
 
-                res.send(
-                    await new Promise((resolve, reject) => {
-                        let flag = false;
-                        smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                            if (err) throw err;
+            returnVal = await new Promise<boolean>((resolve, reject) => {
+                smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                    if (err) {
+                        resolve(false);
+                        throw err;
+                    }
 
-                            smtpTransporter.close();
-                            flag = true;
-                            resolve(flag);
-                        });
-                    }),
-                );
+                    smtpTransporter.close();
+                    resolve(true);
+                });
+            });
 
-                await queryRunner.commitTransaction();
-            } catch (err) {
-                await queryRunner.rollbackTransaction();
-                res.send(false);
-                throw err;
-            } finally {
-                await queryRunner.release();
-            }
-        })();
+            queryRunner.commitTransaction();
+        } catch (err) {
+            console.error(err);
+            queryRunner.rollbackTransaction();
+        } finally {
+            queryRunner.release();
+        }
+
+        return returnVal;
     }
-    resetPassword(uuid: string, password: string, res: Response<any, Record<string, any>>): void {
-        (async () => {
-            console.log(uuid, password);
-            const queryRunner = getConnection().createQueryRunner();
-            await queryRunner.startTransaction();
-            try {
-                const result1 = await this.resetPwRepo
-                    .createQueryBuilder('r')
-                    .where('r.UUID = :uuid', { uuid: uuid })
-                    .getOneOrFail();
-                const { USER_PK } = result1;
 
-                res.send(
-                    await new Promise((resolve, reject) => {
-                        let flag = false;
-                        hasher({ password: password }, async (err, pw, salt, hash) => {
-                            if (err) throw err;
+    async resetPassword(uuid: string, password: string) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+        let returnVal = false;
 
-                            getConnection()
-                                .createQueryBuilder()
-                                .update(User)
-                                .set({ PASSWORD: hash, SALT: salt })
-                                .where('USER_PK = :userPK', { userPK: USER_PK })
-                                .execute();
-                            this.resetPwRepo
-                                .createQueryBuilder()
-                                .delete()
-                                .where('USER_PK = :userPK', { userPK: USER_PK })
-                                .execute();
-                            flag = true;
+        try {
+            const result1 = await getRepo(ResetPwRepository).getRequest(uuid);
+            const { USER_PK } = result1[0];
 
-                            resolve(flag);
-                        });
-                    }),
-                );
+            returnVal = await new Promise<boolean>((resolve, reject) => {
+                let flag = false;
 
-                await queryRunner.commitTransaction();
-            } catch (err) {
-                res.send(false);
-                await queryRunner.rollbackTransaction();
-                throw err;
-            } finally {
-                await queryRunner.release();
-            }
-        })();
+                hasher({ password: password }, async (err, pw, salt, hash) => {
+                    if (err) throw err;
+
+                    flag = await getRepo(UserRepository).changePassword(USER_PK, hash, salt);
+                    if (flag) flag = await getRepo(ResetPwRepository).removeRequests(USER_PK);
+
+                    resolve(flag);
+                });
+            });
+
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            console.error(err);
+        } finally {
+            await queryRunner.release();
+        }
+
+        return returnVal;
     }
+
+    async checkDuplicateNickname(nickname: string): Promise<number> {
+        return await getRepo(UserRepository).count({ NICKNAME: nickname });
+    }
+
+    async getUserInfo(userPK: number) {
+        return await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+    }
+
     generateLoginToken(userData: User): string {
         const data = { ...userData };
         const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
 
         return token;
-    }
-    getUser(userPK: number, TOKEN: string, res: Response<any, Record<string, any>>): void {
-        this.userRepo
-            .createQueryBuilder('u')
-            .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-            .where('u.USER_PK =  :userPK', { userPK: userPK })
-            .getOne()
-            .then((data) => {
-                res.send(data);
-            });
-    }
-    checkDuplicateNickname(nickname: string, res: Response<any, Record<string, any>>): void {
-        const result = this.userRepo.count({ NICKNAME: nickname });
-        result.then((count) => res.send(count.toString()));
     }
 }
