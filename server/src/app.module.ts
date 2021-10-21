@@ -23,20 +23,17 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, CompanyModule, ORMModule, ChatModule, FileModule, SocketModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule {
     constructor(private connection: Connection) {
         // database connection : connection
     }
-
-    // middlewares
+    //middleware
     // configure(consumer: MiddlewareConsumer) {
     //     consumer.apply(VerifyJwt).forRoutes({
-    //         path: 'company',
+    //         path: 'company/organization-chart',
     //         method: RequestMethod.ALL,
     //     });
-    //     consumer.apply(DecodeJwt).forRoutes('company');
     // }
 }
