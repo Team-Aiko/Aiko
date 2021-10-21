@@ -1,0 +1,34 @@
+{
+    "WEB_SOCKET": {
+        "port": 5000,
+        "socketPort": 5001,
+        "socketPingInterval": 3000,
+        "socketPinkTimeout": 10000,
+        "socketIoPath": "/socket.io",
+        "bodyLimit": "50mb",
+        "bodyParameterLimit": 50000000
+    },
+    "RDBMS": {
+        "type": "mysql",
+        "host": "localhost",
+        "port": 3306,
+        "username": "root",
+        "password": "비밀번호",
+        "database": "aiko",
+        "entities": [],
+        "synchronize": false
+    },
+    "MAIL_BOT": {
+        "botEmailAddress": "구글이메일"
+    },
+    "MAIL_CONFIG": {
+        "service": "gmail",
+        "host": "smtp.gmail.com",
+        "auth": {
+            "user": "구글이메일",
+            "pass": "비밀번호"
+        },
+        "maxConnections": 5,
+        "maxMessage": 10
+    }
+}
