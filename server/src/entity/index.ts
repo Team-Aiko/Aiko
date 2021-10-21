@@ -6,5 +6,6 @@ import Department from './department.entity';
 import Company from './company.entity';
 import Socket from './socket.entity';
 import ChatFile from './chatFile.entity';
+import OTOChatRoom from './otoChatRoom.entity';
 
-export { User, LoginAuth, Country, ResetPw, Department, Company, Socket, ChatFile };
+export { OTOChatRoom, User, LoginAuth, Country, ResetPw, Department, Company, Socket, ChatFile };
