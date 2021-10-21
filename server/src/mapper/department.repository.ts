@@ -18,4 +18,9 @@ export default class DepartmentRepository extends Repository<Department> {
 
         return insertResult;
     }
+    departmentList(companyPk: number) {
+        return this.createQueryBuilder('d')
+            .select(['d.DEPARTMENT_PK', 'd.DEPARTMENT_NAME', 'd.DEPARTMENT_NAME', 'd.PARENT_PK', 'd.DEPTH'])
+            .getMany();
+    }
 }

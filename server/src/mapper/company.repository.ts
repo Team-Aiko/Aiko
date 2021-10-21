@@ -9,13 +9,6 @@ export default class CompanyRepository extends Repository<Company> {
             .where('COMPANY_NAME like :companyName', { companyName: `${companyName}` })
             .getOne();
     }
-    //회사 조직도 출력
-    organizationChart(companyName: string) {
-        const name = this.createQueryBuilder()
-            .where('COMPANY_NAME like :companyName', { companyName: `${companyName}` })
-            .getOne();
-        return name;
-    }
 
     //!-complted
 

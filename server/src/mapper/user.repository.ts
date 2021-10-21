@@ -161,4 +161,13 @@ export default class UserRepository extends Repository<User> {
 
         return userList;
     }
+
+    // 부서 내 사원들 출력
+
+    employeeList(departmentPk: number) {
+        return this.createQueryBuilder('u')
+            .select(['u.FIRST_NAME', 'u.LAST_NAME'])
+            .where('DEPARTMENT_PK like :departmentPk', { departmentPk: `${departmentPk}` })
+            .getMany();
+    }
 }

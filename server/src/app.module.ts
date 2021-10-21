@@ -31,10 +31,10 @@ export class AppModule {
         // database connection : connection
     }
     //middleware
-    configure(consumer: MiddlewareConsumer) {
-        consumer.apply(VerifyJwt).forRoutes({
-            path: 'company/organization-chart',
-            method: RequestMethod.ALL,
-        });
-    }
+    // configure(consumer: MiddlewareConsumer) {
+    //     consumer.apply(VerifyJwt).forRoutes({
+    //         path: 'company/organization-chart',
+    //         method: RequestMethod.ALL,
+    //     });
+    // }
 }
