@@ -129,4 +129,36 @@ export default class UserRepository extends Repository<User> {
 
         return result;
     }
+    /**
+     * companyPK를 이용해 동일한 회사소속의 사원의 리스트를 얻어내는 메소드 (소켓용)
+     * @param companyPK
+     * @returns UserRepository[]
+     */
+    async getMembers(companyPK: number): Promise<User[]> {
+        let userList: User[] = [];
+
+        try {
+            userList = await getConnection()
+                .createQueryBuilder(User, 'U')
+                .select([
+                    'U.USER_PK',
+                    'U.DEPARTMENT_PK',
+                    'U.FIRST_NAME',
+                    'U.LAST_NAME',
+                    'U.NICKNAME',
+                    'D.DEPARTMENT_NAME',
+                ])
+                .leftJoinAndSelect('U.socket', 'S')
+                .leftJoinAndSelect('U.company', 'C')
+                .where('U.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
+                .andWhere('C.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
+                .andWhere('S.USER_PK = U.USER_PK')
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+
+        return userList;
+    }
 }
