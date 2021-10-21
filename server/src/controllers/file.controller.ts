@@ -20,7 +20,7 @@ export default class FileController implements IFileController {
      */
     @Post('files-on-chat-msg')
     @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
-    uploadFilesOnChatMsg(req: Request, file: Express.Multer.File, res: Response) {
+    uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         const fileName = file?.filename;
         const { chatRoomId } = req.body as { chatRoomId: string };
 
@@ -39,7 +39,7 @@ export default class FileController implements IFileController {
      * @param res
      */
     @Post('view-files')
-    viewFilesOnChatMsg(req: Request, res: Response): void {
+    viewFilesOnChatMsg(@Req() req: Request, @Res() res: Response): void {
         const { fileId } = req.body as { fileId: number };
         this.fileService
             .viewFilesOnChatMsg(fileId)
