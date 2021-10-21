@@ -56,12 +56,11 @@ export interface SocketTable {
 export interface ChatFileTable {
     CF_PK: number;
     FILE_ROOT: string;
-    CR_PK: number;
+    CR_PK: string;
 }
 
 export interface OneToOneChatRoomTable {
-    CR_PK: number;
-    UUID: string;
+    CR_PK: string;
     USER_1: number;
     USER_2: number;
 }

@@ -22,9 +22,10 @@ export default class FileController implements IFileController {
     @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
     uploadFilesOnChatMsg(req: Request, file: Express.Multer.File, res: Response) {
         const fileName = file?.filename;
-        const { sender, receiver } = req.body as { sender: number; receiver: number };
+        const { chatRoomId } = req.body as { chatRoomId: string };
+
         this.fileService
-            .uploadFilesOnChatMsg(fileName, sender, receiver)
+            .uploadFilesOnChatMsg(fileName, chatRoomId)
             .then((data) => res.send(getResPacket('OK', 200, 200000, data)))
             .catch((err) => {
                 res.send(getResPacket('database insert error', 500, 5000002));

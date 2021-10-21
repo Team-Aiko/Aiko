@@ -1,6 +1,6 @@
 import { Express, Request, Response } from 'express';
 export interface IFileService {
-    uploadFilesOnChatMsg(fileRoot: string, sender: number, receiver: number): Promise<number>;
+    uploadFilesOnChatMsg(fileRoot: string, chatRoomId: string): Promise<number>;
     viewFilesOnChatMsg(fileId: number): Promise<string>;
 }
 

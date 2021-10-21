@@ -3,8 +3,8 @@ import { UserInfo } from '.';
 export interface ISocketService {
     findSocketId(userId: number): Promise<string>;
     findUserId(socketId: string): Promise<number>;
-    addSocketId(socketId: string, userInfo: UserInfo): boolean;
-    removeSocketId(socketId: string): boolean;
+    addSocketId(socketId: string, userInfo: UserInfo): Promise<boolean>;
+    removeSocketId(socketId: string): Promise<boolean>;
     getMembers(companyPK: number): any;
 }
 

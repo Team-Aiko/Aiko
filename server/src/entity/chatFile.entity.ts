@@ -9,5 +9,5 @@ export default class ChatFile implements ChatFileTable {
     @Column()
     FILE_ROOT: string;
     @Column()
-    CR_PK: number;
+    CR_PK: string;
 }
