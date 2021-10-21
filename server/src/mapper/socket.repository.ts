@@ -32,8 +32,9 @@ export default class SocketRepository extends Repository<Socket> {
         let flag = false;
 
         try {
-            await this.createQueryBuilder('s')
+            await this.createQueryBuilder()
                 .delete()
+                .from(Socket, 's')
                 .where('s.SOCKET_ID = SOCKET_ID', { SOCKET_ID: socketId })
                 .execute();
             flag = true;

@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import AccountController from 'src/controllers/account.controller';
 import AccountService from '../services/account.service';
 import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entity';
+import SocketService from 'src/services/socket.service';
 
 @Module({
     imports: [
@@ -14,7 +15,7 @@ import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entit
         TypeOrmModule.forFeature([Company, Country, Department, LoginAuth, ResetPw, User]),
     ],
     controllers: [AccountController],
-    providers: [AccountService],
+    providers: [AccountService, SocketService],
     exports: [AccountService],
 })
 export default class AccountModule {}

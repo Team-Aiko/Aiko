@@ -11,6 +11,7 @@ import { LoginAuth, User, Company, Country, Department, ResetPw, Socket, ChatFil
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
 import CompanyModule from './modules/company.module';
+import SocketModule from './modules/socket.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
@@ -22,7 +23,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, CompanyModule, ORMModule, ChatModule, FileModule],
+    imports: [AccountModule, CompanyModule, ORMModule, ChatModule, FileModule, SocketModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule {

@@ -39,9 +39,11 @@ import {
     LoginAuthRepository,
     CompanyRepository,
     DepartmentRepository,
+    OTOChatRoomRepository,
 } from '../mapper';
 import { setFlagsFromString } from 'v8';
 import { getRepo } from 'src/Helpers/functions';
+import SocketService from './socket.service';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -53,12 +55,7 @@ const hasher = pbkdf2();
 
 @Injectable()
 export default class AccountService {
-    // private userRepo = this.getRepo(UserRepository);
-    // private loginAuthRepo = this.getRepo(LoginAuthRepository);
-    // private countryRepo = this.getRepo(CountryRepository);
-    // private resetPwRepo = this.getRepo(ResetPwRepository);
-    // private companyRepo = this.getRepo(CompanyRepository);
-    // private departmentRepo = this.getRepo(DepartmentRepository);
+    constructor(private socketService: SocketService) {}
 
     async checkDuplicateEmail(email: string): Promise<number> {
         return await getRepo(UserRepository).checkDuplicateEmail(email);
@@ -144,6 +141,8 @@ export default class AccountService {
         try {
             const result = await getRepo(LoginAuthRepository).findUser(uuid);
             flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
+
+            if (!flag) new Error('error give auth method');
 
             await queryRunner.commitTransaction();
         } catch (err) {
