@@ -10,6 +10,7 @@ export default class CompanyService {
         const result = company.list(companyName);
         return result;
     }
+    // 회사 조직도 출력
     organizationChart(companyName: string) {
         const connection = getConnection();
         const company = connection.getCustomRepository(CompanyRepository);
