@@ -9,4 +9,6 @@ export default class OTOChatRoom implements OneToOneChatRoomTable {
     USER_1: number;
     @Column()
     USER_2: number;
+    @Column()
+    COMPANY_PK: number;
 }

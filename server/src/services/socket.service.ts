@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createClient } from 'redis';
-import { ISocketService, UserInfo } from '../interfaces';
-import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
-import { Socket, User } from '../entity';
-import { SocketRepository, UserRepository } from 'src/mapper';
+import { UserInfo } from '../interfaces';
+import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
 
 const client = createClient();
@@ -14,7 +11,7 @@ setInterval(() => {
 }, 1000 * 60 * 60 * 24);
 
 @Injectable()
-export default class SocketService implements ISocketService {
+export default class SocketService {
     /**
      * socket_table로부터 특정 유저를 삭제.
      * @param userId
@@ -49,5 +46,19 @@ export default class SocketService implements ISocketService {
     async addSocketId(socketId: string, userInfo: UserInfo): Promise<boolean> {
         const userId = userInfo.USER_PK;
         return await getRepo(SocketRepository).addSocketId(userId, socketId);
+    }
+    /**
+     * 회원가입 승인이 떨어질 시, 사원간 챗룸 생성.
+     * @param userInfo
+     * @returns
+     */
+    async makeOneToOneChatRooms(userInfo: UserInfo): Promise<boolean> {
+        const { COMPANY_PK, USER_PK } = userInfo;
+        const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
+        return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
+    }
+
+    async getOneToOneChatRoomList(userId: number, companyPK: number) {
+        await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
     }
 }
