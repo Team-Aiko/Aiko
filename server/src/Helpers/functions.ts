@@ -33,3 +33,16 @@ export function getRepo<T>(customRepo: ObjectType<T>) {
     const connection = getConnection();
     return connection.getCustomRepository(customRepo);
 }
+export function checkNull(input): boolean {
+    if (input !== null) {
+        return true;
+    } else {
+        return false;
+    }
+}
+// export function headerCheck(): boolean {
+//     return true;
+// } 헤더검증
+// export function bodyrCheck(): boolean {
+//     return true;
+// } 바디 검증

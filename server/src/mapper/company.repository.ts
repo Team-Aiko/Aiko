@@ -3,11 +3,11 @@ import Company from '../entity/company.entity';
 
 @EntityRepository(Company)
 export default class CompanyRepository extends Repository<Company> {
-    //!-complted
+    // 회사 리스트 출력
     list(companyName: string) {
-        return this.createQueryBuilder('c')
-            .where('c.COMPANY_NAME like :companyName', { companyName: `${companyName}` })
-            .getMany();
+        return this.createQueryBuilder()
+            .where('COMPANY_NAME like :companyName', { companyName: `${companyName}` })
+            .getOne();
     }
 
     //!-complted
