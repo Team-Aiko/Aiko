@@ -23,6 +23,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
+    imports: [AccountModule, CompanyModule, ORMModule, ChatModule, FileModule, SocketModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule {
