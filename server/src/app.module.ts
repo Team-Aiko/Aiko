@@ -7,7 +7,7 @@ import FileModule from './modules/file.module';
 import ChatModule from './modules/chat.module';
 import VerifyJwt from './middlewares/verifyJwt';
 import DecodeJwt from './middlewares/decodeJwt';
-import { LoginAuth, User, Company, Country, Department, ResetPw, Socket, ChatFile } from './entity';
+import { LoginAuth, User, Company, Country, Department, ResetPw, Socket, ChatFile, OTOChatRoom } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
 import CompanyModule from './modules/company.module';
@@ -16,7 +16,7 @@ import CompanyModule from './modules/company.module';
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
-    entities: [User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile],
+    entities: [User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile, OTOChatRoom],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
