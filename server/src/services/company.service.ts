@@ -11,28 +11,19 @@ export default class CompanyService {
 
     //부서 내 자식 리스트 재귀함수
 
-    repeatChildren(result, i) {
-        const depth = result[0].DEPTH;
-        result.CHILDREN = [];
-        if (depth === 0) {
-            console.log(result[i]);
-        }
-        return result;
-    }
-
     // 회사 부서 리스트 출력
 
-    async departmentList(payload) {
-        const companyPk = payload.companyPk;
-        let result = await getRepo(DepartmentRepository).departmentList(companyPk);
-        result = this.repeatChildren(result, result.length);
-        return result;
+    departmentList(payload) {
+        // const companyPk = payload.companyPk;
+        // let result = await getRepo(DepartmentRepository).departmentList(companyPk);
+        // result = this.repeatChildren(result, result.length);
+        // return result;
     }
 
     // 해당 부서 내 사원 리스트 출력
 
     employeeList(payload) {
-        const departmentPk = payload.departmentPk;
-        return getRepo(UserRepository).employeeList(departmentPk);
+        // const departmentPk = payload.departmentPk;
+        // return getRepo(UserRepository).employeeList(departmentPk);
     }
 }

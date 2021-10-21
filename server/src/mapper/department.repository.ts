@@ -18,9 +18,17 @@ export default class DepartmentRepository extends Repository<Department> {
 
         return insertResult;
     }
-    departmentList(companyPk: number) {
-        return this.createQueryBuilder('d')
-            .select(['d.DEPARTMENT_PK', 'd.DEPARTMENT_NAME', 'd.DEPARTMENT_NAME', 'd.PARENT_PK', 'd.DEPTH'])
-            .getMany();
-    }
+    // departmentList(companyPk: number) {
+    //     return this.createQueryBuilder('d')
+    //         .select(['d.DEPARTMENT_PK', 'd.DEPARTMENT_NAME', 'd.DEPARTMENT_NAME', 'd.PARENT_PK', 'd.DEPTH'])
+    //         .where('COMPANY_PK like :companyPk', { companyPk: `${companyPk}` })
+    //         .where('')
+    //         .getMany();
+    // }
+    // departmentChildren(departmentPk: number) {
+    //     return this.createQueryBuilder('d')
+    //         .select(['d.DEPARTMENT_PK', 'd.DEPARTMENT_NAME', 'd.DEPARTMENT_NAME', 'd.PARENT_PK', 'd.DEPTH'])
+    //         .where('PARENT_PK like :departmentPk', { departmentPk: `${departmentPk}` })
+    //         .getMany();
+    // }
 }
