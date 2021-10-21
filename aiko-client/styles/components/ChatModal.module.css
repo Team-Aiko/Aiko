@@ -1,0 +1,11 @@
+.member-info {
+    display: flex;
+    align-items: center;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: antiquewhite;
+}
