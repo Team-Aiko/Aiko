@@ -55,7 +55,13 @@ export interface SocketTable {
 
 export interface ChatFileTable {
     CF_PK: number;
-    SENDER: number;
-    RECEIVER: number;
     FILE_ROOT: string;
+    CR_PK: number;
+}
+
+export interface OneToOneChatRoomTable {
+    CR_PK: number;
+    UUID: string;
+    USER_1: number;
+    USER_2: number;
 }

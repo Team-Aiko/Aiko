@@ -8,6 +8,7 @@ import {
     SocketTable,
     UserTable,
     ChatFileTable,
+    OneToOneChatRoomTable,
 } from './DBTables';
 export {
     CompanyTable,
@@ -18,6 +19,7 @@ export {
     SocketTable,
     ChatFileTable,
     UserTable,
+    OneToOneChatRoomTable,
 };
 
 // * MVC interfaces
