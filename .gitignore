@@ -26,3 +26,4 @@ restTest.rest
 
 # ds store
 .DS_STORE
+server2/yarn.lock
