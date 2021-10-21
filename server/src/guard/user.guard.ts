@@ -9,7 +9,7 @@ export class UserGuard implements CanActivate {
             const request = context.switchToHttp().getRequest();
             const accessToken = request.headers.cookie.split('ACCESS_TOKEN=')[1];
             const payload = jwt.verify(accessToken, loginSecretKey.secretKey);
-            request.headers.payload = payload;
+            request.headers.payload = payload; // jwt payload
         } catch (error) {
             const err = error as jwt.VerifyErrors;
             if (err.name === 'TokenExpiredError') {
