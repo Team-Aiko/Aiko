@@ -171,10 +171,11 @@ export default class AccountController {
     @Post('getUserInfo')
     @UseGuards(UserGuard)
     getUserInfo(@Req() req: Request, @Res() res: Response): void {
-        const { USER_PK }: { USER_PK: number } = req.body.userPayload;
+        const { USER_PK, COMPANY_PK }: { USER_PK: number; COMPANY_PK: number } = req.body.userPayload;
+        const { targetUserId } = req.body;
 
         this.accountService
-            .getUserInfo(USER_PK)
+            .getUserInfo(targetUserId, COMPANY_PK)
             .then((data) => {
                 res.send(getResPacket('OK', 200, 200000, data));
             })

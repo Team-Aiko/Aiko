@@ -303,8 +303,8 @@ export default class AccountService {
         return await getRepo(UserRepository).count({ NICKNAME: nickname });
     }
 
-    async getUserInfo(userPK: number) {
-        return await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+    async getUserInfo(userPK: number, companyPK: number) {
+        return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
     }
 
     generateLoginToken(userData: User): string {

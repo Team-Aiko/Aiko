@@ -1,6 +1,6 @@
 import { EntityRepository, getConnection, InsertResult, Repository, getManager } from 'typeorm';
 import { Department, User } from 'src/entity';
-import { getRepo } from 'src/Helpers/functions';
+import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { UserRepository } from '.';
 
 @EntityRepository(Department)
@@ -52,6 +52,12 @@ export default class DepartmentRepository extends Repository<Department> {
                         .getMany();
                 }),
             );
+
+            result2.forEach((arr) => {
+                arr.forEach((user) => {
+                    userList.push(propsRemover(user, ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED']));
+                });
+            });
 
             result2.forEach((arr) => userList.concat(arr));
         } catch (err) {

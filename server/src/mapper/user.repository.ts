@@ -1,7 +1,7 @@
 import { ISignup } from 'src/interfaces';
 import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
-
 import { Department, User } from '../entity';
+import { propsRemover } from 'src/Helpers/functions';
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -73,30 +73,17 @@ export default class UserRepository extends Repository<User> {
         return returnVal;
     }
 
-    async getUserInfoWithUserPK(userPK: number): Promise<User> {
+    async getUserInfoWithUserPK(userPK: number, companyPK: number): Promise<User> {
         let user: User;
 
         try {
             const result = await this.createQueryBuilder('u')
                 .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
                 .where('u.USER_PK =  :userPK', { userPK: userPK })
+                .andWhere('u.COMPANY_PK = :companyPK', { companyPK: companyPK })
                 .getOne();
-            // remove information
 
-            result.PASSWORD = '';
-            result.SALT = '';
-            result.IS_DELETED = -1;
-            result.IS_VERIFIED = -1;
-
-            const refined: Partial<Omit<User, 'PASSWORD' | 'SALT' | 'IS_DELETED' | 'IS_VERIFIED'>> = {};
-
-            Object.keys(refined).forEach((key) => {
-                console.log('key', key);
-                refined[key] = result[key];
-            });
-            console.log(refined);
-
-            user = result;
+            user = propsRemover(result, ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED']);
         } catch (err) {
             console.error(err);
             throw err;
@@ -185,14 +172,5 @@ export default class UserRepository extends Repository<User> {
         }
 
         return userList;
-    }
-
-    // 부서 내 사원들 출력
-
-    employeeList(departmentPk: number) {
-        return this.createQueryBuilder('u')
-            .select(['u.FIRST_NAME', 'u.LAST_NAME'])
-            .where('DEPARTMENT_PK like :departmentPk', { departmentPk: `${departmentPk}` })
-            .getMany();
     }
 }

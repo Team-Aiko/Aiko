@@ -1,5 +1,6 @@
 import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
 import { UserInfo } from 'src/interfaces';
+import { addAbortSignal } from 'stream';
 import { ObjectType, getConnection } from 'typeorm';
 
 export const getResPacket: IGetResPacket = function <T>(
@@ -33,6 +34,13 @@ export function getRepo<T>(customRepo: ObjectType<T>) {
     const connection = getConnection();
     return connection.getCustomRepository(customRepo);
 }
+
+export function propsRemover<T>(obj: T, props: string[]) {
+    props.forEach((prop) => delete (obj as any)[prop]);
+
+    return obj;
+}
+
 export function checkNull(input): boolean {
     if (input !== null) {
         return true;
