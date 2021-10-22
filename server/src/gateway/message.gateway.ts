@@ -10,7 +10,9 @@ import {
 import { Logger } from '@nestjs/common';
 import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig, UserInfo, IOneToOnePacket } from 'src/interfaces';
+import { IWebSocketConfig, IOneToOnePacket } from 'src/interfaces';
+import { User } from 'src/entity';
+
 // * Redis
 import SocketService from '../services/socket.service';
 
@@ -36,7 +38,7 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
     }
 
     @SubscribeMessage('handleConnection')
-    handleConnection(client: Socket, userInfo: UserInfo) {
+    handleConnection(client: Socket, userInfo: User) {
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */

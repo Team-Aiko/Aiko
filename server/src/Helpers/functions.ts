@@ -1,5 +1,5 @@
 import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
-import { UserInfo } from 'src/interfaces';
+import { User } from 'src/entity';
 import { addAbortSignal } from 'stream';
 import { ObjectType, getConnection } from 'typeorm';
 

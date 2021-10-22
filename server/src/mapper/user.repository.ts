@@ -16,18 +16,6 @@ export default class UserRepository extends Repository<User> {
         try {
             userInfo = await getConnection()
                 .createQueryBuilder(User, 'U')
-                .select([
-                    'U.FIRST_NAME',
-                    'U.LAST_NAME',
-                    'U.EMAIL',
-                    'U.TEL',
-                    'U.COMPANY_PK',
-                    'U.DEPARTMENT_PK',
-                    'U.PASSWORD',
-                    'U.SALT',
-                    'U.NICKNAME',
-                    'U.USER_PK',
-                ])
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :nickname', { nickname: nickname })
