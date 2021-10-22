@@ -116,7 +116,6 @@ export default class AccountService {
                             throw err;
                         }
 
-                        smtpTransporter.close();
                         resolve(true);
                     });
                 });
@@ -215,7 +214,6 @@ export default class AccountService {
                     }
 
                     console.log('Message send: ', response);
-                    smtpTransporter.close();
                     resolve(true);
                 });
             });
@@ -231,14 +229,17 @@ export default class AccountService {
     async requestResetPassword(email: string): Promise<boolean> {
         const queryRunner = getConnection().createQueryRunner();
         let returnVal = false;
+
         try {
             await queryRunner.startTransaction();
 
             const result1 = await getRepo(UserRepository).getUserInfoWithEmail(email);
             const { USER_PK } = result1;
+
             const uuid = v1();
             const result2 = await getRepo(ResetPwRepository).getRequestCount(USER_PK);
             if (result2 > 5) throw new Error('request Exceed');
+
             const result3 = await getRepo(ResetPwRepository).insertRequestLog(USER_PK, uuid);
             if (!result3) throw new Error('database insert error');
 
@@ -253,23 +254,24 @@ export default class AccountService {
             };
 
             returnVal = await new Promise<boolean>((resolve, reject) => {
-                smtpTransporter.sendMail(mailOpt, async (err, response) => {
+                smtpTransporter.sendMail(mailOpt, (err, response) => {
+                    console.log('보낸후?');
                     if (err) {
                         resolve(false);
                         throw err;
                     }
-
-                    smtpTransporter.close();
+                    console.log(response);
                     resolve(true);
                 });
             });
-
-            queryRunner.commitTransaction();
+            console.log('여기오는거야?');
+            await queryRunner.commitTransaction();
         } catch (err) {
+            await queryRunner.rollbackTransaction();
             console.error(err);
-            queryRunner.rollbackTransaction();
+            throw err;
         } finally {
-            queryRunner.release();
+            await queryRunner.release();
         }
 
         return returnVal;

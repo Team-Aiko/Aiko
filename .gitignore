@@ -22,7 +22,7 @@ dist
 upload
 
 # rest test
-restTest.rest
+rest_test
 
 # ds store
 .DS_STORE
