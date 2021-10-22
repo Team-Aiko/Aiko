@@ -85,7 +85,7 @@ export default class SocketService {
 
     async getOneToOneChatRoomList(userId: number, companyPK: number) {
         try {
-            await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
+            return await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }

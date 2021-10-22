@@ -4,7 +4,6 @@ import { Connection } from 'typeorm';
 import * as config from 'config';
 import AccountModule from './modules/account.module';
 import FileModule from './modules/file.module';
-import ChatModule from './modules/chat.module';
 import VerifyJwt from './middlewares/verifyJwt';
 import DecodeJwt from './middlewares/decodeJwt';
 import { LoginAuth, User, Company, Country, Department, ResetPw, Socket, ChatFile, OTOChatRoom } from './entity';
@@ -23,7 +22,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, CompanyModule, ORMModule, ChatModule, FileModule, SocketModule],
+    imports: [AccountModule, CompanyModule, ORMModule, SocketModule, FileModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule {

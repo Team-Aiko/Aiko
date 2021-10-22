@@ -56,6 +56,8 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
         try {
             list = await this.createQueryBuilder('o')
                 .where('o.COMPANY_PK =:companyPK', { companyPK: companyPK })
+                .leftJoinAndSelect('o.user1', 'user1')
+                .leftJoinAndSelect('o.user2', 'user2')
                 .where('o.USER_1 = :id', { id: userId })
                 .orWhere('o.USER_2 = :id', { id: userId })
                 .getMany();

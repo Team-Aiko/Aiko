@@ -26,9 +26,8 @@ const appSettings = config.get<IWebSocketConfig>('WEB_SOCKET');
 @WebSocketGateway({ cors: true })
 export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private socketService: SocketService) {}
-    // 나중에 추가할 예정
-    // @WebSocketServer()
-    // wss: Server;
+    @WebSocketServer()
+    wss: Server;
 
     private logger: Logger = new Logger('Websocket gateway');
 
@@ -38,25 +37,41 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
     }
 
     @SubscribeMessage('handleConnection')
-    handleConnection(client: Socket, userInfo: User) {
+    async handleConnection(client: Socket, userInfo: User) {
         /**
          * client.id: 소켓에 접속한 클라이언트의 고유아이디
          */
         this.logger.log(`socket user connection: ${client.id}`);
         if (client?.id && userInfo?.USER_PK) {
-            const flag = this.socketService.addSocketId(client.id, userInfo);
-            const userListPromise = this.socketService.getMembers(userInfo?.COMPANY_PK);
-            userListPromise
-                .then((data) => {
-                    client.emit('connected', {
-                        header: flag,
-                        userList: data,
-                    });
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+            const flag = await this.socketService.addSocketId(client.id, userInfo);
+
+            if (flag) {
+                const chatRoomList = await this.socketService.getOneToOneChatRoomList(
+                    userInfo?.USER_PK,
+                    userInfo?.COMPANY_PK,
+                );
+
+                this.wss.to(client.id).emit('OTOChatRoomList', chatRoomList);
+                // client.emit('client/OTOChatRoomList', chatRoomList);
+            }
         }
+    }
+
+    @SubscribeMessage('server/joinRoom')
+    async joinRoom(client: Socket, rooms: string[]) {
+        rooms.forEach((room) => client.join(room));
+        client.emit('client/joinedRoom', true);
+    }
+
+    @SubscribeMessage('server/leaveRoom')
+    async leaverRoom(client: Socket, rooms: string[]) {
+        rooms.forEach((room) => client.leave(room));
+        client.emit('client/leftRoom', true);
+    }
+
+    @SubscribeMessage('server/sendMsg')
+    async sendMsg(client: Socket, payload: IOneToOnePacket) {
+        this.wss.to(payload.roomId).emit('msgToClient', payload);
     }
 
     @SubscribeMessage('handleDisconnection')
