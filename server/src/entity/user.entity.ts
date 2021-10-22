@@ -48,6 +48,9 @@ export default class User {
     @Column({ type: 'varchar', length: 2000 })
     PROFILE_FILE_NAME: string;
 
+    @Column({ type: 'varchar', length: 512 })
+    REFRESH_TOKEN: string;
+
     @ManyToOne((type) => Company, (company) => company.user)
     @JoinColumn({ name: 'COMPANY_PK' })
     company: Company;

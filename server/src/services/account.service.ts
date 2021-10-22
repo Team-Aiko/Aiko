@@ -316,7 +316,33 @@ export default class AccountService {
 
     // 어세스 토큰 재 발급
 
-    accesToken(req) {
-        const refreshToken = jwt.verify(req.cookies.REFRESH_TOKEN, loginSecretKey.secretKey);
+    async accesToken(req) {
+        const result = {
+            msg: '',
+            accessToken: '',
+            refreshToken: '',
+        };
+        try {
+            const userRefreshToken = jwt.verify(req.cookies.REFRESH_TOKEN, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const userPk = userRefreshToken.userPk;
+            const dbToken = await getRepo(UserRepository).checkRefreshToken(userPk);
+            // db토큰이랑 클라이언트 토큰일치 확인
+            if (dbToken === req.cookies.REFRESH_TOKEN) {
+                result.accessToken = jwt.sign({'d': 'd'}, loginSecretKey.secretKey, loginSecretKey.options); // 어세스토큰 값 ('dd')값 수정필요)
+                result.refreshToken = jwt.sign({ 'userPk': userPk }, loginSecretKey.secretKey, loginSecretKey.options);  //리프레시 토큰 값
+                await getRepo(UserRepository).updateRefreshToken(userPk, result.refreshToken);
+                result.msg = 'success';
+            } else {
+                result.msg = 'error [tokenExits]';
+            }
+        } catch (error) {
+            const err = error as jwt.VerifyErrors;
+            if (err.name === 'TokenExpiredError') {
+                result.msg = 'error [expired]';
+            } else if (err.name === 'JsonWebTokenError') {
+                result.msg = 'error [tokenError]';
+            }
+        }
+        return result;
     }
 }

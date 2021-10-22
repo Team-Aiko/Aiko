@@ -164,9 +164,23 @@ export default class UserRepository extends Repository<User> {
     }
 
     // 리프레시 토큰 조회
-    checkRefreshToken(refreshToekn) {
-        const result = this.createQueryBuilder('u')
+    async checkRefreshToken(userPk: number) {
+        const result = await this.createQueryBuilder('u')
             .select('u.REFRESH_TOKEN')
-            .where('u.REFRESH_TOKEN like :refreshToken', { refreshToekn: `${refreshToekn}` });
+            .where('u.USER_PK like :userPk', { userPk: `${userPk}` })
+            .getOne();
+        return result.REFRESH_TOKEN;
+    }
+    async updateRefreshToken(userPk: number, refreshToken: string) {
+        try {
+            return await this.createQueryBuilder()
+                .update(User)
+                .set({ REFRESH_TOKEN: refreshToken })
+                .where('USER_PK like :userPk', { userPk: `${userPk}` })
+                .execute();
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
 }

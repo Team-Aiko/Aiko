@@ -5,7 +5,7 @@ import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
 import { getResPacket, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
-
+import { getRepo } from '../Helpers/functions';
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
@@ -189,6 +189,12 @@ export default class AccountController {
     @Post('accessToken')
     async accessToken(@Req() req, @Res() res) {
         const result = await this.accountService.accesToken(req);
-        res.send(getResPacket('OK', 200, 200000, result));
+        if (result.msg == 'success'){
+            res.cookie('ACCESS_TOKEN', result.accessToken);
+            res.cookie('REFRESH_TOKEN', result.refreshToken);
+            res.send(getResPacket('OK', 200, 200000, result.msg));
+        } else {
+            res.send(getResPacket('error', 500, 5000001, result.msg));
+        }
     }
 }
