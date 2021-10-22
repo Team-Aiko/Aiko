@@ -7,7 +7,11 @@ export default class CompanyService {
     // 회사 리스트 출력
 
     list(companyName: string) {
-        return getRepo(CompanyRepository).list(companyName);
+        try {
+            return getRepo(CompanyRepository).list(companyName);
+        } catch (err) {
+            throw err;
+        }
     }
 
     //부서 내 자식 리스트 재귀함수
@@ -23,6 +27,10 @@ export default class CompanyService {
 
     // 해당 부서 내 사원 리스트 출력
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
-        return await getRepo(DepartmentRepository).getDepartmentMembers(departmentPK, companyPK);
+        try {
+            return await getRepo(DepartmentRepository).getDepartmentMembers(departmentPK, companyPK);
+        } catch (err) {
+            throw err;
+        }
     }
 }

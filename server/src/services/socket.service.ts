@@ -18,7 +18,11 @@ export default class SocketService {
      * @returns boolean (성공여부)
      */
     async removeSocketId(socketId: string): Promise<boolean> {
-        return await getRepo(SocketRepository).removeSocketId(socketId);
+        try {
+            return await getRepo(SocketRepository).removeSocketId(socketId);
+        } catch (err) {
+            throw err;
+        }
     }
 
     /**
@@ -27,7 +31,11 @@ export default class SocketService {
      * @returns UserRepository[]
      */
     async getMembers(companyPK: number) {
-        return await getRepo(UserRepository).getMembers(companyPK);
+        try {
+            return await getRepo(UserRepository).getMembers(companyPK);
+        } catch (err) {
+            throw err;
+        }
     }
 
     /**
@@ -36,16 +44,28 @@ export default class SocketService {
      * @returns Promise<string> socketId
      */
     async findSocketId(userId: number): Promise<string> {
-        return await getRepo(SocketRepository).findSocketId(userId);
+        try {
+            return await getRepo(SocketRepository).findSocketId(userId);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async findUserId(socketId: string): Promise<number> {
-        return await getRepo(SocketRepository).findUserId(socketId);
+        try {
+            return await getRepo(SocketRepository).findUserId(socketId);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async addSocketId(socketId: string, userInfo: User): Promise<boolean> {
-        const userId = userInfo.USER_PK;
-        return await getRepo(SocketRepository).addSocketId(userId, socketId);
+        try {
+            const userId = userInfo.USER_PK;
+            return await getRepo(SocketRepository).addSocketId(userId, socketId);
+        } catch (err) {
+            throw err;
+        }
     }
     /**
      * 회원가입 승인이 떨어질 시, 사원간 챗룸 생성.
@@ -53,12 +73,20 @@ export default class SocketService {
      * @returns
      */
     async makeOneToOneChatRooms(userInfo: User): Promise<boolean> {
-        const { COMPANY_PK, USER_PK } = userInfo;
-        const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
-        return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
+        try {
+            const { COMPANY_PK, USER_PK } = userInfo;
+            const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
+            return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async getOneToOneChatRoomList(userId: number, companyPK: number) {
-        await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
+        try {
+            await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
+        } catch (err) {
+            throw err;
+        }
     }
 }

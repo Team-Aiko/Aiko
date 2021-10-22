@@ -9,10 +9,18 @@ import { getRepo } from 'src/Helpers/functions';
 @Injectable()
 export default class FileService implements IFileService {
     async uploadFilesOnChatMsg(fileRoot: string, chatRoomId: string): Promise<number> {
-        return await getRepo(ChatFileRepository).uploadFilesOnChatMsg(fileRoot, chatRoomId);
+        try {
+            return await getRepo(ChatFileRepository).uploadFilesOnChatMsg(fileRoot, chatRoomId);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async viewFilesOnChatMsg(fileId: number): Promise<string> {
-        return await getRepo(ChatFileRepository).viewFilesOnChatMsg(fileId);
+        try {
+            return await getRepo(ChatFileRepository).viewFilesOnChatMsg(fileId);
+        } catch (err) {
+            throw err;
+        }
     }
 }

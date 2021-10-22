@@ -58,21 +58,39 @@ export default class AccountService {
     constructor(private socketService: SocketService) {}
 
     async checkDuplicateEmail(email: string): Promise<number> {
-        return await getRepo(UserRepository).checkDuplicateEmail(email);
+        try {
+            return await getRepo(UserRepository).checkDuplicateEmail(email);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async getCountryList(str: string) {
-        return await getRepo(CountryRepository).getCountryList(str);
+        try {
+            return await getRepo(CountryRepository).getCountryList(str);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async signup(data: ISignup, imageRoute: string) {
-        const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
-            hasher({ password: data.pw }, (err, pw, salt, hash) => {
-                if (err) throw err;
+        let hash: string;
+        let salt: string;
 
-                resolve([hash, salt]);
+        try {
+            const [a1, a2] = await new Promise<string[]>((resolve, reject) => {
+                hasher({ password: data.pw }, (err, pw, salt, hash) => {
+                    if (err) throw err;
+
+                    resolve([hash, salt]);
+                });
             });
-        });
+
+            hash = a1;
+            salt = a2;
+        } catch (err) {
+            throw err;
+        }
 
         const queryRunner = getConnection().createQueryRunner();
         queryRunner.startTransaction();
@@ -147,6 +165,7 @@ export default class AccountService {
         } catch (err) {
             console.error(err);
             await queryRunner.rollbackTransaction();
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -218,7 +237,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            console.error(err);
+            throw err;
         }
 
         return flag;
@@ -263,7 +282,6 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            console.error(err);
             throw err;
         } finally {
             await queryRunner.release();
@@ -297,7 +315,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            console.error(err);
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -306,11 +324,19 @@ export default class AccountService {
     }
 
     async checkDuplicateNickname(nickname: string): Promise<number> {
-        return await getRepo(UserRepository).checkDuplicateNickname(nickname);
+        try {
+            return await getRepo(UserRepository).checkDuplicateNickname(nickname);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async getUserInfo(userPK: number, companyPK: number) {
-        return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+        try {
+            return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+        } catch (err) {
+            throw err;
+        }
     }
 
     generateLoginToken(userData: User): string {
