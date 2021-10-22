@@ -5,7 +5,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import { IFileController } from 'src/interfaces';
 import FileService from 'src/services/file.service';
-import { getResPacket } from '../Helpers/functions';
+import { resExecutor } from '../Helpers/functions';
 
 @Controller('store')
 export default class FileController implements IFileController {
@@ -26,9 +26,9 @@ export default class FileController implements IFileController {
 
         this.fileService
             .uploadFilesOnChatMsg(fileName, chatRoomId)
-            .then((data) => res.send(getResPacket('OK', 200, 200000, data)))
+            .then((data) => resExecutor(res, 'OK', 200, 200000, data))
             .catch((err) => {
-                res.send(getResPacket('database insert error', 500, 5000002));
+                resExecutor(res, 'database insert error', 500, 5000002);
                 console.error(err);
             });
     }
@@ -43,9 +43,9 @@ export default class FileController implements IFileController {
         const { fileId } = req.body as { fileId: number };
         this.fileService
             .viewFilesOnChatMsg(fileId)
-            .then((data) => res.send(getResPacket('OK', 200, 200000, data)))
+            .then((data) => resExecutor(res, 'OK', 200, 200000, data))
             .catch((err) => {
-                res.send(getResPacket('database select error', 500, 5000001));
+                resExecutor(res, 'database select error', 500, 5000001);
                 console.error(err);
             });
     }

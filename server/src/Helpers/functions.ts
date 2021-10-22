@@ -1,23 +1,25 @@
 import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
-import { User } from 'src/entity';
-import { addAbortSignal } from 'stream';
 import { ObjectType, getConnection } from 'typeorm';
+import { HttpException } from '@nestjs/common';
+import { Response } from 'express';
 
-export const getResPacket: IGetResPacket = function <T>(
+export const resExecutor: IGetResPacket = function <T>(
+    res: Response,
     description: string,
     httpCode: number,
     appCode: number,
     result?: T,
-): IHttpError | IResponseData<T> {
+) {
     let packet: IHttpError | IResponseData<T>;
 
     if (!result) {
         packet = {
             httpCode: httpCode,
             description: description,
+            appCode: appCode,
         };
 
-        return packet;
+        return new HttpException(packet, httpCode);
     } else {
         packet = {
             httpCode: httpCode,
@@ -26,7 +28,9 @@ export const getResPacket: IGetResPacket = function <T>(
             result: result,
         };
 
-        return packet;
+        res.send(packet);
+
+        return undefined;
     }
 };
 

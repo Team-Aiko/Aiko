@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    HttpException,
+    HttpStatus,
+    Post,
+    Req,
+    Res,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
-import { getResPacket, propsRemover } from '../Helpers/functions';
+import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 
 @Controller('account')
@@ -20,11 +31,11 @@ export default class AccountController {
         this.accountService
             .checkDuplicateNickname(nickname as string)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -35,11 +46,11 @@ export default class AccountController {
         this.accountService
             .checkDuplicateEmail(email as string)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -50,11 +61,11 @@ export default class AccountController {
         this.accountService
             .getCountryList(str as string)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -68,11 +79,11 @@ export default class AccountController {
         this.accountService
             .signup(data, imageRoute)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -83,42 +94,40 @@ export default class AccountController {
         this.accountService
             .grantLoginAuth(id as string)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
     // ! check complete - api doc
     @Post('login')
-    login(@Req() req: Request, @Res() res: Response): void {
+    async login(@Req() req: Request, @Res() res: Response) {
         const data = {
             NICKNAME: req.body.NICKNAME,
             PASSWORD: req.body.PASSWORD,
         };
-        this.accountService
-            .login(data)
-            .then((data) => {
-                if ('token' in data) {
-                    res.cookie('ACCESS_TOKEN', data.token);
-                    res.send(getResPacket('OK', 200, 200000, propsRemover(data, 'token')));
-                } else {
-                    res.send(getResPacket('error', 500, 5000002, data));
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                res.send(getResPacket('error', 500, 500001));
-            });
+
+        try {
+            const result = await this.accountService.login(data);
+            if ('token' in result) {
+                res.cookie('ACCESS_TOKEN', result.token);
+                resExecutor(res, 'OK', 200, 200000, propsRemover(result, 'token'));
+            } else {
+                throw resExecutor(res, 'error', 500, 500001);
+            }
+        } catch (err) {
+            throw resExecutor(res, 'error', 500, 500001);
+        }
     }
 
     // ! check complete - doc api
     @Get('logout')
     logout(@Req() req: Request, @Res() res: Response): void {
         res.cookie('TOKEN', null);
-        res.send(getResPacket('OK', 200, 200000, true));
+        resExecutor(res, 'OK', 200, 200000, true);
     }
 
     // ! check complete - api doc
@@ -128,11 +137,11 @@ export default class AccountController {
         this.accountService
             .findNickname(email)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -143,11 +152,11 @@ export default class AccountController {
         this.accountService
             .requestResetPassword(email)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -158,11 +167,11 @@ export default class AccountController {
         this.accountService
             .resetPassword(uuid, password)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 
@@ -176,11 +185,11 @@ export default class AccountController {
         this.accountService
             .getUserInfo(targetUserId, COMPANY_PK)
             .then((data) => {
-                res.send(getResPacket('OK', 200, 200000, data));
+                resExecutor(res, 'OK', 200, 200000, data);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 5000001));
+                resExecutor(res, 'error', 500, 5000001);
             });
     }
 }

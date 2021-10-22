@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
-import { getResPacket } from 'src/Helpers/functions';
+import { resExecutor } from 'src/Helpers/functions';
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
 
@@ -12,7 +12,7 @@ export default class CompanyController {
     async list(@Req() req, @Res() res) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName);
-        res.send(getResPacket('OK', 200, 200000, result));
+        resExecutor(res, 'OK', 200, 200000, result);
     }
 
     // 회사 내 부서 리스트 출력
@@ -22,7 +22,7 @@ export default class CompanyController {
     async departmentList(@Req() req, @Res() res) {
         const payload = req.body.payload;
         const result = await this.companyService.departmentList(payload);
-        res.send(getResPacket('OK', 200, 200000, result));
+        resExecutor(res, 'OK', 200, 200000, result);
     }
 
     @UseGuards(UserGuard)
@@ -32,11 +32,11 @@ export default class CompanyController {
         this.companyService
             .getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK)
             .then((result) => {
-                res.send(getResPacket('OK', 200, 200000, result));
+                resExecutor(res, 'OK', 200, 200000, result);
             })
             .catch((err) => {
                 console.error(err);
-                res.send(getResPacket('error', 500, 500000));
+                resExecutor(res, 'error', 500, 500000);
             });
     }
 }

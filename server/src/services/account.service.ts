@@ -155,32 +155,39 @@ export default class AccountService {
     }
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
-        const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
-        const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>((resolve, reject) => {
-            hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
-                const flag = result.PASSWORD === hash;
+        try {
+            const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
+                (resolve, reject) => {
+                    hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
+                        const flag = result.PASSWORD === hash;
 
-                if (!flag) {
-                    const bundle: BasePacket = {
-                        header: false,
-                    };
-                    resolve(bundle);
-                }
+                        if (!flag) {
+                            const bundle: BasePacket = {
+                                header: false,
+                            };
+                            resolve(bundle);
+                        }
 
-                // remove security informations
-                propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+                        // remove security informations
+                        propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
 
-                const bundle: SuccessPacket = {
-                    header: flag,
-                    userInfo: { ...result },
-                    token: this.generateLoginToken(result),
-                };
+                        const bundle: SuccessPacket = {
+                            header: flag,
+                            userInfo: { ...result },
+                            token: this.generateLoginToken(result),
+                        };
 
-                resolve(bundle);
-            });
-        });
+                        resolve(bundle);
+                    });
+                },
+            );
 
-        return packet;
+            return packet;
+        } catch (err) {
+            console.log('error catch: account service');
+            throw err;
+        }
     }
 
     async findNickname(email: string): Promise<boolean> {

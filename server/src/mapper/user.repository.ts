@@ -22,6 +22,7 @@ export default class UserRepository extends Repository<User> {
                 .getOneOrFail();
         } catch (err) {
             console.error(err);
+            throw err;
         }
 
         return userInfo;
