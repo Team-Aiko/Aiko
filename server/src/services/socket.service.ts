@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { createClient } from 'redis';
-import { UserInfo } from '../interfaces';
 import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
+import { User } from 'src/entity';
 
 const client = createClient();
 setInterval(() => {
@@ -43,7 +43,7 @@ export default class SocketService {
         return await getRepo(SocketRepository).findUserId(socketId);
     }
 
-    async addSocketId(socketId: string, userInfo: UserInfo): Promise<boolean> {
+    async addSocketId(socketId: string, userInfo: User): Promise<boolean> {
         const userId = userInfo.USER_PK;
         return await getRepo(SocketRepository).addSocketId(userId, socketId);
     }
@@ -52,7 +52,7 @@ export default class SocketService {
      * @param userInfo
      * @returns
      */
-    async makeOneToOneChatRooms(userInfo: UserInfo): Promise<boolean> {
+    async makeOneToOneChatRooms(userInfo: User): Promise<boolean> {
         const { COMPANY_PK, USER_PK } = userInfo;
         const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
         return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);

@@ -1,9 +1,9 @@
-import { UserInfo } from '.';
+import { User } from 'src/entity';
 
 export interface ISocketService {
     findSocketId(userId: number): Promise<string>;
     findUserId(socketId: string): Promise<number>;
-    addSocketId(socketId: string, userInfo: UserInfo): Promise<boolean>;
+    addSocketId(socketId: string, userInfo: User): Promise<boolean>;
     removeSocketId(socketId: string): Promise<boolean>;
     getMembers(companyPK: number): any;
 }
