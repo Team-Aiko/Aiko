@@ -11,7 +11,7 @@ export const getResPacket: IGetResPacket = function <T>(
 ): IHttpError | IResponseData<T> {
     let packet: IHttpError | IResponseData<T>;
 
-    if (!appCode) {
+    if (!result) {
         packet = {
             httpCode: httpCode,
             description: description,
@@ -35,7 +35,7 @@ export function getRepo<T>(customRepo: ObjectType<T>) {
     return connection.getCustomRepository(customRepo);
 }
 
-export function propsRemover<T>(obj: T, props: string[]) {
+export function propsRemover<T>(obj: T, ...props: string[]) {
     props.forEach((prop) => delete (obj as any)[prop]);
 
     return obj;

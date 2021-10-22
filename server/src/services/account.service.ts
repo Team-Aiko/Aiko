@@ -42,7 +42,7 @@ import {
     OTOChatRoomRepository,
 } from '../mapper';
 import { setFlagsFromString } from 'v8';
-import { getRepo } from 'src/Helpers/functions';
+import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 
 // * mailer
@@ -168,8 +168,7 @@ export default class AccountService {
                 }
 
                 // remove security informations
-                result.PASSWORD = '';
-                result.SALT = '';
+                propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
 
                 const bundle: SuccessPacket = {
                     header: flag,

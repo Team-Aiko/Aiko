@@ -55,7 +55,7 @@ export default class DepartmentRepository extends Repository<Department> {
 
             result2.forEach((arr) => {
                 arr.forEach((user) => {
-                    userList.push(propsRemover(user, ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED']));
+                    userList.push(propsRemover(user, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED'));
                 });
             });
 

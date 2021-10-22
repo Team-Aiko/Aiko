@@ -83,7 +83,7 @@ export default class UserRepository extends Repository<User> {
                 .andWhere('u.COMPANY_PK = :companyPK', { companyPK: companyPK })
                 .getOne();
 
-            user = propsRemover(result, ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED']);
+            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
             console.error(err);
             throw err;

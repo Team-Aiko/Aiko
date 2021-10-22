@@ -3,7 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
-import { getResPacket } from '../Helpers/functions';
+import { getResPacket, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 
 @Controller('account')
@@ -103,8 +103,7 @@ export default class AccountController {
             .then((data) => {
                 if ('token' in data) {
                     res.cookie('ACCESS_TOKEN', data.token);
-                    data.token = '';
-                    res.send(getResPacket('OK', 200, 200000, data));
+                    res.send(getResPacket('OK', 200, 200000, propsRemover(data, 'ACCESS_TOKEN')));
                 } else {
                     res.send(getResPacket('error', 500, 5000002, data));
                 }
