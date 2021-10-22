@@ -23,6 +23,7 @@ import * as jwt from 'jsonwebtoken';
 import { expireTime } from '../interfaces/jwt/jwtEnums';
 import { loginSecretKey } from '../interfaces/jwt/secretKey';
 // * others
+
 import {
     IAccountService,
     ISignup,
@@ -311,5 +312,11 @@ export default class AccountService {
         const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
 
         return token;
+    }
+
+    // 어세스 토큰 재 발급
+
+    accesToken(req) {
+        const refreshToken = jwt.verify(req.cookies.REFRESH_TOKEN, loginSecretKey.secretKey);
     }
 }

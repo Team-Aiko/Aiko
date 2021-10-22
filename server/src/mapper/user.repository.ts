@@ -2,6 +2,7 @@ import { ISignup } from 'src/interfaces';
 import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
 import { Department, User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
+import { createQueryBuilder } from 'typeorm';
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -172,5 +173,12 @@ export default class UserRepository extends Repository<User> {
         }
 
         return userList;
+    }
+
+    // 리프레시 토큰 조회
+    checkRefreshToken(refreshToekn) {
+        const result = this.createQueryBuilder('u')
+            .select('u.REFRESH_TOKEN')
+            .where('u.REFRESH_TOKEN like :refreshToken', { refreshToekn: `${refreshToekn}` });
     }
 }

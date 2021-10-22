@@ -183,4 +183,12 @@ export default class AccountController {
                 res.send(getResPacket('error', 500, 5000001));
             });
     }
+
+    // 어세스 토큰 재발급
+
+    @Post('accessToken')
+    async accessToken(@Req() req, @Res() res) {
+        const result = await this.accountService.accesToken(req);
+        res.send(getResPacket('OK', 200, 200000, result));
+    }
 }
