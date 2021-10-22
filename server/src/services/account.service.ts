@@ -178,14 +178,6 @@ export default class AccountService {
                 };
 
                 resolve(bundle);
-
-                /**
-                 * res.cookie('TOKEN',
-                 * this.generateLoginToken(result),
-                 *  { httpOnly: true, maxAge: expireTime.THREE_HOUR });
-                 *
-                 */
-                // res.send(bundle);
             });
         });
 

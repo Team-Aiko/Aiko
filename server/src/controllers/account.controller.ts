@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
 import { getResPacket } from '../Helpers/functions';
+import { UserGuard } from 'src/guard/user.guard';
 
 @Controller('account')
 export default class AccountController {
@@ -101,7 +102,7 @@ export default class AccountController {
             .login(data)
             .then((data) => {
                 if ('token' in data) {
-                    res.cookie('TOKEN', data.token);
+                    res.cookie('ACCESS_TOKEN', data.token);
                     data.token = '';
                     res.send(getResPacket('OK', 200, 200000, data));
                 } else {
@@ -168,10 +169,12 @@ export default class AccountController {
 
     // ! api doc
     @Post('getUserInfo')
+    @UseGuards(UserGuard)
     getUserInfo(@Req() req: Request, @Res() res: Response): void {
-        const { userPK, TOKEN } = req.body;
+        const { USER_PK }: { USER_PK: number } = req.body.userPayload;
+
         this.accountService
-            .getUserInfo(userPK)
+            .getUserInfo(USER_PK)
             .then((data) => {
                 res.send(getResPacket('OK', 200, 200000, data));
             })

@@ -74,10 +74,35 @@ export default class UserRepository extends Repository<User> {
     }
 
     async getUserInfoWithUserPK(userPK: number): Promise<User> {
-        return await this.createQueryBuilder('u')
-            .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-            .where('u.USER_PK =  :userPK', { userPK: userPK })
-            .getOne();
+        let user: User;
+
+        try {
+            const result = await this.createQueryBuilder('u')
+                .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
+                .where('u.USER_PK =  :userPK', { userPK: userPK })
+                .getOne();
+            // remove information
+
+            result.PASSWORD = '';
+            result.SALT = '';
+            result.IS_DELETED = -1;
+            result.IS_VERIFIED = -1;
+
+            const refined: Partial<Omit<User, 'PASSWORD' | 'SALT' | 'IS_DELETED' | 'IS_VERIFIED'>> = {};
+
+            Object.keys(refined).forEach((key) => {
+                console.log('key', key);
+                refined[key] = result[key];
+            });
+            console.log(refined);
+
+            user = result;
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+
+        return user;
     }
 
     async giveAuth(userPK: number): Promise<boolean> {
