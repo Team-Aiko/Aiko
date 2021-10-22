@@ -2,29 +2,24 @@ import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Response } from 'express';
+import { AikoError } from './classes';
 
-export const resExecutor: IGetResPacket = function <T>(
-    res: Response,
-    description: string,
-    httpCode: number,
-    appCode: number,
-    result?: T,
-) {
+export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError: AikoError, result?: T) {
     let packet: IHttpError | IResponseData<T>;
 
     if (result === undefined || result === null) {
         packet = {
-            httpCode: httpCode,
-            description: description,
-            appCode: appCode,
+            httpCode: aikoError.appCode,
+            description: aikoError.description,
+            appCode: aikoError.appCode,
         };
 
-        return new HttpException(packet, httpCode);
+        return new HttpException(packet, aikoError.stateCode);
     } else {
         packet = {
-            httpCode: httpCode,
-            description: description,
-            appCode: appCode,
+            httpCode: aikoError.stateCode,
+            description: aikoError.description,
+            appCode: aikoError.appCode,
             result: result,
         };
 

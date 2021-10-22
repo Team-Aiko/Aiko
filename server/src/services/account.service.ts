@@ -44,6 +44,7 @@ import {
 import { setFlagsFromString } from 'v8';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
+import { AikoError } from 'src/Helpers/classes';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -61,7 +62,7 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateEmail(email);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -69,7 +70,7 @@ export default class AccountService {
         try {
             return await getRepo(CountryRepository).getCountryList(str);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -89,7 +90,7 @@ export default class AccountService {
             hash = a1;
             salt = a2;
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
 
         const queryRunner = getConnection().createQueryRunner();
@@ -142,7 +143,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -165,7 +166,7 @@ export default class AccountService {
         } catch (err) {
             console.error(err);
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -204,8 +205,7 @@ export default class AccountService {
 
             return packet;
         } catch (err) {
-            console.log('error catch: account service');
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -237,7 +237,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
 
         return flag;
@@ -282,7 +282,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -315,7 +315,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -327,7 +327,7 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateNickname(nickname);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -335,7 +335,7 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 

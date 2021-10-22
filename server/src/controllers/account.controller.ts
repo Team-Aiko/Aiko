@@ -5,10 +5,12 @@ import { ISignup, IAccountController, IResetPw } from '../interfaces';
 import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
+import { AikoError } from 'src/Helpers/classes';
 
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
+    readonly success = new AikoError('OK', 200, 200000);
 
     constructor(private accountService: AccountService) {}
 
@@ -23,9 +25,9 @@ export default class AccountController {
                 '🚀 ~ file: account.controller.ts ~ line 22 ~ AccountController ~ checkDuplicateNickname ~ data',
                 data,
             );
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -36,10 +38,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.checkDuplicateEmail(email as string);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -50,10 +51,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.getCountryList(str as string);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -66,10 +66,9 @@ export default class AccountController {
 
         try {
             await this.accountService.signup(data, imageRoute);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.log(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -80,10 +79,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.grantLoginAuth(id as string);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -99,12 +97,15 @@ export default class AccountController {
             const result = await this.accountService.login(data);
             if ('token' in result) {
                 res.cookie('ACCESS_TOKEN', result.token);
-                resExecutor(res, 'OK', 200, 200000, propsRemover(result, 'token'));
+                resExecutor(res, this.success, propsRemover(result, 'token'));
             } else {
-                throw resExecutor(res, 'error', 500, 500001);
             }
         } catch (err) {
-            throw resExecutor(res, 'error', 500, 500001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
+            else {
+                console.log('어라 저게 아니라고?');
+                throw resExecutor(res, err);
+            }
         }
     }
 
@@ -112,7 +113,7 @@ export default class AccountController {
     @Get('logout')
     logout(@Req() req: Request, @Res() res: Response) {
         res.cookie('ACCESS_TOKEN', null);
-        resExecutor(res, 'OK', 200, 200000, true);
+        resExecutor(res, this.success, true);
     }
 
     // ! check complete - api doc
@@ -122,10 +123,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.findNickname(email);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -136,10 +136,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.requestResetPassword(email);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -150,10 +149,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.resetPassword(uuid, password);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -166,10 +164,9 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.getUserInfo(targetUserId, COMPANY_PK);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, 'error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 }

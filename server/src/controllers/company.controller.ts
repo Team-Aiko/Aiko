@@ -3,16 +3,19 @@ import CompanyService from '../services/company.service';
 import { resExecutor } from 'src/Helpers/functions';
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
+import { AikoError } from 'src/Helpers/classes';
 
 @Controller('company')
 export default class CompanyController {
+    readonly success = new AikoError('OK', 200, 200000);
+
     constructor(private companyService: CompanyService) {}
     // 회사 리스트 출력
     @Get('/list')
     async list(@Req() req, @Res() res) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName);
-        resExecutor(res, 'OK', 200, 200000, result);
+        resExecutor(res, this.success, result);
     }
 
     // 회사 내 부서 리스트 출력
@@ -22,7 +25,7 @@ export default class CompanyController {
     async departmentList(@Req() req, @Res() res) {
         const payload = req.body.payload;
         const result = await this.companyService.departmentList(payload);
-        resExecutor(res, 'OK', 200, 200000, result);
+        resExecutor(res, this.success, result);
     }
 
     @UseGuards(UserGuard)
@@ -32,10 +35,9 @@ export default class CompanyController {
 
         try {
             const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            resExecutor(res, 'error', 500, 500000);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 }

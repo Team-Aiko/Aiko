@@ -6,9 +6,12 @@ import { ParsedQs } from 'qs';
 import { IFileController } from 'src/interfaces';
 import FileService from 'src/services/file.service';
 import { resExecutor } from '../Helpers/functions';
+import { AikoError } from 'src/Helpers/classes';
 
 @Controller('store')
 export default class FileController implements IFileController {
+    readonly success = new AikoError('OK', 200, 200000);
+
     constructor(private fileService: FileService) {}
 
     /**
@@ -26,10 +29,9 @@ export default class FileController implements IFileController {
 
         try {
             const data = await this.fileService.uploadFilesOnChatMsg(fileName, chatRoomId);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            resExecutor(res, 'database insert error', 500, 5000002);
-            console.error(err);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 
@@ -43,10 +45,9 @@ export default class FileController implements IFileController {
         const { fileId } = req.body as { fileId: number };
         try {
             const data = await this.fileService.viewFilesOnChatMsg(fileId);
-            resExecutor(res, 'OK', 200, 200000, data);
+            resExecutor(res, this.success, data);
         } catch (err) {
-            console.error(err);
-            resExecutor(res, 'database select error', 500, 5000001);
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 }

@@ -5,6 +5,7 @@ import { getConnection, Repository } from 'typeorm';
 import { ChatFile } from 'src/entity';
 import { ChatFileRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
+import { AikoError } from 'src/Helpers/classes';
 
 @Injectable()
 export default class FileService implements IFileService {
@@ -20,7 +21,7 @@ export default class FileService implements IFileService {
         try {
             return await getRepo(ChatFileRepository).viewFilesOnChatMsg(fileId);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 }

@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
 import { User } from 'src/entity';
+import { AikoError } from 'src/Helpers/classes';
 
 const client = createClient();
 setInterval(() => {
@@ -21,7 +22,7 @@ export default class SocketService {
         try {
             return await getRepo(SocketRepository).removeSocketId(socketId);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -34,7 +35,7 @@ export default class SocketService {
         try {
             return await getRepo(UserRepository).getMembers(companyPK);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -47,7 +48,7 @@ export default class SocketService {
         try {
             return await getRepo(SocketRepository).findSocketId(userId);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -55,7 +56,7 @@ export default class SocketService {
         try {
             return await getRepo(SocketRepository).findUserId(socketId);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -64,7 +65,7 @@ export default class SocketService {
             const userId = userInfo.USER_PK;
             return await getRepo(SocketRepository).addSocketId(userId, socketId);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
     /**
@@ -78,7 +79,7 @@ export default class SocketService {
             const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
             return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 
@@ -86,7 +87,7 @@ export default class SocketService {
         try {
             await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
         } catch (err) {
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         }
     }
 }
