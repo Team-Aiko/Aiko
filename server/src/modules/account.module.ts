@@ -3,6 +3,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import AccountController from 'src/controllers/account.controller';
 import AccountService from 'src/services/account.service';
+import SocketService from 'src/services/socket.service';
 import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entity';
 
 @Module({
@@ -14,7 +15,7 @@ import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entit
         TypeOrmModule.forFeature([Company, Country, Department, LoginAuth, ResetPw, User]),
     ],
     controllers: [AccountController],
-    providers: [AccountService],
+    providers: [AccountService, SocketService],
     exports: [AccountService],
 })
 export default class AccountModule {}
