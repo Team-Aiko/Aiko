@@ -5,10 +5,13 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import { IFileController } from 'src/interfaces';
 import FileService from 'src/services/file.service';
-import { getResPacket } from '../Helpers/functions';
+import { resExecutor } from '../Helpers/functions';
+import { AikoError } from 'src/Helpers/classes';
 
 @Controller('store')
 export default class FileController implements IFileController {
+    readonly success = new AikoError('OK', 200, 200000);
+
     constructor(private fileService: FileService) {}
 
     /**
@@ -20,17 +23,16 @@ export default class FileController implements IFileController {
      */
     @Post('files-on-chat-msg')
     @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
-    uploadFilesOnChatMsg(req: Request, file: Express.Multer.File, res: Response) {
+    async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         const fileName = file?.filename;
         const { chatRoomId } = req.body as { chatRoomId: string };
 
-        this.fileService
-            .uploadFilesOnChatMsg(fileName, chatRoomId)
-            .then((data) => res.send(getResPacket('OK', 200, 200000, data)))
-            .catch((err) => {
-                res.send(getResPacket('database insert error', 500, 5000002));
-                console.error(err);
-            });
+        try {
+            const data = await this.fileService.uploadFilesOnChatMsg(fileName, chatRoomId);
+            resExecutor(res, this.success, data);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
     }
 
     /**
@@ -39,14 +41,13 @@ export default class FileController implements IFileController {
      * @param res
      */
     @Post('view-files')
-    viewFilesOnChatMsg(req: Request, res: Response): void {
+    async viewFilesOnChatMsg(@Req() req: Request, @Res() res: Response) {
         const { fileId } = req.body as { fileId: number };
-        this.fileService
-            .viewFilesOnChatMsg(fileId)
-            .then((data) => res.send(getResPacket('OK', 200, 200000, data)))
-            .catch((err) => {
-                res.send(getResPacket('database select error', 500, 5000001));
-                console.error(err);
-            });
+        try {
+            const data = await this.fileService.viewFilesOnChatMsg(fileId);
+            resExecutor(res, this.success, data);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
     }
 }

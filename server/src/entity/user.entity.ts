@@ -1,5 +1,14 @@
-import { JoinColumn, OneToOne, Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Department, Company, Country, LoginAuth, ResetPw, Socket } from '.';
+import {
+    JoinColumn,
+    OneToOne,
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    OneToMany,
+    ManyToMany,
+} from 'typeorm';
+import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
 
 @Entity({ name: 'USER_TABLE' })
 export default class User {
@@ -68,4 +77,10 @@ export default class User {
 
     @OneToOne(() => Socket, (socket) => socket.user)
     socket: Socket;
+
+    @ManyToMany(() => OTOChatRoom, (otoChatRoom) => otoChatRoom.USER_1)
+    socket1: OTOChatRoom[];
+
+    @ManyToMany(() => OTOChatRoom, (otoChatRoom) => otoChatRoom.USER_2)
+    socket2: OTOChatRoom[];
 }
