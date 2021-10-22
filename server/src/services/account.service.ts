@@ -255,16 +255,13 @@ export default class AccountService {
 
             returnVal = await new Promise<boolean>((resolve, reject) => {
                 smtpTransporter.sendMail(mailOpt, (err, response) => {
-                    console.log('보낸후?');
                     if (err) {
                         resolve(false);
                         throw err;
                     }
-                    console.log(response);
                     resolve(true);
                 });
             });
-            console.log('여기오는거야?');
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
