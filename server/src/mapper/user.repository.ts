@@ -1,7 +1,7 @@
 import { ISignup } from 'src/interfaces';
 import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
-
 import { Department, User } from '../entity';
+import { propsRemover } from 'src/Helpers/functions';
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -15,18 +15,6 @@ export default class UserRepository extends Repository<User> {
         try {
             userInfo = await getConnection()
                 .createQueryBuilder(User, 'U')
-                .select([
-                    'U.FIRST_NAME',
-                    'U.LAST_NAME',
-                    'U.EMAIL',
-                    'U.TEL',
-                    'U.COMPANY_PK',
-                    'U.DEPARTMENT_PK',
-                    'U.PASSWORD',
-                    'U.SALT',
-                    'U.NICKNAME',
-                    'U.USER_PK',
-                ])
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :nickname', { nickname: nickname })
@@ -34,6 +22,7 @@ export default class UserRepository extends Repository<User> {
                 .getOneOrFail();
         } catch (err) {
             console.error(err);
+            throw err;
         }
 
         return userInfo;
@@ -73,11 +62,23 @@ export default class UserRepository extends Repository<User> {
         return returnVal;
     }
 
-    async getUserInfoWithUserPK(userPK: number): Promise<User> {
-        return await this.createQueryBuilder('u')
-            .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-            .where('u.USER_PK =  :userPK', { userPK: userPK })
-            .getOne();
+    async getUserInfoWithUserPK(userPK: number, companyPK: number): Promise<User> {
+        let user: User;
+
+        try {
+            const result = await this.createQueryBuilder('u')
+                .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
+                .where('u.USER_PK =  :userPK', { userPK: userPK })
+                .andWhere('u.COMPANY_PK = :companyPK', { companyPK: companyPK })
+                .getOne();
+
+            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+
+        return user;
     }
 
     async giveAuth(userPK: number): Promise<boolean> {
@@ -160,5 +161,9 @@ export default class UserRepository extends Repository<User> {
         }
 
         return userList;
+    }
+
+    async checkDuplicateNickname(nickname: string): Promise<number> {
+        return await this.createQueryBuilder().where('NICKNAME = :nickname', { nickname: nickname }).getCount();
     }
 }

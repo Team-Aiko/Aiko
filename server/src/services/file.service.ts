@@ -5,14 +5,23 @@ import { getConnection, Repository } from 'typeorm';
 import { ChatFile } from 'src/entity';
 import { ChatFileRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
+import { AikoError } from 'src/Helpers/classes';
 
 @Injectable()
 export default class FileService implements IFileService {
     async uploadFilesOnChatMsg(fileRoot: string, chatRoomId: string): Promise<number> {
-        return await getRepo(ChatFileRepository).uploadFilesOnChatMsg(fileRoot, chatRoomId);
+        try {
+            return await getRepo(ChatFileRepository).uploadFilesOnChatMsg(fileRoot, chatRoomId);
+        } catch (err) {
+            throw err;
+        }
     }
 
     async viewFilesOnChatMsg(fileId: number): Promise<string> {
-        return await getRepo(ChatFileRepository).viewFilesOnChatMsg(fileId);
+        try {
+            return await getRepo(ChatFileRepository).viewFilesOnChatMsg(fileId);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 }

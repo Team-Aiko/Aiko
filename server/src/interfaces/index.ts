@@ -33,7 +33,6 @@ import {
     ISignup,
     LoginSelectData,
     SuccessPacket,
-    UserInfo,
 } from './accountMVC';
 export {
     BasePacket,
@@ -45,7 +44,6 @@ export {
     ISignup,
     LoginSelectData,
     SuccessPacket,
-    UserInfo,
 };
 
 //* file api interfaces

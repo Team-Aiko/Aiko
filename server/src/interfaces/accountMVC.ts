@@ -63,8 +63,7 @@ export type LoginSelectData = Pick<
 >;
 export type DepartmentSelectData = Pick<DepartmentTable, 'DEPARTMENT_NAME'>;
 export type CompanySelectData = Pick<CompanyTable, 'COMPANY_NAME'>;
-export type UserInfo = Omit<UserTable, 'PASSWORD' | 'SALT'>;
 export interface SuccessPacket extends BasePacket {
-    userInfo: UserInfo;
+    userInfo: User;
     token: string;
 }

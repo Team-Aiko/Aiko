@@ -14,6 +14,7 @@ emailBotAddress.json
 
 # test
 test.js
+test.ts
 
 # Transcompiled javascript in backend part
 dist
@@ -22,7 +23,8 @@ dist
 upload
 
 # rest test
-restTest.rest
+rest_test
 
 # ds store
 .DS_STORE
+server2/yarn.lock

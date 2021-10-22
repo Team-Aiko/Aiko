@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { createClient } from 'redis';
-import { ISocketService, UserInfo } from '../interfaces';
-import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
-import { Socket, User } from '../entity';
-import { SocketRepository, UserRepository } from 'src/mapper';
+import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
+import { User } from 'src/entity';
+import { AikoError } from 'src/Helpers/classes';
 
 const client = createClient();
 setInterval(() => {
@@ -14,14 +12,18 @@ setInterval(() => {
 }, 1000 * 60 * 60 * 24);
 
 @Injectable()
-export default class SocketService implements ISocketService {
+export default class SocketService {
     /**
      * socket_table로부터 특정 유저를 삭제.
      * @param userId
      * @returns boolean (성공여부)
      */
     async removeSocketId(socketId: string): Promise<boolean> {
-        return await getRepo(SocketRepository).removeSocketId(socketId);
+        try {
+            return await getRepo(SocketRepository).removeSocketId(socketId);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     /**
@@ -30,7 +32,11 @@ export default class SocketService implements ISocketService {
      * @returns UserRepository[]
      */
     async getMembers(companyPK: number) {
-        return await getRepo(UserRepository).getMembers(companyPK);
+        try {
+            return await getRepo(UserRepository).getMembers(companyPK);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     /**
@@ -39,15 +45,49 @@ export default class SocketService implements ISocketService {
      * @returns Promise<string> socketId
      */
     async findSocketId(userId: number): Promise<string> {
-        return await getRepo(SocketRepository).findSocketId(userId);
+        try {
+            return await getRepo(SocketRepository).findSocketId(userId);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     async findUserId(socketId: string): Promise<number> {
-        return await getRepo(SocketRepository).findUserId(socketId);
+        try {
+            return await getRepo(SocketRepository).findUserId(socketId);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
-    async addSocketId(socketId: string, userInfo: UserInfo): Promise<boolean> {
-        const userId = userInfo.USER_PK;
-        return await getRepo(SocketRepository).addSocketId(userId, socketId);
+    async addSocketId(socketId: string, userInfo: User): Promise<boolean> {
+        try {
+            const userId = userInfo.USER_PK;
+            return await getRepo(SocketRepository).addSocketId(userId, socketId);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
+    }
+    /**
+     * 회원가입 승인이 떨어질 시, 사원간 챗룸 생성.
+     * @param userInfo
+     * @returns
+     */
+    async makeOneToOneChatRooms(userInfo: User): Promise<boolean> {
+        try {
+            const { COMPANY_PK, USER_PK } = userInfo;
+            const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
+            return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
+    }
+
+    async getOneToOneChatRoomList(userId: number, companyPK: number) {
+        try {
+            return await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 }
