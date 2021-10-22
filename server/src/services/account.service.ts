@@ -306,7 +306,7 @@ export default class AccountService {
     }
 
     async checkDuplicateNickname(nickname: string): Promise<number> {
-        return await getRepo(UserRepository).count({ NICKNAME: nickname });
+        return await getRepo(UserRepository).checkDuplicateNickname(nickname);
     }
 
     async getUserInfo(userPK: number, companyPK: number) {

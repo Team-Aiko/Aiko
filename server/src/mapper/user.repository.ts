@@ -162,4 +162,8 @@ export default class UserRepository extends Repository<User> {
 
         return userList;
     }
+
+    async checkDuplicateNickname(nickname: string): Promise<number> {
+        return await this.createQueryBuilder().where('NICKNAME = :nickname', { nickname: nickname }).getCount();
+    }
 }

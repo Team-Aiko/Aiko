@@ -12,7 +12,7 @@ export const resExecutor: IGetResPacket = function <T>(
 ) {
     let packet: IHttpError | IResponseData<T>;
 
-    if (!result) {
+    if (result === undefined || result === null) {
         packet = {
             httpCode: httpCode,
             description: description,
