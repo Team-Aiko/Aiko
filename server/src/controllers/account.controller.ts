@@ -102,10 +102,6 @@ export default class AccountController {
             }
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
-            else {
-                console.log('어라 저게 아니라고?');
-                throw resExecutor(res, err);
-            }
         }
     }
 
