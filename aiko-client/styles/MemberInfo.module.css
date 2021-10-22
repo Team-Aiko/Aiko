@@ -1,0 +1,93 @@
+.outerContainer {
+    width:90%;
+    height:80%;
+    background-color: #DEE1ED;
+    display:block;
+    margin:50px auto;
+    box-sizing:border-box;
+}
+
+.upperContainer {
+    background-color:#848484;
+    width:100%;
+    height:40%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.profilePic {
+    width:20%;
+    height:70%;
+    border-radius:100%;
+    background-color:white;
+}
+
+.profileInfo {
+    width:70%;
+    height:70%;
+    background-color:white;
+    margin-left:30px;
+}
+
+.lowerContainer {
+    background-color:#404040;
+    width:100%;
+    height:60%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    flex-wrap:wrap;
+}
+
+.btnDiv {
+    height:40%;
+    width:65%;
+    background-color:white;
+}
+
+.logDiv {
+    height:40%;
+    width:65%;
+    background-color:white;
+    margin-top:20px;
+}
+
+
+.optionDiv {
+    height:80%;
+    width:25%;
+    float: right;
+    background: white;
+    margin-right:15px;
+}
+
+.buttons {
+    height:40%;
+    width:60%;
+    background-color:#c4c4c4;
+    border-radius:20px;
+    margin-top:5px;
+}
+
+.blueBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#1042f1;
+}
+
+.redBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#f11039;
+}
+
+.greenBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#24afa7;
+}
