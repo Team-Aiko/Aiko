@@ -20,17 +20,17 @@ export default class FileController implements IFileController {
      */
     @Post('files-on-chat-msg')
     @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
-    uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
+    async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         const fileName = file?.filename;
         const { chatRoomId } = req.body as { chatRoomId: string };
 
-        this.fileService
-            .uploadFilesOnChatMsg(fileName, chatRoomId)
-            .then((data) => resExecutor(res, 'OK', 200, 200000, data))
-            .catch((err) => {
-                resExecutor(res, 'database insert error', 500, 5000002);
-                console.error(err);
-            });
+        try {
+            const data = await this.fileService.uploadFilesOnChatMsg(fileName, chatRoomId);
+            resExecutor(res, 'OK', 200, 200000, data);
+        } catch (err) {
+            resExecutor(res, 'database insert error', 500, 5000002);
+            console.error(err);
+        }
     }
 
     /**
@@ -39,14 +39,14 @@ export default class FileController implements IFileController {
      * @param res
      */
     @Post('view-files')
-    viewFilesOnChatMsg(@Req() req: Request, @Res() res: Response): void {
+    async viewFilesOnChatMsg(@Req() req: Request, @Res() res: Response) {
         const { fileId } = req.body as { fileId: number };
-        this.fileService
-            .viewFilesOnChatMsg(fileId)
-            .then((data) => resExecutor(res, 'OK', 200, 200000, data))
-            .catch((err) => {
-                resExecutor(res, 'database select error', 500, 5000001);
-                console.error(err);
-            });
+        try {
+            const data = await this.fileService.viewFilesOnChatMsg(fileId);
+            resExecutor(res, 'OK', 200, 200000, data);
+        } catch (err) {
+            console.error(err);
+            resExecutor(res, 'database select error', 500, 5000001);
+        }
     }
 }

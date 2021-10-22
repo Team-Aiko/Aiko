@@ -9,16 +9,14 @@ export default class SocketController {
     constructor(private socketService: SocketService) {}
 
     @Get('generation-chat-room')
-    makeOneToOneChatRooms(@Req() req: Request, @Res() res: Response) {
+    async makeOneToOneChatRooms(@Req() req: Request, @Res() res: Response) {
         const userInfo: User = req.body.userPayload;
-        this.socketService
-            .makeOneToOneChatRooms(userInfo)
-            .then((result) => {
-                res.send(resExecutor(res, 'error', 500, 500000, result));
-            })
-            .catch((err) => {
-                console.error('error catch account controller: ', err);
-                resExecutor(res, 'error', 500, 500000);
-            });
+        try {
+            const data = await this.socketService.makeOneToOneChatRooms(userInfo);
+            resExecutor(res, 'error', 500, 500000, data);
+        } catch (err) {
+            console.error('error catch account controller: ', err);
+            resExecutor(res, 'error', 500, 500000);
+        }
     }
 }

@@ -27,16 +27,15 @@ export default class CompanyController {
 
     @UseGuards(UserGuard)
     @Get('/employee-list')
-    getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
+    async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
         const { DEPARTMENT_PK, COMPANY_PK }: { DEPARTMENT_PK: number; COMPANY_PK: number } = req.body.userPayload;
-        this.companyService
-            .getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK)
-            .then((result) => {
-                resExecutor(res, 'OK', 200, 200000, result);
-            })
-            .catch((err) => {
-                console.error(err);
-                resExecutor(res, 'error', 500, 500000);
-            });
+
+        try {
+            const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
+            resExecutor(res, 'OK', 200, 200000, data);
+        } catch (err) {
+            console.error(err);
+            resExecutor(res, 'error', 500, 500000);
+        }
     }
 }
