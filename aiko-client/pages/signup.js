@@ -197,10 +197,10 @@ function Signup() {
         const company = e.target.value;
 
         if (company.length === 1) {
-            const url = `/api/company/getCompanyList?str=${company}`;
+            const url = `/api/company/list?companyName=${company}`;
             get(url).then((res) => {
-                const { data } = res;
-                const refinedData = data.map((curr) => {
+                const { result } = res.data;
+                const refinedData = result.map((curr) => {
                     curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
                     return curr;
                 });
@@ -254,8 +254,9 @@ function Signup() {
             console.log('🚀 ~ file: signup.js ~ line 230 ~ fixCompany ~ val', val);
             let targetCompany;
             companyList.some((curr) => {
-                if (curr.COMPANY_PK === val) {
+                if (curr.COMPANY_NAME === val) {
                     targetCompany = curr.COMPANY_PK;
+                    console.log('🚀 ~ file: signup.js ~ line 259 ~ companyList.some ~ targetCompany', targetCompany);
                     setCompanyPK(targetCompany);
                     setErrCompanyName(false);
                     console.log('🚀 ~ file: signup.js ~ line 232 ~ fixCompany ~ targetCompany', targetCompany);
