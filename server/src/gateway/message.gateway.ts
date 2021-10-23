@@ -86,11 +86,12 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
     @SubscribeMessage('server/test/joinRoom')
     async testRoomJoin(client: Socket, payload: { roomId: string; msg: string }) {
         client.join(payload.roomId);
-        this.wss.to(client.id).emit('client/test/joinedRoom', payload.msg);
+        console.log(payload.roomId);
+        this.wss.to(payload.roomId).emit('client/test/joinedRoom', payload.msg);
     }
     @SubscribeMessage('server/test/room/sendMsg')
     async testRoomSendMsg(client: Socket, payload: { roomId: string; msg: string }) {
-        this.wss.to(payload.roomId).emit(payload.msg);
+        this.wss.to(payload.roomId).emit('client/test/room/sendMsg', payload.msg);
     }
 
     @SubscribeMessage('handleDisconnection')

@@ -63,6 +63,10 @@ function PComp(props) {
         client.on('client/test/joinedRoom', (msg) => {
             console.log(msg);
         });
+
+        client.on('client/test/room/sendMsg', (msg) => {
+            console.log(msg);
+        });
     }, []);
 
     return (
