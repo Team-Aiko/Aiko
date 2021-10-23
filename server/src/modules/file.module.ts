@@ -10,7 +10,6 @@ import { Company, Department, Country, LoginAuth, ResetPw, Socket, User, ChatFil
         MulterModule.register({
             dest: './files',
         }),
-        TypeOrmModule.forFeature([User, Socket, ChatFile]),
     ],
     controllers: [FileController],
     providers: [FileService],

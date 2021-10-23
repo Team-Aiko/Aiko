@@ -12,7 +12,6 @@ import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entit
         MulterModule.register({
             dest: './files/profile',
         }),
-        TypeOrmModule.forFeature([Company, Country, Department, LoginAuth, ResetPw, User]),
     ],
     controllers: [AccountController],
     providers: [AccountService, SocketService],

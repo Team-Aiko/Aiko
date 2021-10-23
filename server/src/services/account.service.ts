@@ -177,6 +177,7 @@ export default class AccountService {
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
             const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
                     hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
@@ -188,10 +189,8 @@ export default class AccountService {
                             };
                             resolve(bundle);
                         }
-
                         // remove security informations
                         propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-
                         const bundle: SuccessPacket = {
                             header: flag,
                             userInfo: { ...result },

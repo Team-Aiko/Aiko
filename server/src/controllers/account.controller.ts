@@ -95,6 +95,7 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.login(data);
+            console.log('🚀 ~ file: account.controller.ts ~ line 98 ~ AccountController ~ login ~ result', result);
             if ('token' in result) {
                 res.cookie('ACCESS_TOKEN', result.token);
                 resExecutor(res, this.success, propsRemover(result, 'token'));

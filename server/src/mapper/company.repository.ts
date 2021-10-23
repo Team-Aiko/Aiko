@@ -5,8 +5,8 @@ import Company from '../entity/company.entity';
 export default class CompanyRepository extends Repository<Company> {
     // 회사 리스트 출력
     list(companyName: string) {
-        return this.createQueryBuilder()
-            .where('COMPANY_NAME like :companyName', { companyName: `${companyName}` })
+        return this.createQueryBuilder('c')
+            .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
             .getOne();
     }
 
