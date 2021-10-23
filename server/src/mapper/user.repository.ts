@@ -81,6 +81,19 @@ export default class UserRepository extends Repository<User> {
         return user;
     }
 
+    async getUserInfo(userPK: number): Promise<User> {
+        let user: User;
+        try {
+            const result = await this.createQueryBuilder('u')
+                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
+                .getOne();
+            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+        } catch (err) {
+            throw err;
+        }
+        return user;
+    }
+
     async giveAuth(userPK: number): Promise<boolean> {
         let flag = false;
 

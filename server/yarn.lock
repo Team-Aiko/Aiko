@@ -1179,12 +1179,12 @@ __metadata:
   linkType: hard
 
 "@types/eslint@npm:*":
-  version: 7.28.1
-  resolution: "@types/eslint@npm:7.28.1"
+  version: 7.28.2
+  resolution: "@types/eslint@npm:7.28.2"
   dependencies:
     "@types/estree": "*"
     "@types/json-schema": "*"
-  checksum: 16086d00c2f56b16471fd02c2b495b07e3b84b57113fe34d94b57fb9fc0a5a85f6b87d787051f5d6acb859f6addda9b1e747d1a83ee08cac330d0f26c357fb9e
+  checksum: d177f3eec22971baeef8f244693687ee4c0357125f4a8fb7e614b83e36b98318a0b1a13b31230199d2a91af54122b67883faa7b4d2c29f0c83e2650f6b0d4d9c
   languageName: node
   linkType: hard
 
@@ -1311,9 +1311,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=10.0.0, @types/node@npm:^16.0.0":
-  version: 16.11.2
-  resolution: "@types/node@npm:16.11.2"
-  checksum: 1617b61160943121165ff89d72d3f7b4d55265a0129fd2ab6eb0ce81a3340ce9b3bd2ce8ec2d9f0f8b3702b434870596cd327ba472ba6e7d1faa5eedb8208e3a
+  version: 16.11.4
+  resolution: "@types/node@npm:16.11.4"
+  checksum: 96e08c0f8bb17601c18640a8eac61e2f236fe0c8a6b01a9221c10749157358fb29fdef4b5e264f72559e72f9830e6093f3ab5fef2df90afdad562ffa45ac534c
   languageName: node
   linkType: hard
 
@@ -2097,8 +2097,8 @@ __metadata:
   linkType: hard
 
 "aws-sdk@npm:^2.37.0":
-  version: 2.1012.0
-  resolution: "aws-sdk@npm:2.1012.0"
+  version: 2.1013.0
+  resolution: "aws-sdk@npm:2.1013.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -2109,7 +2109,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: d234ced3083832b34c3a6e08b82def23354d46a250859b3d681990172e5ab23b2a6a3c0c1efd381165595a0508d2817695e6ea8bdbe54a1cb330ffe658be7a33
+  checksum: b4728bad6cffe0fe0691155d344c1235c1f0e7d62a2798f2ae0c094c4f7bbbbcb1173bea4170929fdc3899092feeaef5fea31582454de987c69c19ea1138ce17
   languageName: node
   linkType: hard
 
@@ -2442,9 +2442,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001265":
-  version: 1.0.30001270
-  resolution: "caniuse-lite@npm:1.0.30001270"
-  checksum: bee685ddf96f707f124c417f9bf7d84e4e57d5cfeaa3d0ccb79c50a09d7c74786fbe7ec89d733ccc1d0fddd593e9eb3fded5ae12b1ad5a3998a32eecbe0b191c
+  version: 1.0.30001271
+  resolution: "caniuse-lite@npm:1.0.30001271"
+  checksum: 0271e234e17c588fa203a34523f90c5a21ab62f41a2c3acabe96f0251593ac92f192cadd7a3dcbcf49bb28de4f57ca274d775c75700c3f38e9c42028d3becb0f
   languageName: node
   linkType: hard
 
@@ -3111,9 +3111,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.867":
-  version: 1.3.876
-  resolution: "electron-to-chromium@npm:1.3.876"
-  checksum: 22004fa6ea0bd3f963836a5b82c45d70983e69c406ac2c27a72162e35b4446d9f3cf37c2218c3167797743f7a0e4055280c930a39124aa56bb42d5ec9db29428
+  version: 1.3.877
+  resolution: "electron-to-chromium@npm:1.3.877"
+  checksum: 1642a7dc06fb6a9f1612c9b451d6b7daf7c0ef9a1caf8137c1359f9c855fdbcc58079ecd269edf8fd1db24c0c29a210317c03cf451f7507b3240f4208fb84f4b
   languageName: node
   linkType: hard
 
@@ -7750,8 +7750,8 @@ __metadata:
   linkType: hard
 
 "ts-node@npm:^10.0.0":
-  version: 10.3.0
-  resolution: "ts-node@npm:10.3.0"
+  version: 10.4.0
+  resolution: "ts-node@npm:10.4.0"
   dependencies:
     "@cspotcode/source-map-support": 0.7.0
     "@tsconfig/node10": ^1.0.7
@@ -7781,7 +7781,7 @@ __metadata:
     ts-node-script: dist/bin-script.js
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
-  checksum: aea1b9eac4d4c735c453a0e7efef6fd76c7b59db3be158eabe21abad9d35209d243b210a9a5ef39742ffbda542250c2e771fa387e3b4829e8cb699e82f3820c4
+  checksum: 3933ac0a937d33c45e04a6750fcdd3e765eb2897d1da1307cd97ac52af093bcfb632ec0453a75000a65c8b5b7bdb32b1077050a186dcc556e62657cb592e6d49
   languageName: node
   linkType: hard
 

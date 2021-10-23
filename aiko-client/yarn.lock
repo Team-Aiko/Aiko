@@ -692,9 +692,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=10.0.0":
-  version: 16.11.2
-  resolution: "@types/node@npm:16.11.2"
-  checksum: 1617b61160943121165ff89d72d3f7b4d55265a0129fd2ab6eb0ce81a3340ce9b3bd2ce8ec2d9f0f8b3702b434870596cd327ba472ba6e7d1faa5eedb8208e3a
+  version: 16.11.4
+  resolution: "@types/node@npm:16.11.4"
+  checksum: 96e08c0f8bb17601c18640a8eac61e2f236fe0c8a6b01a9221c10749157358fb29fdef4b5e264f72559e72f9830e6093f3ab5fef2df90afdad562ffa45ac534c
   languageName: node
   linkType: hard
 
@@ -706,11 +706,11 @@ __metadata:
   linkType: hard
 
 "@types/react-is@npm:^16.7.1 || ^17.0.0":
-  version: 17.0.2
-  resolution: "@types/react-is@npm:17.0.2"
+  version: 17.0.3
+  resolution: "@types/react-is@npm:17.0.3"
   dependencies:
     "@types/react": "*"
-  checksum: ecd4f59e66858ebf13988c13de32e0f1753e9f0ec9a330bbf99c7c8ec75d3b52ad01965a7912c463615c0498965c1f17ea8a1a06606cf8edeb4b723f7ab74879
+  checksum: 6abb7c47d54f012272650df8a962a28bd82f219291e5ef8b4dfa7fe0bb98ae243b060bf9fbe8ceff6213141794855a006db194b490b00ffd15842ae19d0ce1f0
   languageName: node
   linkType: hard
 
@@ -727,11 +727,11 @@ __metadata:
   linkType: hard
 
 "@types/react-transition-group@npm:^4.2.0":
-  version: 4.4.3
-  resolution: "@types/react-transition-group@npm:4.4.3"
+  version: 4.4.4
+  resolution: "@types/react-transition-group@npm:4.4.4"
   dependencies:
     "@types/react": "*"
-  checksum: 7e45c6bf50cdfdc482d9ce4c302cda65134b3a44306c749d46d2f3256ca8c95cbbc1cbe28c32010b9273f5db78c8d434a8cea3688ac6e5327443b8a8d1c1caac
+  checksum: 86e9ff9731798e12bc2afe0304678918769633b531dcf6397f86af81718fb7930ef8648e894eeb3718fc6eab6eb885cfb9b82a44d1d74e10951ee11ebc4643ae
   languageName: node
   linkType: hard
 
@@ -1133,11 +1133,11 @@ __metadata:
   linkType: hard
 
 "autosuggest-highlight@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "autosuggest-highlight@npm:3.1.1"
+  version: 3.2.0
+  resolution: "autosuggest-highlight@npm:3.2.0"
   dependencies:
     diacritic: 0.0.2
-  checksum: 8e8acb4b77804b9b63f23a4df166e2f3ae2adccc98d8ed913e458b97b7e34aa54b83d045922d79ccaf1a8ab7435d18cac0d7cc91bda70fc014ef5d903c05ab1c
+  checksum: 8e406ba220164132f3a8be707e99cc19767c7145607e0c52d6cd295ed540fe8cf50955eff91e507bd804ce1253e6126008b058570560f1f5a415f5b708de3a7a
   languageName: node
   linkType: hard
 
@@ -1450,9 +1450,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001202, caniuse-lite@npm:^1.0.30001219, caniuse-lite@npm:^1.0.30001228":
-  version: 1.0.30001270
-  resolution: "caniuse-lite@npm:1.0.30001270"
-  checksum: bee685ddf96f707f124c417f9bf7d84e4e57d5cfeaa3d0ccb79c50a09d7c74786fbe7ec89d733ccc1d0fddd593e9eb3fded5ae12b1ad5a3998a32eecbe0b191c
+  version: 1.0.30001271
+  resolution: "caniuse-lite@npm:1.0.30001271"
+  checksum: 0271e234e17c588fa203a34523f90c5a21ab62f41a2c3acabe96f0251593ac92f192cadd7a3dcbcf49bb28de4f57ca274d775c75700c3f38e9c42028d3becb0f
   languageName: node
   linkType: hard
 
@@ -1979,9 +1979,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.723":
-  version: 1.3.876
-  resolution: "electron-to-chromium@npm:1.3.876"
-  checksum: 22004fa6ea0bd3f963836a5b82c45d70983e69c406ac2c27a72162e35b4446d9f3cf37c2218c3167797743f7a0e4055280c930a39124aa56bb42d5ec9db29428
+  version: 1.3.877
+  resolution: "electron-to-chromium@npm:1.3.877"
+  checksum: 1642a7dc06fb6a9f1612c9b451d6b7daf7c0ef9a1caf8137c1359f9c855fdbcc58079ecd269edf8fd1db24c0c29a210317c03cf451f7507b3240f4208fb84f4b
   languageName: node
   linkType: hard
 
