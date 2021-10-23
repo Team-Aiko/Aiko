@@ -366,7 +366,7 @@ export default class AccountService {
         return tokens;
     }
 
-    // 어세스 토큰 재 발급
+    // 어세스 토큰 재 발급 (확인필요)
 
     async accesToken(req) {
         const result = {
