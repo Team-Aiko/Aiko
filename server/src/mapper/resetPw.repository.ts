@@ -24,7 +24,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
     async getRequest(uuid: string): Promise<ResetPw | undefined> {
         try {
             return await this.createQueryBuilder('r')
-                .where('r.UUID = :uuid', { uuid: uuid })
+                .where('r.UUID = :UUID', { UUID: uuid })
                 .orderBy('r.RESET_PK', 'DESC')
                 .getOne();
         } catch (err) {
@@ -35,7 +35,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
 
     async removeRequests(userId: number): Promise<boolean> {
         try {
-            await this.createQueryBuilder().delete().where('USER_PK = :userPK', { userPK: userId }).execute();
+            await this.createQueryBuilder().delete().where('USER_PK = :USER_PK', { USER_PK: userId }).execute();
             return true;
         } catch (err) {
             console.error(err);

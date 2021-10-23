@@ -46,6 +46,7 @@ import {
 import { setFlagsFromString } from 'v8';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
+import { AikoError } from 'src/Helpers/classes';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -60,21 +61,39 @@ export default class AccountService {
     constructor(private socketService: SocketService) {}
 
     async checkDuplicateEmail(email: string): Promise<number> {
-        return await getRepo(UserRepository).checkDuplicateEmail(email);
+        try {
+            return await getRepo(UserRepository).checkDuplicateEmail(email);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     async getCountryList(str: string) {
-        return await getRepo(CountryRepository).getCountryList(str);
+        try {
+            return await getRepo(CountryRepository).getCountryList(str);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     async signup(data: ISignup, imageRoute: string) {
-        const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
-            hasher({ password: data.pw }, (err, pw, salt, hash) => {
-                if (err) throw err;
+        let hash: string;
+        let salt: string;
 
-                resolve([hash, salt]);
+        try {
+            const [a1, a2] = await new Promise<string[]>((resolve, reject) => {
+                hasher({ password: data.pw }, (err, pw, salt, hash) => {
+                    if (err) throw err;
+
+                    resolve([hash, salt]);
+                });
             });
-        });
+
+            hash = a1;
+            salt = a2;
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
 
         const queryRunner = getConnection().createQueryRunner();
         queryRunner.startTransaction();
@@ -127,7 +146,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -150,6 +169,7 @@ export default class AccountService {
         } catch (err) {
             console.error(err);
             await queryRunner.rollbackTransaction();
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -158,32 +178,37 @@ export default class AccountService {
     }
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
-        const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
-        const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>((resolve, reject) => {
-            hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
-                const flag = result.PASSWORD === hash;
+        try {
+            const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
+            const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
+                (resolve, reject) => {
+                    hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
+                        const flag = result.PASSWORD === hash;
 
-                if (!flag) {
-                    const bundle: BasePacket = {
-                        header: false,
-                    };
-                    resolve(bundle);
-                }
-
-                // remove security informations
-                propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-                const token = this.generateLoginToken(result);
-                const bundle: SuccessPacket = {
-                    header: flag,
-                    userInfo: { ...result },
-                    accessToken: token.access,
-                    refreshToken: token.refresh,
-                };
-                resolve(bundle);
-            });
-        });
-
-        return packet;
+                        if (!flag) {
+                            const bundle: BasePacket = {
+                                header: false,
+                            };
+                            resolve(bundle);
+                        }
+                        // remove security informations
+                        propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+                        const token = this.generateLoginToken(result);
+                        const bundle: SuccessPacket = {
+                            header: flag,
+                            userInfo: { ...result },
+                            accessToken: token.access,
+                            refreshToken: token.refresh,
+                        };
+                        resolve(bundle);
+                    });
+                },
+            );
+            return packet;
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     async findNickname(email: string): Promise<boolean> {
@@ -214,7 +239,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            console.error(err);
+            throw new AikoError('testError', 451, 500000);
         }
 
         return flag;
@@ -259,8 +284,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            console.error(err);
-            throw err;
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -293,7 +317,7 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            console.error(err);
+            throw new AikoError('testError', 451, 500000);
         } finally {
             await queryRunner.release();
         }
@@ -302,18 +326,27 @@ export default class AccountService {
     }
 
     async checkDuplicateNickname(nickname: string): Promise<number> {
-        return await getRepo(UserRepository).count({ NICKNAME: nickname });
+        try {
+            return await getRepo(UserRepository).checkDuplicateNickname(nickname);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     async getUserInfo(userPK: number, companyPK: number) {
-        return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+        try {
+            return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     generateLoginToken(userData: User) {
         const data = { ...userData };
+        const userPk = data.USER_PK;
         const tokens = {
             access: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
-            refresh: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
+            refresh: jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options),
         };
         return tokens;
     }
@@ -327,13 +360,16 @@ export default class AccountService {
             refreshToken: '',
         };
         try {
-            const userRefreshToken = jwt.verify(req.cookies.REFRESH_TOKEN, loginSecretKey.secretKey) as jwt.JwtPayload;
-            const userPk = userRefreshToken.userPk;
+            const clientToken = req.cookies.REFRESH_TOKEN;
+            const payload = jwt.verify(clientToken, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
+            const userData = await getRepo(UserRepository).getUserInfo(userPk);
+            const data = { ...userData };
             // db토큰이랑 클라이언트 토큰일치 확인
-            if (dbToken === req.cookies.REFRESH_TOKEN) {
-                result.accessToken = jwt.sign({'d': 'd'}, loginSecretKey.secretKey, loginSecretKey.options); // 어세스토큰 값 ('dd')값 수정필요)
-                result.refreshToken = jwt.sign({ 'userPk': userPk }, loginSecretKey.secretKey, loginSecretKey.options);  //리프레시 토큰 값
+            if (dbToken === clientToken) {
+                result.accessToken = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
+                result.refreshToken = jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options);
                 await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
                 result.msg = 'success';
             } else {
@@ -345,6 +381,8 @@ export default class AccountService {
                 result.msg = 'error [expired]';
             } else if (err.name === 'JsonWebTokenError') {
                 result.msg = 'error [tokenError]';
+            } else {
+                result.msg = 'error [' + err.name + ']';
             }
         }
         return result;

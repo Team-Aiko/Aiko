@@ -8,7 +8,7 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
         let row: LoginAuth;
 
         try {
-            row = await this.createQueryBuilder('l').where('l.UUID = uuid', { uuid: uuid }).getOne();
+            row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOne();
         } catch (err) {
             console.error(err);
         }

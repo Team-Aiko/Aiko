@@ -13,7 +13,6 @@ export default class ChatFileRepository extends Repository<ChatFile> {
                 .execute();
             id = rawResult.raw.id as number;
         } catch (err) {
-            console.error(err);
             throw err;
         }
 
@@ -25,11 +24,10 @@ export default class ChatFileRepository extends Repository<ChatFile> {
 
         try {
             const result = await this.createQueryBuilder('cf')
-                .where('cf.CF_PK = CF_PK', { CF_PK: fileId })
+                .where('cf.CF_PK = :CF_PK', { CF_PK: fileId })
                 .getOneOrFail();
             file = result?.FILE_ROOT;
         } catch (err) {
-            console.error(err);
             throw err;
         }
 

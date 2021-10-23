@@ -6,7 +6,10 @@ import { RedisClient } from 'redis';
 import { createAdapter } from 'socket.io-redis';
 
 export default class RedisIoAdapter extends IoAdapter {
-    constructor(app: INestApplication, private readonly subClient: Redis, private readonly pubClient: Redis) {
+    private readonly subClient: Redis;
+    private readonly pubClient: Redis;
+
+    constructor(app: INestApplication) {
         super(app);
     }
 

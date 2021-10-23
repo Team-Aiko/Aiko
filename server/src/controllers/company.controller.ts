@@ -1,18 +1,21 @@
 import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
-import { getResPacket } from 'src/Helpers/functions';
+import { resExecutor } from 'src/Helpers/functions';
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
+import { AikoError } from 'src/Helpers/classes';
 
 @Controller('company')
 export default class CompanyController {
+    readonly success = new AikoError('OK', 200, 200000);
+
     constructor(private companyService: CompanyService) {}
     // 회사 리스트 출력
     @Get('/list')
     async list(@Req() req, @Res() res) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName);
-        res.send(getResPacket('OK', 200, 200000, result));
+        resExecutor(res, this.success, result);
     }
 
     // 회사 내 부서 리스트 출력
@@ -22,21 +25,19 @@ export default class CompanyController {
     async departmentList(@Req() req, @Res() res) {
         const payload = req.body.payload;
         const result = await this.companyService.departmentList(payload);
-        res.send(getResPacket('OK', 200, 200000, result));
+        resExecutor(res, this.success, result);
     }
 
     @UseGuards(UserGuard)
     @Get('/employee-list')
-    getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
+    async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
         const { DEPARTMENT_PK, COMPANY_PK }: { DEPARTMENT_PK: number; COMPANY_PK: number } = req.body.userPayload;
-        this.companyService
-            .getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK)
-            .then((result) => {
-                res.send(getResPacket('OK', 200, 200000, result));
-            })
-            .catch((err) => {
-                console.error(err);
-                res.send(getResPacket('error', 500, 500000));
-            });
+
+        try {
+            const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
+            resExecutor(res, this.success, data);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
     }
 }

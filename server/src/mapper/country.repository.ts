@@ -6,7 +6,7 @@ import { ICountryRepository } from 'src/interfaces/repositories';
 export default class CountryRepository extends Repository<Country> implements ICountryRepository {
     async getCountryList(str: string): Promise<Country[]> {
         return await this.createQueryBuilder('c')
-            .where('c.COUNTRY_NAME like :countryName', { countryName: `${str}%` })
+            .where('c.COUNTRY_NAME like :COUNTRY_NAME', { COUNTRY_NAME: `${str}%` })
             .getMany();
     }
 }

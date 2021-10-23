@@ -1,32 +1,31 @@
 import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
-import { User } from 'src/entity';
-import { addAbortSignal } from 'stream';
 import { ObjectType, getConnection } from 'typeorm';
+import { HttpException } from '@nestjs/common';
+import { Response } from 'express';
+import { AikoError } from './classes';
 
-export const getResPacket: IGetResPacket = function <T>(
-    description: string,
-    httpCode: number,
-    appCode: number,
-    result?: T,
-): IHttpError | IResponseData<T> {
+export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError: AikoError, result?: T) {
     let packet: IHttpError | IResponseData<T>;
 
-    if (!result) {
+    if (result === undefined || result === null) {
         packet = {
-            httpCode: httpCode,
-            description: description,
+            httpCode: aikoError.appCode,
+            description: aikoError.description,
+            appCode: aikoError.appCode,
         };
 
-        return packet;
+        return new HttpException(packet, aikoError.stateCode);
     } else {
         packet = {
-            httpCode: httpCode,
-            description: description,
-            appCode: appCode,
+            httpCode: aikoError.stateCode,
+            description: aikoError.description,
+            appCode: aikoError.appCode,
             result: result,
         };
 
-        return packet;
+        res.send(packet);
+
+        return undefined;
     }
 };
 
