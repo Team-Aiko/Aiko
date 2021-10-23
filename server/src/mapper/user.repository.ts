@@ -1,5 +1,13 @@
 import { ISignup } from 'src/interfaces';
-import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
+import {
+    EntityManager,
+    EntityRepository,
+    getConnection,
+    InsertResult,
+    Repository,
+    TransactionManager,
+    Transaction,
+} from 'typeorm';
 import { Department, User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
@@ -19,8 +27,6 @@ export default class UserRepository extends Repository<User> {
                 .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
-                .andWhere('U.COMPANY_PK = company.COMPANY_PK')
-                .andWhere('U.DEPARTMENT_PK = department.DEPARTMENT_PK')
                 .getOneOrFail();
         } catch (err) {
             throw err;
@@ -112,30 +118,33 @@ export default class UserRepository extends Repository<User> {
         return flag;
     }
 
-    async createUser(data: ISignup, imageRoute: string, hash: string, salt: string): Promise<InsertResult> {
+    async createUser(
+        @TransactionManager() manager: EntityManager,
+        data: ISignup,
+        imageRoute: string,
+        hash: string,
+        salt: string,
+    ): Promise<InsertResult> {
         let result: InsertResult;
 
         try {
-            result = await this.createQueryBuilder()
-                .insert()
-                .into(User)
-                .values({
-                    NICKNAME: data.nickname,
-                    PASSWORD: hash,
-                    SALT: salt,
-                    COMPANY_PK: data.companyPK,
-                    DEPARTMENT_PK: data.departmentPK,
-                    EMAIL: data.email,
-                    FIRST_NAME: data.firstName,
-                    LAST_NAME: data.lastName,
-                    COUNTRY_PK: data.countryPK,
-                    CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                    IS_VERIFIED: 0,
-                    IS_DELETED: 0,
-                    TEL: data.tel,
-                    PROFILE_FILE_NAME: imageRoute,
-                })
-                .execute();
+            const user = new User();
+            user.COMPANY_PK = data.companyPK;
+            user.COUNTRY_PK = data.countryPK;
+            user.DEPARTMENT_PK = data.departmentPK;
+            user.EMAIL = data.email;
+            user.FIRST_NAME = data.firstName;
+            user.LAST_NAME = data.lastName;
+            user.NICKNAME = data.nickname;
+            user.PASSWORD = hash;
+            user.SALT = salt;
+            user.PROFILE_FILE_NAME = imageRoute;
+            user.TEL = data.tel;
+            user.CREATE_DATE = Math.floor(new Date().getTime() / 1000);
+            user.IS_DELETED = 0;
+            user.IS_VERIFIED = 0;
+
+            result = await manager.insert(User, user);
         } catch (err) {
             throw err;
         }

@@ -1,4 +1,5 @@
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import { User } from 'src/entity';
+import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
 import Company from '../entity/company.entity';
 
 @EntityRepository(Company)
@@ -11,19 +12,26 @@ export default class CompanyRepository extends Repository<Company> {
     }
 
     //!-complted
-
-    async createCompany(companyName: string): Promise<InsertResult> {
+    async createCompany(@TransactionManager() manager: EntityManager, companyName: string): Promise<InsertResult> {
+        console.log(
+            '🚀 ~ file: company.repository.ts ~ line 17 ~ CompanyRepository ~ createCompany ~ companyName',
+            companyName,
+        );
         let insertResult: InsertResult;
 
         try {
-            insertResult = await this.createQueryBuilder()
-                .insert()
-                .into(Company)
-                .values({
-                    COMPANY_NAME: companyName,
-                    CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                })
-                .execute();
+            insertResult = await manager.insert(Company, {
+                COMPANY_PK: null,
+                COMPANY_NAME: companyName,
+                CREATE_DATE: Math.floor(new Date().getTime() / 1000),
+            });
+            // .insert(Company)
+            // .into()
+            // .values({
+            //     COMPANY_NAME: companyName,
+            //     CREATE_DATE: Math.floor(new Date().getTime() / 1000),
+            // })
+            // .execute();
         } catch (err) {
             console.error(err);
         }

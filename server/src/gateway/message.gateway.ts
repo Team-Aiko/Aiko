@@ -78,10 +78,20 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
 
     // 테스트를 위한 소켓 이벤트
     @SubscribeMessage('server/test')
-    async testSendMsg(client: Socket, payload: IOneToOnePacket) {
+    async testSendMsg(client: Socket, payload: any) {
         console.log('server/test clientID = ', client.id);
         console.log('server/test payload = ', payload);
-        client.emit('client/test', payload);
+        this.wss.emit('client/test', payload);
+    }
+    @SubscribeMessage('server/test/joinRoom')
+    async testRoomJoin(client: Socket, payload: { roomId: string; msg: string }) {
+        client.join(payload.roomId);
+        console.log(payload.roomId);
+        this.wss.to(payload.roomId).emit('client/test/joinedRoom', payload.msg);
+    }
+    @SubscribeMessage('server/test/room/sendMsg')
+    async testRoomSendMsg(client: Socket, payload: { roomId: string; msg: string }) {
+        this.wss.to(payload.roomId).emit('client/test/room/sendMsg', payload.msg);
     }
 
     @SubscribeMessage('handleDisconnection')
