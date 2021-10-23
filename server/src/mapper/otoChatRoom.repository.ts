@@ -15,9 +15,9 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
                     try {
                         const id = another.USER_PK;
                         const cnt = await this.createQueryBuilder('o')
-                            .where('o.COMPANY_PK = :companyPK', { companyPK: companyPK })
-                            .where('o.USER_1 = :id', { id: id })
-                            .orWhere('o.USER_2 = :id', { id: id })
+                            .where('o.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
+                            .where('o.USER_1 = :USER_1', { USER_1: id })
+                            .orWhere('o.USER_2 = :USER_2', { USER_2: id })
                             .getCount();
                         if (cnt >= 1) return true;
 
@@ -55,11 +55,11 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
 
         try {
             list = await this.createQueryBuilder('o')
-                .where('o.COMPANY_PK =:companyPK', { companyPK: companyPK })
-                .leftJoinAndSelect('o.user1', 'user1')
-                .leftJoinAndSelect('o.user2', 'user2')
-                .where('o.USER_1 = :id', { id: userId })
-                .orWhere('o.USER_2 = :id', { id: userId })
+                .where('o.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
+                .leftJoinAndSelect('o.USER1', 'user1')
+                .leftJoinAndSelect('o.USER1', 'user2')
+                .where('o.USER_1 = :USER1', { USER1: userId })
+                .orWhere('o.USER_2 = :USER2', { USER2: userId })
                 .getMany();
         } catch (err) {
             console.error(err);

@@ -4,19 +4,7 @@ import SocketController from 'src/controllers/socket.controller';
 import SocketService from 'src/services/socket.service';
 import { Company, Department, Country, LoginAuth, ResetPw, Socket, User, ChatFile, OTOChatRoom } from '../entity';
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Company,
-            Country,
-            Department,
-            LoginAuth,
-            ResetPw,
-            User,
-            Socket,
-            ChatFile,
-            OTOChatRoom,
-        ]),
-    ],
+    imports: [],
     controllers: [SocketController],
     providers: [SocketService],
     exports: [SocketService],
