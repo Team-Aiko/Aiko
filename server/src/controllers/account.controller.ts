@@ -171,7 +171,7 @@ export default class AccountController {
 
     // 어세스 토큰 재발급
 
-    @Post('accessToken')
+    @Post('access-token')
     async getAccessToken(@Req() req: Request, @Res() res: Response) {
         const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
         const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
