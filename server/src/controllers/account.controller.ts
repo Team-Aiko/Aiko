@@ -51,6 +51,7 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.getCountryList(str as string);
+            console.log('🚀 ~ file: account.controller.ts ~ line 54 ~ AccountController ~ getCountryList ~ data', data);
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
@@ -95,6 +96,7 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.login(data);
+            console.log('🚀 ~ file: account.controller.ts ~ line 98 ~ AccountController ~ login ~ result', result);
             if ('token' in result) {
                 res.cookie('ACCESS_TOKEN', result.token);
                 resExecutor(res, this.success, propsRemover(result, 'token'));

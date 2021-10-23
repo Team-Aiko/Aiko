@@ -9,6 +9,7 @@ import {
     ManyToMany,
 } from 'typeorm';
 import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
+import { BaseEntity } from 'typeorm';
 
 @Entity({ name: 'USER_TABLE' })
 export default class User {

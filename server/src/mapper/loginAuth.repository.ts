@@ -1,4 +1,4 @@
-import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
 
 import { LoginAuth } from '../entity';
 
@@ -8,22 +8,21 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
         let row: LoginAuth;
 
         try {
-            row = await this.createQueryBuilder('l').where('l.UUID = uuid', { uuid: uuid }).getOne();
+            row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOne();
         } catch (err) {
             console.error(err);
         }
 
         return row;
     }
-    async createNewRow(uuid: string, userPK: number): Promise<boolean> {
+    async createNewRow(@TransactionManager() manager: EntityManager, uuid: string, userPK: number): Promise<boolean> {
         let flag = false;
 
         try {
-            await this.createQueryBuilder('l')
-                .insert()
-                .into(LoginAuth)
-                .values({ USER_PK: userPK, UUID: uuid })
-                .execute();
+            const loginAuth = new LoginAuth();
+            loginAuth.USER_PK = userPK;
+            loginAuth.UUID = uuid;
+            await manager.insert(LoginAuth, loginAuth);
 
             flag = true;
         } catch (err) {

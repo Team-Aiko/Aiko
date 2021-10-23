@@ -1,5 +1,13 @@
 import { ISignup } from 'src/interfaces';
-import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
+import {
+    EntityManager,
+    EntityRepository,
+    getConnection,
+    InsertResult,
+    Repository,
+    TransactionManager,
+    Transaction,
+} from 'typeorm';
 import { Department, User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 
@@ -13,15 +21,15 @@ export default class UserRepository extends Repository<User> {
         let userInfo: User;
 
         try {
-            userInfo = await getConnection()
-                .createQueryBuilder(User, 'U')
+            userInfo = await this.createQueryBuilder('U')
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')
-                .where('U.NICKNAME = :nickname', { nickname: nickname })
-                .andWhere('U.IS_VERIFIED = :isVerified', { isVerified: 1 })
+                .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
+                .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
+                .andWhere('U.COMPANY_PK = company.COMPANY_PK')
+                .andWhere('U.DEPARTMENT_PK = department.DEPARTMENT_PK')
                 .getOneOrFail();
         } catch (err) {
-            console.error(err);
             throw err;
         }
 
@@ -36,15 +44,15 @@ export default class UserRepository extends Repository<User> {
         let returnVal = false;
 
         try {
-            await this.createQueryBuilder()
+            await this.createQueryBuilder('U')
                 .update(User)
                 .set({ PASSWORD: hash, SALT: salt })
-                .where('USER_PK = :userPK', { userPK: userPK })
+                .where('U.USER_PK = :USER_PK', { USER_PK: userPK })
                 .execute();
 
             returnVal = true;
         } catch (err) {
-            console.error(err);
+            throw err;
         }
 
         return returnVal;
@@ -54,9 +62,9 @@ export default class UserRepository extends Repository<User> {
         let returnVal: User;
 
         try {
-            returnVal = await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
+            returnVal = await this.createQueryBuilder('u').where('u.EMAIL = :EMAIL', { EMAIL: email }).getOneOrFail();
         } catch (err) {
-            console.error(err);
+            throw err;
         }
 
         return returnVal;
@@ -68,13 +76,12 @@ export default class UserRepository extends Repository<User> {
         try {
             const result = await this.createQueryBuilder('u')
                 .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-                .where('u.USER_PK =  :userPK', { userPK: userPK })
-                .andWhere('u.COMPANY_PK = :companyPK', { companyPK: companyPK })
+                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
+                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .getOne();
 
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            console.error(err);
             throw err;
         }
 
@@ -85,47 +92,49 @@ export default class UserRepository extends Repository<User> {
         let flag = false;
 
         try {
-            getConnection()
-                .createQueryBuilder()
+            this.createQueryBuilder('U')
                 .update(User)
                 .set({ IS_VERIFIED: 1 })
-                .where('USER_PK = :userPK', { userPK: userPK })
+                .where('U.USER_PK = :USER_PK', { USER_PK: userPK })
                 .execute();
 
             flag = true;
         } catch (err) {
-            console.error(err);
+            throw err;
         }
 
         return flag;
     }
 
-    async createUser(data: ISignup, imageRoute: string, hash: string, salt: string): Promise<InsertResult> {
+    async createUser(
+        @TransactionManager() manager: EntityManager,
+        data: ISignup,
+        imageRoute: string,
+        hash: string,
+        salt: string,
+    ): Promise<InsertResult> {
         let result: InsertResult;
 
         try {
-            result = await this.createQueryBuilder()
-                .insert()
-                .into(User)
-                .values({
-                    NICKNAME: data.nickname,
-                    PASSWORD: hash,
-                    SALT: salt,
-                    COMPANY_PK: data.companyPK,
-                    DEPARTMENT_PK: data.departmentPK,
-                    EMAIL: data.email,
-                    FIRST_NAME: data.firstName,
-                    LAST_NAME: data.lastName,
-                    COUNTRY_PK: data.countryPK,
-                    CREATE_DATE: Math.floor(new Date().getTime() / 1000),
-                    IS_VERIFIED: 0,
-                    IS_DELETED: 0,
-                    TEL: data.tel,
-                    PROFILE_FILE_NAME: imageRoute,
-                })
-                .execute();
+            const user = new User();
+            user.COMPANY_PK = data.companyPK;
+            user.COUNTRY_PK = data.countryPK;
+            user.DEPARTMENT_PK = data.departmentPK;
+            user.EMAIL = data.email;
+            user.FIRST_NAME = data.firstName;
+            user.LAST_NAME = data.lastName;
+            user.NICKNAME = data.nickname;
+            user.PASSWORD = hash;
+            user.SALT = salt;
+            user.PROFILE_FILE_NAME = imageRoute;
+            user.TEL = data.tel;
+            user.CREATE_DATE = Math.floor(new Date().getTime() / 1000);
+            user.IS_DELETED = 0;
+            user.IS_VERIFIED = 0;
+
+            result = await manager.insert(User, user);
         } catch (err) {
-            console.error(err);
+            throw err;
         }
 
         return result;
@@ -151,12 +160,11 @@ export default class UserRepository extends Repository<User> {
                 ])
                 .leftJoinAndSelect('U.socket', 'S')
                 .leftJoinAndSelect('U.company', 'C')
-                .where('U.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
-                .andWhere('C.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
+                .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
+                .andWhere('C.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .andWhere('S.USER_PK = U.USER_PK')
                 .getMany();
         } catch (err) {
-            console.error(err);
             throw err;
         }
 
@@ -164,6 +172,12 @@ export default class UserRepository extends Repository<User> {
     }
 
     async checkDuplicateNickname(nickname: string): Promise<number> {
-        return await this.createQueryBuilder().where('NICKNAME = :nickname', { nickname: nickname }).getCount();
+        try {
+            return await this.createQueryBuilder('U')
+                .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
+                .getCount();
+        } catch (err) {
+            throw err;
+        }
     }
 }

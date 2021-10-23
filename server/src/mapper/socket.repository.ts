@@ -44,7 +44,7 @@ export default class SocketRepository extends Repository<Socket> {
             await this.createQueryBuilder()
                 .delete()
                 .from(Socket, 's')
-                .where('s.SOCKET_ID = SOCKET_ID', { SOCKET_ID: socketId })
+                .where('s.SOCKET_ID = :SOCKET_ID', { SOCKET_ID: socketId })
                 .execute();
             flag = true;
         } catch (err) {
@@ -62,7 +62,7 @@ export default class SocketRepository extends Repository<Socket> {
             await this.createQueryBuilder('s')
                 .update()
                 .set({ SOCKET_ID: socketId })
-                .where('s.USER_PK = :userPK', { userPK: userId })
+                .where('s.USER_PK = :USER_PK', { USER_PK: userId })
                 .execute();
 
             flag = true;
@@ -78,7 +78,7 @@ export default class SocketRepository extends Repository<Socket> {
 
         try {
             const result = await this.createQueryBuilder('s')
-                .where('s.SOCKET_ID = SOCKET_ID', { SOCKET_ID: socketId })
+                .where('s.SOCKET_ID = :SOCKET_ID', { SOCKET_ID: socketId })
                 .getOneOrFail();
 
             userId = result.USER_PK;

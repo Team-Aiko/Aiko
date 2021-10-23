@@ -149,10 +149,10 @@ function Signup() {
         if (isValid) {
             const url = `/api/account/checkDuplicateEmail?email=${typedEmail}`;
             get(url).then((res) => {
-                const { data } = res;
-                console.log('🚀 ~ file: signup.js ~ line 168 ~ get ~ data', data);
-                const flag = Boolean(data);
-                setErrEmail(flag);
+                const { result } = res;
+                console.log('🚀 ~ file: signup.js ~ line 168 ~ get ~ data', result);
+                const flag = Boolean(result);
+                setErrEmail(result);
             });
         }
 
@@ -172,8 +172,8 @@ function Signup() {
 
         get(url)
             .then((res) => {
-                const { data } = res;
-                setErrNickname(Number(data) !== 0);
+                const { result } = res.data;
+                setErrNickname(result !== 0);
                 setNickname(typedNickname);
             })
             .catch((err) => console.log(err));
@@ -222,8 +222,10 @@ function Signup() {
         if (country.length === 1) {
             const url = `/api/account/country-list?str=${country}`;
             get(url).then((res) => {
-                const { data } = res;
-                setCountryList(data);
+                const { result } = res.data;
+                console.log('🚀 ~ file: signup.js ~ line 225 ~ get ~ res', res);
+                console.log('🚀 ~ file: signup.js ~ line 226 ~ get ~ result', result);
+                setCountryList(result);
             });
         }
 

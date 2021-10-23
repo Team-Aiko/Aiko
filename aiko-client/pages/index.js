@@ -27,9 +27,6 @@ function PComp(props) {
     // 테스트 메세지 발송
     const sendTestMsg = () => {
         client.emit('server/test', text);
-        const chatList = [...chat];
-        chatList.push(text);
-        setChat(chatList);
     };
 
     const handleChange = (e) => {
@@ -58,9 +55,25 @@ function PComp(props) {
             client.emit('server/joinRoom', list);
         });
 
-        // 테스트 메세지 수신
+        /**
+         * 여기부터는 테스트 파트
+         */
+        // 1:1 테스트
         client.on('client/test', (payload) => {
             console.log(payload);
+            const chatList = [...chat];
+            chatList.push(payload);
+            setChat(chatList);
+        });
+
+        // 방테스트
+        client.emit('server/test/joinRoom', { roomId: '1', msg: '방입장했습니다.' });
+        client.on('client/test/joinedRoom', (msg) => {
+            console.log(msg);
+        });
+
+        client.on('client/test/room/sendMsg', (msg) => {
+            console.log(msg);
         });
     }, []);
 
