@@ -34,6 +34,7 @@ import {
     IMailBotConfig,
 } from '../interfaces';
 import {
+    RefreshRepository,
     UserRepository,
     CountryRepository,
     ResetPwRepository,
@@ -93,6 +94,7 @@ export default class AccountService {
 
                 const result3 = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
+                const result4 = await getRepo(RefreshRepository).createRow(userPK);
             } else if (data.position === 1) {
                 const result = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
                 userPK = (result.raw as ResultSetHeader).insertId as number;
@@ -170,13 +172,13 @@ export default class AccountService {
 
                 // remove security informations
                 propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-
+                const token = this.generateLoginToken(result);
                 const bundle: SuccessPacket = {
                     header: flag,
                     userInfo: { ...result },
-                    token: this.generateLoginToken(result),
+                    accessToken: token.access,
+                    refreshToken: token.refresh,
                 };
-
                 resolve(bundle);
             });
         });
@@ -307,11 +309,13 @@ export default class AccountService {
         return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
     }
 
-    generateLoginToken(userData: User): string {
+    generateLoginToken(userData: User) {
         const data = { ...userData };
-        const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
-
-        return token;
+        const tokens = {
+            access: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
+            refresh: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
+        };
+        return tokens;
     }
 
     // 어세스 토큰 재 발급
@@ -325,12 +329,12 @@ export default class AccountService {
         try {
             const userRefreshToken = jwt.verify(req.cookies.REFRESH_TOKEN, loginSecretKey.secretKey) as jwt.JwtPayload;
             const userPk = userRefreshToken.userPk;
-            const dbToken = await getRepo(UserRepository).checkRefreshToken(userPk);
+            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
             // db토큰이랑 클라이언트 토큰일치 확인
             if (dbToken === req.cookies.REFRESH_TOKEN) {
                 result.accessToken = jwt.sign({'d': 'd'}, loginSecretKey.secretKey, loginSecretKey.options); // 어세스토큰 값 ('dd')값 수정필요)
                 result.refreshToken = jwt.sign({ 'userPk': userPk }, loginSecretKey.secretKey, loginSecretKey.options);  //리프레시 토큰 값
-                await getRepo(UserRepository).updateRefreshToken(userPk, result.refreshToken);
+                await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
                 result.msg = 'success';
             } else {
                 result.msg = 'error [tokenExits]';
