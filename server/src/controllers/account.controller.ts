@@ -180,7 +180,7 @@ export default class AccountController {
             if (result.header) {
                 res.cookie('ACCESS_TOKEN', result.accessToken);
                 res.cookie('REFRESH_TOKEN', result.refreshToken);
-                resExecutor(res, this.success, propsRemover(result, 'header'));
+                resExecutor(res, this.success, true);
             } else {
                 throw new AikoError('unknown error', 500, 500008);
             }
