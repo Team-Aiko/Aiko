@@ -1,19 +1,29 @@
-import { EntityRepository, getConnection, InsertResult, Repository, getManager } from 'typeorm';
+import {
+    EntityRepository,
+    getConnection,
+    InsertResult,
+    Repository,
+    getManager,
+    TransactionManager,
+    EntityManager,
+    Transaction,
+} from 'typeorm';
 import { Department, User } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { UserRepository } from '.';
 
 @EntityRepository(Department)
 export default class DepartmentRepository extends Repository<Department> {
-    async createOwnerRow(companyPK: number): Promise<InsertResult> {
+    async createOwnerRow(@TransactionManager() manager: EntityManager, companyPK: number): Promise<InsertResult> {
         let insertResult: InsertResult;
 
         try {
-            this.createQueryBuilder()
-                .insert()
-                .into(Department)
-                .values({ DEPARTMENT_NAME: 'OWNER', COMPANY_PK: companyPK, DEPTH: 0 })
-                .execute();
+            const dept = new Department();
+            dept.DEPARTMENT_NAME = 'OWNER';
+            dept.COMPANY_PK = companyPK;
+            dept.DEPTH = 0;
+
+            insertResult = await this.manager.insert(Department, dept);
         } catch (err) {
             console.log(err);
         }

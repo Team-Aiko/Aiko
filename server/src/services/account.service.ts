@@ -92,33 +92,48 @@ export default class AccountService {
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
-
         const queryRunner = getConnection().createQueryRunner();
-        queryRunner.startTransaction();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         let flag = false;
 
         try {
             let userPK: number;
             if (data.position === 0) {
-                const result1 = await getRepo(CompanyRepository).createCompany(data.companyName);
+                const result1 = await getRepo(CompanyRepository).createCompany(queryRunner.manager, data.companyName);
+                console.log('step1');
                 const rawData1: ResultSetHeader = result1.raw;
                 const COMPANY_PK = rawData1.insertId as number;
-                const result2 = await getRepo(DepartmentRepository).createOwnerRow(COMPANY_PK);
+                const result2 = await getRepo(DepartmentRepository).createOwnerRow(queryRunner.manager, COMPANY_PK);
+                console.log('step2');
                 const rawData2: ResultSetHeader = result2.raw;
                 const DEPARTMENT_PK = rawData2.insertId as number;
                 data.companyPK = COMPANY_PK;
                 data.departmentPK = DEPARTMENT_PK;
 
-                const result3 = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
+                const result3 = await getRepo(UserRepository).createUser(
+                    queryRunner.manager,
+                    data,
+                    imageRoute,
+                    hash,
+                    salt,
+                );
+                console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
             } else if (data.position === 1) {
-                const result = await getRepo(UserRepository).createUser(data, imageRoute, hash, salt);
+                const result = await getRepo(UserRepository).createUser(
+                    queryRunner.manager,
+                    data,
+                    imageRoute,
+                    hash,
+                    salt,
+                );
                 userPK = (result.raw as ResultSetHeader).insertId as number;
             }
 
             // * email auth
             const uuid = v1();
-            flag = await getRepo(LoginAuthRepository).createNewRow(uuid, userPK);
+            flag = await getRepo(LoginAuthRepository).createNewRow(queryRunner.manager, uuid, userPK);
 
             if (flag) {
                 const mailOpt: SendMailOptions = {

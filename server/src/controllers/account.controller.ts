@@ -51,6 +51,7 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.getCountryList(str as string);
+            console.log('🚀 ~ file: account.controller.ts ~ line 54 ~ AccountController ~ getCountryList ~ data', data);
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);

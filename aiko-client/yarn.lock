@@ -915,7 +915,7 @@ __metadata:
     socket.io: ^4.2.0
     socket.io-client: ^4.2.0
     socket.io-stream: ^0.9.1
-    web-snippets: 0.1.6
+    web-snippets: 0.1.9
   languageName: unknown
   linkType: soft
 
@@ -5735,12 +5735,12 @@ typescript@^4.4.2:
   languageName: node
   linkType: hard
 
-"web-snippets@npm:0.1.6":
-  version: 0.1.6
-  resolution: "web-snippets@npm:0.1.6"
+"web-snippets@npm:0.1.9":
+  version: 0.1.9
+  resolution: "web-snippets@npm:0.1.9"
   dependencies:
     typescript: ^4.4.2
-  checksum: 63fb4ab07ef655d4384973e4fd44e99fc28ea418e0d5b5302948c38ae82e0e7aecb57a412c9e1f7310194c655848f8a38a132b31374b54094eba5ec9a2a31ef7
+  checksum: 49baf86b130949e371d5d582d43575717063053841399f87ab829afe10830aff64bd3c3f8303fc86c606ce4a779db7d15e68e34795e003aeb58b8b7151d4310c
   languageName: node
   linkType: hard
 
