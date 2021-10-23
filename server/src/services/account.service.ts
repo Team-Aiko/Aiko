@@ -45,6 +45,7 @@ import { setFlagsFromString } from 'v8';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
+import GrantRepository from 'src/mapper/grant.repository';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -120,6 +121,7 @@ export default class AccountService {
                 );
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
+                await getRepo(GrantRepository).grantPermission(queryRunner.manager, 1, userPK);
             } else if (data.position === 1) {
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,

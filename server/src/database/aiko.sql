@@ -77,6 +77,20 @@ create table ONE_TO_ONE_CHAT_ROOM_TABLE(
     COMPANY_PK INT NOT NULL
 );
 
+-- AUTH LIST TABLE
+create table AUTH_LIST_TABLE (
+    AUTH_LIST_PK INT PRIMARY KEY AUTO_INCREMENT,
+    AUTH_NAME VARCHAR(64) NOT NULL
+);
+drop table auth_list_table;
+
+-- GRANT TABLE
+create table GRANT_TABLE (
+    GRNT_PK INT PRIMARY KEY AUTO_INCREMENT,
+    USER_PK INT NOT NULL,
+    AUTH_LIST_PK INT NOT NULL
+);
+
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('AB', 10000);
@@ -92,3 +106,6 @@ insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Korea');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('UK');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('France');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Brazil');
+
+-- TEST AUTH_LIST_TABLE
+insert into AUTH_LIST_TABLE (AUTH_NAME) values ('CHIEF_ADMIN');
