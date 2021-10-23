@@ -30,6 +30,7 @@ rest_test
 server2/yarn.lock
 
 # yarn
+.yarn
 .yarn/*
 .yarn/releases
 .yarn/plugins
