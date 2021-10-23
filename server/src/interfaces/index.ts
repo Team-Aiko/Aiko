@@ -33,6 +33,7 @@ import {
     ISignup,
     LoginSelectData,
     SuccessPacket,
+    ITokenBundle,
 } from './accountMVC';
 export {
     BasePacket,
@@ -44,6 +45,7 @@ export {
     ISignup,
     LoginSelectData,
     SuccessPacket,
+    ITokenBundle,
 };
 
 //* file api interfaces

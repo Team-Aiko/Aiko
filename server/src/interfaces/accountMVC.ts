@@ -68,3 +68,9 @@ export interface SuccessPacket extends BasePacket {
     accessToken: string;
     refreshToken: string;
 }
+
+export interface ITokenBundle {
+    header: boolean;
+    accessToken?: string;
+    refreshToken?: string;
+}

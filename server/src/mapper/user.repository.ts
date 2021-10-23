@@ -11,6 +11,7 @@ import {
 import { Department, User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
+import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -95,7 +96,7 @@ export default class UserRepository extends Repository<User> {
                 .getOne();
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            throw err;
+            throw new AikoError('select error (userInfo)', 500, 500005);
         }
         return user;
     }

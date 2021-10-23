@@ -32,6 +32,7 @@ import {
     SuccessPacket,
     IMailConfig,
     IMailBotConfig,
+    ITokenBundle,
 } from '../interfaces';
 import {
     RefreshRepository,
@@ -368,38 +369,32 @@ export default class AccountService {
 
     // 어세스 토큰 재 발급 (확인필요)
 
-    async accesToken(req) {
-        const result = {
-            msg: '',
-            accessToken: '',
-            refreshToken: '',
+    async getAccessToken(refreshToken: string) {
+        const result: ITokenBundle = {
+            header: false,
         };
+
         try {
-            const clientToken = req.cookies.REFRESH_TOKEN;
-            const payload = jwt.verify(clientToken, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const payload = jwt.verify(refreshToken, loginSecretKey.secretKey) as jwt.JwtPayload;
             const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
             const userData = await getRepo(UserRepository).getUserInfo(userPk);
             const data = { ...userData };
+
             // db토큰이랑 클라이언트 토큰일치 확인
-            if (dbToken === clientToken) {
+            if (dbToken === refreshToken) {
                 result.accessToken = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
                 result.refreshToken = jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options);
                 await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
-                result.msg = 'success';
-            } else {
-                result.msg = 'error [tokenExits]';
+                result.header = true;
             }
         } catch (error) {
             const err = error as jwt.VerifyErrors;
-            if (err.name === 'TokenExpiredError') {
-                result.msg = 'error [expired]';
-            } else if (err.name === 'JsonWebTokenError') {
-                result.msg = 'error [tokenError]';
-            } else {
-                result.msg = 'error [' + err.name + ']';
-            }
+            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
+            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
+            else throw error;
         }
+
         return result;
     }
 }

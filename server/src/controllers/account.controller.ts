@@ -172,14 +172,20 @@ export default class AccountController {
     // 어세스 토큰 재발급
 
     @Post('accessToken')
-    async accessToken(@Req() req, @Res() res) {
-        const result = await this.accountService.accesToken(req);
-        if (result.msg == 'success') {
-            res.cookie('ACCESS_TOKEN', result.accessToken);
-            res.cookie('REFRESH_TOKEN', result.refreshToken);
-            resExecutor(res, this.success, result.msg);
-        } else {
-            resExecutor(res, this.fail, result.msg);
+    async getAccessToken(@Req() req: Request, @Res() res: Response) {
+        const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
+        const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
+
+        try {
+            if (result.header) {
+                res.cookie('ACCESS_TOKEN', result.accessToken);
+                res.cookie('REFRESH_TOKEN', result.refreshToken);
+                resExecutor(res, this.success, propsRemover(result, 'header'));
+            } else {
+                throw new AikoError('unknown error', 500, 500008);
+            }
+        } catch (err) {
+            throw resExecutor(res, err);
         }
     }
 }
