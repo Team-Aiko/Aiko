@@ -92,3 +92,13 @@ insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Korea');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('UK');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('France');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Brazil');
+
+
+-- 리프레시 토큰 테이블 생성
+create table refresh_token_table (
+	NO int auto_increment,
+	USER_PK int,
+	USER_TOKEN varchar(512),
+	primary key (NO)
+);
+--
