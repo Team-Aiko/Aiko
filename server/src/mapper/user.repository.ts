@@ -26,8 +26,6 @@ export default class UserRepository extends Repository<User> {
                 .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
-                .andWhere('U.COMPANY_PK = company.COMPANY_PK')
-                .andWhere('U.DEPARTMENT_PK = department.DEPARTMENT_PK')
                 .getOneOrFail();
         } catch (err) {
             throw err;

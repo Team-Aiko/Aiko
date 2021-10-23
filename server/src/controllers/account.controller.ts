@@ -103,6 +103,7 @@ export default class AccountController {
             } else {
             }
         } catch (err) {
+            console.error(err);
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
