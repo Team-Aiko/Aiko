@@ -7,9 +7,9 @@ import { AikoError } from 'src/Helpers/classes';
 export default class CompanyService {
     // 회사 리스트 출력
 
-    list(companyName: string) {
+    async list(companyName: string) {
         try {
-            return getRepo(CompanyRepository).list(companyName);
+            return await getRepo(CompanyRepository).list(companyName);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }

@@ -11,7 +11,7 @@ export default class CompanyController {
 
     constructor(private companyService: CompanyService) {}
     // 회사 리스트 출력
-    @Get('/list')
+    @Get('list')
     async list(@Req() req, @Res() res) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName);
