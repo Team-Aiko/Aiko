@@ -1,9 +1,11 @@
 {
     "scripts": {
         "update:deps": "yarn install && cd aiko-client && yarn install",
+        "install:client": "cd aiko-client && yarn install",
+        "install:server": "cd server && yarn install",
         "client": "cd aiko-client && yarn run dev",
         "server": "cd server && yarn run start:dev",
-        "dev": "concurrently --kill-others-on-fail \"yarn run server \" \"yarn run client\"",
+        "dev": "concurrently --kill-others-on-fail \"yarn run install:client\" \"yarn run install:server \" \"yarn run server \" \"yarn run client\"",
         "lint": "eslint **/*.ts --quiet"
     },
     "dependencies": {
