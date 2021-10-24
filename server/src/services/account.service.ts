@@ -361,9 +361,9 @@ export default class AccountService {
         }
     }
 
-    async getUserInfo(userPK: number, companyPK: number) {
+    async getGrantInfo(userPK: number, companyPK: number) {
         try {
-            return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+            return await getRepo(GrantRepository).getGrantInfo(userPK, companyPK);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
@@ -408,5 +408,12 @@ export default class AccountService {
         }
 
         return result;
+    }
+    async getUserInfo(targetUserId: number, comapnyPK: number) {
+        try {
+            return await getRepo(UserRepository).getUserInfo(targetUserId);
+        } catch (err) {
+            throw err;
+        }
     }
 }

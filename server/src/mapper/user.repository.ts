@@ -70,20 +70,14 @@ export default class UserRepository extends Repository<User> {
         return returnVal;
     }
 
-    async getUserInfoWithUserPK(userPK: number, companyPK: number): Promise<User> {
+    async getUserInfoWithUserPK(userPK: number): Promise<User> {
         let user: User;
 
         try {
-            const result = await this.createQueryBuilder('u')
-                .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-                .leftJoinAndSelect(Company, 'c', 'c.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .leftJoinAndSelect(Grant, 'g', 'g.USER_PK = :USER_PK', { USER_PK: userPK })
-                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
-                .getOne();
-
+            const result = await this.findOne({ USER_PK: userPK }, { relations: ['company', 'department'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            throw err;
+            throw new AikoError('select error (user information)', 500, 500012);
         }
 
         return user;
@@ -91,10 +85,9 @@ export default class UserRepository extends Repository<User> {
 
     async getUserInfo(userPK: number): Promise<User> {
         let user: User;
+
         try {
-            const result = await this.createQueryBuilder('u')
-                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
-                .getOne();
+            const result = await this.findOneOrFail(userPK, { relations: ['department', 'company'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
             throw new AikoError('select error (userInfo)', 500, 500005);

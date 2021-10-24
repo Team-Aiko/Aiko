@@ -12,4 +12,12 @@ export default class GrantRepository extends Repository<Grant> {
             throw new AikoError('grantPermission error', 500, 500008);
         }
     }
+
+    async getGrantInfo(userPK: number, companyPK: number) {
+        try {
+            return await this.createQueryBuilder('g').where('g.USER_PK = :USER_PK', { USER_PK: userPK }).getMany();
+        } catch (err) {
+            throw new AikoError('grantInfo selection error', 500, 500014);
+        }
+    }
 }

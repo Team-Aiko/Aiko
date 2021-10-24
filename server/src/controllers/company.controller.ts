@@ -50,17 +50,21 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Post('new-department')
     async createDepartment(@Req() req: Request, @Res() res: Response) {
-        const { departmentName, parentPK, userPayload } = req.body;
-        const { COMPANY_PK, USER_PK } = userPayload as User;
-        const bundle: INewDepartment = {
-            companyPK: COMPANY_PK,
-            userPK: USER_PK,
-            departmentName: departmentName as string,
-            parentPK: parentPK as number,
-        };
+        try {
+            const { departmentName, parentPK, userPayload } = req.body;
+            const { COMPANY_PK, USER_PK } = userPayload as User;
+            const bundle: INewDepartment = {
+                companyPK: COMPANY_PK,
+                userPK: USER_PK,
+                departmentName: departmentName as string,
+                parentPK: parentPK as number,
+            };
 
-        const flag = await this.companyService.createDepartment(bundle);
-        console.log('🚀 ~ file: company.controller.ts ~ line 64 ~ CompanyController ~ createDepartment ~ flag', flag);
-        res.send(flag);
+            const isSuccess = await this.companyService.createDepartment(bundle);
+            if (isSuccess) resExecutor(res, this.success, isSuccess);
+            else new AikoError('unknown error', 500, 500012);
+        } catch (err) {
+            throw resExecutor(res, err);
+        }
     }
 }
