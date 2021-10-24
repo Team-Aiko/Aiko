@@ -67,7 +67,7 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateEmail(email);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 
@@ -75,7 +75,7 @@ export default class AccountService {
         try {
             return await getRepo(CountryRepository).getCountryList(str);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 
@@ -95,7 +95,7 @@ export default class AccountService {
             hash = a1;
             salt = a2;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('hasher error', 501, 500021);
         }
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
@@ -104,6 +104,7 @@ export default class AccountService {
 
         try {
             let userPK: number;
+
             if (data.position === 0) {
                 // 회사 생성쿼리
                 const result1 = await getRepo(CompanyRepository).createCompany(queryRunner.manager, data.companyName);
@@ -183,13 +184,12 @@ export default class AccountService {
             const result = await getRepo(LoginAuthRepository).findUser(uuid);
             flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
 
-            if (!flag) new Error('error give auth method');
+            if (!flag) throw new AikoError('unknown fail error', 500, 500026);
 
             await queryRunner.commitTransaction();
         } catch (err) {
-            console.error(err);
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -233,9 +233,10 @@ export default class AccountService {
                     }
                 },
             );
+
             return packet;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 

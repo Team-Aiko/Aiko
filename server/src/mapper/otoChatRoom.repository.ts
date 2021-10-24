@@ -1,6 +1,7 @@
 import { EntityManager, EntityRepository, getConnection, InsertResult, Repository, TransactionManager } from 'typeorm';
 import { OTOChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
+import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(OTOChatRoom)
 export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
@@ -37,7 +38,7 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
 
                         flag2 = true;
                     } catch (err) {
-                        console.error(err);
+                        throw new AikoError('otoChat/makeOneToOneChatRooms', 500, 500360);
                     }
 
                     return flag2;
@@ -48,7 +49,6 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
             flag = result.reduce((prev, curr) => prev && curr, true);
             console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 48 ~ OTOChatRoomRepository ~ flag', flag);
         } catch (err) {
-            console.error(err);
             throw err;
         }
 
@@ -67,8 +67,7 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
                 .orWhere('o.USER_2 = :USER2', { USER2: userId })
                 .getMany();
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw new AikoError('otoChat/getOneToOneChatRoomList', 500, 500360);
         }
 
         return list;

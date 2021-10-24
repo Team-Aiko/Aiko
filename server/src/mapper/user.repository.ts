@@ -16,7 +16,11 @@ import { AikoError } from 'src/Helpers/classes';
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
     async getUserInfoWithEmail(email: string) {
-        return await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
+        try {
+            return await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
+        } catch (err) {
+            throw new AikoError('select error(search userinfo with email)', 500, 500125);
+        }
     }
 
     async getUserInfoWithNickname(nickname: string): Promise<User> {
@@ -30,14 +34,18 @@ export default class UserRepository extends Repository<User> {
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(search user with nickname)', 500, 500121);
         }
 
         return userInfo;
     }
 
     async checkDuplicateEmail(email: string) {
-        return await this.count({ EMAIL: email });
+        try {
+            return await this.count({ EMAIL: email });
+        } catch (err) {
+            throw new AikoError('count error (email)', 500, 500019);
+        }
     }
 
     async changePassword(userPK: number, hash: string, salt: string) {
@@ -52,7 +60,7 @@ export default class UserRepository extends Repository<User> {
 
             returnVal = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('update error(change password)', 500, 500123);
         }
 
         return returnVal;
@@ -64,7 +72,7 @@ export default class UserRepository extends Repository<User> {
         try {
             returnVal = await this.createQueryBuilder('u').where('u.EMAIL = :EMAIL', { EMAIL: email }).getOneOrFail();
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(search nickname)', 500, 500029);
         }
 
         return returnVal;
@@ -107,7 +115,7 @@ export default class UserRepository extends Repository<User> {
 
             flag = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('update error(give auth)', 500, 500026);
         }
 
         return flag;
@@ -141,7 +149,7 @@ export default class UserRepository extends Repository<User> {
 
             result = await manager.insert(User, user);
         } catch (err) {
-            throw err;
+            throw new AikoError('insert error(create user)', 500, 500122);
         }
 
         return result;
@@ -163,7 +171,7 @@ export default class UserRepository extends Repository<User> {
                 .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .getMany();
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(member list)', 500, 500044);
         }
 
         return userList;
@@ -175,7 +183,7 @@ export default class UserRepository extends Repository<User> {
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .getCount();
         } catch (err) {
-            throw err;
+            throw new AikoError('count error(duplicate nickname)', 500, 500045);
         }
     }
 }

@@ -5,6 +5,7 @@ import { IResetPwRepository } from '../interfaces/repositories';
 import { User } from '../entity';
 import { UserRepository } from '.';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(ResetPw)
 export default class ResetPwRepository extends Repository<ResetPw> {
@@ -17,7 +18,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
             await this.createQueryBuilder().insert().into(ResetPw).values({ USER_PK: userPK, UUID: uuid }).execute();
             return true;
         } catch (err) {
-            return false;
+            throw new AikoError('resetPw/insertRequestLog', 500, 500356);
         }
     }
 
@@ -28,8 +29,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
                 .orderBy('r.RESET_PK', 'DESC')
                 .getOne();
         } catch (err) {
-            console.error(err);
-            return undefined;
+            throw new AikoError('resetPw/getRequest', 500, 500355);
         }
     }
 
@@ -38,8 +38,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
             await this.createQueryBuilder().delete().where('USER_PK = :USER_PK', { USER_PK: userId }).execute();
             return true;
         } catch (err) {
-            console.error(err);
-            return false;
+            throw new AikoError('resetPw/removeRequests', 500, 500359);
         }
     }
 }

@@ -1,3 +1,4 @@
+import { AikoError } from 'src/Helpers/classes';
 import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
 
 import { LoginAuth } from '../entity';
@@ -8,9 +9,9 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
         let row: LoginAuth;
 
         try {
-            row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOne();
+            row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOneOrFail();
         } catch (err) {
-            console.error(err);
+            throw new AikoError('select error(finduser-loginAuth)', 500, 500025);
         }
 
         return row;
@@ -26,7 +27,7 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
 
             flag = true;
         } catch (err) {
-            console.error(err);
+            throw new AikoError('loginAuth/createNewRow', 500, 500360);
         }
 
         return flag;

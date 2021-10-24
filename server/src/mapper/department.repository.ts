@@ -75,8 +75,7 @@ export default class DepartmentRepository extends Repository<Department> {
 
             result2.forEach((arr) => userList.concat(arr));
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw new AikoError('department/getDepartmentMembers', 500, 500360);
         }
 
         return userList;
