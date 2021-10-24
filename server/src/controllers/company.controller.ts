@@ -62,7 +62,7 @@ export default class CompanyController {
 
             const isSuccess = await this.companyService.createDepartment(bundle);
             if (isSuccess) resExecutor(res, this.success, isSuccess);
-            else new AikoError('unknown error', 500, 500012);
+            else throw new AikoError('unknown error', 500, 500012);
         } catch (err) {
             throw resExecutor(res, err);
         }
