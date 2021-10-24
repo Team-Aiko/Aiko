@@ -59,6 +59,8 @@ export default class CompanyController {
             parentPK: parentPK as number,
         };
 
-        this.companyService.createDepartment(bundle);
+        const flag = await this.companyService.createDepartment(bundle);
+        console.log('🚀 ~ file: company.controller.ts ~ line 64 ~ CompanyController ~ createDepartment ~ flag', flag);
+        res.send(flag);
     }
 }

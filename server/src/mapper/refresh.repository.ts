@@ -14,7 +14,6 @@ export default class RefreshRepository extends Repository<Refresh> {
     }
 
     // 리프레시 토큰 조회
-
     async checkRefreshToken(userPk: number) {
         let refresh: string;
 
@@ -33,7 +32,6 @@ export default class RefreshRepository extends Repository<Refresh> {
     }
 
     // 리프레시 토큰 업데이트
-
     async updateRefreshToken(userPk: number, refreshToken: string) {
         try {
             return await this.createQueryBuilder()

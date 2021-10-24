@@ -203,26 +203,34 @@ export default class AccountService {
             console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
-                    hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
-                        const flag = result.PASSWORD === hash;
+                    try {
+                        hasher({ password: data.PASSWORD, salt: result.SALT }, async (err, pw, salt, hash) => {
+                            const flag = result.PASSWORD === hash;
 
-                        if (!flag) {
-                            const bundle: BasePacket = {
-                                header: false,
+                            if (!flag) {
+                                const bundle: BasePacket = {
+                                    header: false,
+                                };
+                                resolve(bundle);
+                            }
+                            // make token
+                            const token = this.generateLoginToken(result);
+                            // refresh token update to database
+                            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+                            // remove security informations
+                            propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+
+                            const bundle: SuccessPacket = {
+                                header: flag,
+                                userInfo: { ...result },
+                                accessToken: token.access,
+                                refreshToken: token.refresh,
                             };
                             resolve(bundle);
-                        }
-                        // remove security informations
-                        propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-                        const token = this.generateLoginToken(result);
-                        const bundle: SuccessPacket = {
-                            header: flag,
-                            userInfo: { ...result },
-                            accessToken: token.access,
-                            refreshToken: token.refresh,
-                        };
-                        resolve(bundle);
-                    });
+                        });
+                    } catch (err) {
+                        throw err;
+                    }
                 },
             );
             return packet;

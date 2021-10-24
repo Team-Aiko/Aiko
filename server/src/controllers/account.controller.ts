@@ -112,6 +112,7 @@ export default class AccountController {
     @Get('logout')
     logout(@Req() req: Request, @Res() res: Response) {
         res.cookie('ACCESS_TOKEN', null);
+        res.cookie('REFRESH_TOKEN', null);
         resExecutor(res, this.success, true);
     }
 
