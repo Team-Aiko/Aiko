@@ -5,7 +5,7 @@ import AuthListTable from './authList.entity';
 @Entity({ name: 'GRANT_TABLE' })
 export default class Grant {
     @PrimaryGeneratedColumn()
-    GRANT_PK: number;
+    GRNT_PK: number;
 
     @Column()
     USER_PK: number;

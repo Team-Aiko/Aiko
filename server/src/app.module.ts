@@ -29,7 +29,20 @@ import SocketModule from './modules/socket.module';
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
-    entities: [User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile, OTOChatRoom, Refresh],
+    entities: [
+        Grant,
+        AuthListTable,
+        User,
+        LoginAuth,
+        Company,
+        Country,
+        Department,
+        ResetPw,
+        Socket,
+        ChatFile,
+        OTOChatRoom,
+        Refresh,
+    ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);

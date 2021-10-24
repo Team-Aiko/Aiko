@@ -108,13 +108,8 @@ export default class AccountService {
                 console.log('step1');
                 const rawData1: ResultSetHeader = result1.raw;
                 const COMPANY_PK = rawData1.insertId as number;
-                const result2 = await getRepo(DepartmentRepository).createOwnerRow(queryRunner.manager, COMPANY_PK);
                 console.log('step2');
-                const rawData2: ResultSetHeader = result2.raw;
-                const DEPARTMENT_PK = rawData2.insertId as number;
                 data.companyPK = COMPANY_PK;
-                data.departmentPK = DEPARTMENT_PK;
-
                 const result3 = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
@@ -125,7 +120,9 @@ export default class AccountService {
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
                 await getRepo(GrantRepository).grantPermission(queryRunner.manager, 1, userPK);
+                console.log('step4');
                 await getRepo(RefreshRepository).createRow(userPK);
+                console.log('step5');
             } else if (data.position === 1) {
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
