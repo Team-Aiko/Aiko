@@ -46,6 +46,16 @@ export default class UserRepository extends Repository<User> {
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
+            // await this.createQueryBuilder('U').select([
+            //     'U.USER_PK',
+            //     'U.DEPARTMENT_PK',
+            //     'U.COMPANY_PK',
+            //     'U.COUNTRY_PK',
+            //     'U.NICKNAME',
+            //     'U.PASSWORD',
+            //     'U.SALT',
+            //     'G.AUTH_LIST_PK',
+            // ])
 
             userInfo = propsRemover(userInfo, ...criticalUserInfo.slice(2));
         } catch (err) {

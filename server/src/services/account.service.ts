@@ -201,8 +201,11 @@ export default class AccountService {
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+                            // get grant list
+                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+                            result.grants = grantList;
                             // remove security informations
-                            propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+                            propsRemover(result, 'PASSWORD', 'SALT');
 
                             const bundle: SuccessPacket = {
                                 header: flag,
@@ -346,9 +349,9 @@ export default class AccountService {
         }
     }
 
-    async getGrantInfo(userPK: number, companyPK: number) {
+    async getGrantList(userPK: number) {
         try {
-            return await getRepo(GrantRepository).getGrantInfo(userPK, companyPK);
+            return await getRepo(GrantRepository).getGrantList(userPK);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }

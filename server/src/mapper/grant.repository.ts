@@ -13,7 +13,7 @@ export default class GrantRepository extends Repository<Grant> {
         }
     }
 
-    async getGrantInfo(userPK: number, companyPK: number) {
+    async getGrantList(userPK: number) {
         try {
             return await this.createQueryBuilder('g').where('g.USER_PK = :USER_PK', { USER_PK: userPK }).getMany();
         } catch (err) {

@@ -17,7 +17,7 @@ export default class Grant {
     @JoinColumn({ name: 'AUTH_LIST_PK' })
     authList: AuthListTable;
 
-    @ManyToMany(() => User, (user) => user.grants)
+    @ManyToOne(() => User, (user) => user.grants)
     @JoinColumn({ name: 'USER_PK' })
-    users: User[];
+    user: User;
 }

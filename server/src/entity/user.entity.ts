@@ -87,7 +87,6 @@ export default class User {
     @ManyToMany(() => OTOChatRoom, (otoChatRoom) => otoChatRoom.USER_2)
     socket2: OTOChatRoom[];
 
-    @OneToMany(() => Grant, (grant) => grant.users)
-    @JoinTable()
+    @OneToMany(() => Grant, (grant) => grant.user)
     grants: Grant[];
 }

@@ -44,8 +44,8 @@ export default class CompanyService {
         let flag = false;
 
         try {
-            const grants = await this.accountService.getGrantInfo(bundle.userPK, bundle.companyPK);
-            const isAdmin = grants.some((grant) => grant.USER_PK === bundle.userPK);
+            const grants = await this.accountService.getGrantList(bundle.userPK);
+            const isAdmin = grants.some((grant) => grant.USER_PK === bundle.userPK && grant.AUTH_LIST_PK === 1);
 
             if (isAdmin) {
                 const { companyPK, departmentName, parentPK, parentDepth } = bundle;
