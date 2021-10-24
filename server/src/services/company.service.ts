@@ -1,10 +1,16 @@
 import CompanyRepository from 'src/mapper/company.repository';
-import { getConnection } from 'typeorm';
 import { getRepo } from 'src/Helpers/functions';
 import { DepartmentRepository, UserRepository } from 'src/mapper';
 import { AikoError } from 'src/Helpers/classes';
+import { INewDepartment } from 'src/interfaces';
+import AccountService from './account.service';
+import { Injectable } from '@nestjs/common';
+import { Company, Department } from 'src/entity';
 
+@Injectable()
 export default class CompanyService {
+    constructor(private accountService: AccountService) {}
+
     // 회사 리스트 출력
 
     async list(companyName: string) {
@@ -33,5 +39,23 @@ export default class CompanyService {
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
+    }
+
+    async createDepartment(bundle: INewDepartment) {
+        let flag = false;
+
+        try {
+            const admin = await this.accountService.getUserInfo(bundle.userPK, bundle.companyPK);
+            const isAdmin = admin.grants.some((curr) => curr.AUTH_LIST_PK === 1);
+
+            if (isAdmin) {
+                const { companyPK, departmentName, parentPK } = bundle;
+                flag = await getRepo(DepartmentRepository).createDepartment({ companyPK, departmentName, parentPK });
+            } else throw new AikoError("He isn't a admin", 500, 500011);
+        } catch (err) {
+            throw err;
+        }
+
+        return flag;
     }
 }

@@ -47,6 +47,8 @@ export {
     SuccessPacket,
     ITokenBundle,
 };
+import { INewDepartment } from './companyMVC';
+export { INewDepartment };
 
 //* file api interfaces
 import { IFileController, IFileService } from './fileMVC';

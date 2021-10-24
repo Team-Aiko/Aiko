@@ -8,7 +8,7 @@ import {
     TransactionManager,
     Transaction,
 } from 'typeorm';
-import { Department, User } from '../entity';
+import { Department, User, Company, Grant } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
@@ -76,8 +76,9 @@ export default class UserRepository extends Repository<User> {
         try {
             const result = await this.createQueryBuilder('u')
                 .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
+                .leftJoinAndSelect(Company, 'c', 'c.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
+                .leftJoinAndSelect(Grant, 'g', 'g.USER_PK = :USER_PK', { USER_PK: userPK })
                 .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
-                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .getOne();
 
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
