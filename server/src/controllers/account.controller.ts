@@ -129,7 +129,7 @@ export default class AccountController {
     }
 
     // ! check complete - api doc
-    @Post('requestResetPassword')
+    @Post('requesting-reset-password')
     async requestResetPassword(@Req() req: Request, @Res() res: Response) {
         const { email } = req.body;
 
@@ -142,7 +142,7 @@ export default class AccountController {
     }
 
     // ! check complete - api doc
-    @Post('resetPassword')
+    @Post('reset-password')
     async resetPassword(@Req() req: Request, @Res() res: Response) {
         const { uuid, password }: IResetPw = req.body;
 
@@ -155,7 +155,7 @@ export default class AccountController {
     }
 
     // ! api doc
-    @Post('getUserInfo')
+    @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
         const { USER_PK, COMPANY_PK }: { USER_PK: number; COMPANY_PK: number } = req.body.userPayload;
