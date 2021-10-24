@@ -43,7 +43,7 @@ export default class CompanyController {
         }
     }
     /**
-     * body에 담기는 내용: departmentName, parentPK
+     * body에 담기는 내용: departmentName, parentPK, parentDepth
      * @param req
      * @param res
      */
@@ -51,13 +51,14 @@ export default class CompanyController {
     @Post('new-department')
     async createDepartment(@Req() req: Request, @Res() res: Response) {
         try {
-            const { departmentName, parentPK, userPayload } = req.body;
+            const { departmentName, parentPK, parentDepth, userPayload } = req.body;
             const { COMPANY_PK, USER_PK } = userPayload as User;
             const bundle: INewDepartment = {
                 companyPK: COMPANY_PK,
                 userPK: USER_PK,
-                departmentName: departmentName as string,
-                parentPK: parentPK as number,
+                departmentName,
+                parentPK,
+                parentDepth,
             };
 
             const isSuccess = await this.companyService.createDepartment(bundle);

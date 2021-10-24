@@ -1,6 +1,7 @@
 export interface INewDepartment {
     departmentName: string;
-    parentPK: null | undefined | number;
+    parentPK?: number;
     companyPK: number;
     userPK: number;
+    parentDepth?: number;
 }

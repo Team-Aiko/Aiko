@@ -49,8 +49,13 @@ export default class CompanyService {
             const isAdmin = grants.some((grant) => grant.USER_PK === bundle.userPK);
 
             if (isAdmin) {
-                const { companyPK, departmentName, parentPK } = bundle;
-                flag = await getRepo(DepartmentRepository).createDepartment({ companyPK, departmentName, parentPK });
+                const { companyPK, departmentName, parentPK, parentDepth } = bundle;
+                flag = await getRepo(DepartmentRepository).createDepartment({
+                    companyPK,
+                    departmentName,
+                    parentPK,
+                    parentDepth,
+                });
             } else throw new AikoError("He isn't a admin", 500, 500011);
         } catch (err) {
             throw err;

@@ -14,9 +14,11 @@ import { UserRepository } from '.';
 import { INewDepartment } from 'src/interfaces';
 import { AikoError } from 'src/Helpers/classes';
 
+type DeptUnion = Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK' | 'parentDepth'>;
+
 @EntityRepository(Department)
 export default class DepartmentRepository extends Repository<Department> {
-    async createDepartment(bundle: Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK'>) {
+    async createDepartment(bundle: DeptUnion) {
         let flag = false;
         try {
             await this.createQueryBuilder()
@@ -26,6 +28,7 @@ export default class DepartmentRepository extends Repository<Department> {
                     COMPANY_PK: bundle.companyPK,
                     PARENT_PK: bundle.parentPK,
                     DEPARTMENT_NAME: bundle.departmentName,
+                    DEPTH: bundle.parentDepth + 1,
                 })
                 .execute();
             flag = true;
