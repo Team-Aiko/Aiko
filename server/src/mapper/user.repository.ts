@@ -13,6 +13,19 @@ import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
+const criticalUserInfo = [
+    'PASSWORD',
+    'SALT',
+    'EMAIL',
+    'FIRST_NAME',
+    'LAST_NAME',
+    'TEL',
+    'IS_VERIFIED',
+    'IS_DELETED',
+    'CREATE_DATE',
+    'PROFILE_FILE_NAME',
+];
+
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
     async getUserInfoWithEmail(email: string) {
@@ -28,11 +41,13 @@ export default class UserRepository extends Repository<User> {
 
         try {
             userInfo = await this.createQueryBuilder('U')
-                .leftJoinAndSelect('U.company', 'company')
-                .leftJoinAndSelect('U.department', 'department')
+                // .leftJoinAndSelect('U.company', 'company')
+                // .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
+
+            userInfo = propsRemover(userInfo, ...criticalUserInfo.slice(2));
         } catch (err) {
             throw new AikoError('select error(search user with nickname)', 500, 500121);
         }

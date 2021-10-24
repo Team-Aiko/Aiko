@@ -21,7 +21,7 @@ import * as config from 'config';
 // * jwt
 import * as jwt from 'jsonwebtoken';
 import { expireTime } from '../interfaces/jwt/jwtEnums';
-import { loginSecretKey } from '../interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 // * others
 
 import {
@@ -374,8 +374,8 @@ export default class AccountService {
         const data = { ...userData };
         const userPk = data.USER_PK;
         const tokens = {
-            access: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
-            refresh: jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options),
+            access: jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
+            refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
         };
         return tokens;
     }
@@ -388,7 +388,7 @@ export default class AccountService {
         };
 
         try {
-            const payload = jwt.verify(refreshToken, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
             const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
             const userData = await getRepo(UserRepository).getUserInfo(userPk);
@@ -396,8 +396,12 @@ export default class AccountService {
 
             // db토큰이랑 클라이언트 토큰일치 확인
             if (dbToken === refreshToken) {
-                result.accessToken = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
-                result.refreshToken = jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options);
+                result.accessToken = jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options);
+                result.refreshToken = jwt.sign(
+                    { userPk: userPk },
+                    refreshTokenBluePrint.secretKey,
+                    refreshTokenBluePrint.options,
+                );
                 await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
                 result.header = true;
             }

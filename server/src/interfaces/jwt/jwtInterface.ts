@@ -1,7 +1,7 @@
 import { SignOptions, DecodeOptions } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-export interface ISecretKey {
+export interface ITokenBluePrint {
     secretKey: string;
     options: SignOptions;
     decodeOpt: DecodeOptions;
