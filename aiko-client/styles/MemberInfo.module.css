@@ -1,0 +1,165 @@
+.outerContainer {
+    width:90%;
+    height:80%;
+    background-color: #DEE1ED;
+    display:block;
+    margin:50px auto;
+    box-sizing:border-box;
+}
+
+.upperContainer {
+    background-color:#dee1ed;
+    width:100%;
+    height:40%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.profilePic {
+    width:20%;
+    height:80%;
+    border-radius:100%;
+    background-color:#c4c4c4;
+    position:relative;
+}
+
+.status {
+    width:25%;
+    height:25%;
+    border-radius:100%;
+    background-color:#1042f1;
+    position:absolute;
+    margin-left:70%;
+    border:2px solid black;
+}
+
+.profileInfo {
+    width:70%;
+    height:70%;
+    background-color:white;
+    margin-left:30px;
+}
+
+.lowerContainer {
+    background-color:#dee1ed;
+    width:100%;
+    height:60%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    flex-wrap:wrap;
+}
+
+.btnDiv {
+    height:40%;
+    width:65%;
+    background-color:white;
+}
+
+.logDiv {
+    height:40%;
+    width:65%;
+    background-color:white;
+    margin-top:20px;
+}
+
+
+.optionDiv {
+    height:80%;
+    width:25%;
+    float: right;
+    background: white;
+    margin-right:15px;
+}
+
+.buttons {
+    height:40%;
+    width:60%;
+    background-color:#c4c4c4;
+    border-radius:20px;
+    margin-top:5px;
+    margin-left:5px;
+    align-items:center;
+    text-align:center;
+    display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content:space-evenly;
+}
+
+.blueBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#1042f1;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:20px;
+}
+
+.redBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#f11039;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:20px;
+}
+
+.greenBtn {
+    width:30%;
+    height:80%;
+    border-radius:30px;
+    background-color:#24afa7;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:20px;
+}
+
+.optionDiv {
+    display:flex;
+    flex-direction:column;
+    justify-content:space-evenly;
+}
+
+.inviteBtn {
+    width:33%;
+    height:15%;
+    border-radius:5px;
+    background-color:#68a8f4;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:15px;
+    margin-left:10px;
+}
+
+.messageBtn {
+    width:33%;
+    height:15%;
+    border-radius:5px;
+    background-color:#68a8f4;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:15px;
+    margin-left:10px;
+}
+
+.assignBtn {
+    width:33%;
+    height:15%;
+    border-radius:5px;
+    background-color:#68a8f4;
+    border:none;
+    cursor: pointer;
+    color:white;
+    font-size:15px;
+    margin-left:10px;
+}
