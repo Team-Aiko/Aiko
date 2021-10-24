@@ -4,6 +4,8 @@ import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/map
 import { getRepo } from 'src/Helpers/functions';
 import { User } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
+import { ISignup } from 'src/interfaces';
+import { EntityManager, TransactionManager } from 'typeorm';
 
 const client = createClient();
 setInterval(() => {
@@ -73,11 +75,14 @@ export default class SocketService {
      * @param userInfo
      * @returns
      */
-    async makeOneToOneChatRooms(userInfo: User): Promise<boolean> {
+    async makeOneToOneChatRooms(
+        @TransactionManager() manager: EntityManager,
+        companyPK: number,
+        userPK: number,
+    ): Promise<boolean> {
         try {
-            const { COMPANY_PK, USER_PK } = userInfo;
-            const userList = await getRepo(UserRepository).getMembers(COMPANY_PK);
-            return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(USER_PK, userList, COMPANY_PK);
+            const userList = await getRepo(UserRepository).getMembers(companyPK);
+            return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(manager, userPK, userList, companyPK);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }

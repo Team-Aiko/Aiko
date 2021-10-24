@@ -50,6 +50,7 @@ export interface ISignup {
     companyPK?: number;
     companyName?: string;
     departmentPK?: number;
+    userPK?: number;
 }
 
 export interface IResetPw {

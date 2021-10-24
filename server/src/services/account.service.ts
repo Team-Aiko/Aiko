@@ -49,6 +49,7 @@ import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
 import GrantRepository from 'src/mapper/grant.repository';
+import { userInfo } from 'os';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -104,12 +105,14 @@ export default class AccountService {
         try {
             let userPK: number;
             if (data.position === 0) {
+                // 회사 생성쿼리
                 const result1 = await getRepo(CompanyRepository).createCompany(queryRunner.manager, data.companyName);
                 console.log('step1');
                 const rawData1: ResultSetHeader = result1.raw;
                 const COMPANY_PK = rawData1.insertId as number;
                 console.log('step2');
                 data.companyPK = COMPANY_PK;
+                // admin 생성쿼리
                 const result3 = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
@@ -119,11 +122,11 @@ export default class AccountService {
                 );
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
+                // admin 권한부여 쿼리
                 await getRepo(GrantRepository).grantPermission(queryRunner.manager, 1, userPK);
                 console.log('step4');
-                await getRepo(RefreshRepository).createRow(userPK);
-                console.log('step5');
             } else if (data.position === 1) {
+                // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
@@ -132,10 +135,12 @@ export default class AccountService {
                     salt,
                 );
                 userPK = (result.raw as ResultSetHeader).insertId as number;
+                await this.socketService.makeOneToOneChatRooms(queryRunner.manager, data.companyPK, userPK);
             }
 
             // * email auth
             const uuid = v1();
+            await getRepo(RefreshRepository).createRow(queryRunner.manager, userPK);
             flag = await getRepo(LoginAuthRepository).createNewRow(queryRunner.manager, uuid, userPK);
 
             if (flag) {

@@ -163,19 +163,10 @@ export default class UserRepository extends Repository<User> {
         try {
             userList = await getConnection()
                 .createQueryBuilder(User, 'U')
-                .select([
-                    'U.USER_PK',
-                    'U.DEPARTMENT_PK',
-                    'U.FIRST_NAME',
-                    'U.LAST_NAME',
-                    'U.NICKNAME',
-                    'D.DEPARTMENT_NAME',
-                ])
-                .leftJoinAndSelect('U.socket', 'S')
-                .leftJoinAndSelect('U.company', 'C')
+                .select()
+                .leftJoinAndSelect('U.company', 'c')
+                .leftJoinAndSelect('U.department', 'd')
                 .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .andWhere('C.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .andWhere('S.USER_PK = U.USER_PK')
                 .getMany();
         } catch (err) {
             throw err;

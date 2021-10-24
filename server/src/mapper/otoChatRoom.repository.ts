@@ -1,10 +1,16 @@
-import { EntityRepository, getConnection, InsertResult, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, getConnection, InsertResult, Repository, TransactionManager } from 'typeorm';
 import { OTOChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
 
 @EntityRepository(OTOChatRoom)
 export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
-    async makeOneToOneChatRooms(userId: number, userList: User[], companyPK: number): Promise<boolean> {
+    async makeOneToOneChatRooms(
+        manager: EntityManager,
+        userId: number,
+        userList: User[],
+        companyPK: number,
+    ): Promise<boolean> {
+        console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 13 ~ OTOChatRoomRepository ~ userList', userList);
         let flag = false;
 
         try {
@@ -19,18 +25,15 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
                             .where('o.USER_1 = :USER_1', { USER_1: id })
                             .orWhere('o.USER_2 = :USER_2', { USER_2: id })
                             .getCount();
-                        if (cnt >= 1) return true;
 
-                        await this.createQueryBuilder('o')
-                            .insert()
-                            .into(OTOChatRoom)
-                            .values({
-                                CR_PK: v1(),
-                                USER_1: userId,
-                                USER_2: id,
-                                COMPANY_PK: companyPK,
-                            })
-                            .execute();
+                        if (cnt > 0) return true;
+
+                        await manager.insert(OTOChatRoom, {
+                            CR_PK: v1(),
+                            USER_1: userId,
+                            USER_2: id,
+                            COMPANY_PK: companyPK,
+                        });
 
                         flag2 = true;
                     } catch (err) {
@@ -40,8 +43,10 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
                     return flag2;
                 }),
             );
+            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 45 ~ OTOChatRoomRepository ~ result', result);
 
             flag = result.reduce((prev, curr) => prev && curr, true);
+            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 48 ~ OTOChatRoomRepository ~ flag', flag);
         } catch (err) {
             console.error(err);
             throw err;
