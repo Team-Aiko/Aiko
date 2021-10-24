@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import AccountController from 'src/controllers/account.controller';
-import AccountService from 'src/services/account.service';
+import AccountService from '../services/account.service';
+import { Company, Country, Department, LoginAuth, ResetPw, User, Refresh } from '../entity';
 import SocketService from 'src/services/socket.service';
-import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entity';
 
 @Module({
     imports: [
@@ -12,6 +12,7 @@ import { Company, Country, Department, LoginAuth, ResetPw, User } from '../entit
         MulterModule.register({
             dest: './files/profile',
         }),
+        TypeOrmModule.forFeature([Company, Country, Department, LoginAuth, ResetPw, User, Refresh]),
     ],
     controllers: [AccountController],
     providers: [AccountService, SocketService],

@@ -6,12 +6,11 @@ import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
-
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
     readonly success = new AikoError('OK', 200, 200000);
-
+    readonly fail = new AikoError('ERROR', 500, 500000);
     constructor(private accountService: AccountService) {}
 
     // ! check complete - api doc
@@ -97,9 +96,10 @@ export default class AccountController {
         try {
             const result = await this.accountService.login(data);
             console.log('🚀 ~ file: account.controller.ts ~ line 98 ~ AccountController ~ login ~ result', result);
-            if ('token' in result) {
-                res.cookie('ACCESS_TOKEN', result.token);
-                resExecutor(res, this.success, propsRemover(result, 'token'));
+            if ('accessToken' in result) {
+                res.cookie('ACCESS_TOKEN', result.accessToken);
+                res.cookie('REFRESH_TOKEN', result.refreshToken);
+                resExecutor(res, this.success, propsRemover(result, 'accessToken', 'refreshToken'));
             } else {
             }
         } catch (err) {
@@ -129,7 +129,7 @@ export default class AccountController {
     }
 
     // ! check complete - api doc
-    @Post('requestResetPassword')
+    @Post('requesting-reset-password')
     async requestResetPassword(@Req() req: Request, @Res() res: Response) {
         const { email } = req.body;
 
@@ -142,7 +142,7 @@ export default class AccountController {
     }
 
     // ! check complete - api doc
-    @Post('resetPassword')
+    @Post('reset-password')
     async resetPassword(@Req() req: Request, @Res() res: Response) {
         const { uuid, password }: IResetPw = req.body;
 
@@ -155,7 +155,7 @@ export default class AccountController {
     }
 
     // ! api doc
-    @Post('getUserInfo')
+    @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
         const { USER_PK, COMPANY_PK }: { USER_PK: number; COMPANY_PK: number } = req.body.userPayload;
@@ -166,6 +166,26 @@ export default class AccountController {
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    // 어세스 토큰 재발급
+
+    @Post('access-token')
+    async getAccessToken(@Req() req: Request, @Res() res: Response) {
+        const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
+        const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
+
+        try {
+            if (result.header) {
+                res.cookie('ACCESS_TOKEN', result.accessToken);
+                res.cookie('REFRESH_TOKEN', result.refreshToken);
+                resExecutor(res, this.success, true);
+            } else {
+                throw new AikoError('unknown error', 500, 500008);
+            }
+        } catch (err) {
+            throw resExecutor(res, err);
         }
     }
 }

@@ -18,6 +18,7 @@ import {
     Socket,
     ChatFile,
     OTOChatRoom,
+    Refresh,
 } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
@@ -28,19 +29,7 @@ import SocketModule from './modules/socket.module';
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
-    entities: [
-        Grant,
-        AuthListTable,
-        User,
-        LoginAuth,
-        Company,
-        Country,
-        Department,
-        ResetPw,
-        Socket,
-        ChatFile,
-        OTOChatRoom,
-    ],
+    entities: [User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile, OTOChatRoom, Refresh],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);

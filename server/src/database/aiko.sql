@@ -82,7 +82,6 @@ create table AUTH_LIST_TABLE (
     AUTH_LIST_PK INT PRIMARY KEY AUTO_INCREMENT,
     AUTH_NAME VARCHAR(64) NOT NULL
 );
-drop table auth_list_table;
 
 -- GRANT TABLE
 create table GRANT_TABLE (
@@ -90,6 +89,15 @@ create table GRANT_TABLE (
     USER_PK INT NOT NULL,
     AUTH_LIST_PK INT NOT NULL
 );
+
+-- 리프레시 토큰 테이블 생성
+create table REFRESH_TOKEN_TABLE (
+	NO int auto_increment,
+	USER_PK int,
+	USER_TOKEN varchar(512),
+	primary key (NO)
+);
+--
 
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
@@ -109,3 +117,4 @@ insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Brazil');
 
 -- TEST AUTH_LIST_TABLE
 insert into AUTH_LIST_TABLE (AUTH_NAME) values ('CHIEF_ADMIN');
+
