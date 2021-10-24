@@ -1,13 +1,10 @@
 /* eslint-disable no-unused-vars */
-// * http
-import { Response } from 'express';
+
 // * Database
 import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ObjectType } from 'typeorm';
-import { User, LoginAuth, Country, ResetPw, Company, Department } from '../entity';
+import { User } from '../entity';
 // * mailer
 import * as nodemailer from 'nodemailer';
 import { SendMailOptions } from 'nodemailer';
@@ -20,20 +17,11 @@ import pbkdf2 from 'pbkdf2-pw';
 import * as config from 'config';
 // * jwt
 import * as jwt from 'jsonwebtoken';
-import { expireTime } from '../interfaces/jwt/jwtEnums';
 import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 // * others
 
-import {
-    IAccountService,
-    ISignup,
-    UserTable,
-    BasePacket,
-    SuccessPacket,
-    IMailConfig,
-    IMailBotConfig,
-    ITokenBundle,
-} from '../interfaces';
+import { IMailConfig, IMailBotConfig, UserTable } from '../interfaces';
+import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
 import {
     RefreshRepository,
     UserRepository,
@@ -41,15 +29,11 @@ import {
     ResetPwRepository,
     LoginAuthRepository,
     CompanyRepository,
-    DepartmentRepository,
-    OTOChatRoomRepository,
 } from '../mapper';
-import { setFlagsFromString } from 'v8';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
 import GrantRepository from 'src/mapper/grant.repository';
-import { userInfo } from 'os';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');

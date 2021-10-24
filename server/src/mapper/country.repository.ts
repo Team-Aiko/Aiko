@@ -1,10 +1,9 @@
 import { Repository, EntityRepository, getConnection } from 'typeorm';
 import { Country } from 'src/entity';
-import { ICountryRepository } from 'src/interfaces/repositories';
 import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(Country)
-export default class CountryRepository extends Repository<Country> implements ICountryRepository {
+export default class CountryRepository extends Repository<Country> {
     async getCountryList(str: string): Promise<Country[]> {
         try {
             return await this.createQueryBuilder('c')

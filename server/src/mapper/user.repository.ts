@@ -1,4 +1,4 @@
-import { ISignup } from 'src/interfaces';
+import { ISignup } from 'src/interfaces/MVC/accountMVC';
 import {
     EntityManager,
     EntityRepository,

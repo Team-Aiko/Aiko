@@ -5,7 +5,7 @@ import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
 import { User } from 'src/entity';
-import { INewDepartment } from 'src/interfaces';
+import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
 
 @Controller('company')
 export default class CompanyController {

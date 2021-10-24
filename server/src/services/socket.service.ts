@@ -4,7 +4,6 @@ import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/map
 import { getRepo } from 'src/Helpers/functions';
 import { User } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
-import { ISignup } from 'src/interfaces';
 import { EntityManager, TransactionManager } from 'typeorm';
 
 const client = createClient();

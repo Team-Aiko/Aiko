@@ -64,3 +64,20 @@ export interface OneToOneChatRoomTable {
     USER_1: number;
     USER_2: number;
 }
+
+export interface AuthListTable {
+    AUTH_LIST_PK: number;
+    AUTH_NAME: string;
+}
+
+export interface RefreshTokenTable {
+    NO: number;
+    USER_PK: number;
+    USER_TOKEN: string;
+}
+
+export interface GrantTable {
+    GRNT_PK: number;
+    USER_PK: number;
+    AUTH_LIST_PK: number;
+}

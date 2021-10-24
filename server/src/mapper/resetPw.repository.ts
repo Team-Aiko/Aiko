@@ -1,7 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { getConnection } from 'typeorm';
 import { ResetPw } from '../entity';
-import { IResetPwRepository } from '../interfaces/repositories';
 import { User } from '../entity';
 import { UserRepository } from '.';
 import { InjectRepository } from '@nestjs/typeorm';

@@ -11,7 +11,7 @@ import {
 import { Department, User } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { UserRepository } from '.';
-import { INewDepartment } from 'src/interfaces';
+import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
 import { AikoError } from 'src/Helpers/classes';
 
 type DeptUnion = Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK' | 'parentDepth'>;

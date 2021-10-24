@@ -1,11 +1,10 @@
 import CompanyRepository from 'src/mapper/company.repository';
 import { getRepo } from 'src/Helpers/functions';
-import { DepartmentRepository, UserRepository } from 'src/mapper';
+import { DepartmentRepository } from 'src/mapper';
 import { AikoError } from 'src/Helpers/classes';
-import { INewDepartment } from 'src/interfaces';
+import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
 import AccountService from './account.service';
 import { Injectable } from '@nestjs/common';
-import { Company, Department } from 'src/entity';
 
 @Injectable()
 export default class CompanyService {

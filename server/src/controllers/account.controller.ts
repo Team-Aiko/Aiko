@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
-import { ISignup, IAccountController, IResetPw } from '../interfaces';
+import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
