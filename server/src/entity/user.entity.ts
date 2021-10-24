@@ -7,6 +7,7 @@ import {
     ManyToOne,
     OneToMany,
     ManyToMany,
+    JoinTable,
 } from 'typeorm';
 import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
 import { BaseEntity } from 'typeorm';
@@ -87,5 +88,6 @@ export default class User {
     socket2: OTOChatRoom[];
 
     @OneToMany(() => Grant, (grant) => grant.users)
+    @JoinTable()
     grants: Grant[];
 }
