@@ -108,7 +108,7 @@ export default class AccountService {
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
                 // admin 권한부여 쿼리
-                await getRepo(GrantRepository).grantPermission(queryRunner.manager, 1, userPK);
+                await getRepo(GrantRepository).grantPermission(1, userPK, queryRunner.manager);
                 console.log('step4');
             } else if (data.position === 1) {
                 // 사원 생성 쿼리

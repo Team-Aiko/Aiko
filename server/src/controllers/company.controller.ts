@@ -5,7 +5,8 @@ import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
 import { User } from 'src/entity';
-import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
+import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('company')
 export default class CompanyController {
@@ -33,7 +34,7 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
-        const { DEPARTMENT_PK, COMPANY_PK }: { DEPARTMENT_PK: number; COMPANY_PK: number } = req.body.userPayload;
+        const { DEPARTMENT_PK, COMPANY_PK } = req.body.userPayload as IUserPayload;
 
         try {
             const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
@@ -52,7 +53,7 @@ export default class CompanyController {
     async createDepartment(@Req() req: Request, @Res() res: Response) {
         try {
             const { departmentName, parentPK, parentDepth, userPayload } = req.body;
-            const { COMPANY_PK, USER_PK } = userPayload as User;
+            const { COMPANY_PK, USER_PK } = userPayload as IUserPayload;
             const bundle: INewDepartment = {
                 companyPK: COMPANY_PK,
                 userPK: USER_PK,
@@ -66,6 +67,25 @@ export default class CompanyController {
             else throw new AikoError('unknown error', 500, 500012);
         } catch (err) {
             throw resExecutor(res, err);
+        }
+    }
+    @UseGuards(UserGuard)
+    @Post('permission')
+    async givePermission(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, authListPK, targetUserPK, companyPK } = req.body;
+        const { USER_PK, grants } = userPayload as IUserPayload;
+        const bundle: IPermissionBundle = {
+            authListPK,
+            targetUserPK,
+            grants,
+            USER_PK,
+            companyPK,
+        };
+        try {
+            const isSuccess = await this.companyService.givePermission(bundle);
+            resExecutor(res, this.success, isSuccess);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 }

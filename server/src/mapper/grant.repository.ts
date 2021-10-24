@@ -4,9 +4,18 @@ import { EntityManager, EntityRepository, InsertResult, Repository, Transaction,
 
 @EntityRepository(Grant)
 export default class GrantRepository extends Repository<Grant> {
-    async grantPermission(@TransactionManager() manager: EntityManager, authNum: number, userPK: number) {
+    async grantPermission(authNum: number, userPK: number, @TransactionManager() manager?: EntityManager) {
         try {
-            return await manager.insert(Grant, { AUTH_LIST_PK: authNum, USER_PK: userPK });
+            if (manager) return await manager.insert(Grant, { AUTH_LIST_PK: authNum, USER_PK: userPK });
+            else
+                return await this.createQueryBuilder()
+                    .insert()
+                    .into(Grant)
+                    .values({
+                        AUTH_LIST_PK: authNum,
+                        USER_PK: userPK,
+                    })
+                    .execute();
         } catch (err) {
             console.error(err);
             throw new AikoError('grantPermission error', 500, 500008);

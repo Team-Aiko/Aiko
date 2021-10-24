@@ -6,6 +6,7 @@ import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
@@ -159,7 +160,7 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { USER_PK, COMPANY_PK }: { USER_PK: number; COMPANY_PK: number } = req.body.userPayload;
+        const { USER_PK, COMPANY_PK } = req.body.userPayload as IUserPayload;
         const { targetUserId } = req.body;
 
         try {
