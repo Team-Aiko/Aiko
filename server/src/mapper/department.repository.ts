@@ -39,6 +39,10 @@ export default class DepartmentRepository extends Repository<Department> {
     }
 
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
+        console.log(
+            '🚀 ~ file: department.repository.ts ~ line 43 ~ DepartmentRepository ~ getDepartmentMembers ~ companyPK',
+            companyPK,
+        );
         const userList: User[] = [];
 
         try {
@@ -110,6 +114,32 @@ export default class DepartmentRepository extends Repository<Department> {
             else flag = true;
         } catch (err) {
             throw err;
+        }
+
+        return flag;
+    }
+
+    async updateDepartmentName(departmentPK: number, departmentName: string, companyPK: number) {
+        console.log(
+            '🚀 ~ file: department.repository.ts ~ line 119 ~ DepartmentRepository ~ updateDepartmentName ~ companyPK',
+            companyPK,
+        );
+        let flag = false;
+
+        try {
+            const result = await this.createQueryBuilder()
+                .update(Department)
+                .set({
+                    DEPARTMENT_NAME: departmentName,
+                })
+                .where('DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK: departmentPK })
+                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
+                .execute();
+
+            flag = true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('department/updateDepartmentName', 500, 506071);
         }
 
         return flag;

@@ -94,6 +94,11 @@ export default class CompanyController {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
+
+    /**
+     * 작성자 : Aivyss
+     * 지정한 부서를 지우는 api
+     */
     @UseGuards(UserGuard)
     @Post('delete-department')
     async deleteDepartment(@Req() req: Request, @Res() res: Response) {
@@ -106,6 +111,30 @@ export default class CompanyController {
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
             console.error(err);
+        }
+    }
+
+    /**
+     * 작성자: Aivyss
+     * 지정한 부서의 이름을 바꾸는 api
+     */
+    @UseGuards(UserGuard)
+    @Post('change-department-name')
+    async updateDepartmentName(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, departmentPK, departmentName } = req.body;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const flag = await this.companyService.updateDepartmentName(
+                departmentPK,
+                departmentName,
+                COMPANY_PK,
+                grants,
+            );
+            if (flag) resExecutor(res, this.success, flag);
+            else throw new AikoError('unknown error', 500, 500123);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
 }

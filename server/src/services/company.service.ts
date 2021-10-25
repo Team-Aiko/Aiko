@@ -74,10 +74,10 @@ export default class CompanyService {
             if (admin.COMPANY_PK === targetMember.COMPANY_PK) {
                 // 현재는 1로 chief admin으로 고정되어 있으나 추후 확장성을 고려하여 설계하였음.
                 // 따라서 나중에 1의 값을 프론트에게서 받은 값으로 바꿔 확장가능
-                if (this.isChiefAdmin(bundle.grants)) {
-                    await getRepo(GrantRepository).grantPermission(1, targetMember.USER_PK);
-                    isSuccess = true;
-                } else throw new AikoError('not admin access', 500, 500044);
+                this.isChiefAdmin(bundle.grants); // admin 판별
+
+                await getRepo(GrantRepository).grantPermission(1, targetMember.USER_PK);
+                isSuccess = true;
             } else throw new AikoError('not same company error', 500, 500043);
         } catch (err) {
             if (err instanceof AikoError) throw err;
@@ -88,16 +88,33 @@ export default class CompanyService {
 
     async deleteDepartment(departmentPK: number, COMPANY_PK: number, grants: Grant[]) {
         try {
-            const isAdmin = grants.some((grant) => grant.AUTH_LIST_PK === 1);
-            if (isAdmin) {
-                return getRepo(DepartmentRepository).deleteDepartment(departmentPK, COMPANY_PK);
-            } else throw new AikoError('NO_AUTHORIZATION', 500, 500321);
+            this.isChiefAdmin(grants);
+            return getRepo(DepartmentRepository).deleteDepartment(departmentPK, COMPANY_PK);
         } catch (err) {
             throw err;
         }
     }
 
+    async updateDepartmentName(departmentPK: number, departmentName: string, companyPK: number, grants: Grant[]) {
+        let flag = false;
+
+        try {
+            this.isChiefAdmin(grants);
+            flag = await getRepo(DepartmentRepository).updateDepartmentName(departmentPK, departmentName, companyPK);
+        } catch (err) {
+            throw err;
+        }
+
+        return flag;
+    }
+
     isChiefAdmin(grants: Grant[]) {
-        return grants.some((grant) => grant.AUTH_LIST_PK === 1);
+        try {
+            const isAdmin = grants.some((grant) => grant.AUTH_LIST_PK === 1);
+            if (!isAdmin) throw new AikoError('NO_AUTHORIZATION', 500, 500321);
+            else return isAdmin;
+        } catch (err) {
+            throw err;
+        }
     }
 }
