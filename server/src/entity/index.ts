@@ -24,6 +24,6 @@ export {
     Company,
     Socket,
     ChatFile,
-    Refresh,
     NoticeBoard,
+    Refresh,
 };

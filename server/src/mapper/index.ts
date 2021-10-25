@@ -8,7 +8,6 @@ import SocketRepository from './socket.repository';
 import ChatFileRepository from './chatFile.repository';
 import OTOChatRoomRepository from './otoChatRoom.repository';
 import RefreshRepository from './refresh.repository';
-import NoticeBoardRepository from './noticeBoard.repository';
 
 export {
     DepartmentRepository,
@@ -21,5 +20,4 @@ export {
     ChatFileRepository,
     OTOChatRoomRepository,
     RefreshRepository,
-    NoticeBoardRepository,
 };

@@ -1,6 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { NoticeBoard } from 'src/entity';
-
+import { NoticeBoard } from '../entity';
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     createArticle(title: string, content: string, userPk: number) {
