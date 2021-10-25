@@ -176,9 +176,10 @@ export default class AccountController {
     @Post('access-token')
     async getAccessToken(@Req() req: Request, @Res() res: Response) {
         const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
-        const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
 
         try {
+            const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
+
             if (result.header) {
                 res.cookie('ACCESS_TOKEN', result.accessToken);
                 res.cookie('REFRESH_TOKEN', result.refreshToken);
