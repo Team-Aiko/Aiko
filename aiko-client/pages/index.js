@@ -4,6 +4,8 @@ import Image from 'next/image';
 import ChatComp from '../components/commons/chat/ChatComp';
 import TopNav from '../components/commons/TopNav';
 import styles from '../styles/Home.module.css';
+import { Button } from '@material-ui/core';
+import ChatModal from '../components/ChatModal';
 // * socket Test
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,6 +22,8 @@ function PComp(props) {
     const [chat, setChat] = useState([]);
     const [text, setText] = useState('');
     const [client, setClient] = useState(undefined);
+
+    const [chatModal, setChatModal] = useState(false);
     // 테스트 메세지 발송
     const sendTestMsg = () => {
         client.emit('server/test', text);
@@ -28,6 +32,10 @@ function PComp(props) {
     const handleChange = (e) => {
         const typedText = e.target.value;
         setText(typedText);
+    };
+
+    const openChatModal = () => {
+        setChatModal(true);
     };
 
     useEffect(() => {
@@ -70,10 +78,16 @@ function PComp(props) {
     }, []);
 
     return (
-        <div>
-            <div>{chat.map((item) => `${item} \n`)}</div>
-            <input type='text' onChange={handleChange} />
-            <button onClick={sendTestMsg}>발송</button>
-        </div>
+        <>
+            <div>
+                <div>{chat.map((item) => `${item} \n`)}</div>
+                <input type='text' onChange={handleChange} />
+                <button onClick={sendTestMsg}>발송</button>
+            </div>
+            <div>
+                <Button onClick={openChatModal}>Test Chat Modal</Button>
+                <ChatModal open={chatModal} onClose={() => setChatModal(false)} />
+            </div>
+        </>
     );
 }
