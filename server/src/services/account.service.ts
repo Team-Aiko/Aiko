@@ -197,13 +197,13 @@ export default class AccountService {
                                 };
                                 resolve(bundle);
                             }
+                            // get grant list
+                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+                            result.grants = grantList;
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
-                            // get grant list
-                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
-                            result.grants = grantList;
                             // remove security informations
                             propsRemover(result, 'PASSWORD', 'SALT');
 

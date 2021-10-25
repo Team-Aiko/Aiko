@@ -101,7 +101,7 @@ export default class DepartmentRepository extends Repository<Department> {
                 .where('d.DEPARTMENT_PK = :DEPARTMENT_PK', {
                     DEPARTMENT_PK: departmentPK,
                 })
-                .andWhere('d.COMPANY_PK = : COMPANY_PK', { COMPANY_PK })
+                .andWhere('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .getOne();
 
             if (result2?.users.length) throw new AikoError('department/deleteDepartment/isMembers', 500, 500451);
