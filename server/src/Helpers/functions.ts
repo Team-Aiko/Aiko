@@ -9,7 +9,7 @@ export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError:
 
     if (result === undefined || result === null) {
         packet = {
-            httpCode: aikoError.appCode,
+            httpCode: aikoError.stateCode,
             description: aikoError.description,
             appCode: aikoError.appCode,
         };

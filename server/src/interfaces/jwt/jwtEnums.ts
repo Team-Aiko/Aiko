@@ -1,8 +1,9 @@
 export enum secretKeys {
-    LOGIN = 'fjfiellamkvoeijalzkdohg',
+    ACCESS_TOKEN = 'fjfiellamkvoeijalzkdohg',
+    REFRESH_TOKEN = 'oamcvmoapgvioasdf',
 }
 
 export enum expireTime {
-    THREE_HOUR = 60 * 60 * 3,
-    NINE_HOUR = 60 * 60 * 9,
+    ACCESS_TOKEN_LIFE = 60 * 60 * 3,
+    REFRESH_TOKEN_LIFE = 60 * 60 * 9,
 }

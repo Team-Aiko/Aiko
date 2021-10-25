@@ -10,7 +10,8 @@ import {
 import { Logger } from '@nestjs/common';
 import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig, IOneToOnePacket } from 'src/interfaces';
+import { IWebSocketConfig } from 'src/interfaces';
+import { IOneToOnePacket } from 'src/interfaces/MVC/socketMVC';
 import { User } from 'src/entity';
 
 // * Redis

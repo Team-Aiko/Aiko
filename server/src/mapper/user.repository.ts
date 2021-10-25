@@ -1,4 +1,4 @@
-import { ISignup } from 'src/interfaces';
+import { ISignup } from 'src/interfaces/MVC/accountMVC';
 import {
     EntityManager,
     EntityRepository,
@@ -8,14 +8,32 @@ import {
     TransactionManager,
     Transaction,
 } from 'typeorm';
-import { Department, User } from '../entity';
+import { Department, User, Company, Grant } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
+import { AikoError } from 'src/Helpers/classes';
+
+const criticalUserInfo = [
+    'PASSWORD',
+    'SALT',
+    'EMAIL',
+    'FIRST_NAME',
+    'LAST_NAME',
+    'TEL',
+    'IS_VERIFIED',
+    'IS_DELETED',
+    'CREATE_DATE',
+    'PROFILE_FILE_NAME',
+];
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
     async getUserInfoWithEmail(email: string) {
-        return await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
+        try {
+            return await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
+        } catch (err) {
+            throw new AikoError('select error(search userinfo with email)', 500, 500125);
+        }
     }
 
     async getUserInfoWithNickname(nickname: string): Promise<User> {
@@ -23,20 +41,24 @@ export default class UserRepository extends Repository<User> {
 
         try {
             userInfo = await this.createQueryBuilder('U')
-                .leftJoinAndSelect('U.company', 'company')
-                .leftJoinAndSelect('U.department', 'department')
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
+
+            userInfo = propsRemover(userInfo, ...criticalUserInfo.slice(2));
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(search user with nickname)', 500, 500121);
         }
 
         return userInfo;
     }
 
     async checkDuplicateEmail(email: string) {
-        return await this.count({ EMAIL: email });
+        try {
+            return await this.count({ EMAIL: email });
+        } catch (err) {
+            throw new AikoError('count error (email)', 500, 500019);
+        }
     }
 
     async changePassword(userPK: number, hash: string, salt: string) {
@@ -51,7 +73,7 @@ export default class UserRepository extends Repository<User> {
 
             returnVal = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('update error(change password)', 500, 500123);
         }
 
         return returnVal;
@@ -63,25 +85,20 @@ export default class UserRepository extends Repository<User> {
         try {
             returnVal = await this.createQueryBuilder('u').where('u.EMAIL = :EMAIL', { EMAIL: email }).getOneOrFail();
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(search nickname)', 500, 500029);
         }
 
         return returnVal;
     }
 
-    async getUserInfoWithUserPK(userPK: number, companyPK: number): Promise<User> {
+    async getUserInfoWithUserPK(userPK: number): Promise<User> {
         let user: User;
 
         try {
-            const result = await this.createQueryBuilder('u')
-                .leftJoinAndSelect(Department, 'd', 'd.DEPARTMENT_PK = u.DEPARTMENT_PK')
-                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
-                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .getOne();
-
+            const result = await this.findOne({ USER_PK: userPK }, { relations: ['company', 'department'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            throw err;
+            throw new AikoError('select error (user information)', 500, 500012);
         }
 
         return user;
@@ -89,13 +106,12 @@ export default class UserRepository extends Repository<User> {
 
     async getUserInfo(userPK: number): Promise<User> {
         let user: User;
+
         try {
-            const result = await this.createQueryBuilder('u')
-                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
-                .getOne();
+            const result = await this.findOneOrFail(userPK, { relations: ['department', 'company'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            throw err;
+            throw new AikoError('select error (userInfo)', 500, 500005);
         }
         return user;
     }
@@ -112,7 +128,7 @@ export default class UserRepository extends Repository<User> {
 
             flag = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('update error(give auth)', 500, 500026);
         }
 
         return flag;
@@ -146,7 +162,7 @@ export default class UserRepository extends Repository<User> {
 
             result = await manager.insert(User, user);
         } catch (err) {
-            throw err;
+            throw new AikoError('insert error(create user)', 500, 500122);
         }
 
         return result;
@@ -162,22 +178,13 @@ export default class UserRepository extends Repository<User> {
         try {
             userList = await getConnection()
                 .createQueryBuilder(User, 'U')
-                .select([
-                    'U.USER_PK',
-                    'U.DEPARTMENT_PK',
-                    'U.FIRST_NAME',
-                    'U.LAST_NAME',
-                    'U.NICKNAME',
-                    'D.DEPARTMENT_NAME',
-                ])
-                .leftJoinAndSelect('U.socket', 'S')
-                .leftJoinAndSelect('U.company', 'C')
+                .select()
+                .leftJoinAndSelect('U.company', 'c')
+                .leftJoinAndSelect('U.department', 'd')
                 .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .andWhere('C.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .andWhere('S.USER_PK = U.USER_PK')
                 .getMany();
         } catch (err) {
-            throw err;
+            throw new AikoError('select error(member list)', 500, 500044);
         }
 
         return userList;
@@ -189,7 +196,7 @@ export default class UserRepository extends Repository<User> {
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .getCount();
         } catch (err) {
-            throw err;
+            throw new AikoError('count error(duplicate nickname)', 500, 500045);
         }
     }
 }

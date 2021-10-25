@@ -1,14 +1,14 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { loginSecretKey } from '../interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 
 @Injectable()
 export default class VerifyJwt implements NestMiddleware<Request, Response> {
     async use(req: Request, res: Response, next: NextFunction) {
         try {
             const { TOKEN } = req.cookies;
-            jwt.verify(TOKEN, loginSecretKey.secretKey, (err: VerifyErrors | null) => {
+            jwt.verify(TOKEN, accessTokenBluePrint.secretKey, (err: VerifyErrors | null) => {
                 if (err) throw err;
                 else next();
             });

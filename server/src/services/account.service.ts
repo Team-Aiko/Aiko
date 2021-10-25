@@ -1,13 +1,10 @@
 /* eslint-disable no-unused-vars */
-// * http
-import { Response } from 'express';
+
 // * Database
 import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ObjectType } from 'typeorm';
-import { User, LoginAuth, Country, ResetPw, Company, Department } from '../entity';
+import { User } from '../entity';
 // * mailer
 import * as nodemailer from 'nodemailer';
 import { SendMailOptions } from 'nodemailer';
@@ -20,19 +17,11 @@ import pbkdf2 from 'pbkdf2-pw';
 import * as config from 'config';
 // * jwt
 import * as jwt from 'jsonwebtoken';
-import { expireTime } from '../interfaces/jwt/jwtEnums';
-import { loginSecretKey } from '../interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 // * others
 
-import {
-    IAccountService,
-    ISignup,
-    UserTable,
-    BasePacket,
-    SuccessPacket,
-    IMailConfig,
-    IMailBotConfig,
-} from '../interfaces';
+import { IMailConfig, IMailBotConfig, UserTable } from '../interfaces';
+import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
 import {
     RefreshRepository,
     UserRepository,
@@ -40,13 +29,11 @@ import {
     ResetPwRepository,
     LoginAuthRepository,
     CompanyRepository,
-    DepartmentRepository,
-    OTOChatRoomRepository,
 } from '../mapper';
-import { setFlagsFromString } from 'v8';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
+import GrantRepository from 'src/mapper/grant.repository';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -64,7 +51,7 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateEmail(email);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 
@@ -72,7 +59,7 @@ export default class AccountService {
         try {
             return await getRepo(CountryRepository).getCountryList(str);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 
@@ -92,7 +79,7 @@ export default class AccountService {
             hash = a1;
             salt = a2;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('hasher error', 501, 500021);
         }
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
@@ -101,18 +88,16 @@ export default class AccountService {
 
         try {
             let userPK: number;
+
             if (data.position === 0) {
+                // 회사 생성쿼리
                 const result1 = await getRepo(CompanyRepository).createCompany(queryRunner.manager, data.companyName);
                 console.log('step1');
                 const rawData1: ResultSetHeader = result1.raw;
                 const COMPANY_PK = rawData1.insertId as number;
-                const result2 = await getRepo(DepartmentRepository).createOwnerRow(queryRunner.manager, COMPANY_PK);
                 console.log('step2');
-                const rawData2: ResultSetHeader = result2.raw;
-                const DEPARTMENT_PK = rawData2.insertId as number;
                 data.companyPK = COMPANY_PK;
-                data.departmentPK = DEPARTMENT_PK;
-
+                // admin 생성쿼리
                 const result3 = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
@@ -122,8 +107,11 @@ export default class AccountService {
                 );
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
-                const result4 = await getRepo(RefreshRepository).createRow(userPK);
+                // admin 권한부여 쿼리
+                await getRepo(GrantRepository).grantPermission(1, userPK, queryRunner.manager);
+                console.log('step4');
             } else if (data.position === 1) {
+                // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
@@ -132,10 +120,12 @@ export default class AccountService {
                     salt,
                 );
                 userPK = (result.raw as ResultSetHeader).insertId as number;
+                await this.socketService.makeOneToOneChatRooms(queryRunner.manager, data.companyPK, userPK);
             }
 
             // * email auth
             const uuid = v1();
+            await getRepo(RefreshRepository).createRow(queryRunner.manager, userPK);
             flag = await getRepo(LoginAuthRepository).createNewRow(queryRunner.manager, uuid, userPK);
 
             if (flag) {
@@ -178,13 +168,12 @@ export default class AccountService {
             const result = await getRepo(LoginAuthRepository).findUser(uuid);
             flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
 
-            if (!flag) new Error('error give auth method');
+            if (!flag) throw new AikoError('unknown fail error', 500, 500026);
 
             await queryRunner.commitTransaction();
         } catch (err) {
-            console.error(err);
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -198,31 +187,43 @@ export default class AccountService {
             console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
-                    hasher({ password: data.PASSWORD, salt: result.SALT }, (err, pw, salt, hash) => {
-                        const flag = result.PASSWORD === hash;
+                    try {
+                        hasher({ password: data.PASSWORD, salt: result.SALT }, async (err, pw, salt, hash) => {
+                            const flag = result.PASSWORD === hash;
 
-                        if (!flag) {
-                            const bundle: BasePacket = {
-                                header: false,
+                            if (!flag) {
+                                const bundle: BasePacket = {
+                                    header: false,
+                                };
+                                resolve(bundle);
+                            }
+                            // make token
+                            const token = this.generateLoginToken(result);
+                            // refresh token update to database
+                            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+                            // get grant list
+                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+                            result.grants = grantList;
+                            // remove security informations
+                            propsRemover(result, 'PASSWORD', 'SALT');
+
+                            const bundle: SuccessPacket = {
+                                header: flag,
+                                userInfo: { ...result },
+                                accessToken: token.access,
+                                refreshToken: token.refresh,
                             };
                             resolve(bundle);
-                        }
-                        // remove security informations
-                        propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-                        const token = this.generateLoginToken(result);
-                        const bundle: SuccessPacket = {
-                            header: flag,
-                            userInfo: { ...result },
-                            accessToken: token.access,
-                            refreshToken: token.refresh,
-                        };
-                        resolve(bundle);
-                    });
+                        });
+                    } catch (err) {
+                        throw err;
+                    }
                 },
             );
+
             return packet;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
     }
 
@@ -348,9 +349,9 @@ export default class AccountService {
         }
     }
 
-    async getUserInfo(userPK: number, companyPK: number) {
+    async getGrantList(userPK: number) {
         try {
-            return await getRepo(UserRepository).getUserInfoWithUserPK(userPK, companyPK);
+            return await getRepo(GrantRepository).getGrantList(userPK);
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
@@ -360,46 +361,51 @@ export default class AccountService {
         const data = { ...userData };
         const userPk = data.USER_PK;
         const tokens = {
-            access: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
-            refresh: jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options),
+            access: jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
+            refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
         };
         return tokens;
     }
 
     // 어세스 토큰 재 발급 (확인필요)
 
-    async accesToken(req) {
-        const result = {
-            msg: '',
-            accessToken: '',
-            refreshToken: '',
+    async getAccessToken(refreshToken: string) {
+        const result: ITokenBundle = {
+            header: false,
         };
+
         try {
-            const clientToken = req.cookies.REFRESH_TOKEN;
-            const payload = jwt.verify(clientToken, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
             const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
             const userData = await getRepo(UserRepository).getUserInfo(userPk);
             const data = { ...userData };
+
             // db토큰이랑 클라이언트 토큰일치 확인
-            if (dbToken === clientToken) {
-                result.accessToken = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
-                result.refreshToken = jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options);
+            if (dbToken === refreshToken) {
+                result.accessToken = jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options);
+                result.refreshToken = jwt.sign(
+                    { userPk: userPk },
+                    refreshTokenBluePrint.secretKey,
+                    refreshTokenBluePrint.options,
+                );
                 await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
-                result.msg = 'success';
-            } else {
-                result.msg = 'error [tokenExits]';
+                result.header = true;
             }
         } catch (error) {
             const err = error as jwt.VerifyErrors;
-            if (err.name === 'TokenExpiredError') {
-                result.msg = 'error [expired]';
-            } else if (err.name === 'JsonWebTokenError') {
-                result.msg = 'error [tokenError]';
-            } else {
-                result.msg = 'error [' + err.name + ']';
-            }
+            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
+            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
+            else throw error;
         }
+
         return result;
+    }
+    async getUserInfo(targetUserId: number, comapnyPK: number) {
+        try {
+            return await getRepo(UserRepository).getUserInfo(targetUserId);
+        } catch (err) {
+            throw err;
+        }
     }
 }

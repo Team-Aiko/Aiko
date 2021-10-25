@@ -11,24 +11,31 @@ import {
 import { Department, User } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { UserRepository } from '.';
+import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
+import { AikoError } from 'src/Helpers/classes';
+
+type DeptUnion = Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK' | 'parentDepth'>;
 
 @EntityRepository(Department)
 export default class DepartmentRepository extends Repository<Department> {
-    async createOwnerRow(@TransactionManager() manager: EntityManager, companyPK: number): Promise<InsertResult> {
-        let insertResult: InsertResult;
-
+    async createDepartment(bundle: DeptUnion) {
+        let flag = false;
         try {
-            const dept = new Department();
-            dept.DEPARTMENT_NAME = 'OWNER';
-            dept.COMPANY_PK = companyPK;
-            dept.DEPTH = 0;
-
-            insertResult = await this.manager.insert(Department, dept);
+            await this.createQueryBuilder()
+                .insert()
+                .into(Department)
+                .values({
+                    COMPANY_PK: bundle.companyPK,
+                    PARENT_PK: bundle.parentPK,
+                    DEPARTMENT_NAME: bundle.departmentName,
+                    DEPTH: bundle.parentDepth + 1,
+                })
+                .execute();
+            flag = true;
         } catch (err) {
-            console.log(err);
+            throw new AikoError('insert error (new department row)', 500, 500012);
         }
-
-        return insertResult;
+        return flag;
     }
 
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
@@ -71,8 +78,7 @@ export default class DepartmentRepository extends Repository<Department> {
 
             result2.forEach((arr) => userList.concat(arr));
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw new AikoError('department/getDepartmentMembers', 500, 500360);
         }
 
         return userList;

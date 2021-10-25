@@ -1,15 +1,12 @@
 import { Controller, Post, Req, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
-import { IFileController } from 'src/interfaces';
 import FileService from 'src/services/file.service';
 import { resExecutor } from '../Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 
 @Controller('store')
-export default class FileController implements IFileController {
+export default class FileController {
     readonly success = new AikoError('OK', 200, 200000);
 
     constructor(private fileService: FileService) {}

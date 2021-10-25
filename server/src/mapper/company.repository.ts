@@ -12,7 +12,7 @@ export default class CompanyRepository extends Repository<Company> {
                 .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
                 .getMany();
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('company/list', 500, 500360);
         }
     }
 
@@ -38,7 +38,7 @@ export default class CompanyRepository extends Repository<Company> {
             // })
             // .execute();
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('company/createCompany', 500, 500360);
         }
 
         return insertResult;

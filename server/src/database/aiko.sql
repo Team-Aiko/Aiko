@@ -77,6 +77,22 @@ create table ONE_TO_ONE_CHAT_ROOM_TABLE(
     COMPANY_PK INT NOT NULL
 );
 
+<<<<<<< HEAD
+=======
+-- AUTH LIST TABLE
+create table AUTH_LIST_TABLE (
+    AUTH_LIST_PK INT PRIMARY KEY AUTO_INCREMENT,
+    AUTH_NAME VARCHAR(64) NOT NULL
+);
+
+-- GRANT TABLE
+create table GRANT_TABLE (
+    GRNT_PK INT PRIMARY KEY AUTO_INCREMENT,
+    USER_PK INT NOT NULL,
+    AUTH_LIST_PK INT NOT NULL
+);
+
+>>>>>>> 66cdd098de720b1450aeb1bf20d143cfc187a843
 -- 리프레시 토큰 테이블 생성
 create table REFRESH_TOKEN_TABLE (
 	NO int auto_increment,
@@ -84,6 +100,7 @@ create table REFRESH_TOKEN_TABLE (
 	USER_TOKEN varchar(512),
 	primary key (NO)
 );
+<<<<<<< HEAD
 
 -- 공지 게시판 테이블 생성
 create table NOTICE_BOARD_TABLE (
@@ -98,6 +115,9 @@ create table NOTICE_BOARD_TABLE (
 	);
 
 
+=======
+--
+>>>>>>> 66cdd098de720b1450aeb1bf20d143cfc187a843
 
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
@@ -115,4 +135,6 @@ insert into COUNTRY_TABLE (COUNTRY_NAME) values ('UK');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('France');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Brazil');
 
+-- TEST AUTH_LIST_TABLE
+insert into AUTH_LIST_TABLE (AUTH_NAME) values ('CHIEF_ADMIN');
 

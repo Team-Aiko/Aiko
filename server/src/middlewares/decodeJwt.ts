@@ -1,13 +1,13 @@
 import { NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { loginSecretKey } from 'src/interfaces/jwt/secretKey';
+import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 
 export default class DecodeJwt implements NestMiddleware<Request, Response> {
     use(req: Request, res: Response, next: NextFunction) {
         try {
             const { TOKEN } = req.cookies;
-            const decode = jwt.decode(TOKEN, loginSecretKey.decodeOpt) as jwt.JwtPayload;
+            const decode = jwt.decode(TOKEN, accessTokenBluePrint.decodeOpt) as jwt.JwtPayload;
             req.body.jwtPayload = decode.payload;
             next();
         } catch (e) {

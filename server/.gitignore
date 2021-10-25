@@ -47,3 +47,6 @@ lerna-debug.log*
 
 # and uncomment the following lines
 # .pnp.*
+
+# rest
+*.rest

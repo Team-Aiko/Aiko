@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
-import { loginSecretKey } from '../interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 @Injectable()
 export class UserGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
@@ -9,7 +9,7 @@ export class UserGuard implements CanActivate {
             const request = context.switchToHttp().getRequest();
             console.log('parsedcookie', request.cookies);
             const accessToken = request.cookies.ACCESS_TOKEN;
-            const payload = jwt.verify(accessToken, loginSecretKey.secretKey); //임시테스트
+            const payload = jwt.verify(accessToken, accessTokenBluePrint.secretKey); //임시테스트
             request.body.userPayload = payload; // jwt payload
         } catch (error) {
             const err = error as jwt.VerifyErrors;
