@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../styles/components/AdminDepartmentTree.module.css';
 import { makeStyles } from '@material-ui/core/styles';
 import TreeView from '@material-ui/lab/TreeView';
@@ -55,6 +55,13 @@ export default function AdminDepartmentTree() {
             value: 'C',
         },
     ]); // test용 데이터
+
+    useEffect(() => {
+        const url = 'api/company/department-tree';
+        get(url).then((result) => {
+            console.log('result : ', result);
+        });
+    });
 
     function treeItemJsx(department) {
         return (
