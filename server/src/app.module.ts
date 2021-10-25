@@ -6,7 +6,6 @@ import AccountModule from './modules/account.module';
 import FileModule from './modules/file.module';
 import VerifyJwt from './middlewares/verifyJwt';
 
-
 import {
     Grant,
     AuthListTable,
@@ -20,7 +19,7 @@ import {
     ChatFile,
     OTOChatRoom,
     Refresh,
-    NoticeBoard
+    NoticeBoard,
 } from './entity';
 
 import OneToOneMessageGateway from './gateway/message.gateway';
