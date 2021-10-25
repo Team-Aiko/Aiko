@@ -160,9 +160,13 @@ export default class CompanyController {
     @Get('department-tree')
     async getDepartmentTree(@Req() req: Request, @Res() res: Response) {
         const { COMPANY_PK } = req.body.userPayload as IUserPayload;
+        const { departmentPK } = req.query;
 
         try {
-            const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK);
+            let DEPARTMENT_PK = Number(departmentPK);
+
+            if (!DEPARTMENT_PK) DEPARTMENT_PK = -1;
+            const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
             resExecutor(res, this.success, departmentTree);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);

@@ -130,9 +130,9 @@ export default class CompanyService {
         return searchedUser;
     }
 
-    async getDepartmentTree(COMPANY_PK: number) {
+    async getDepartmentTree(COMPANY_PK: number, DEPARTMENT_PK: number) {
         try {
-            return await getRepo(DepartmentRepository).getDepartmentTree(COMPANY_PK);
+            return await getRepo(DepartmentRepository).getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }

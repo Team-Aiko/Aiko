@@ -162,32 +162,45 @@ export default class DepartmentRepository extends Repository<Department> {
         return depts;
     }
 
-    async getDepartmentTree(COMPANY_PK: number) {
+    async getDepartmentTree(COMPANY_PK: number, DEPARTMENT_PK: number) {
         let departmentTree: Department[] = [];
 
         try {
-            const DEPTH = 0;
-            console.log(
-                '🚀 ~ file: department.repository.ts ~ line 170 ~ DepartmentRepository ~ getDepartmentTree ~ DEPTH',
-                DEPTH,
-            );
-            const depthZeros = await this.createQueryBuilder('d')
+            let DEPTH = 0;
+
+            if (DEPARTMENT_PK !== -1) {
+                const result = await this.createQueryBuilder('d')
+                    .where('d.DEPARTMENT_PK = :DEPARTMENT_PK', {
+                        DEPARTMENT_PK,
+                    })
+                    .getOneOrFail();
+                DEPTH = result.DEPTH;
+            }
+
+            const fracture = this.createQueryBuilder('d')
                 .leftJoinAndSelect('d.children', 'children')
                 .where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
-                .andWhere('d.DEPTH = :DEPTH', { DEPTH })
-                .getMany();
-            console.log('step1');
-            console.log(
-                '🚀 ~ file: department.repository.ts ~ line 171 ~ DepartmentRepository ~ getDepartmentTree ~ depthZeros',
-                depthZeros,
-            );
-            console.log('step2');
+                .andWhere('d.DEPTH = :DEPTH', { DEPTH });
 
-            const flagList = await this.bootstrapNode(depthZeros, COMPANY_PK, DEPTH + 1);
-            const flag = flagList.reduce((prev, curr) => prev && curr, true);
+            if (DEPARTMENT_PK === -1) {
+                const initial = await fracture.getMany();
 
-            if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
-            departmentTree = departmentTree.concat(depthZeros);
+                const flagList = await this.bootstrapNode(initial, COMPANY_PK, DEPTH + 1);
+                const flag = flagList.reduce((prev, curr) => prev && curr, true);
+
+                if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
+                departmentTree = departmentTree.concat(initial);
+            } else {
+                const initial = await fracture
+                    .andWhere('d.DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK })
+                    .getOneOrFail();
+
+                const flagList = await this.bootstrapNode([initial], COMPANY_PK, DEPTH + 1);
+                const flag = flagList.reduce((prev, curr) => prev && curr, true);
+
+                if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
+                departmentTree = departmentTree.concat(initial);
+            }
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }
