@@ -141,6 +141,14 @@ export default class CompanyService {
         return searchedUser;
     }
 
+    async getDepartmentTree(COMPANY_PK: number) {
+        try {
+            return await getRepo(DepartmentRepository).getDepartmentTree(COMPANY_PK);
+        } catch (err) {
+            if (err instanceof AikoError) throw err;
+        }
+    }
+
     // * util functions
 
     isChiefAdmin(grants: Grant[]) {

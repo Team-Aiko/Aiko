@@ -153,4 +153,21 @@ export default class CompanyController {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
+
+    /**
+     * 작성자: Aivyss
+     * 부서의 풀트리를 만드는 api
+     */
+    @UseGuards(UserGuard)
+    @Get('department-tree')
+    async getDepartmentTree(@Req() req: Request, @Res() res: Response) {
+        const { COMPANY_PK } = req.body.userPayload as IUserPayload;
+
+        try {
+            const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK);
+            resExecutor(res, this.success, departmentTree);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
 }

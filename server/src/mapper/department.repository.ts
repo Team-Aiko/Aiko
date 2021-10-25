@@ -161,4 +161,60 @@ export default class DepartmentRepository extends Repository<Department> {
 
         return depts;
     }
+
+    async getDepartmentTree(COMPANY_PK: number) {
+        let departmentTree: Department[] = [];
+
+        try {
+            const DEPTH = 0;
+            console.log(
+                '🚀 ~ file: department.repository.ts ~ line 170 ~ DepartmentRepository ~ getDepartmentTree ~ DEPTH',
+                DEPTH,
+            );
+            const depthZeros = await this.createQueryBuilder('d')
+                .leftJoinAndSelect('d.children', 'children')
+                .where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('d.DEPTH = :DEPTH', { DEPTH })
+                .getMany();
+            console.log('step1');
+            console.log(
+                '🚀 ~ file: department.repository.ts ~ line 171 ~ DepartmentRepository ~ getDepartmentTree ~ depthZeros',
+                depthZeros,
+            );
+            console.log('step2');
+
+            const flagList = await this.bootstrapNode(depthZeros, COMPANY_PK, DEPTH + 1);
+            const flag = flagList.reduce((prev, curr) => prev && curr, true);
+
+            if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
+            departmentTree = departmentTree.concat(depthZeros);
+        } catch (err) {
+            if (err instanceof AikoError) throw err;
+        }
+
+        return departmentTree;
+    }
+
+    // * util functions
+    async bootstrapNode(departments: Department[], COMPANY_PK: number, depth: number) {
+        const DEPTH = depth;
+
+        return await Promise.all(
+            departments.map(async (dept) => {
+                try {
+                    const PARENT_PK = dept.DEPARTMENT_PK;
+                    dept.children = await this.createQueryBuilder('d')
+                        .leftJoinAndSelect('d.children', 'children')
+                        .where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                        .andWhere('d.DEPTH = :DEPTH', { DEPTH })
+                        .andWhere('d.PARENT_PK = :PARENT_PK', { PARENT_PK })
+                        .getMany();
+                    await this.bootstrapNode(dept.children, COMPANY_PK, DEPTH + 1);
+                    return true;
+                } catch (err) {
+                    throw new AikoError('department/bootstrapNode', 500, 500621);
+                }
+            }),
+        );
+    }
 }
