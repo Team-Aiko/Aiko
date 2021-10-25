@@ -59,7 +59,8 @@ export default class CompanyController {
             if (isSuccess) resExecutor(res, this.success, isSuccess);
             else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
-            throw resExecutor(res, err);
+            if (err instanceof AikoError) throw resExecutor(res, err);
+            else console.error(err);
         }
     }
 
