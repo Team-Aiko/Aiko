@@ -1,0 +1,5 @@
+.admin-container {
+    margin: 20px;
+    background: gainsboro;
+    height: calc(100% - 106px);
+}

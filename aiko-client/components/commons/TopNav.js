@@ -7,6 +7,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
+import SettingsIcon from '@material-ui/icons/Settings';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -164,6 +165,10 @@ function PComp(props) {
         props.handleSideNav(true);
     }, []);
 
+    const goToAdmin = () => {
+        Router.push('/admin');
+    };
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
@@ -221,6 +226,12 @@ function PComp(props) {
                     <p>Profile</p>
                 </MenuItem>
             ) : null}
+            <MenuItem onClick={goToAdmin}>
+                <IconButton aria-label='show 11 new notifications' color='inherit'>
+                    <SettingsIcon />
+                </IconButton>
+                <p>Admin</p>
+            </MenuItem>
         </Menu>
     );
     const accountBtns = (
