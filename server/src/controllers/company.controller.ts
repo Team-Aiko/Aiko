@@ -44,9 +44,8 @@ export default class CompanyController {
         }
     }
     /**
+     * 작성자: Aivyss
      * body에 담기는 내용: departmentName, parentPK, parentDepth
-     * @param req
-     * @param res
      */
     @UseGuards(UserGuard)
     @Post('new-department')
@@ -64,7 +63,7 @@ export default class CompanyController {
 
             const isSuccess = await this.companyService.createDepartment(bundle);
             if (isSuccess) resExecutor(res, this.success, isSuccess);
-            else throw new AikoError('unknown error', 500, 500012);
+            else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
             throw resExecutor(res, err);
         }
@@ -89,7 +88,8 @@ export default class CompanyController {
         };
         try {
             const isSuccess = await this.companyService.givePermission(bundle);
-            resExecutor(res, this.success, isSuccess);
+            if (isSuccess) resExecutor(res, this.success, isSuccess);
+            else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
@@ -108,6 +108,7 @@ export default class CompanyController {
         try {
             const flag = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
             if (flag) resExecutor(res, this.success, flag);
+            else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
             console.error(err);
