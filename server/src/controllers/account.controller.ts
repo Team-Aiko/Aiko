@@ -3,15 +3,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
-import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError } from 'src/Helpers/classes';
+import { AikoError, success, resExecutor, propsRemover } from 'src/Helpers';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
-    readonly success = new AikoError('OK', 200, 200000);
-    readonly fail = new AikoError('ERROR', 500, 500000);
+    readonly success = success;
+
     constructor(private accountService: AccountService) {}
 
     // ! check complete - api doc

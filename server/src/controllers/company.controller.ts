@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
-import { resExecutor } from 'src/Helpers/functions';
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError } from 'src/Helpers/classes';
+import { AikoError, success, resExecutor } from 'src/Helpers';
 import { User } from 'src/entity';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('company')
 export default class CompanyController {
-    readonly success = new AikoError('OK', 200, 200000);
+    readonly success = success;
 
     constructor(private companyService: CompanyService) {}
+
     // 회사 리스트 출력
     @Get('list')
     async list(@Req() req: Request, @Res() res: Response) {
