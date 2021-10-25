@@ -20,17 +20,19 @@ type DeptUnion = Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK
 export default class DepartmentRepository extends Repository<Department> {
     async createDepartment(bundle: DeptUnion) {
         let flag = false;
+
         try {
             await this.createQueryBuilder()
                 .insert()
                 .into(Department)
                 .values({
                     COMPANY_PK: bundle.companyPK,
-                    PARENT_PK: bundle.parentPK,
+                    PARENT_PK: bundle.parentPK ? bundle.parentPK : null,
                     DEPARTMENT_NAME: bundle.departmentName,
-                    DEPTH: bundle.parentDepth + 1,
+                    DEPTH: bundle.parentPK ? bundle.parentDepth + 1 : 0,
                 })
                 .execute();
+
             flag = true;
         } catch (err) {
             throw new AikoError('insert error (new department row)', 500, 500012);
