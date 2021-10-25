@@ -7,7 +7,6 @@ export class UserGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         try {
             const request = context.switchToHttp().getRequest();
-            console.log('parsedcookie', request.cookies);
             const accessToken = request.cookies.ACCESS_TOKEN;
             const payload = jwt.verify(accessToken, accessTokenBluePrint.secretKey); //임시테스트
             request.body.userPayload = payload; // jwt payload

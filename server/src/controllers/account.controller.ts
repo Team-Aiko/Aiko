@@ -164,7 +164,7 @@ export default class AccountController {
         const { targetUserId } = req.body;
 
         try {
-            const data = await this.accountService.getUserInfo(targetUserId, COMPANY_PK);
+            const data = await this.accountService.getUserInfo(targetUserId);
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);

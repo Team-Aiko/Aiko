@@ -21,16 +21,10 @@ export default class CompanyController {
         resExecutor(res, this.success, result);
     }
 
-    // 회사 내 부서 리스트 출력
-
-    @UseGuards(UserGuard)
-    @Get('department-list')
-    async departmentList(@Req() req: Request, @Res() res: Response) {
-        const payload = req.body.payload;
-        const result = await this.companyService.departmentList(payload);
-        resExecutor(res, this.success, result);
-    }
-
+    /**
+     * 작성자: Aivyss
+     * 해당부서와 하속부서의 직원정보를 조회하는 api
+     */
     @UseGuards(UserGuard)
     @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
@@ -44,9 +38,8 @@ export default class CompanyController {
         }
     }
     /**
+     * 작성자: Aivyss
      * body에 담기는 내용: departmentName, parentPK, parentDepth
-     * @param req
-     * @param res
      */
     @UseGuards(UserGuard)
     @Post('new-department')
@@ -64,11 +57,17 @@ export default class CompanyController {
 
             const isSuccess = await this.companyService.createDepartment(bundle);
             if (isSuccess) resExecutor(res, this.success, isSuccess);
-            else throw new AikoError('unknown error', 500, 500012);
+            else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
             throw resExecutor(res, err);
         }
     }
+
+    /**
+     * 작성자: Aivyss
+     * 유저에게 특정 권한을 부여하는 api
+     * 현재는 authListPK === 1 인 경우만 존재
+     */
     @UseGuards(UserGuard)
     @Post('permission')
     async givePermission(@Req() req: Request, @Res() res: Response) {
@@ -83,7 +82,92 @@ export default class CompanyController {
         };
         try {
             const isSuccess = await this.companyService.givePermission(bundle);
-            resExecutor(res, this.success, isSuccess);
+            if (isSuccess) resExecutor(res, this.success, isSuccess);
+            else throw new AikoError('unknown error', 500, 500123);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    /**
+     * 작성자 : Aivyss
+     * 지정한 부서를 지우는 api
+     */
+    @UseGuards(UserGuard)
+    @Post('delete-department')
+    async deleteDepartment(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, departmentPK } = req.body;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const flag = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
+            if (flag) resExecutor(res, this.success, flag);
+            else throw new AikoError('unknown error', 500, 500123);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+            console.error(err);
+        }
+    }
+
+    /**
+     * 작성자: Aivyss
+     * 지정한 부서의 이름을 바꾸는 api
+     */
+    @UseGuards(UserGuard)
+    @Post('change-department-name')
+    async updateDepartmentName(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, departmentPK, departmentName } = req.body;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const flag = await this.companyService.updateDepartmentName(
+                departmentPK,
+                departmentName,
+                COMPANY_PK,
+                grants,
+            );
+            if (flag) resExecutor(res, this.success, flag);
+            else throw new AikoError('unknown error', 500, 500123);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    /**
+     * 작성자: Aivyss
+     * 사원 통합검색 api  (닉네임, 성, 이름, 이메일, 전화번호, 부서명 와일드카드 검색)
+     */
+    @UseGuards(UserGuard)
+    @Get('searching-members')
+    async searchMembers(@Req() req: Request, @Res() res: Response) {
+        const { userPayload } = req.body;
+        const { str } = req.query;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const users = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
+            resExecutor(res, this.success, users);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    /**
+     * 작성자: Aivyss
+     * 부서의 풀트리를 만드는 api
+     */
+    @UseGuards(UserGuard)
+    @Get('department-tree')
+    async getDepartmentTree(@Req() req: Request, @Res() res: Response) {
+        const { COMPANY_PK } = req.body.userPayload as IUserPayload;
+        const { departmentPK } = req.query;
+
+        try {
+            let DEPARTMENT_PK = Number(departmentPK);
+
+            if (!DEPARTMENT_PK) DEPARTMENT_PK = -1;
+            const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
+            resExecutor(res, this.success, departmentTree);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
