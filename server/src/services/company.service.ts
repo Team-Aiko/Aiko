@@ -86,6 +86,17 @@ export default class CompanyService {
         return isSuccess;
     }
 
+    async deleteDepartment(departmentPK: number, COMPANY_PK: number, grants: Grant[]) {
+        try {
+            const isAdmin = grants.some((grant) => grant.AUTH_LIST_PK === 1);
+            if (isAdmin) {
+                return getRepo(DepartmentRepository).deleteDepartment(departmentPK, COMPANY_PK);
+            } else throw new AikoError('NO_AUTHORIZATION', 500, 500321);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     isChiefAdmin(grants: Grant[]) {
         return grants.some((grant) => grant.AUTH_LIST_PK === 1);
     }

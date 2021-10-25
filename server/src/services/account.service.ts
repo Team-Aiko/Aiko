@@ -401,7 +401,8 @@ export default class AccountService {
 
         return result;
     }
-    async getUserInfo(targetUserId: number, comapnyPK: number) {
+
+    async getUserInfo(targetUserId: number) {
         try {
             return await getRepo(UserRepository).getUserInfo(targetUserId);
         } catch (err) {

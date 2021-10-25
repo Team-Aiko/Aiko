@@ -83,4 +83,35 @@ export default class DepartmentRepository extends Repository<Department> {
 
         return userList;
     }
+
+    async deleteDepartment(departmentPK: number, COMPANY_PK: number) {
+        let flag = false;
+
+        try {
+            const childrenCnt = await this.createQueryBuilder('d')
+                .where('d.PARENT_PK = :DEPARTMENT_PK', {
+                    DEPARTMENT_PK: departmentPK,
+                })
+                .getCount();
+
+            if (childrenCnt) throw new AikoError('department/deleteDepartment/isChildren', 500, 500452);
+
+            const result2 = await this.createQueryBuilder('d')
+                .leftJoinAndSelect('d.users', 'users')
+                .where('d.DEPARTMENT_PK = :DEPARTMENT_PK', {
+                    DEPARTMENT_PK: departmentPK,
+                })
+                .andWhere('d.COMPANY_PK = : COMPANY_PK', { COMPANY_PK })
+                .getOne();
+
+            if (result2?.users.length) throw new AikoError('department/deleteDepartment/isMembers', 500, 500451);
+            else if (result2 === undefined || result2 === null)
+                throw new AikoError('department/deleteDepartment/noDepartment', 500, 500678);
+            else flag = true;
+        } catch (err) {
+            throw err;
+        }
+
+        return flag;
+    }
 }

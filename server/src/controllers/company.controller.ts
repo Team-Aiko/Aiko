@@ -69,6 +69,12 @@ export default class CompanyController {
             throw resExecutor(res, err);
         }
     }
+
+    /**
+     * 작성자: Aivyss
+     * 유저에게 특정 권한을 부여하는 api
+     * 현재는 authListPK === 1 인 경우만 존재
+     */
     @UseGuards(UserGuard)
     @Post('permission')
     async givePermission(@Req() req: Request, @Res() res: Response) {
@@ -86,6 +92,20 @@ export default class CompanyController {
             resExecutor(res, this.success, isSuccess);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+    @UseGuards(UserGuard)
+    @Post('delete-department')
+    async deleteDepartment(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, departmentPK } = req.body;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const flag = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
+            if (flag) resExecutor(res, this.success, flag);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+            console.error(err);
         }
     }
 }
