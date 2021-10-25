@@ -6,7 +6,7 @@ import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
