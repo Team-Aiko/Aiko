@@ -6,6 +6,7 @@ export default function admin() {
     return (
         <div className={styles['admin-container']}>
             <AdminTeamTree />
+            <div className={styles['member-list-container']}>직원리스트</div>
         </div>
     );
 }

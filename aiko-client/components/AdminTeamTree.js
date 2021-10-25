@@ -47,10 +47,9 @@ export default function AdminTeamTree() {
         {
             team: 'C',
         },
-    ]);
+    ]); // test용 데이터
 
     function treeItemJsx(team) {
-        console.log('team : ', team);
         return (
             <TreeItem nodeId={team.team} label={team.team} key={team.team}>
                 {team.children &&

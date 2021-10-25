@@ -1,5 +1,11 @@
 .admin-container {
     margin: 20px;
-    background: gainsboro;
     height: calc(100% - 106px);
+    display: flex;
+}
+
+.member-list-container {
+    flex: 1;
+    background: gainsboro;
+    margin: 0 0 0 20px;
 }
