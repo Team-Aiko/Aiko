@@ -1,5 +1,5 @@
 import { getRepo } from 'src/Helpers/functions';
-import { NoticeBoardRepository } from 'src/mapper';
+import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
 
 export default class NoticeBoardService {
     async createArtcle(title: string, content: string, userPk: number) {
