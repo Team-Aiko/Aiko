@@ -90,6 +90,7 @@ create table GRANT_TABLE (
     AUTH_LIST_PK INT NOT NULL
 );
 
+
 -- 리프레시 토큰 테이블 생성
 create table REFRESH_TOKEN_TABLE (
 	NO int auto_increment,
@@ -97,7 +98,21 @@ create table REFRESH_TOKEN_TABLE (
 	USER_TOKEN varchar(512),
 	primary key (NO)
 );
---
+
+
+-- 공지 게시판 테이블 생성
+create table NOTICE_BOARD_TABLE (
+		NO int auto_increment,
+		TITLE varchar(80),
+		CONTENT varchar(6000),
+		USER_PK int,
+		CREATE_DATE int,
+		UPDATE_DATE int,
+		IS_DELETE int,
+		primary key (NO)
+	);
+
+
 
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
