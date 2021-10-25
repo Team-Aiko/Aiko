@@ -138,4 +138,19 @@ export default class CompanyController {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
+
+    @UseGuards(UserGuard)
+    @Get('searching-members')
+    async searchMembers(@Req() req: Request, @Res() res: Response) {
+        const { userPayload } = req.body;
+        const { str } = req.query;
+        const { grants, COMPANY_PK } = userPayload as IUserPayload;
+
+        try {
+            const users = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
+            resExecutor(res, this.success, users);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
 }

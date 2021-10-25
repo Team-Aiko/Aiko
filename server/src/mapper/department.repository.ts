@@ -144,4 +144,21 @@ export default class DepartmentRepository extends Repository<Department> {
 
         return flag;
     }
+
+    async searchDepartment(str: string, COMPANY_PK: number) {
+        let depts: Department[] = [];
+
+        try {
+            const query = `%${str}%`;
+            depts = await this.createQueryBuilder('d')
+                .leftJoinAndSelect('d.users', 'users')
+                .where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('d.DEPARTMENT_NAME like :DEPARTMENT_NAME', { DEPARTMENT_NAME: query })
+                .getMany();
+        } catch (err) {
+            throw new AikoError('department/searchDepartment', 500, 506071);
+        }
+
+        return depts;
+    }
 }

@@ -1,12 +1,17 @@
 import CompanyRepository from 'src/mapper/company.repository';
-import { getRepo } from 'src/Helpers/functions';
+import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { DepartmentRepository, UserRepository } from 'src/mapper';
 import { AikoError } from 'src/Helpers/classes';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 import AccountService from './account.service';
 import { Injectable } from '@nestjs/common';
 import GrantRepository from 'src/mapper/grant.repository';
-import { Grant } from 'src/entity';
+import { Department, Grant, User } from 'src/entity';
+
+const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
+interface IExtendedUser extends User {
+    departments: Partial<Department>;
+}
 
 @Injectable()
 export default class CompanyService {
@@ -107,6 +112,36 @@ export default class CompanyService {
 
         return flag;
     }
+
+    async searchMembers(str: string, COMPANY_PK: number, grants: Grant[]) {
+        let searchedUser: User[] = [];
+        try {
+            const users = await getRepo(UserRepository).searchMembers(str, COMPANY_PK);
+            const depts = await getRepo(DepartmentRepository).searchDepartment(str, COMPANY_PK);
+            // insert depts user info
+            depts.forEach((department) => {
+                department.users.forEach((user) => {
+                    const one: IExtendedUser = {
+                        ...user,
+                        departments: {
+                            DEPARTMENT_NAME: department.DEPARTMENT_NAME,
+                        },
+                    };
+
+                    users.push(one);
+                });
+            });
+            // remove critical user info
+            users.forEach((user) => propsRemover(user, ...criticalUserInfo));
+            searchedUser = users;
+        } catch (err) {
+            if (err instanceof AikoError) throw err;
+        }
+
+        return searchedUser;
+    }
+
+    // * util functions
 
     isChiefAdmin(grants: Grant[]) {
         try {
