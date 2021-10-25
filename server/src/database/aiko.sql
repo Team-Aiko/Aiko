@@ -77,6 +77,28 @@ create table ONE_TO_ONE_CHAT_ROOM_TABLE(
     COMPANY_PK INT NOT NULL
 );
 
+-- 리프레시 토큰 테이블 생성
+create table REFRESH_TOKEN_TABLE (
+	NO int auto_increment,
+	USER_PK int,
+	USER_TOKEN varchar(512),
+	primary key (NO)
+);
+
+-- 공지 게시판 테이블 생성
+create table NOTICE_BOARD_TABLE (
+		NO int auto_increment,
+		TITLE varchar(80),
+		CONTENT varchar(6000),
+		USER_PK int,
+		CREATE_DATE int,
+		UPDATE_DATE int,
+		IS_DELETE int,
+		primary key (NO)
+	);
+
+
+
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('AB', 10000);
@@ -94,11 +116,3 @@ insert into COUNTRY_TABLE (COUNTRY_NAME) values ('France');
 insert into COUNTRY_TABLE (COUNTRY_NAME) values ('Brazil');
 
 
--- 리프레시 토큰 테이블 생성
-create table REFRESH_TOKEN_TABLE (
-	NO int auto_increment,
-	USER_PK int,
-	USER_TOKEN varchar(512),
-	primary key (NO)
-);
---
