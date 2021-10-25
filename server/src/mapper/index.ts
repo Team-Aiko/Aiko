@@ -7,6 +7,8 @@ import DepartmentRepository from './department.repository';
 import SocketRepository from './socket.repository';
 import ChatFileRepository from './chatFile.repository';
 import OTOChatRoomRepository from './otoChatRoom.repository';
+import RefreshRepository from './refresh.repository';
+
 export {
     DepartmentRepository,
     CompanyRepository,
@@ -17,4 +19,5 @@ export {
     SocketRepository,
     ChatFileRepository,
     OTOChatRoomRepository,
+    RefreshRepository,
 };

@@ -1,14 +1,19 @@
 import { User } from 'src/entity';
+import { AikoError } from 'src/Helpers/classes';
 import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
 import Company from '../entity/company.entity';
 
 @EntityRepository(Company)
 export default class CompanyRepository extends Repository<Company> {
     // 회사 리스트 출력
-    list(companyName: string) {
-        return this.createQueryBuilder('c')
-            .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
-            .getOne();
+    async list(companyName: string) {
+        try {
+            return await this.createQueryBuilder('c')
+                .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
+                .getMany();
+        } catch (err) {
+            throw new AikoError('testError', 451, 500000);
+        }
     }
 
     //!-complted
@@ -33,7 +38,7 @@ export default class CompanyRepository extends Repository<Company> {
             // })
             // .execute();
         } catch (err) {
-            console.error(err);
+            throw new AikoError('testError', 451, 500000);
         }
 
         return insertResult;

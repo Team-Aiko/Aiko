@@ -65,5 +65,12 @@ export type DepartmentSelectData = Pick<DepartmentTable, 'DEPARTMENT_NAME'>;
 export type CompanySelectData = Pick<CompanyTable, 'COMPANY_NAME'>;
 export interface SuccessPacket extends BasePacket {
     userInfo: User;
-    token: string;
+    accessToken: string;
+    refreshToken: string;
+}
+
+export interface ITokenBundle {
+    header: boolean;
+    accessToken?: string;
+    refreshToken?: string;
 }

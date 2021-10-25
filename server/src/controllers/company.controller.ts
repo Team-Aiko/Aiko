@@ -11,10 +11,10 @@ export default class CompanyController {
 
     constructor(private companyService: CompanyService) {}
     // 회사 리스트 출력
-    @Get('/list')
-    async list(@Req() req, @Res() res) {
+    @Get('list')
+    async list(@Req() req: Request, @Res() res: Response) {
         const { companyName } = req.query;
-        const result = await this.companyService.list(companyName);
+        const result = await this.companyService.list(companyName as string);
         resExecutor(res, this.success, result);
     }
 
@@ -22,7 +22,7 @@ export default class CompanyController {
 
     @UseGuards(UserGuard)
     @Get('/department-list')
-    async departmentList(@Req() req, @Res() res) {
+    async departmentList(@Req() req: Request, @Res() res: Response) {
         const payload = req.body.payload;
         const result = await this.companyService.departmentList(payload);
         resExecutor(res, this.success, result);

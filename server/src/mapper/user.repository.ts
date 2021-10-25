@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 import { Department, User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
+import { createQueryBuilder } from 'typeorm';
+import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -83,6 +85,19 @@ export default class UserRepository extends Repository<User> {
             throw err;
         }
 
+        return user;
+    }
+
+    async getUserInfo(userPK: number): Promise<User> {
+        let user: User;
+        try {
+            const result = await this.createQueryBuilder('u')
+                .where('u.USER_PK = :USER_PK', { USER_PK: userPK })
+                .getOne();
+            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+        } catch (err) {
+            throw new AikoError('select error (userInfo)', 500, 500005);
+        }
         return user;
     }
 

@@ -23,6 +23,7 @@ import * as jwt from 'jsonwebtoken';
 import { expireTime } from '../interfaces/jwt/jwtEnums';
 import { loginSecretKey } from '../interfaces/jwt/secretKey';
 // * others
+
 import {
     IAccountService,
     ISignup,
@@ -31,8 +32,10 @@ import {
     SuccessPacket,
     IMailConfig,
     IMailBotConfig,
+    ITokenBundle,
 } from '../interfaces';
 import {
+    RefreshRepository,
     UserRepository,
     CountryRepository,
     ResetPwRepository,
@@ -120,6 +123,7 @@ export default class AccountService {
                 );
                 console.log('step3');
                 userPK = (result3.raw as ResultSetHeader).insertId as number;
+                const result4 = await getRepo(RefreshRepository).createRow(userPK);
             } else if (data.position === 1) {
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
@@ -206,17 +210,17 @@ export default class AccountService {
                         }
                         // remove security informations
                         propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
+                        const token = this.generateLoginToken(result);
                         const bundle: SuccessPacket = {
                             header: flag,
                             userInfo: { ...result },
-                            token: this.generateLoginToken(result),
+                            accessToken: token.access,
+                            refreshToken: token.refresh,
                         };
-
                         resolve(bundle);
                     });
                 },
             );
-
             return packet;
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
@@ -353,10 +357,44 @@ export default class AccountService {
         }
     }
 
-    generateLoginToken(userData: User): string {
+    generateLoginToken(userData: User) {
         const data = { ...userData };
-        const token = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
+        const userPk = data.USER_PK;
+        const tokens = {
+            access: jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options),
+            refresh: jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options),
+        };
+        return tokens;
+    }
 
-        return token;
+    // 어세스 토큰 재 발급 (확인필요)
+
+    async getAccessToken(refreshToken: string) {
+        const result: ITokenBundle = {
+            header: false,
+        };
+
+        try {
+            const payload = jwt.verify(refreshToken, loginSecretKey.secretKey) as jwt.JwtPayload;
+            const userPk = payload.userPk;
+            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
+            const userData = await getRepo(UserRepository).getUserInfo(userPk);
+            const data = { ...userData };
+
+            // db토큰이랑 클라이언트 토큰일치 확인
+            if (dbToken === refreshToken) {
+                result.accessToken = jwt.sign(data, loginSecretKey.secretKey, loginSecretKey.options);
+                result.refreshToken = jwt.sign({ userPk: userPk }, loginSecretKey.secretKey, loginSecretKey.options);
+                await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
+                result.header = true;
+            }
+        } catch (error) {
+            const err = error as jwt.VerifyErrors;
+            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
+            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
+            else throw error;
+        }
+
+        return result;
     }
 }
