@@ -6,7 +6,7 @@ export default class NoticeBoardService {
         try {
             await getRepo(NoticeBoardRepository).createArticle(title, content, userPk);
         } catch (err) {
-            
+            console.log(err);
         }
     }
 }
