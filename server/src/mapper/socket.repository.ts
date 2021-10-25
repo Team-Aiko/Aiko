@@ -26,7 +26,7 @@ export default class SocketRepository extends Repository<Socket> {
 
             flag = true;
         } catch (err) {
-            throw err;
+            throw new AikoError('socket/addSocketId', 500, 500320);
         }
 
         return flag;
@@ -48,8 +48,7 @@ export default class SocketRepository extends Repository<Socket> {
                 .execute();
             flag = true;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw new AikoError('socket/removeSocketId', 500, 500567);
         }
 
         return flag;
@@ -67,7 +66,7 @@ export default class SocketRepository extends Repository<Socket> {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('socketId upcate fail', 500, 500000);
+            throw new AikoError('socket/updateSocketId', 500, 500000);
         }
 
         return flag;
@@ -83,7 +82,7 @@ export default class SocketRepository extends Repository<Socket> {
 
             userId = result.USER_PK;
         } catch (err) {
-            console.error(err);
+            throw new AikoError('socket/findUserId', 500, 500672);
         }
 
         return userId;
@@ -98,8 +97,7 @@ export default class SocketRepository extends Repository<Socket> {
                 .getOneOrFail();
             socketId = result?.SOCKET_ID;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw new AikoError('socket/findSocketId', 500, 50921);
         }
 
         return socketId;

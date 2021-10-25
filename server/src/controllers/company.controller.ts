@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
 import { resExecutor } from 'src/Helpers/functions';
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
+import { User } from 'src/entity';
+import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('company')
 export default class CompanyController {
@@ -21,7 +24,7 @@ export default class CompanyController {
     // 회사 내 부서 리스트 출력
 
     @UseGuards(UserGuard)
-    @Get('/department-list')
+    @Get('department-list')
     async departmentList(@Req() req: Request, @Res() res: Response) {
         const payload = req.body.payload;
         const result = await this.companyService.departmentList(payload);
@@ -29,13 +32,58 @@ export default class CompanyController {
     }
 
     @UseGuards(UserGuard)
-    @Get('/employee-list')
+    @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
-        const { DEPARTMENT_PK, COMPANY_PK }: { DEPARTMENT_PK: number; COMPANY_PK: number } = req.body.userPayload;
+        const { DEPARTMENT_PK, COMPANY_PK } = req.body.userPayload as IUserPayload;
 
         try {
             const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
             resExecutor(res, this.success, data);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+    /**
+     * body에 담기는 내용: departmentName, parentPK, parentDepth
+     * @param req
+     * @param res
+     */
+    @UseGuards(UserGuard)
+    @Post('new-department')
+    async createDepartment(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { departmentName, parentPK, parentDepth, userPayload } = req.body;
+            const { COMPANY_PK, USER_PK } = userPayload as IUserPayload;
+            const bundle: INewDepartment = {
+                companyPK: COMPANY_PK,
+                userPK: USER_PK,
+                departmentName,
+                parentPK,
+                parentDepth,
+            };
+
+            const isSuccess = await this.companyService.createDepartment(bundle);
+            if (isSuccess) resExecutor(res, this.success, isSuccess);
+            else throw new AikoError('unknown error', 500, 500012);
+        } catch (err) {
+            throw resExecutor(res, err);
+        }
+    }
+    @UseGuards(UserGuard)
+    @Post('permission')
+    async givePermission(@Req() req: Request, @Res() res: Response) {
+        const { userPayload, authListPK, targetUserPK, companyPK } = req.body;
+        const { USER_PK, grants } = userPayload as IUserPayload;
+        const bundle: IPermissionBundle = {
+            authListPK,
+            targetUserPK,
+            grants,
+            USER_PK,
+            companyPK,
+        };
+        try {
+            const isSuccess = await this.companyService.givePermission(bundle);
+            resExecutor(res, this.success, isSuccess);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }

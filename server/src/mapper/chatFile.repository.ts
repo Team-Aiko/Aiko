@@ -1,5 +1,6 @@
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { ChatFile } from 'src/entity';
+import { AikoError } from 'src/Helpers/classes';
 @EntityRepository(ChatFile)
 export default class ChatFileRepository extends Repository<ChatFile> {
     async uploadFilesOnChatMsg(fileRoot: string, chatRoomId: string): Promise<number> {
@@ -13,7 +14,7 @@ export default class ChatFileRepository extends Repository<ChatFile> {
                 .execute();
             id = rawResult.raw.id as number;
         } catch (err) {
-            throw err;
+            throw new AikoError('chatFile/uploadFilesOnChatMsg', 500, 500360);
         }
 
         return id;
@@ -28,7 +29,7 @@ export default class ChatFileRepository extends Repository<ChatFile> {
                 .getOneOrFail();
             file = result?.FILE_ROOT;
         } catch (err) {
-            throw err;
+            throw new AikoError('chatFile/viewFilesOnChatMsg', 500, 500360);
         }
 
         return file;

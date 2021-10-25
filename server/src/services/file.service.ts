@@ -1,14 +1,10 @@
-import { IFileService } from 'src/interfaces';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
-import { ChatFile } from 'src/entity';
 import { ChatFileRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 
 @Injectable()
-export default class FileService implements IFileService {
+export default class FileService {
     async uploadFilesOnChatMsg(fileRoot: string, chatRoomId: string): Promise<number> {
         try {
             return await getRepo(ChatFileRepository).uploadFilesOnChatMsg(fileRoot, chatRoomId);

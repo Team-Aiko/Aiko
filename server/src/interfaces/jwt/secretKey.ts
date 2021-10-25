@@ -1,14 +1,14 @@
 import { secretKeys, expireTime } from './jwtEnums';
-import { ISecretKey } from './jwtInterface';
+import { ITokenBluePrint } from './jwtInterface';
 import { Algorithm } from 'jsonwebtoken';
 
 const algorithm: Algorithm = 'HS256';
 
-const loginSecretKey: ISecretKey = {
-    secretKey: secretKeys.LOGIN,
+const accessTokenBluePrint: ITokenBluePrint = {
+    secretKey: secretKeys.ACCESS_TOKEN,
     options: {
         algorithm: algorithm,
-        expiresIn: Math.floor(Date.now() / 1000) + expireTime.THREE_HOUR,
+        expiresIn: Math.floor(Date.now() / 1000) + expireTime.ACCESS_TOKEN_LIFE,
         issuer: 'Aiko',
     },
     decodeOpt: {
@@ -17,4 +17,17 @@ const loginSecretKey: ISecretKey = {
     },
 };
 
-export { loginSecretKey };
+const refreshTokenBluePrint: ITokenBluePrint = {
+    secretKey: secretKeys.REFRESH_TOKEN,
+    options: {
+        algorithm: algorithm,
+        expiresIn: Math.floor(Date.now() / 1000) + expireTime.REFRESH_TOKEN_LIFE,
+        issuer: 'Aiko',
+    },
+    decodeOpt: {
+        complete: true,
+        json: true,
+    },
+};
+
+export { accessTokenBluePrint, refreshTokenBluePrint };

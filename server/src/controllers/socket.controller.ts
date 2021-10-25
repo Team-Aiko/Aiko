@@ -11,14 +11,14 @@ export default class SocketController {
 
     constructor(private socketService: SocketService) {}
 
-    @Get('generation-chat-room')
-    async makeOneToOneChatRooms(@Req() req: Request, @Res() res: Response) {
-        const userInfo: User = req.body.userPayload;
-        try {
-            const data = await this.socketService.makeOneToOneChatRooms(userInfo);
-            resExecutor(res, this.success, data);
-        } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
-        }
-    }
+    // @Get('generation-chat-room')
+    // async makeOneToOneChatRooms(@Req() req: Request, @Res() res: Response) {
+    //     const userInfo: User = req.body.userPayload;
+    //     try {
+    //         const data = await this.socketService.makeOneToOneChatRooms(userInfo);
+    //         resExecutor(res, this.success, data);
+    //     } catch (err) {
+    //         if (err instanceof AikoError) throw resExecutor(res, err);
+    //     }
+    // }
 }

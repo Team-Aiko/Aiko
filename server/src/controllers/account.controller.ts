@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
-import { ISignup, IAccountController, IResetPw } from '../interfaces';
+import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError } from 'src/Helpers/classes';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
@@ -112,6 +113,7 @@ export default class AccountController {
     @Get('logout')
     logout(@Req() req: Request, @Res() res: Response) {
         res.cookie('ACCESS_TOKEN', null);
+        res.cookie('REFRESH_TOKEN', null);
         resExecutor(res, this.success, true);
     }
 
@@ -158,7 +160,7 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { USER_PK, COMPANY_PK }: { USER_PK: number; COMPANY_PK: number } = req.body.userPayload;
+        const { USER_PK, COMPANY_PK } = req.body.userPayload as IUserPayload;
         const { targetUserId } = req.body;
 
         try {
