@@ -21,16 +21,10 @@ export default class CompanyController {
         resExecutor(res, this.success, result);
     }
 
-    // 회사 내 부서 리스트 출력
-
-    @UseGuards(UserGuard)
-    @Get('department-list')
-    async departmentList(@Req() req: Request, @Res() res: Response) {
-        const payload = req.body.payload;
-        const result = await this.companyService.departmentList(payload);
-        resExecutor(res, this.success, result);
-    }
-
+    /**
+     * 작성자: Aivyss
+     * 해당부서와 하속부서의 직원정보를 조회하는 api
+     */
     @UseGuards(UserGuard)
     @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
@@ -139,6 +133,10 @@ export default class CompanyController {
         }
     }
 
+    /**
+     * 작성자: Aivyss
+     * 사원 통합검색 api  (닉네임, 성, 이름, 이메일, 전화번호, 부서명 와일드카드 검색)
+     */
     @UseGuards(UserGuard)
     @Get('searching-members')
     async searchMembers(@Req() req: Request, @Res() res: Response) {
