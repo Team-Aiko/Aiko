@@ -1,0 +1,8 @@
+.department-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-department-wrapper {
+    display: flex;
+}

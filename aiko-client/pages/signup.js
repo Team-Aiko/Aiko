@@ -446,7 +446,7 @@ function Signup() {
                                             }}
                                         >
                                             <option aria-label='None' value={-1} />
-                                            <option value={0}>Owner</option>
+                                            <option value={0}>Admin</option>
                                             <option value={1}>Member</option>
                                         </NativeSelect>
                                         <FormHelperText>Select your job position</FormHelperText>

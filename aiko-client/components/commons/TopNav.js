@@ -289,6 +289,9 @@ function PComp(props) {
                                         <NotificationsIcon />
                                     </Badge>
                                 </IconButton>
+                                <IconButton color='inherit' onClick={goToAdmin}>
+                                    <SettingsIcon />
+                                </IconButton>
                                 <IconButton
                                     edge='end'
                                     aria-label='account of current user'
