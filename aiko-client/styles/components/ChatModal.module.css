@@ -1,0 +1,53 @@
+.member-container {
+    width: 200px;
+}
+
+.message-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: antiquewhite;
+}
+
+.messages-wrapper {
+    flex: 1;
+    background: #e8eaf6;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: auto;
+}
+
+.message-wrapper {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.message-wrapper-right {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    align-self: flex-end;
+    align-items: end;
+}
+
+.input-message-wrapper {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
