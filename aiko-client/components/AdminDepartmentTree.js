@@ -22,50 +22,22 @@ const useStyles = makeStyles({
 export default function AdminDepartmentTree() {
     const classes = useStyles();
     const [topDepartmentName, setTopDepartName] = useState('');
-    const [departmentList, setDepartmentList] = useState([
-        {
-            value: 'A',
-            children: [
-                {
-                    value: 'a-1',
-                },
-                {
-                    value: 'a-2',
-                    children: [
-                        {
-                            value: 'a-2-1',
-                        },
-                        {
-                            value: 'a-2-2',
-                        },
-                        {
-                            value: 'a-2-3',
-                        },
-                    ],
-                },
-                {
-                    value: 'a-3',
-                },
-            ],
-        },
-        {
-            value: 'B',
-        },
-        {
-            value: 'C',
-        },
-    ]); // test용 데이터
+    const [departmentList, setDepartmentList] = useState([]); // test용 데이터
 
     useEffect(() => {
         const url = 'api/company/department-tree';
-        get(url).then((result) => {
-            console.log('result : ', result);
+        get(url).then((response) => {
+            setDepartmentList(response.data.result);
         });
-    });
+    }, []);
 
     function treeItemJsx(department) {
         return (
-            <TreeItem nodeId={department.value} label={department.value} key={department.value}>
+            <TreeItem
+                nodeId={department.DEPARTMENT_PK + ''}
+                label={department.DEPARTMENT_NAME}
+                key={department.DEPARTMENT_PK}
+            >
                 {department.children &&
                     department.children.map((children) => {
                         return treeItemJsx(children);

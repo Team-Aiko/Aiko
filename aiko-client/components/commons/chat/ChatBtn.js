@@ -40,7 +40,7 @@ function PComp(props) {
         socket.on('msgToClient', (message) => {
             console.log(message);
         });
-    }, USER_PK);
+    }, [USER_PK]);
 
     useEffect(() => {
         handleSocket();
