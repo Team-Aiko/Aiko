@@ -9,6 +9,7 @@
         "lint": "eslint **/*.ts --quiet"
     },
     "dependencies": {
+        "@material-ui/core": "^4.12.3",
         "concurrently": "^6.2.1",
         "create-next-app": "^11.1.2",
         "socket.io-client": "^4.2.0"
