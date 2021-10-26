@@ -24,6 +24,9 @@ export default class NoticeBoardService {
             throw new AikoError('QUERY ERROR[delete문 에러 발생]:' + err.name, 451, 500000);
         }
     }
+
+    // 버튼 생성
+
     async createBtnSize(option: number, comPk: number) {
         return await getRepo(NoticeBoardRepository).createBtnSize(option, comPk);
     }
