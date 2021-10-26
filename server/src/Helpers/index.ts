@@ -1,11 +1,8 @@
 // * classes
-import { AikoError } from './classes';
-export { AikoError };
+export { AikoError } from './classes';
 
 // * functions
-import { resExecutor, getRepo, propsRemover } from './functions';
-export { resExecutor, getRepo, propsRemover };
+export { resExecutor, getRepo, propsRemover, isChiefAdmin, checkNull } from './functions';
 
 // * instances
-import { success } from './instance';
-export { success };
+export { success } from './instance';

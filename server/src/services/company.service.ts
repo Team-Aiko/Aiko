@@ -1,7 +1,7 @@
 import CompanyRepository from 'src/mapper/company.repository';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { DepartmentRepository, UserRepository } from 'src/mapper';
-import { AikoError } from 'src/Helpers/classes';
+import { AikoError, isChiefAdmin } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 import AccountService from './account.service';
 import { Injectable } from '@nestjs/common';
@@ -68,7 +68,7 @@ export default class CompanyService {
             if (admin.COMPANY_PK === targetMember.COMPANY_PK) {
                 // 현재는 1로 chief admin으로 고정되어 있으나 추후 확장성을 고려하여 설계하였음.
                 // 따라서 나중에 1의 값을 프론트에게서 받은 값으로 바꿔 확장가능
-                this.isChiefAdmin(bundle.grants); // admin 판별
+                isChiefAdmin(bundle.grants); // admin 판별
 
                 await getRepo(GrantRepository).grantPermission(1, targetMember.USER_PK);
                 isSuccess = true;
@@ -82,7 +82,7 @@ export default class CompanyService {
 
     async deleteDepartment(departmentPK: number, COMPANY_PK: number, grants: Grant[]) {
         try {
-            this.isChiefAdmin(grants);
+            isChiefAdmin(grants);
             return getRepo(DepartmentRepository).deleteDepartment(departmentPK, COMPANY_PK);
         } catch (err) {
             throw err;
@@ -93,7 +93,7 @@ export default class CompanyService {
         let flag = false;
 
         try {
-            this.isChiefAdmin(grants);
+            isChiefAdmin(grants);
             flag = await getRepo(DepartmentRepository).updateDepartmentName(departmentPK, departmentName, companyPK);
         } catch (err) {
             throw err;

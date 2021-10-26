@@ -20,6 +20,9 @@ import {
     OTOChatRoom,
     Refresh,
     NoticeBoard,
+    Action,
+    ActionPriority,
+    StepIndex,
 } from './entity';
 
 import OneToOneMessageGateway from './gateway/message.gateway';
@@ -27,12 +30,16 @@ import { RDBMSConfig } from './interfaces';
 import CompanyModule from './modules/company.module';
 import SocketModule from './modules/socket.module';
 import NoticeBoardModule from './modules/noticeBoard.module';
+import WorkModule from './modules/work.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        Action,
+        ActionPriority,
+        StepIndex,
         Grant,
         AuthListTable,
         User,
@@ -46,13 +53,13 @@ const typeORMConfig: TypeOrmModuleOptions = {
         OTOChatRoom,
         Refresh,
         NoticeBoard,
-    ]
+    ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, CompanyModule, ORMModule, SocketModule, FileModule, NoticeBoardModule],
+    imports: [AccountModule, CompanyModule, ORMModule, SocketModule, FileModule, NoticeBoardModule, WorkModule],
     providers: [OneToOneMessageGateway],
 })
 export class AppModule {
