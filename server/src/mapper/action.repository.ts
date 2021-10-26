@@ -30,4 +30,34 @@ export default class ActionRepository extends Repository<Action> {
             throw new AikoError('action/createActionItem', 500, 500982);
         }
     }
+
+    async findActionItem(ACTION_PK: number, DEPARTMENT_PK: number) {
+        let item: Action;
+
+        try {
+            item = await this.createQueryBuilder('a')
+                .where('a.ACTION_PK = :ACTION_PK', { ACTION_PK })
+                .andWhere('a.DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK })
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('action/findActionItem', 500, 500861);
+        }
+
+        return item;
+    }
+
+    async deleteActionItem(ACTION_PK: number) {
+        let flag = false;
+
+        try {
+            await this.createQueryBuilder().delete().where('ACTION_PK = :ACTION_PK', { ACTION_PK }).execute();
+            flag = true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('action/deleteActionItem', 500, 509212);
+        }
+
+        return flag;
+    }
 }

@@ -11,6 +11,10 @@ import { IActionCreateBundle } from 'src/interfaces/MVC/workMVC';
 export default class WorkController {
     constructor(private workService: WorkService) {}
 
+    /**
+     * 작성자: Aivyss
+     * action item 생성 api
+     */
     @UseGuards(UserGuard)
     @Post('create-action-item')
     async createActionItem(@Req() req: Request, @Res() res: Response) {
@@ -33,6 +37,21 @@ export default class WorkController {
         try {
             const insertedId = await this.workService.createActionItem(bundle);
             resExecutor(res, success, insertedId);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    @UseGuards(UserGuard)
+    @Post('delete-action-item')
+    async deleteActionItem(@Req() req: Request, @Res() res: Response) {
+        const { ACTION_PK, userPayload } = req.body;
+        const { grants, DEPARTMENT_PK } = userPayload as IUserPayload;
+
+        try {
+            const flag = await this.workService.deleteActionItem(ACTION_PK, DEPARTMENT_PK, grants);
+            if (flag) resExecutor(res, success, flag);
+            else throw new AikoError('unknown error', 500, 500328);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
