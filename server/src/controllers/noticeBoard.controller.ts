@@ -1,12 +1,13 @@
+
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AikoError } from 'src/Helpers/classes';
 import NoticeBoardService from 'src/services/noticeBoard.service';
-import { resExecutor } from 'src/Helpers/functions';
+import { AikoError, success, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 @Controller('notice-board')
 export default class NoticeBoardController {
+    readonly success = success;
+
     constructor(private noticeboardService: NoticeBoardService) {}
-    readonly success = new AikoError('OK', 200, 200000);
 
     @UseGuards(UserGuard)
     @Post('write')
@@ -22,6 +23,7 @@ export default class NoticeBoardController {
             resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
         }
     }
+
 
     @UseGuards(UserGuard)
     @Post('update-article')

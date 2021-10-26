@@ -197,13 +197,13 @@ export default class AccountService {
                                 };
                                 resolve(bundle);
                             }
+                            // get grant list
+                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+                            result.grants = grantList;
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
-                            // get grant list
-                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
-                            result.grants = grantList;
                             // remove security informations
                             propsRemover(result, 'PASSWORD', 'SALT');
 
@@ -401,7 +401,8 @@ export default class AccountService {
 
         return result;
     }
-    async getUserInfo(targetUserId: number, comapnyPK: number) {
+
+    async getUserInfo(targetUserId: number) {
         try {
             return await getRepo(UserRepository).getUserInfo(targetUserId);
         } catch (err) {

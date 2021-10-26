@@ -7,6 +7,7 @@ import {
     Repository,
     TransactionManager,
     Transaction,
+    Brackets,
 } from 'typeorm';
 import { Department, User, Company, Grant } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
@@ -198,5 +199,30 @@ export default class UserRepository extends Repository<User> {
         } catch (err) {
             throw new AikoError('count error(duplicate nickname)', 500, 500045);
         }
+    }
+
+    async searchMembers(str: string, COMPANY_PK: number) {
+        let users: User[] = [];
+
+        try {
+            const query = `%${str.toLowerCase()}%`;
+            users = await this.createQueryBuilder('u')
+                .leftJoinAndSelect('u.department', 'department')
+                .where('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: COMPANY_PK })
+                .andWhere(
+                    new Brackets((qb) => {
+                        qb.where('u.NICKNAME like :NICKNAME', { NICKNAME: query })
+                            .orWhere('u.EMAIL like :EMAIL', { EMAIL: query })
+                            .orWhere('u.FIRST_NAME like :FIRST_NAME', { FIRST_NAME: query })
+                            .orWhere('u.LAST_NAME like :LAST_NAME', { LAST_NAME: query })
+                            .orWhere('u.TEL like :TEL', { TEL: query });
+                    }),
+                )
+                .getMany();
+        } catch (err) {
+            throw new AikoError('user/searchMembers', 500, 506040);
+        }
+
+        return users;
     }
 }

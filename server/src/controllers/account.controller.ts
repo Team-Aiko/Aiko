@@ -3,15 +3,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
-import { resExecutor, propsRemover } from '../Helpers/functions';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError } from 'src/Helpers/classes';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { AikoError, success, resExecutor, propsRemover } from 'src/Helpers';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
-    readonly success = new AikoError('OK', 200, 200000);
-    readonly fail = new AikoError('ERROR', 500, 500000);
+    readonly success = success;
+
     constructor(private accountService: AccountService) {}
 
     // ! check complete - api doc
@@ -164,7 +163,7 @@ export default class AccountController {
         const { targetUserId } = req.body;
 
         try {
-            const data = await this.accountService.getUserInfo(targetUserId, COMPANY_PK);
+            const data = await this.accountService.getUserInfo(targetUserId);
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
@@ -176,9 +175,10 @@ export default class AccountController {
     @Post('access-token')
     async getAccessToken(@Req() req: Request, @Res() res: Response) {
         const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
-        const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
 
         try {
+            const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
+
             if (result.header) {
                 res.cookie('ACCESS_TOKEN', result.accessToken);
                 res.cookie('REFRESH_TOKEN', result.refreshToken);
