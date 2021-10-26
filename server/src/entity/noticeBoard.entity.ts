@@ -22,4 +22,7 @@ export default class NoticeBoard {
 
     @Column()
     IS_DELETE: number;
+
+    @Column()
+    COMPANY_PK: number;
 }
