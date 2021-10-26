@@ -183,7 +183,7 @@ export default class AccountService {
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
-            const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
             console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
@@ -201,7 +201,7 @@ export default class AccountService {
                             const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
                             result.grants = grantList;
                             // remove security informations
-                            propsRemover(result, 'PASSWORD', 'SALT');
+                            result = propsRemover(result, 'PASSWORD', 'SALT');
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
