@@ -378,7 +378,7 @@ export default class AccountService {
             const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
             const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
-            const userData = await getRepo(UserRepository).getUserInfo(userPk);
+            const userData = await getRepo(UserRepository).getUserInfoWithUserPK(userPk);
             const data = { ...userData };
 
             // db토큰이랑 클라이언트 토큰일치 확인
@@ -404,7 +404,7 @@ export default class AccountService {
 
     async getUserInfo(targetUserId: number) {
         try {
-            return await getRepo(UserRepository).getUserInfo(targetUserId);
+            return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
         } catch (err) {
             throw err;
         }

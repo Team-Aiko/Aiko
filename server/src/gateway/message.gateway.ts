@@ -82,6 +82,7 @@ export default class OneToOneMessageGateway implements OnGatewayInit, OnGatewayC
     async testSendMsg(client: Socket, payload: any) {
         console.log('server/test clientID = ', client.id);
         console.log('server/test payload = ', payload);
+        this.socketService.testSendMsg('서비스 테스트');
         this.wss.emit('client/test', payload);
     }
     @SubscribeMessage('server/test/joinRoom')

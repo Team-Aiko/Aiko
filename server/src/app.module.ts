@@ -60,7 +60,7 @@ const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
     imports: [AccountModule, CompanyModule, ORMModule, SocketModule, FileModule, NoticeBoardModule, WorkModule],
-    providers: [OneToOneMessageGateway],
+    providers: [],
 })
 export class AppModule {
     constructor(private connection: Connection) {
