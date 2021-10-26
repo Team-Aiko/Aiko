@@ -1,4 +1,5 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { Department } from '.';
 import ActionPriority from './actionPriority.entity';
 import StepIndex from './stepIndex.entity';
 
@@ -37,4 +38,8 @@ export default class Action {
     @ManyToOne(() => StepIndex, (stepIdx) => stepIdx.actions)
     @JoinColumn({ name: 'STEP_PK' })
     step: StepIndex;
+
+    @ManyToOne(() => Department, (dept) => dept.actions)
+    @JoinColumn({ name: 'DEPARTMENT_PK' })
+    department: Department;
 }

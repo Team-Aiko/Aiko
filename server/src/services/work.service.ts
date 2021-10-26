@@ -3,7 +3,7 @@ import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
-import { UserRepository } from 'src/mapper';
+import { DepartmentRepository, UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
 
 @Injectable()
@@ -80,5 +80,19 @@ export default class WorkService {
         }
 
         return flag;
+    }
+
+    async viewItems(USER_PK: number, COMPANY_PK: number) {
+        try {
+            // department selection
+            const deptList = await getRepo(DepartmentRepository).getDepartmentList(COMPANY_PK);
+            if (deptList.length <= 0) throw new AikoError('no dept list', 500, 500819);
+
+            // item selection
+            const deptIdList = deptList.map((dept) => dept.DEPARTMENT_PK);
+            return await getRepo(ActionRepository).viewItems(USER_PK, deptIdList);
+        } catch (err) {
+            if (err instanceof AikoError) throw err;
+        }
     }
 }
