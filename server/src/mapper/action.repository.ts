@@ -71,16 +71,7 @@ export default class ActionRepository extends Repository<Action> {
             await this.createQueryBuilder()
                 .update()
                 .set({
-                    ASSIGNER_PK: item.ASSIGNER_PK,
-                    DEPARTMENT_PK: item.DEPARTMENT_PK,
-                    DESCRIPTION: item.DESCRIPTION,
-                    DUE_DATE: item.DUE_DATE,
-                    IS_FINISHED: item.IS_FINISHED,
-                    START_DATE: item.START_DATE,
-                    P_PK: item.P_PK,
-                    STEP_PK: item.STEP_PK,
-                    TITLE: item.TITLE,
-                    USER_PK: item.USER_PK,
+                    ...item,
                 })
                 .where('ACTION_PK = :ACTION_PK', { ACTION_PK: item.ACTION_PK })
                 .execute();
