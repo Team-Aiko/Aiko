@@ -26,7 +26,6 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         }
     }
     updateArticle(title: string, content: string, userPk: number, num: number) {
-        console.log(title, content, userPk, num);
         try {
             return this.createQueryBuilder()
                 .update(NoticeBoard)
@@ -46,7 +45,12 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         const size = Math.ceil(artcileSize / option);
         return size;
     }
-    // getList(){
-
-    // }
+    async getList(option: number, comPk: number, pageNum: number) {
+        return await this.createQueryBuilder()
+            .select()
+            .limit(option)
+            .offset(pageNum)
+            .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
+            .getMany();
+    }
 }

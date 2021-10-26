@@ -27,4 +27,7 @@ export default class NoticeBoardService {
     async createBtnSize(option: number, comPk: number) {
         return await getRepo(NoticeBoardRepository).createBtnSize(option, comPk);
     }
+    async getList(option: number, comPk: number, pageNum: number) {
+        return await getRepo(NoticeBoardRepository).getList(option, comPk, pageNum);
+    }
 }
