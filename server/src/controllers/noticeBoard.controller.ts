@@ -83,7 +83,7 @@ export default class NoticeBoardController {
     }
 
     // @UseGuards(UserGuard)
-    // @Get('detail')
+    // @Get('detail') 만들예정
     // async getDetail(@Req() req, @Res() res) {
     //     const comPk = req.body.userPayload.COMPANY_PK;
     //     const option = parseInt(req.query.option);
