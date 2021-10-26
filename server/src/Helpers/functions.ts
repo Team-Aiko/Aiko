@@ -43,7 +43,7 @@ export function propsRemover<T>(obj: T, ...props: string[]) {
 
 export function isChiefAdmin(grants: Grant[]) {
     try {
-        const isAdmin = grants.some((grant) => grant.AUTH_LIST_PK === 1);
+        const isAdmin = grants?.some((grant) => grant.AUTH_LIST_PK === 1);
         if (!isAdmin) throw new AikoError('NO_AUTHORIZATION', 500, 500321);
         else return isAdmin;
     } catch (err) {
