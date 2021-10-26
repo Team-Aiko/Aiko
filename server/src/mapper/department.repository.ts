@@ -210,6 +210,15 @@ export default class DepartmentRepository extends Repository<Department> {
         return departmentTree;
     }
 
+    async getDepartmentList(COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('d').where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('department/getDepartmentList', 500, 500581);
+        }
+    }
+
     // * util functions
     async bootstrapNode(departments: Department[], COMPANY_PK: number, depth: number) {
         const DEPTH = depth;

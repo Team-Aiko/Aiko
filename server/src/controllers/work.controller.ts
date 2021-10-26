@@ -99,4 +99,23 @@ export default class WorkController {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
     }
+
+    @UseGuards(UserGuard)
+    @Get('view-items')
+    async viewItems(@Req() req: Request, @Res() res: Response) {
+        const { userPayload }: { userPayload: IUserPayload } = req.body;
+        const { id } = req.query;
+        let USER_PK = -1;
+        const { COMPANY_PK } = userPayload;
+
+        const numOrNaN = Number(id);
+        if (numOrNaN && numOrNaN > 0) USER_PK = numOrNaN;
+
+        try {
+            const items = await this.workService.viewItems(USER_PK, COMPANY_PK);
+            resExecutor(res, success, items);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
 }
