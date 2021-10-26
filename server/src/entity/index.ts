@@ -9,10 +9,16 @@ import ChatFile from './chatFile.entity';
 import OTOChatRoom from './otoChatRoom.entity';
 import Refresh from './refresh.entity';
 import NoticeBoard from './noticeBoard.entity';
-
 import Grant from './Grant.entity';
 import AuthListTable from './authList.entity';
+import ActionPriority from './actionPriority.entity';
+import Action from './action.entity';
+import StepIndex from './stepIndex.entity';
+
 export {
+    ActionPriority,
+    Action,
+    StepIndex,
     AuthListTable,
     Grant,
     OTOChatRoom,
