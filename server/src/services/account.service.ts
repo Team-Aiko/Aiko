@@ -200,12 +200,12 @@ export default class AccountService {
                             // get grant list
                             const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
                             result.grants = grantList;
+                            // remove security informations
+                            propsRemover(result, 'PASSWORD', 'SALT');
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
-                            // remove security informations
-                            propsRemover(result, 'PASSWORD', 'SALT');
 
                             const bundle: SuccessPacket = {
                                 header: flag,

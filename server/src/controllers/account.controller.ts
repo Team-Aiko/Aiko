@@ -20,10 +20,6 @@ export default class AccountController {
 
         try {
             const data = await this.accountService.checkDuplicateNickname(nickname as string);
-            console.log(
-                '🚀 ~ file: account.controller.ts ~ line 22 ~ AccountController ~ checkDuplicateNickname ~ data',
-                data,
-            );
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
@@ -194,6 +190,7 @@ export default class AccountController {
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
+        console.log('userPayload = ', req.body.userPayload);
         try {
             resExecutor(res, success, req.body.userPayload as IUserPayload);
         } catch (err) {
