@@ -9,6 +9,7 @@ import ChatModal from '../components/ChatModal';
 // * socket Test
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
+import { get } from 'axios';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
@@ -75,6 +76,28 @@ function PComp(props) {
         client.on('client/test/room/sendMsg', (msg) => {
             console.log(msg);
         });
+
+        /**
+         * 이하는 status 테스트
+         */
+        if (userInfo?.USER_PK) {
+            const status = io('http://localhost:5000/status');
+            const uri = 'http://localhost:5000/account/decoding-token';
+            get(uri)
+                .then((res) => {
+                    const { result } = res.data;
+                    status.emit('handleConnection', result);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+            status.on('client/connected', (user) => {
+                console.log(user);
+            });
+            status.on('client/disconnected', (text) => {
+                console.log(text);
+            });
+        }
     }, []);
 
     return (

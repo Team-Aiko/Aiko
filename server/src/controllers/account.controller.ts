@@ -4,8 +4,9 @@ import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, success, resExecutor, propsRemover } from 'src/Helpers';
+import { AikoError, success, resExecutor, propsRemover, getRepo } from 'src/Helpers';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
+import { UserRepository } from 'src/mapper';
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
@@ -93,8 +94,8 @@ export default class AccountController {
             const result = await this.accountService.login(data);
             console.log('🚀 ~ file: account.controller.ts ~ line 98 ~ AccountController ~ login ~ result', result);
             if ('accessToken' in result) {
-                res.cookie('ACCESS_TOKEN', result.accessToken);
-                res.cookie('REFRESH_TOKEN', result.refreshToken);
+                res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
+                res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
                 resExecutor(res, this.success, propsRemover(result, 'accessToken', 'refreshToken'));
             } else {
             }
@@ -190,9 +191,19 @@ export default class AccountController {
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
-        console.log('userPayload = ', req.body.userPayload);
+        const { userPayload } = req.body;
+        const { USER_PK } = userPayload as IUserPayload;
         try {
-            resExecutor(res, success, req.body.userPayload as IUserPayload);
+            resExecutor(
+                res,
+                success,
+                propsRemover(
+                    await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK),
+                    'iat',
+                    'exp',
+                    'iss',
+                ) as IUserPayload,
+            );
         } catch (err) {
             throw resExecutor(res, new AikoError('unknown error', 500, 500612));
         }

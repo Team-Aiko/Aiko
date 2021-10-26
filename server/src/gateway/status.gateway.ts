@@ -47,10 +47,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             const connectionResult = await this.socketService.statusConnection(id, userPayload);
 
             if (connectionResult.isSendable)
-                this.wss
-                    .to(COMPANY_PK.toString())
-                    .except(client.id)
-                    .emit('client/status/connected', connectionResult.user);
+                this.wss.to(COMPANY_PK.toString()).except(client.id).emit('client/connected', connectionResult.user);
         } catch (err) {
             client.to(client.id).emit('client/error', err);
         }
@@ -66,7 +63,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage('handleDisconnect')
     async handleDisconnect(client: Socket) {
         try {
-            this.socketService.statusDisonnect(client.id);
+            await this.socketService.statusDisconnect(client);
         } catch (err) {
             client.to(client.id).emit('client/error', err);
         }

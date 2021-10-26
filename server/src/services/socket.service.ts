@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { createClient } from 'redis';
 import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
-import { User } from 'src/entity';
+import { Socket as SocketEntity, User } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
 import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { resolve } from 'path/posix';
-import { rejects } from 'assert';
+import { Socket } from 'socket.io';
 
 interface CompanyContainer {
     userList: { socketId: string; userPK: number; intervalId: NodeJS.Timeout | undefined }[];
@@ -167,9 +166,9 @@ export default class SocketService {
      * status disconnect를 시행하는 메소드
      * @param socketId
      */
-    async statusDisonnect(socketId: string) {
+    async statusDisconnect(socketClient: Socket) {
         // 5분의 유예기간을 줌
-        const userId = await this.findUserId(socketId);
+        const userId = await this.findUserId(socketClient.id);
         const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(userId);
 
         const intervalId = setTimeout(() => {
@@ -189,6 +188,7 @@ export default class SocketService {
                     userList.splice(detectedIdx, 0);
                     companyContainer.userList = userList;
                     client.hset('status', userInfo.COMPANY_PK.toString(), JSON.stringify(companyContainer));
+                    socketClient.emit('client/disconnected', 'success disconnect process');
                 }
             });
 
