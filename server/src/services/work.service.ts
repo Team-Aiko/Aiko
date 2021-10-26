@@ -62,6 +62,10 @@ export default class WorkService {
                 item.DEPARTMENT_PK = bundle.DEPARTMENT_PK;
             }
 
+            // col name change
+            for (let i = 0; i < bundle.updateCols.length; i += 1)
+                if (bundle.updateCols[i] === 'OWNER_PK') bundle.updateCols[i] = 'USER_PK';
+
             // value change
             Object.keys(item).forEach((prop) => {
                 bundle.updateCols.forEach((upCol) => {
