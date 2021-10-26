@@ -1,4 +1,3 @@
-
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, success, resExecutor } from 'src/Helpers';
@@ -23,7 +22,6 @@ export default class NoticeBoardController {
             resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
         }
     }
-
 
     @UseGuards(UserGuard)
     @Post('update-article')
@@ -56,30 +54,45 @@ export default class NoticeBoardController {
     @UseGuards(UserGuard)
     @Get('btn-size')
     async createBtnSize(@Req() req, @Res() res) {
-        const option = req.body.option;
-        const comPk = req.body.userPayload.COMPANY_PK;
         try {
+            const option = parseInt(req.query.option);
+            const comPk = req.body.userPayload.COMPANY_PK;
             if (option === 10 || option === 20 || option === 30) {
                 const maxBtn = await this.noticeboardService.createBtnSize(option, comPk);
                 resExecutor(res, this.success, maxBtn);
             } else {
-                throw resExecutor(res, new AikoError('ERROR:' + 'option value error', 451, 400000));
+                throw resExecutor(res, new AikoError('ERROR: option value', 451, 400000));
             }
         } catch (err) {
             throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
         }
     }
 
+    @UseGuards(UserGuard)
+    @Get('list')
+    async getList(@Req() req, @Res() res) {
+        const comPk = req.body.userPayload.COMPANY_PK;
+        const option = parseInt(req.query.option);
+        const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
+        if (comPk !== undefined && option >= 10 && pageNum >= 0) {
+            const result = await this.noticeboardService.getList(option, comPk, pageNum);
+            resExecutor(res, this.success, result);
+        } else {
+            throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
+        }
+    }
+
     // @UseGuards(UserGuard)
-    // @Get('list')
-    // async getList(@Req() req, @Res() res) {
-    //     try {
-    //         const num = req.body.num;
-    //         const userPk = req.body.userPayload.USER_PK;
-    //         await this.noticeboardService.getList(userPk, num);
-    //         resExecutor(res, this.success, true);
-    //     } catch (err) {
-    //         resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+    // @Get('detail') 만들예정
+    // async getDetail(@Req() req, @Res() res) {
+    //     const comPk = req.body.userPayload.COMPANY_PK;
+    //     const option = parseInt(req.query.option);
+    //     const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
+    //     if (comPk !== undefined && option >= 10 && pageNum >= 0) {
+    //         const result = await this.noticeboardService.getList(option, comPk, pageNum);
+    //         resExecutor(res, this.success, result);
+    //     } else {
+    //         throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
     //     }
     // }
 }
