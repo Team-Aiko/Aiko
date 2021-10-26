@@ -1,12 +1,11 @@
 import Action from 'src/entity/action.entity';
-import { AikoError } from 'src/Helpers';
-import { IActionCreateBundle } from 'src/interfaces/MVC/workMVC';
+import { AikoError, propsRemover } from 'src/Helpers';
+import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
 
 @EntityRepository(Action)
 export default class ActionRepository extends Repository<Action> {
-    async createActionItem(bundle: IActionCreateBundle) {
-        console.log('🚀 ~ file: action.repository.ts ~ line 9 ~ ActionRepository ~ createActionItem ~ bundle', bundle);
+    async createActionItem(bundle: IItemBundle) {
         try {
             return await this.createQueryBuilder()
                 .insert()
@@ -56,6 +55,40 @@ export default class ActionRepository extends Repository<Action> {
         } catch (err) {
             console.error(err);
             throw new AikoError('action/deleteActionItem', 500, 509212);
+        }
+
+        return flag;
+    }
+
+    async updateItem(item: Action) {
+        let flag = false;
+
+        try {
+            // prop remove (due to join relation)
+            propsRemover(item, 'priority', 'step');
+
+            // update
+            await this.createQueryBuilder()
+                .update()
+                .set({
+                    ASSIGNER_PK: item.ASSIGNER_PK,
+                    DEPARTMENT_PK: item.DEPARTMENT_PK,
+                    DESCRIPTION: item.DESCRIPTION,
+                    DUE_DATE: item.DUE_DATE,
+                    IS_FINISHED: item.IS_FINISHED,
+                    START_DATE: item.START_DATE,
+                    P_PK: item.P_PK,
+                    STEP_PK: item.STEP_PK,
+                    TITLE: item.TITLE,
+                    USER_PK: item.USER_PK,
+                })
+                .where('ACTION_PK = :ACTION_PK', { ACTION_PK: item.ACTION_PK })
+                .execute();
+
+            flag = true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('action/updateItem', 500, 500999);
         }
 
         return flag;

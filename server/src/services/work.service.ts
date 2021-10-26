@@ -2,18 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin } from 'src/Helpers';
-import { IActionCreateBundle } from 'src/interfaces/MVC/workMVC';
+import { IItemBundle } from 'src/interfaces/MVC/workMVC';
+import { UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
 
 @Injectable()
 export default class WorkService {
-    async createActionItem(bundle: IActionCreateBundle) {
+    async createActionItem(bundle: IItemBundle) {
         try {
             // self assign
             if (!bundle.USER_PK) bundle.USER_PK = bundle.ASSIGNER_PK;
             // auth filter
             if (bundle.ASSIGNER_PK !== bundle.USER_PK) isChiefAdmin(bundle.grants);
+            // company filter
+            const owner = await getRepo(UserRepository).getUserInfo(bundle.USER_PK);
+            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw new AikoError('not same company', 500, 500129);
 
+            // create item
             const result = await getRepo(ActionRepository).createActionItem(bundle);
 
             return (result.raw as ResultSetHeader).insertId;
@@ -33,6 +38,39 @@ export default class WorkService {
             if (item.ASSIGNER_PK !== item.USER_PK) isChiefAdmin(grants);
 
             flag = await getRepo(ActionRepository).deleteActionItem(ACTION_PK);
+        } catch (err) {
+            if (err instanceof AikoError) throw err;
+        }
+
+        return flag;
+    }
+
+    async updateActionItem(bundle: IItemBundle) {
+        let flag = false;
+
+        try {
+            // company filter
+            const owner = await getRepo(UserRepository).getUserInfo(bundle.USER_PK);
+            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw new AikoError('not same company', 500, 500129);
+
+            // select original
+            const item = await getRepo(ActionRepository).findActionItem(bundle.ACTION_PK, bundle.DEPARTMENT_PK);
+
+            // Chief admin filter + change department
+            if (item.ASSIGNER_PK !== item.USER_PK) {
+                isChiefAdmin(bundle.grants);
+                item.DEPARTMENT_PK = bundle.DEPARTMENT_PK;
+            }
+
+            // value change
+            Object.keys(item).forEach((prop) => {
+                bundle.updateCols.forEach((upCol) => {
+                    if (prop === upCol) item[prop] = bundle[prop];
+                });
+            });
+
+            // update item
+            flag = await getRepo(ActionRepository).updateItem(item);
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }

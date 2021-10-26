@@ -5,7 +5,7 @@ import { AikoError, resExecutor } from 'src/Helpers';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import WorkService from 'src/services/work.service';
 import { success } from 'src/Helpers';
-import { IActionCreateBundle } from 'src/interfaces/MVC/workMVC';
+import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 
 @Controller('work')
 export default class WorkController {
@@ -20,15 +20,15 @@ export default class WorkController {
     async createActionItem(@Req() req: Request, @Res() res: Response) {
         const { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK, userPayload } = req.body;
         const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = userPayload as IUserPayload;
-        const bundle: IActionCreateBundle = {
+        const bundle: IItemBundle = {
             P_PK,
             STEP_PK,
             DEPARTMENT_PK,
-            COMPANY_PK,
             USER_PK: OWNER_PK,
             ASSIGNER_PK: USER_PK,
             DUE_DATE,
             START_DATE,
+            COMPANY_PK,
             TITLE,
             DESCRIPTION,
             grants,
@@ -52,6 +52,49 @@ export default class WorkController {
             const flag = await this.workService.deleteActionItem(ACTION_PK, DEPARTMENT_PK, grants);
             if (flag) resExecutor(res, success, flag);
             else throw new AikoError('unknown error', 500, 500328);
+        } catch (err) {
+            if (err instanceof AikoError) throw resExecutor(res, err);
+        }
+    }
+
+    @UseGuards(UserGuard)
+    @Post('update-action-item')
+    async updateActionItem(@Req() req: Request, @Res() res: Response) {
+        const {
+            ACTION_PK,
+            OWNER_PK,
+            TITLE,
+            DESCRIPTION,
+            START_DATE,
+            DUE_DATE,
+            P_PK,
+            STEP_PK,
+            userPayload,
+            updateCols,
+        } = req.body;
+        const { USER_PK, grants, DEPARTMENT_PK, COMPANY_PK } = userPayload as IUserPayload;
+        const ASSIGNER_PK = USER_PK;
+        const bundle: IItemBundle = {
+            ACTION_PK,
+            USER_PK: OWNER_PK,
+            TITLE,
+            DESCRIPTION,
+            START_DATE,
+            DUE_DATE,
+            P_PK,
+            STEP_PK,
+            ASSIGNER_PK,
+            DEPARTMENT_PK,
+            COMPANY_PK,
+            grants,
+            updateCols,
+        };
+
+        try {
+            const flag = await this.workService.updateActionItem(bundle);
+
+            if (flag) resExecutor(res, success, flag);
+            else throw new AikoError('unknown error', 500, 500281);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);
         }
