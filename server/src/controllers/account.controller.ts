@@ -190,4 +190,14 @@ export default class AccountController {
             throw resExecutor(res, err);
         }
     }
+
+    @UseGuards(UserGuard)
+    @Get('decoding-token')
+    async decodeToken(@Req() req: Request, @Res() res: Response) {
+        try {
+            resExecutor(res, success, req.body.userPayload as IUserPayload);
+        } catch (err) {
+            throw resExecutor(res, new AikoError('unknown error', 500, 500612));
+        }
+    }
 }
