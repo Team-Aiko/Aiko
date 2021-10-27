@@ -50,9 +50,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
                 if (connectionResult.isSendable)
                     this.wss
-                        .to(COMPANY_PK.toString())
+                        .to(`${COMPANY_PK}`)
                         .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
-                        .emit('client/connected', connectionResult.user);
+                        .emit('client/status/loginAlert', connectionResult.user);
             }
         } catch (err) {
             client.to(client.id).emit('client/error', err);
@@ -70,7 +70,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     async handleDisconnect(client: Socket) {
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
-            await this.socketService.statusDisconnect(client);
+            this.socketService.statusDisconnect(client, this.wss);
         } catch (err) {
             client.to(client.id).emit('client/error', err);
         }

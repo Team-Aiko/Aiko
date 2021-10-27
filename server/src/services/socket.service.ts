@@ -3,23 +3,18 @@ import { createClient } from 'redis';
 import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
 import { Socket as SocketEntity, User } from 'src/entity';
-import { AikoError } from 'src/Helpers/classes';
+import { propsRemover, AikoError } from 'src/Helpers';
 import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
+import { StatusSocketContainer, StatusUserContainer } from 'src/interfaces/MVC/socketMVC';
 
-// 'statusCompanyContainer' - 'companyPK-UserPK' - UserStatusContainer
-// 'statusSocketContainer' - 'socketId' - '{ userPK: number; companyPK: number }'
-interface CompanyContainer {
-    userList: { socketId?: string; userPK: number; intervalId?: NodeJS.Timeout; logOutPending: boolean }[];
-}
-
-interface StatusSocketContainer {
-    userPK: number;
-    companyPK: number;
-}
-
-const statusDeleteIntervalList: NodeJS.Timeout[] = [];
+/**
+ * Redis data structure
+ * ! [ket1 - key2 - value]
+ * 'status/userCont' - 'companyPK:userPK' - StatusUserContainer (회사아이디와 유저아이디로 연결상태 출력)
+ * 'status/socketCont' - 'socketId' - StatusSocketContainer (소켓 아이디로 회사아이디, 유저아이디 출력)
+ */
 
 const client = createClient();
 setInterval(() => {
@@ -111,41 +106,52 @@ export default class SocketService {
     }
 
     /**
-     * 실제적인 status connection 실시메소드
+     *
+     *
+     *
+     * up: 1:1 chat service
+     *
+     *
+     *
+     *
+     * divide lines
+     *
+     *
+     *
+     * down: status service
+     *
+     *
+     */
+
+    /**
+     * status connection 실시메소드, setOnline과 별개로 필요한 과정.
      * @param socketId
      * @param userPayload
      * @returns
      */
-    async statusConnection(socketId: string, userPayload: IUserPayload) {
+    async statusConnection(socketId: string, userPayload: IUserPayload): Promise<{ isSendable: boolean; user?: User }> {
+        const { USER_PK, COMPANY_PK } = userPayload;
+
         try {
-            const companyContainer = await this.getCompanyContainer(userPayload.COMPANY_PK);
+            const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
+            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK);
+            const newUserContainer: StatusUserContainer = {
+                userPK: USER_PK,
+                logOutPending: false,
+                socketId: socketId,
+            };
+            let isSendable = false;
 
-            const packet = await new Promise<{ isSendable: boolean; user: User }>(async (resolve, rejects) => {
-                const { USER_PK } = userPayload;
-                let isSendable = false;
-                companyContainer.userList.some((user) => {
-                    let flag = false;
+            if (!userContainer) {
+                await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
+                isSendable = true;
+            } else {
+                if (userContainer.timeoutId) clearTimeout(userContainer.timeoutId);
+                await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
+                isSendable = !userContainer.logOutPending;
+            }
 
-                    if (user.userPK === USER_PK) {
-                        isSendable = !user.logOutPending;
-                        clearTimeout(user.intervalId);
-                        user.socketId = socketId; // 삭제 취소 소켓 아이디 업데이트
-
-                        flag = true;
-                    }
-
-                    return flag;
-                });
-
-                await this.saveCompContainer(userPayload.COMPANY_PK, companyContainer);
-
-                resolve({
-                    isSendable,
-                    user: await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK),
-                });
-            });
-
-            return packet;
+            return { isSendable, user: isSendable ? user : undefined };
         } catch (err) {
             throw err;
         }
@@ -155,45 +161,26 @@ export default class SocketService {
      * status disconnect를 시행하는 메소드, 5분의 유예기간을 줌
      * @param socketId
      */
-    async statusDisconnect(socketClient: Socket) {
+    async statusDisconnect(socketClient: Socket, wss: Server) {
         console.log('socket/statusDisconnect start');
 
-        const statusContainer = await this.getStatusContainer(socketClient.id);
-        const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(statusContainer.userPK);
+        const socketContainer = await this.getSocketCont(socketClient.id);
+        const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
+        const { COMPANY_PK, USER_PK } = userInfo;
 
-        const intervalId = setTimeout(async () => {
-            const companyContainer = await this.getCompanyContainer(userInfo.COMPANY_PK);
-
-            // 삭제할 유저의 index 서칭
-            let detectedIdx = -1;
-            companyContainer.userList.some((curr, idx) => {
-                if (curr.userPK === userInfo.USER_PK) {
-                    detectedIdx = idx;
-                    curr.logOutPending = true;
-                }
-                return curr.userPK === userInfo.USER_PK;
-            });
-
+        const timeoutId = setTimeout(async () => {
             // delete process
-            if (detectedIdx !== -1) {
-                companyContainer.userList.splice(detectedIdx, 0);
-                await this.saveCompContainer(userInfo.COMPANY_PK, companyContainer);
-                socketClient.emit('client/disconnected', 'success disconnect process');
-            }
+            await this.delUsrCont(COMPANY_PK, USER_PK);
+            await this.delSocketCont(socketClient.id);
+            socketClient.emit('client/status/logoutAlert', 'success disconnect process');
+            wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
         }, 1000 * 5);
 
-        // add delayId
-        const companyContainer = await this.getCompanyContainer(userInfo.COMPANY_PK);
-        companyContainer.userList.some((user) => {
-            let flag = false;
-
-            if (user.userPK === userInfo.USER_PK) {
-                user.intervalId = intervalId;
-                user.socketId = '';
-                flag = true;
-            }
-
-            return flag;
+        await this.setUsrCont(COMPANY_PK, USER_PK, {
+            userPK: USER_PK,
+            socketId: socketClient.id,
+            timeoutId,
+            logOutPending: true,
         });
     }
 
@@ -202,26 +189,20 @@ export default class SocketService {
      * @param user
      */
     async setOnline(user: User) {
-        const companyContainer: CompanyContainer = {
-            userList: [],
-        };
-        const item = {
-            socketId: undefined,
+        const { USER_PK, COMPANY_PK } = user;
+        const newUserCont: StatusUserContainer = {
             userPK: user.USER_PK,
-            intervalId: undefined,
             logOutPending: false,
-        }; // insert item
-        const reply = await this.getCompanyContainer(user.COMPANY_PK);
+        };
+        const reply = await this.getUsrCont(COMPANY_PK, USER_PK);
 
         // 로그인 유저가 전혀 없는 경우
-        if (!reply) companyContainer.userList.push(item);
+        if (!reply) this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
         else {
             // 로그인 유저가 존재하는 경우
-            reply.userList.push(item);
-            companyContainer.userList = reply.userList;
+            if (reply.timeoutId) clearTimeout(reply.timeoutId);
+            this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
         }
-
-        this.saveCompContainer(user.COMPANY_PK, companyContainer);
     }
 
     // TODO:후일 지워야함.
@@ -230,29 +211,33 @@ export default class SocketService {
     }
 
     // * util functions
-    async getCompanyContainer(COMPANY_PK: number) {
-        return await new Promise<CompanyContainer>((resolve, reject) => {
-            client.hget('status/companyContainer', COMPANY_PK.toString(), (err, reply) => {
+    async getUsrCont(COMPANY_PK: number, USER_PK: number) {
+        return await new Promise<StatusUserContainer>((resolve, reject) => {
+            client.hget('status/userCont', `${COMPANY_PK}:${USER_PK}`, (err, reply) => {
                 if (err) throw err;
 
-                resolve(JSON.parse(reply) as CompanyContainer);
+                resolve(JSON.parse(reply) as StatusUserContainer);
             });
         });
     }
 
-    async saveCompContainer(companyPK: number, container: CompanyContainer) {
-        return client.hset('status/companyContainer', companyPK.toString(), JSON.stringify(container));
+    async setUsrCont(COMPANY_PK: number, USER_PK: number, container: StatusUserContainer) {
+        return client.hset('status/userCont', `${COMPANY_PK}:${USER_PK}`, JSON.stringify(container));
     }
 
-    async saveStatusContainer(socketId: string, companyPK: number, userPK: number) {
+    async delUsrCont(COMPANY_PK: number, USER_PK: number) {
+        client.hdel('status/userCont', `${COMPANY_PK}:${USER_PK}`);
+    }
+
+    async setSocketCont(socketId: string, companyPK: number, userPK: number) {
         // 'companyList' - 'socketId' - 'companyPK'
 
-        return client.hset('status/statusContainer', socketId, JSON.stringify({ companyPK, userPK }));
+        return client.hset('status/socketCont', socketId, JSON.stringify({ companyPK, userPK }));
     }
 
-    async getStatusContainer(socketId: string) {
+    async getSocketCont(socketId: string) {
         return await new Promise<StatusSocketContainer>((resolve, rejects) => {
-            client.hget('status/statusContainer', socketId, (err, reply) => {
+            client.hget('status/socketCont', socketId, (err, reply) => {
                 if (err) throw err;
 
                 resolve(JSON.parse(reply) as StatusSocketContainer);
@@ -260,7 +245,7 @@ export default class SocketService {
         });
     }
 
-    async deleteStatusContainer(socketId: string) {
-        client.hdel('status/StatusContainer', socketId);
+    async delSocketCont(socketId: string) {
+        client.hdel('status/socketCont', socketId);
     }
 }

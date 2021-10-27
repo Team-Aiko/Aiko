@@ -9,3 +9,15 @@ export interface IOneToOnePacket {
         file: number; // CF_PK (database socket_table)
     };
 }
+
+export interface StatusUserContainer {
+    socketId?: string;
+    userPK: number;
+    timeoutId?: NodeJS.Timeout;
+    logOutPending: boolean;
+}
+
+export interface StatusSocketContainer {
+    userPK: number;
+    companyPK: number;
+}
