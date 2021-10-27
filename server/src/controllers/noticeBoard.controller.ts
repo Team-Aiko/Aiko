@@ -2,13 +2,14 @@ import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, success, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
+
+@UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
     readonly success = success;
 
     constructor(private noticeboardService: NoticeBoardService) {}
 
-    @UseGuards(UserGuard)
     @Post('write')
     async createArticle(@Req() req, @Res() res) {
         try {
@@ -23,7 +24,6 @@ export default class NoticeBoardController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Post('update-article')
     async updateArticle(@Req() req, @Res() res) {
         try {
@@ -38,7 +38,6 @@ export default class NoticeBoardController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Post('delete-article')
     async deleteArticle(@Req() req, @Res() res) {
         try {
@@ -51,7 +50,6 @@ export default class NoticeBoardController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Get('btn-size')
     async createBtnSize(@Req() req, @Res() res) {
         const option = parseInt(req.query.option);
@@ -64,7 +62,6 @@ export default class NoticeBoardController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Get('list')
     async getList(@Req() req, @Res() res) {
         const comPk = req.body.userPayload.COMPANY_PK;
@@ -73,6 +70,22 @@ export default class NoticeBoardController {
         if (comPk !== undefined && option >= 10 && pageNum >= 0) {
             const result = await this.noticeboardService.getList(option, comPk, pageNum);
             resExecutor(res, this.success, result);
+        } else {
+            throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
+        }
+    }
+
+    @Get('detail')
+    async getDetail(@Req() req, @Res() res) {
+        const num = parseInt(req.query.num);
+        const userPk = req.body.userPayload.USER_PK;
+        if (num !== undefined) {
+            const result = await this.noticeboardService.getDetail(num, userPk);
+            if (result === undefined) {
+                throw resExecutor(res, new AikoError('ERROR: 해당 num 존재하지않음', 451, 400000));
+            } else {
+                resExecutor(res, this.success, result);
+            }
         } else {
             throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
         }

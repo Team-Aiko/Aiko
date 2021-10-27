@@ -1,13 +1,22 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { NoticeBoard } from '../entity';
+import { unixTimeStamp } from 'src/Helpers/functions';
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     createArticle(title: string, content: string, userPk: number, comPk: number) {
         try {
+            const time = unixTimeStamp();
             return this.createQueryBuilder()
                 .insert()
                 .into(NoticeBoard)
-                .values({ TITLE: title, CONTENT: content, USER_PK: userPk, COMPANY_PK: comPk, IS_DELETE: 0 })
+                .values({
+                    TITLE: title,
+                    CONTENT: content,
+                    USER_PK: userPk,
+                    COMPANY_PK: comPk,
+                    IS_DELETE: 0,
+                    CREATE_DATE: time,
+                })
                 .execute();
         } catch (err) {
             return err;
@@ -27,9 +36,10 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     }
     updateArticle(title: string, content: string, userPk: number, num: number) {
         try {
+            const time = unixTimeStamp();
             return this.createQueryBuilder()
                 .update(NoticeBoard)
-                .set({ TITLE: title, CONTENT: content })
+                .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time })
                 .where('NO like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
@@ -46,11 +56,18 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         return size;
     }
     async getList(option: number, comPk: number, pageNum: number) {
-        return await this.createQueryBuilder()
-            .select()
+        return await this.createQueryBuilder('n')
+            .select(['n.NO', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
             .limit(option)
             .offset(pageNum)
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
             .getMany();
-    } //completed
+    }
+    async getDetail(num: number, userPk: number) {
+        return await this.createQueryBuilder('n')
+            .select()
+            .where('USER_PK like :userPk', { userPk: `${userPk}` })
+            .andWhere('NO like :num', { num: `${num}` })
+            .getOne();
+    }
 }
