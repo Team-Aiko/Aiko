@@ -4,15 +4,10 @@ import {
     OnGatewayInit,
     OnGatewayConnection,
     OnGatewayDisconnect,
-    WsResponse,
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig } from 'src/interfaces';
-import { User } from 'src/entity';
-import { UserInfo } from 'src/interfaces/MVC/accountMVC';
 import SocketService from 'src/services/socket.service';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { AikoError, unknownError } from 'src/Helpers';
