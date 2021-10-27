@@ -51,16 +51,6 @@ export function isChiefAdmin(grants: Grant[]) {
     }
 }
 
-export function checkNull(input): boolean {
-    if (input !== null) {
-        return true;
-    } else {
-        return false;
-    }
+export function unixTimeStamp(): number {
+    return Math.floor(new Date().getTime() / 1000);
 }
-// export function headerCheck(): boolean {
-//     return true;
-// } 헤더검증
-// export function bodyrCheck(): boolean {
-//     return true;
-// } 바디 검증

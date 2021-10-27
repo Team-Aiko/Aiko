@@ -33,4 +33,8 @@ export default class NoticeBoardService {
     async getList(option: number, comPk: number, pageNum: number) {
         return await getRepo(NoticeBoardRepository).getList(option, comPk, pageNum);
     }
+
+    async getDetail(num: number, userPk: number) {
+        return await getRepo(NoticeBoardRepository).getDetail(num, userPk);
+    }
 }
