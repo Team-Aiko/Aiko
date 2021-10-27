@@ -15,16 +15,16 @@ import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
 const criticalUserInfo = [
-    'PASSWORD',
-    'SALT',
-    'EMAIL',
     'FIRST_NAME',
     'LAST_NAME',
     'TEL',
+    'EMAIL',
+    'PROFILE_FILE_NAME',
+    'PASSWORD',
+    'SALT',
     'IS_VERIFIED',
     'IS_DELETED',
     'CREATE_DATE',
-    'PROFILE_FILE_NAME',
 ];
 
 @EntityRepository(User)
@@ -46,7 +46,7 @@ export default class UserRepository extends Repository<User> {
                 .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
                 .getOneOrFail();
 
-            userInfo = propsRemover(userInfo, ...criticalUserInfo.slice(2));
+            userInfo = propsRemover(userInfo, ...criticalUserInfo);
         } catch (err) {
             throw new AikoError('select error(search user with nickname)', 500, 500121);
         }
@@ -172,6 +172,8 @@ export default class UserRepository extends Repository<User> {
                 .leftJoinAndSelect('U.department', 'd')
                 .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .getMany();
+
+            userList = propsRemover(userList, ...criticalUserInfo.slice(0, 5));
         } catch (err) {
             throw new AikoError('select error(member list)', 500, 500044);
         }

@@ -130,7 +130,10 @@ export default class SocketService {
      * @param userPayload
      * @returns
      */
-    async statusConnection(socketId: string, userPayload: IUserPayload): Promise<{ isSendable: boolean; user?: User }> {
+    async statusConnection(
+        socketId: string,
+        userPayload: IUserPayload,
+    ): Promise<{ isSendable: boolean; user?: User; members?: User[] }> {
         const { USER_PK, COMPANY_PK } = userPayload;
 
         try {
@@ -147,7 +150,20 @@ export default class SocketService {
             await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
             await this.setSocketCont(socketId, COMPANY_PK, USER_PK);
 
-            return { isSendable, user: isSendable ? user : undefined };
+            let members: User[] = [];
+            let loginedUser: User[] = [];
+            if (isSendable) {
+                members = await getRepo(UserRepository).getMembers(COMPANY_PK);
+                loginedUser = members?.map((member) => {
+                    if (this.getUsrCont(member.COMPANY_PK, member.USER_PK)) return member;
+                });
+            }
+
+            return {
+                isSendable,
+                user: isSendable ? user : undefined,
+                members: loginedUser,
+            };
         } catch (err) {
             if (err instanceof AikoError) throw err;
             else throw new AikoError('socketService/statusConnection', 100, 1);
