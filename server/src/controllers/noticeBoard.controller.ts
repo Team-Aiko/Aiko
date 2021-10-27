@@ -90,18 +90,4 @@ export default class NoticeBoardController {
             throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
         }
     }
-
-    // @UseGuards(UserGuard)
-    // @Get('detail') 만들예정
-    // async getDetail(@Req() req, @Res() res) {
-    //     const comPk = req.body.userPayload.COMPANY_PK;
-    //     const option = parseInt(req.query.option);
-    //     const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
-    //     if (comPk !== undefined && option >= 10 && pageNum >= 0) {
-    //         const result = await this.noticeboardService.getList(option, comPk, pageNum);
-    //         resExecutor(res, this.success, result);
-    //     } else {
-    //         throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
-    //     }
-    // }
 }
