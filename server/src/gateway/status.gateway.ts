@@ -49,7 +49,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                         .to(`${COMPANY_PK}`)
                         .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
                         .emit(statusPath.CLIENT_LOGIN_ALERT, connectionResult.user);
-                    // 접속자에게 회사의 사원정보 리스트를 전달한다 (비로그인 유저도 전달함)
+                    // 접속자에게 회사의 사원정보 리스트를 전달한다 (타입 : StatusSocketContainer [])
                     client.to(client.id).emit(statusPath.CLIENT_USERLIST, connectionResult.members);
                 }
             }

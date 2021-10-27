@@ -133,7 +133,7 @@ export default class SocketService {
     async statusConnection(
         socketId: string,
         userPayload: IUserPayload,
-    ): Promise<{ isSendable: boolean; user?: User; members?: User[] }> {
+    ): Promise<{ isSendable: boolean; user?: User; members?: StatusUserContainer[] }> {
         const { USER_PK, COMPANY_PK } = userPayload;
 
         try {
@@ -151,12 +151,15 @@ export default class SocketService {
             await this.setSocketCont(socketId, COMPANY_PK, USER_PK);
 
             let members: User[] = [];
-            let loginedUser: User[] = [];
+            let loginedUser: StatusUserContainer[] = [];
             if (isSendable) {
                 members = await getRepo(UserRepository).getMembers(COMPANY_PK);
-                loginedUser = members?.map((member) => {
-                    if (this.getUsrCont(member.COMPANY_PK, member.USER_PK)) return member;
-                });
+                loginedUser = await Promise.all(
+                    members?.map(async (member) => {
+                        const container = await this.getUsrCont(member.COMPANY_PK, member.USER_PK);
+                        if (container) return container;
+                    }),
+                );
             }
 
             return {
