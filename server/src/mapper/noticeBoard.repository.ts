@@ -52,5 +52,5 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             .offset(pageNum)
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
             .getMany();
-    }
+    } //completed
 }
