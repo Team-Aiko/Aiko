@@ -54,17 +54,13 @@ export default class NoticeBoardController {
     @UseGuards(UserGuard)
     @Get('btn-size')
     async createBtnSize(@Req() req, @Res() res) {
-        try {
-            const option = parseInt(req.query.option);
-            const comPk = req.body.userPayload.COMPANY_PK;
-            if (option === 10 || option === 20 || option === 30) {
-                const maxBtn = await this.noticeboardService.createBtnSize(option, comPk);
-                resExecutor(res, this.success, maxBtn);
-            } else {
-                throw resExecutor(res, new AikoError('ERROR: option value', 451, 400000));
-            }
-        } catch (err) {
-            throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+        const option = parseInt(req.query.option);
+        const comPk = req.body.userPayload.COMPANY_PK;
+        if (option === 10 || option === 20 || option === 30) {
+            const maxBtn = await this.noticeboardService.createBtnSize(option, comPk);
+            resExecutor(res, this.success, maxBtn);
+        } else {
+            throw resExecutor(res, new AikoError('ERROR: option value', 451, 400000));
         }
     }
 
