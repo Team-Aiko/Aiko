@@ -113,7 +113,13 @@ export default class DepartmentRepository extends Repository<Department> {
             if (result2?.users.length) throw new AikoError('department/deleteDepartment/isMembers', 500, 500451);
             else if (result2 === undefined || result2 === null)
                 throw new AikoError('department/deleteDepartment/noDepartment', 500, 500678);
-            else flag = true;
+            else {
+                this.createQueryBuilder()
+                    .delete()
+                    .where('DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK: departmentPK })
+                    .execute();
+                flag = true;
+            }
         } catch (err) {
             throw err;
         }
