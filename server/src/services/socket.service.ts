@@ -8,8 +8,15 @@ import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { Socket } from 'socket.io';
 
+// 'statusCompanyContainer' - 'companyPK-UserPK' - UserStatusContainer
+// 'statusSocketContainer' - 'socketId' - '{ userPK: number; companyPK: number }'
 interface CompanyContainer {
-    userList: { socketId: string; userPK: number; intervalId: NodeJS.Timeout | undefined }[];
+    userList: { socketId?: string; userPK: number; intervalId?: NodeJS.Timeout; logOutPending: boolean }[];
+}
+
+interface StatusSocketContainer {
+    userPK: number;
+    companyPK: number;
 }
 
 const statusDeleteIntervalList: NodeJS.Timeout[] = [];
@@ -104,119 +111,156 @@ export default class SocketService {
     }
 
     /**
-     * 스테이터스 커넥션을 시행하는 메소드
+     * 실제적인 status connection 실시메소드
      * @param socketId
      * @param userPayload
      * @returns
      */
     async statusConnection(socketId: string, userPayload: IUserPayload) {
         try {
-            const flag = await new Promise<boolean>((resolve, rejects) => {
+            const companyContainer = await this.getCompanyContainer(userPayload.COMPANY_PK);
+
+            const packet = await new Promise<{ isSendable: boolean; user: User }>(async (resolve, rejects) => {
                 const { USER_PK } = userPayload;
-                client.hget('status', userPayload.COMPANY_PK.toString(), async (err, reply) => {
-                    if (err) rejects(false);
+                let isSendable = false;
+                companyContainer.userList.some((user) => {
+                    let flag = false;
 
-                    const companyContainer = JSON.parse(reply) as CompanyContainer;
-                    const { userList } = companyContainer;
-                    userList.some((user) => {
-                        let flag = false;
+                    if (user.userPK === USER_PK) {
+                        isSendable = !user.logOutPending;
+                        clearTimeout(user.intervalId);
+                        user.socketId = socketId; // 삭제 취소 소켓 아이디 업데이트
 
-                        if (user.userPK === USER_PK) {
-                            clearTimeout(user.intervalId);
-                            user.socketId = socketId; // 삭제 취소 소켓 아이디 업데이트
-                            flag = true;
-                        }
+                        flag = true;
+                    }
 
-                        return flag;
-                    });
+                    return flag;
+                });
 
-                    resolve(true);
+                await this.saveCompContainer(userPayload.COMPANY_PK, companyContainer);
+
+                resolve({
+                    isSendable,
+                    user: await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK),
                 });
             });
 
-            if (!flag) {
-                const packet = await new Promise<{ isSendable: boolean; user: User }>((resolve, reject) => {
-                    client.hget('status', userPayload.COMPANY_PK.toString(), async (err, reply) => {
-                        if (err) reject(new AikoError('redis error', 1, 501119));
-
-                        const companyContainer = JSON.parse(reply) as CompanyContainer;
-                        const isIn = companyContainer.userList.some((user) => user.userPK === userPayload.USER_PK);
-                        if (!isIn) {
-                            client.hset('status', userPayload.COMPANY_PK.toString(), userPayload.USER_PK.toString());
-                        }
-                        resolve({
-                            isSendable: !isIn,
-                            user: !isIn
-                                ? await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK)
-                                : undefined,
-                        });
-                    });
-                });
-
-                return packet;
-            }
-
-            return { isSendable: false, user: undefined };
+            return packet;
         } catch (err) {
             throw err;
         }
     }
 
     /**
-     * status disconnect를 시행하는 메소드
+     * status disconnect를 시행하는 메소드, 5분의 유예기간을 줌
      * @param socketId
      */
     async statusDisconnect(socketClient: Socket) {
-        // 5분의 유예기간을 줌
-        const userId = await this.findUserId(socketClient.id);
-        const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(userId);
+        console.log('socket/statusDisconnect start');
 
-        const intervalId = setTimeout(() => {
-            client.hget('status', userInfo.COMPANY_PK.toString(), (err, reply) => {
-                const companyContainer = JSON.parse(reply) as CompanyContainer;
-                const { userList } = companyContainer;
+        const statusContainer = await this.getStatusContainer(socketClient.id);
+        const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(statusContainer.userPK);
 
-                // 삭제할 유저의 index 서칭
-                let detectedIdx = -1;
-                userList.some((curr, idx) => {
-                    if (curr.userPK === userInfo.USER_PK) detectedIdx = idx;
-                    return curr.userPK === userInfo.USER_PK;
-                });
+        const intervalId = setTimeout(async () => {
+            const companyContainer = await this.getCompanyContainer(userInfo.COMPANY_PK);
 
-                // delete process
-                if (detectedIdx !== -1) {
-                    userList.splice(detectedIdx, 0);
-                    companyContainer.userList = userList;
-                    client.hset('status', userInfo.COMPANY_PK.toString(), JSON.stringify(companyContainer));
-                    socketClient.emit('client/disconnected', 'success disconnect process');
+            // 삭제할 유저의 index 서칭
+            let detectedIdx = -1;
+            companyContainer.userList.some((curr, idx) => {
+                if (curr.userPK === userInfo.USER_PK) {
+                    detectedIdx = idx;
+                    curr.logOutPending = true;
                 }
+                return curr.userPK === userInfo.USER_PK;
             });
 
-            statusDeleteIntervalList.push(intervalId);
+            // delete process
+            if (detectedIdx !== -1) {
+                companyContainer.userList.splice(detectedIdx, 0);
+                await this.saveCompContainer(userInfo.COMPANY_PK, companyContainer);
+                socketClient.emit('client/disconnected', 'success disconnect process');
+            }
         }, 1000 * 5);
 
         // add delayId
-        client.hget('status', userInfo.COMPANY_PK.toString(), (err, reply) => {
-            if (err) throw new AikoError('redis error', 1, 501119);
+        const companyContainer = await this.getCompanyContainer(userInfo.COMPANY_PK);
+        companyContainer.userList.some((user) => {
+            let flag = false;
 
-            const companyContainer = JSON.parse(reply) as CompanyContainer;
-            const { userList } = companyContainer;
-            userList.some((user) => {
-                let flag = false;
+            if (user.userPK === userInfo.USER_PK) {
+                user.intervalId = intervalId;
+                user.socketId = '';
+                flag = true;
+            }
 
-                if (user.userPK === userInfo.USER_PK) {
-                    user.intervalId = intervalId;
-                    user.socketId = '';
-                    flag = true;
-                }
-
-                return flag;
-            });
+            return flag;
         });
+    }
+
+    /**
+     * 로그인 시 status를 온라인으로 추가하는 메소드
+     * @param user
+     */
+    async setOnline(user: User) {
+        const companyContainer: CompanyContainer = {
+            userList: [],
+        };
+        const item = {
+            socketId: undefined,
+            userPK: user.USER_PK,
+            intervalId: undefined,
+            logOutPending: false,
+        }; // insert item
+        const reply = await this.getCompanyContainer(user.COMPANY_PK);
+
+        // 로그인 유저가 전혀 없는 경우
+        if (!reply) companyContainer.userList.push(item);
+        else {
+            // 로그인 유저가 존재하는 경우
+            reply.userList.push(item);
+            companyContainer.userList = reply.userList;
+        }
+
+        this.saveCompContainer(user.COMPANY_PK, companyContainer);
     }
 
     // TODO:후일 지워야함.
     async testSendMsg(text: string) {
         console.log(text);
+    }
+
+    // * util functions
+    async getCompanyContainer(COMPANY_PK: number) {
+        return await new Promise<CompanyContainer>((resolve, reject) => {
+            client.hget('status/companyContainer', COMPANY_PK.toString(), (err, reply) => {
+                if (err) throw err;
+
+                resolve(JSON.parse(reply) as CompanyContainer);
+            });
+        });
+    }
+
+    async saveCompContainer(companyPK: number, container: CompanyContainer) {
+        return client.hset('status/companyContainer', companyPK.toString(), JSON.stringify(container));
+    }
+
+    async saveStatusContainer(socketId: string, companyPK: number, userPK: number) {
+        // 'companyList' - 'socketId' - 'companyPK'
+
+        return client.hset('status/statusContainer', socketId, JSON.stringify({ companyPK, userPK }));
+    }
+
+    async getStatusContainer(socketId: string) {
+        return await new Promise<StatusSocketContainer>((resolve, rejects) => {
+            client.hget('status/statusContainer', socketId, (err, reply) => {
+                if (err) throw err;
+
+                resolve(JSON.parse(reply) as StatusSocketContainer);
+            });
+        });
+    }
+
+    async deleteStatusContainer(socketId: string) {
+        client.hdel('status/StatusContainer', socketId);
     }
 }

@@ -82,10 +82,11 @@ function PComp(props) {
          */
         if (userInfo?.USER_PK) {
             const status = io('http://localhost:5000/status');
-            const uri = 'http://localhost:5000/account/decoding-token';
+            const uri = '/api/account/decoding-token';
             get(uri)
                 .then((res) => {
                     const { result } = res.data;
+                    console.log('🚀 ~ file: index.js ~ line 89 ~ .then ~ result', result);
                     status.emit('handleConnection', result);
                 })
                 .catch((err) => {
@@ -96,6 +97,9 @@ function PComp(props) {
             });
             status.on('client/disconnected', (text) => {
                 console.log(text);
+            });
+            status.on('client/error', (err) => {
+                console.error(err);
             });
         }
     }, []);

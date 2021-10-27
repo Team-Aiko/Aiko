@@ -184,7 +184,6 @@ export default class AccountService {
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
             let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
-            console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
                     try {
@@ -206,6 +205,8 @@ export default class AccountService {
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+                            // update status socket
+                            await this.socketService.setOnline(result);
 
                             const bundle: SuccessPacket = {
                                 header: flag,

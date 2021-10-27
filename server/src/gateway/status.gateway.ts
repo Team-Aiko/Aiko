@@ -39,15 +39,21 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage('handleConnection')
     async handleConnection(client: Socket, userPayload: IUserPayload) {
         try {
-            const { COMPANY_PK } = userPayload;
-            const { id } = client;
-            // join company
-            client.join(COMPANY_PK.toString());
-            // connection check and select user info
-            const connectionResult = await this.socketService.statusConnection(id, userPayload);
+            if (userPayload) {
+                console.log('client ID = ', client.id, ' user ID = ', userPayload.USER_PK);
+                const { COMPANY_PK } = userPayload;
+                const { id } = client;
+                // join company
+                client.join(COMPANY_PK.toString());
+                // connection check and select user info
+                const connectionResult = await this.socketService.statusConnection(id, userPayload);
 
-            if (connectionResult.isSendable)
-                this.wss.to(COMPANY_PK.toString()).except(client.id).emit('client/connected', connectionResult.user);
+                if (connectionResult.isSendable)
+                    this.wss
+                        .to(COMPANY_PK.toString())
+                        .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
+                        .emit('client/connected', connectionResult.user);
+            }
         } catch (err) {
             client.to(client.id).emit('client/error', err);
         }
@@ -63,6 +69,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage('handleDisconnect')
     async handleDisconnect(client: Socket) {
         try {
+            console.log('client ID = ', client.id, 'status socket disconnection');
             await this.socketService.statusDisconnect(client);
         } catch (err) {
             client.to(client.id).emit('client/error', err);
