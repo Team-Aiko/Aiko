@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, success, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
-
+import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
 @UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
@@ -10,17 +10,29 @@ export default class NoticeBoardController {
 
     constructor(private noticeboardService: NoticeBoardService) {}
 
+    // fileWriter(@UploadedFile() file) {
+    //     const response = {
+    //         originalname: file.originalname,
+    //         filename: file.filename,
+    //     };
+    //     console.log(file);
+    //     return response;
+    // }
+
     @Post('write')
-    async createArticle(@Req() req, @Res() res) {
+    @UseInterceptors(FilesInterceptor('file'))
+    async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
             const title = req.body.title;
             const content = req.body.content;
-            const userPk = req.body.userPayload.USER_PK;
-            const comPk = req.body.userPayload.COMPANY_PK;
-            await this.noticeboardService.createArtcle(title, content, userPk, comPk);
+            console.log(req);
+            const userPk = req.body.userPayload.USER_PK; // 에러
+            const comPk = req.body.userPayload.COMPANY_PK; // 에러
+            await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, this.success, true);
         } catch (err) {
-            resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+            console.log(err);
+            throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
         }
     }
 
