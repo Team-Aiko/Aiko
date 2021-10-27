@@ -8,6 +8,7 @@ import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { Socket, Server } from 'socket.io';
 import { StatusSocketContainer, StatusUserContainer } from 'src/interfaces/MVC/socketMVC';
+import { statusPath } from '../interfaces/MVC/socketMVC';
 
 /**
  * Redis data structure
@@ -173,8 +174,7 @@ export default class SocketService {
                     if (userContainer.logOutPending) {
                         await this.delUsrCont(COMPANY_PK, USER_PK);
                         await this.delSocketCont(socketClient.id);
-                        socketClient.emit('client/status/logoutAlert', 'success disconnect process');
-                        wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
+                        wss.to(`${COMPANY_PK}`).except(socketClient.id).emit(statusPath.CLIENT_LOGOUT_ALERT, userInfo);
                     }
                 }, 1000 * 60 * 5); // 5분간격
 
