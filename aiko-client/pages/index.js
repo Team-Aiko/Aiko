@@ -92,13 +92,13 @@ function PComp(props) {
                 .catch((err) => {
                     console.error(err);
                 });
-            status.on('client/connected', (user) => {
+            status.on('client/status/loginAlert', (user) => {
                 console.log(user);
             });
-            status.on('client/disconnected', (text) => {
-                console.log(text);
+            status.on('client/status/logoutAlert', (user) => {
+                console.log(user);
             });
-            status.on('client/error', (err) => {
+            status.on('client/status/error', (err) => {
                 console.error(err);
             });
         }

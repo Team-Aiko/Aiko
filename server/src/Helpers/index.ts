@@ -5,4 +5,4 @@ export { AikoError } from './classes';
 export { resExecutor, getRepo, propsRemover, isChiefAdmin, checkNull } from './functions';
 
 // * instances
-export { success } from './instance';
+export { success, unknownError } from './instance';
