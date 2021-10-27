@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { UserTable, DepartmentTable, CompanyTable } from '../DBTables';
 import { User } from '../../entity';
+import { UserDTO } from 'src/DTOs';
 
 // * interfaces & Types
 
@@ -46,3 +47,17 @@ export interface ITokenBundle {
     accessToken?: string;
     refreshToken?: string;
 }
+
+export type UserInfo = Partial<
+    Pick<
+        User,
+        | 'COMPANY_PK'
+        | 'DEPARTMENT_PK'
+        | 'FIRST_NAME'
+        | 'NICKNAME'
+        | 'PROFILE_FILE_NAME'
+        | 'LAST_NAME'
+        | 'EMAIL'
+        | 'USER_PK'
+    >
+>;
