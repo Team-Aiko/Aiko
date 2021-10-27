@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '.';
+import { Action, User } from '.';
 import { DepartmentTable } from '../interfaces';
 
 @Entity({ name: 'DEPARTMENT_TABLE' })
@@ -24,4 +24,7 @@ export default class Department implements DepartmentTable {
     @OneToMany(() => Department, (dept) => dept.parent)
     @JoinColumn({ name: 'DEPARTMENT_PK' })
     children: Department[];
+
+    @OneToMany(() => Action, (action) => action.department)
+    actions: Action[];
 }

@@ -2,12 +2,11 @@ import { Controller, Get, HttpException, HttpStatus, Post, Req, Res } from '@nes
 import { Request, Response } from 'express';
 import SocketService from 'src/services/socket.service';
 import { User } from 'src/entity';
-import { resExecutor } from 'src/Helpers/functions';
-import { AikoError } from 'src/Helpers/classes';
+import { AikoError, success, resExecutor, propsRemover } from 'src/Helpers';
 
 @Controller('socket')
 export default class SocketController {
-    readonly success = new AikoError('OK', 200, 200000);
+    readonly success = success;
 
     constructor(private socketService: SocketService) {}
 

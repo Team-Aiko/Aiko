@@ -4,11 +4,11 @@ import { createSlice } from '@reduxjs/toolkit';
 // * Initial State
 const initialState = {
     COMPANY_PK: undefined, // number
-    DEPARTMENT_NAME: '',
     DEPARTMENT_PK: undefined, // number
-    EMAIL: '',
-    NICKNAME: undefined, // string
+    COUNTRY_PK: undefined, // number
     USER_PK: undefined, // number
+    NICKNAME: undefined, // string
+    grants: [], // Grant[] . /server/entity/grant.entity.ts 참조
 };
 
 // * slice
