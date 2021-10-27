@@ -23,6 +23,7 @@ function PComp(props) {
     const [chat, setChat] = useState([]);
     const [text, setText] = useState('');
     const [client, setClient] = useState(undefined);
+    const [status, setStatus] = useState(undefined);
 
     const [chatModal, setChatModal] = useState(false);
     // 테스트 메세지 발송
@@ -82,6 +83,7 @@ function PComp(props) {
          */
         if (userInfo?.USER_PK) {
             const status = io('http://localhost:5000/status');
+            setStatus(status);
             const uri = '/api/account/decoding-token';
             get(uri)
                 .then((res) => {
@@ -104,12 +106,45 @@ function PComp(props) {
         }
     }, []);
 
+    const testStatusChanger = (num) => {
+        console.log(num);
+        status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+    };
+
     return (
         <>
             <div>
                 <div>{chat.map((item) => `${item} \n`)}</div>
                 <input type='text' onChange={handleChange} />
                 <button onClick={sendTestMsg}>발송</button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(1);
+                    }}
+                >
+                    status1
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(2);
+                    }}
+                >
+                    status2
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(3);
+                    }}
+                >
+                    status3
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(4);
+                    }}
+                >
+                    status4
+                </button>
             </div>
             <div>
                 <Button onClick={openChatModal}>Test Chat Modal</Button>

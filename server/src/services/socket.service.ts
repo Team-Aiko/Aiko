@@ -162,27 +162,29 @@ export default class SocketService {
 
         try {
             const socketContainer = await this.getSocketCont(socketClient.id);
-            const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
-            const { COMPANY_PK, USER_PK } = userInfo;
-            const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
+            if (socketContainer) {
+                const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
+                const { COMPANY_PK, USER_PK } = userInfo;
+                const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
 
-            setTimeout(async () => {
-                // delete process
-                console.log('delete process executed');
-                if (userContainer.logOutPending) {
-                    await this.delUsrCont(COMPANY_PK, USER_PK);
-                    await this.delSocketCont(socketClient.id);
-                    socketClient.emit('client/status/logoutAlert', 'success disconnect process');
-                    wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
-                }
-            }, 1000 * 60 * 5); // 5분간격
+                setTimeout(async () => {
+                    // delete process
+                    console.log('delete process executed');
+                    if (userContainer.logOutPending) {
+                        await this.delUsrCont(COMPANY_PK, USER_PK);
+                        await this.delSocketCont(socketClient.id);
+                        socketClient.emit('client/status/logoutAlert', 'success disconnect process');
+                        wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
+                    }
+                }, 1000 * 60 * 5); // 5분간격
 
-            await this.setUsrCont(COMPANY_PK, USER_PK, {
-                userPK: USER_PK,
-                socketId: socketClient.id,
-                logOutPending: true,
-                userStatus: userContainer.userStatus,
-            });
+                await this.setUsrCont(COMPANY_PK, USER_PK, {
+                    userPK: USER_PK,
+                    socketId: socketClient.id,
+                    logOutPending: true,
+                    userStatus: userContainer.userStatus,
+                });
+            }
         } catch (err) {
             console.error(err);
             if (err instanceof AikoError) throw err;
