@@ -140,16 +140,10 @@ export default class SocketService {
                 logOutPending: false,
                 socketId: socketId,
             };
-            let isSendable = false;
+            const isSendable = !userContainer ? true : userContainer.logOutPending;
 
-            if (!userContainer) {
-                await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
-                isSendable = true;
-            } else {
-                if (userContainer.timeoutId) clearTimeout(userContainer.timeoutId);
-                await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
-                isSendable = !userContainer.logOutPending;
-            }
+            await this.setUsrCont(COMPANY_PK, USER_PK, newUserContainer);
+            await this.setSocketCont(socketId, COMPANY_PK, USER_PK);
 
             return { isSendable, user: isSendable ? user : undefined };
         } catch (err) {
@@ -168,22 +162,25 @@ export default class SocketService {
         const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
         const { COMPANY_PK, USER_PK } = userInfo;
 
-        const timeoutId = setTimeout(async () => {
+        setTimeout(async () => {
             // delete process
-            await this.delUsrCont(COMPANY_PK, USER_PK);
-            await this.delSocketCont(socketClient.id);
-            socketClient.emit('client/status/logoutAlert', 'success disconnect process');
-            wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
-        }, 1000 * 5);
+            console.log('delete process executed');
+            const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
+            if (userContainer.logOutPending) {
+                await this.delUsrCont(COMPANY_PK, USER_PK);
+                await this.delSocketCont(socketClient.id);
+                socketClient.emit('client/status/logoutAlert', 'success disconnect process');
+                wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
+            }
+        }, 1000 * 60 * 5); // 5분간격
 
         await this.setUsrCont(COMPANY_PK, USER_PK, {
             userPK: USER_PK,
             socketId: socketClient.id,
-            timeoutId,
             logOutPending: true,
         });
     }
-
+    j;
     /**
      * 로그인 시 status를 온라인으로 추가하는 메소드
      * @param user
@@ -194,15 +191,7 @@ export default class SocketService {
             userPK: user.USER_PK,
             logOutPending: false,
         };
-        const reply = await this.getUsrCont(COMPANY_PK, USER_PK);
-
-        // 로그인 유저가 전혀 없는 경우
-        if (!reply) this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
-        else {
-            // 로그인 유저가 존재하는 경우
-            if (reply.timeoutId) clearTimeout(reply.timeoutId);
-            this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
-        }
+        this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
     }
 
     // TODO:후일 지워야함.

@@ -13,7 +13,6 @@ export interface IOneToOnePacket {
 export interface StatusUserContainer {
     socketId?: string;
     userPK: number;
-    timeoutId?: NodeJS.Timeout;
     logOutPending: boolean;
 }
 
