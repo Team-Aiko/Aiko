@@ -183,8 +183,7 @@ export default class AccountService {
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
-            const result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
-            console.log('🚀 ~ file: account.service.ts ~ line 180 ~ AccountService ~ login ~ result', result);
+            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
                     try {
@@ -200,12 +199,14 @@ export default class AccountService {
                             // get grant list
                             const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
                             result.grants = grantList;
+                            // remove security informations
+                            result = propsRemover(result, 'PASSWORD', 'SALT');
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
-                            // remove security informations
-                            propsRemover(result, 'PASSWORD', 'SALT');
+                            // update status socket
+                            await this.socketService.setOnline(result);
 
                             const bundle: SuccessPacket = {
                                 header: flag,
@@ -378,7 +379,7 @@ export default class AccountService {
             const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
             const userPk = payload.userPk;
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
-            const userData = await getRepo(UserRepository).getUserInfo(userPk);
+            const userData = await getRepo(UserRepository).getUserInfoWithUserPK(userPk);
             const data = { ...userData };
 
             // db토큰이랑 클라이언트 토큰일치 확인
@@ -404,7 +405,7 @@ export default class AccountService {
 
     async getUserInfo(targetUserId: number) {
         try {
-            return await getRepo(UserRepository).getUserInfo(targetUserId);
+            return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
         } catch (err) {
             throw err;
         }
