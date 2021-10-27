@@ -96,24 +96,12 @@ export default class UserRepository extends Repository<User> {
         let user: User;
 
         try {
-            const result = await this.findOne({ USER_PK: userPK }, { relations: ['company', 'department'] });
+            const result = await this.findOneOrFail({ USER_PK: userPK }, { relations: ['company', 'department'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
             throw new AikoError('select error (user information)', 500, 500012);
         }
 
-        return user;
-    }
-
-    async getUserInfo(userPK: number): Promise<User> {
-        let user: User;
-
-        try {
-            const result = await this.findOneOrFail(userPK, { relations: ['department', 'company'] });
-            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-        } catch (err) {
-            throw new AikoError('select error (userInfo)', 500, 500005);
-        }
         return user;
     }
 
