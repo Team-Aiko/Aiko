@@ -6,10 +6,6 @@ import styles from '../styles/Admin.module.css';
 export default function admin() {
     const [department, setDepartment] = useState({});
 
-    useEffect(() => {
-        console.log('department : ', department);
-    }, [department]);
-
     return (
         <div className={styles['admin-container']}>
             <AdminDepartmentTree

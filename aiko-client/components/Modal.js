@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     dialogPaper: {
         display: 'flex',
         flexDirection: 'column',
-        maxWidth: '800px',
+        maxWidth: '1000px',
     },
     toolbar: {
         display: 'flex',
