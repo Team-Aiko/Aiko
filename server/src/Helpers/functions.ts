@@ -1,9 +1,10 @@
 import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AikoError } from './classes';
 import { Grant } from 'src/entity';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError: AikoError, result?: T) {
     let packet: IHttpError | IResponseData<T>;
@@ -30,6 +31,11 @@ export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError:
     }
 };
 
+export function usrPayloadParser(request: Request) {
+    const unparsedUserPayload = request.headers.userPayload;
+    return JSON.parse(unparsedUserPayload as string) as IUserPayload;
+}
+
 export function getRepo<T>(customRepo: ObjectType<T>) {
     const connection = getConnection();
     return connection.getCustomRepository(customRepo);
@@ -51,16 +57,6 @@ export function isChiefAdmin(grants: Grant[]) {
     }
 }
 
-export function checkNull(input): boolean {
-    if (input !== null) {
-        return true;
-    } else {
-        return false;
-    }
+export function unixTimeStamp(): number {
+    return Math.floor(new Date().getTime() / 1000);
 }
-// export function headerCheck(): boolean {
-//     return true;
-// } 헤더검증
-// export function bodyrCheck(): boolean {
-//     return true;
-// } 바디 검증
