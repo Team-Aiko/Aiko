@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Router from 'next/router';
 import { alpha, makeStyles } from '@material-ui/core/styles';
-import { Menu, MenuItem, Badge, InputBase, AppBar, Toolbar, IconButton, Typography, Button } from '@material-ui/core';
+import {
+    Menu,
+    MenuItem,
+    Badge,
+    InputBase,
+    AppBar,
+    Toolbar,
+    IconButton,
+    Typography,
+    Button,
+    ThemeProvider,
+    unstable_createMuiStrictModeTheme,
+} from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
@@ -123,12 +135,25 @@ export default function CComp() {
 // * Presentational component
 function PComp(props) {
     const classes = useStyles();
+    const theme = unstable_createMuiStrictModeTheme();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { userInfo } = props;
     const { USER_PK } = userInfo;
+    const [admin, setAdmin] = useState(false);
+
+    useEffect(() => {
+        if (USER_PK) {
+            const url = 'api/company/check-admin';
+            get(url).then((response) => {
+                setAdmin(response.data.result);
+            });
+        } else {
+            setAdmin(false);
+        }
+    }, [USER_PK]);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -226,12 +251,14 @@ function PComp(props) {
                     <p>Profile</p>
                 </MenuItem>
             ) : null}
-            <MenuItem onClick={goToAdmin}>
-                <IconButton aria-label='show 11 new notifications' color='inherit'>
-                    <SettingsIcon />
-                </IconButton>
-                <p>Admin</p>
-            </MenuItem>
+            {admin && (
+                <MenuItem onClick={goToAdmin}>
+                    <IconButton aria-label='show 11 new notifications' color='inherit'>
+                        <SettingsIcon />
+                    </IconButton>
+                    <p>Admin</p>
+                </MenuItem>
+            )}
         </Menu>
     );
     const accountBtns = (
@@ -247,85 +274,89 @@ function PComp(props) {
 
     return (
         <div className={classes.grow}>
-            <AppBar position='static'>
-                <Toolbar>
-                    <IconButton
-                        edge='start'
-                        className={classes.menuButton}
-                        color='inherit'
-                        aria-label='open drawer'
-                        onClick={handleSNav}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography className={classes.title} variant='h6' noWrap>
-                        Aiko
-                    </Typography>
-                    <div className={classes.search}>
-                        <div className={classes.searchIcon}>
-                            <SearchIcon />
+            <ThemeProvider theme={theme}>
+                <AppBar position='static'>
+                    <Toolbar>
+                        <IconButton
+                            edge='start'
+                            className={classes.menuButton}
+                            color='inherit'
+                            aria-label='open drawer'
+                            onClick={handleSNav}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography className={classes.title} variant='h6' noWrap>
+                            Aiko
+                        </Typography>
+                        <div className={classes.search}>
+                            <div className={classes.searchIcon}>
+                                <SearchIcon />
+                            </div>
+                            <InputBase
+                                placeholder='Search…'
+                                classes={{
+                                    root: classes.inputRoot,
+                                    input: classes.inputInput,
+                                }}
+                                inputProps={{ 'aria-label': 'search' }}
+                            />
                         </div>
-                        <InputBase
-                            placeholder='Search…'
-                            classes={{
-                                root: classes.inputRoot,
-                                input: classes.inputInput,
-                            }}
-                            inputProps={{ 'aria-label': 'search' }}
-                        />
-                    </div>
-                    <div className={classes.grow} />
+                        <div className={classes.grow} />
 
-                    {USER_PK ? (
-                        <>
-                            <div className={classes.sectionDesktop}>
-                                <IconButton aria-label='show 4 new mails' color='inherit'>
-                                    <Badge badgeContent={4} color='secondary'>
-                                        <MailIcon />
-                                    </Badge>
-                                </IconButton>
-                                <IconButton aria-label='show 17 new notifications' color='inherit'>
-                                    <Badge badgeContent={17} color='secondary'>
-                                        <NotificationsIcon />
-                                    </Badge>
-                                </IconButton>
-                                <IconButton color='inherit' onClick={goToAdmin}>
-                                    <SettingsIcon />
-                                </IconButton>
-                                <IconButton
-                                    edge='end'
-                                    aria-label='account of current user'
-                                    aria-controls={menuId}
-                                    aria-haspopup='true'
-                                    onClick={handleProfileMenuOpen}
-                                    color='inherit'
-                                >
-                                    <AccountCircle />
-                                </IconButton>
-                            </div>
-                            <div className={classes.sectionMobile}>
-                                <IconButton
-                                    aria-label='show more'
-                                    aria-controls={mobileMenuId}
-                                    aria-haspopup='true'
-                                    onClick={handleMobileMenuOpen}
-                                    color='inherit'
-                                >
-                                    <MoreIcon />
-                                </IconButton>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className={classes.sectionDesktop}>{accountBtns}</div>
-                            <div className={classes.sectionMobile}>{accountBtns}</div>
-                        </>
-                    )}
-                </Toolbar>
-            </AppBar>
-            {renderMobileMenu}
-            {renderMenu}
-            <SideNav />
+                        {USER_PK ? (
+                            <>
+                                <div className={classes.sectionDesktop}>
+                                    <IconButton aria-label='show 4 new mails' color='inherit'>
+                                        <Badge badgeContent={4} color='secondary'>
+                                            <MailIcon />
+                                        </Badge>
+                                    </IconButton>
+                                    <IconButton aria-label='show 17 new notifications' color='inherit'>
+                                        <Badge badgeContent={17} color='secondary'>
+                                            <NotificationsIcon />
+                                        </Badge>
+                                    </IconButton>
+                                    {admin && (
+                                        <IconButton color='inherit' onClick={goToAdmin}>
+                                            <SettingsIcon />
+                                        </IconButton>
+                                    )}
+                                    <IconButton
+                                        edge='end'
+                                        aria-label='account of current user'
+                                        aria-controls={menuId}
+                                        aria-haspopup='true'
+                                        onClick={handleProfileMenuOpen}
+                                        color='inherit'
+                                    >
+                                        <AccountCircle />
+                                    </IconButton>
+                                </div>
+                                <div className={classes.sectionMobile}>
+                                    <IconButton
+                                        aria-label='show more'
+                                        aria-controls={mobileMenuId}
+                                        aria-haspopup='true'
+                                        onClick={handleMobileMenuOpen}
+                                        color='inherit'
+                                    >
+                                        <MoreIcon />
+                                    </IconButton>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className={classes.sectionDesktop}>{accountBtns}</div>
+                                <div className={classes.sectionMobile}>{accountBtns}</div>
+                            </>
+                        )}
+                    </Toolbar>
+                </AppBar>
+                {renderMobileMenu}
+                {renderMenu}
+                <SideNav />
+            </ThemeProvider>
         </div>
     );
 }
