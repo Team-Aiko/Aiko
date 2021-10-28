@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
-import { AikoError, success, resExecutor } from 'src/Helpers';
+import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
 import { request } from 'express';
@@ -24,11 +24,12 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file'))
     async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
-            console.log(req.body.userPayload);
+            const userPayload = usrPayloadParser(req.headers.userPayload);
             const title = req.body.title;
             const content = req.body.content;
-            const userPk = req.body.userPayload.USER_PK; // 에러
-            const comPk = req.body.userPayload.COMPANY_PK; // 에러
+            console.log(req);
+            const userPk = userPayload.USER_PK; // 에러
+            const comPk = userPayload.COMPANY_PK; // 에러
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, this.success, true);
         } catch (err) {
@@ -40,9 +41,10 @@ export default class NoticeBoardController {
     @Post('update-article')
     async updateArticle(@Req() req, @Res() res) {
         try {
+            const userPayload = usrPayloadParser(req);
             const title = req.body.title;
             const content = req.body.content;
-            const userPk = req.body.userPayload.USER_PK;
+            const userPk = userPayload.USER_PK;
             const num = req.body.num;
             await this.noticeboardService.updateArtcle(title, content, userPk, num);
             resExecutor(res, this.success, true);
@@ -54,8 +56,9 @@ export default class NoticeBoardController {
     @Post('delete-article')
     async deleteArticle(@Req() req, @Res() res) {
         try {
+            const userPayload = usrPayloadParser(req);
             const num = req.body.num;
-            const userPk = req.body.userPayload.USER_PK;
+            const userPk = userPayload.USER_PK;
             await this.noticeboardService.deleteArtcle(userPk, num);
             resExecutor(res, this.success, true);
         } catch (err) {
@@ -65,8 +68,9 @@ export default class NoticeBoardController {
 
     @Get('btn-size')
     async createBtnSize(@Req() req, @Res() res) {
+        const userPayload = usrPayloadParser(req.headers.userPayload);
         const option = parseInt(req.query.option);
-        const comPk = req.body.userPayload.COMPANY_PK;
+        const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
             const maxBtn = await this.noticeboardService.createBtnSize(option, comPk);
             resExecutor(res, this.success, maxBtn);
@@ -77,7 +81,8 @@ export default class NoticeBoardController {
 
     @Get('list')
     async getList(@Req() req, @Res() res) {
-        const comPk = req.body.userPayload.COMPANY_PK;
+        const userPayload = usrPayloadParser(req.headers.userPayload);
+        const comPk = userPayload.COMPANY_PK;
         const option = parseInt(req.query.option);
         const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
         if (comPk !== undefined && option >= 10 && pageNum >= 0) {
@@ -90,8 +95,9 @@ export default class NoticeBoardController {
 
     @Get('detail')
     async getDetail(@Req() req, @Res() res) {
+        const userPayload = usrPayloadParser(req.headers.userPayload);
         const num = parseInt(req.query.num);
-        const userPk = req.body.userPayload.USER_PK;
+        const userPk = userPayload.USER_PK;
         if (num !== undefined) {
             const result = await this.noticeboardService.getDetail(num, userPk);
             if (result === undefined) {
