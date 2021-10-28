@@ -32,11 +32,11 @@ export default class MeetingController {
 
     @Post('delete-meeting-room')
     async deleteMeetingRoom(@Req() req: Request, @Res() res: Response) {
-        const { roomPK } = req.body;
-        const { grants, COMPANY_PK } = usrPayloadParser(req);
+        const { ROOM_PK } = req.body;
+        const { grants } = usrPayloadParser(req);
 
         try {
-            const flag = await this.meetingService.deleteMeetingRoom(roomPK, COMPANY_PK, grants);
+            const flag = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
             resExecutor(res, success, flag);
         } catch (err) {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);

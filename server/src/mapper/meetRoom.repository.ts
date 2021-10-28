@@ -24,17 +24,14 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
         }
     }
 
-    async deleteMeetingRoom(ROOM_PK: number, COMPANY_PK: number) {
+    async deleteMeetingRoom(ROOM_PK: number) {
         let flag = false;
 
         try {
-            await this.createQueryBuilder()
-                .delete()
-                .where('ROOM_PK = :ROOM_PK', { ROOM_PK })
-                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
-                .execute();
+            await this.createQueryBuilder().delete().where('ROOM_PK = :ROOM_PK', { ROOM_PK }).execute();
             flag = true;
         } catch (err) {
+            console.error(err);
             throw new AikoError('meetRoom/deleteMeetingRoom', 500, 595413);
         }
 

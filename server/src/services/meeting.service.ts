@@ -20,12 +20,12 @@ export default class MeetingService {
             throw err;
         }
     }
-    async deleteMeetingRoom(roomId: number, companyPK: number, grants: Grant[]) {
+    async deleteMeetingRoom(roomId: number, grants: Grant[]) {
         try {
             // auth filter
             isChiefAdmin(grants);
 
-            return await getRepo(MeetRoomRepository).deleteMeetingRoom(roomId, companyPK);
+            return await getRepo(MeetRoomRepository).deleteMeetingRoom(roomId);
         } catch (err) {
             throw err;
         }
