@@ -24,12 +24,11 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file'))
     async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
-            const userPayload = usrPayloadParser(req.headers.userPayload);
+            const userPayload = JSON.parse(req.headers.userPayload);
             const title = req.body.title;
             const content = req.body.content;
-            console.log(req);
-            const userPk = userPayload.USER_PK; // 에러
-            const comPk = userPayload.COMPANY_PK; // 에러
+            const userPk = userPayload.USER_PK;
+            const comPk = userPayload.COMPANY_PK;
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, this.success, true);
         } catch (err) {
