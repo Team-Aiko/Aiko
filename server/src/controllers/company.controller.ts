@@ -26,8 +26,7 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
-        const { DEPARTMENT_PK, COMPANY_PK } = userPayload;
+        const { DEPARTMENT_PK, COMPANY_PK } = usrPayloadParser(req);
 
         try {
             const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
@@ -44,9 +43,8 @@ export default class CompanyController {
     @Post('new-department')
     async createDepartment(@Req() req: Request, @Res() res: Response) {
         try {
-            const userPayload = usrPayloadParser(req);
             const { departmentName, parentPK, parentDepth } = req.body;
-            const { COMPANY_PK, USER_PK } = userPayload;
+            const { COMPANY_PK, USER_PK } = usrPayloadParser(req);
             const bundle: INewDepartment = {
                 companyPK: COMPANY_PK,
                 userPK: USER_PK,
@@ -72,9 +70,8 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Post('permission')
     async givePermission(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { authListPK, targetUserPK, companyPK } = req.body;
-        const { USER_PK, grants } = userPayload;
+        const { USER_PK, grants } = usrPayloadParser(req);
         const bundle: IPermissionBundle = {
             authListPK,
             targetUserPK,
@@ -98,9 +95,8 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Post('delete-department')
     async deleteDepartment(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { departmentPK } = req.body;
-        const { grants, COMPANY_PK } = userPayload;
+        const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
             const flag = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
@@ -119,9 +115,8 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Post('change-department-name')
     async updateDepartmentName(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { departmentPK, departmentName } = req.body;
-        const { grants, COMPANY_PK } = userPayload;
+        const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
             const flag = await this.companyService.updateDepartmentName(
@@ -144,9 +139,8 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Get('searching-members')
     async searchMembers(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { str } = req.query;
-        const { grants, COMPANY_PK } = userPayload;
+        const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
             const users = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
@@ -163,8 +157,7 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Get('department-tree')
     async getDepartmentTree(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
-        const { COMPANY_PK } = userPayload;
+        const { COMPANY_PK } = usrPayloadParser(req);
         const { departmentPK } = req.query;
 
         try {

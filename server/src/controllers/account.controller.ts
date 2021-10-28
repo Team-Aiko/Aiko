@@ -190,8 +190,8 @@ export default class AccountController {
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
-        const { USER_PK } = userPayload;
+        const { USER_PK } = usrPayloadParser(req);
+
         try {
             resExecutor(
                 res,

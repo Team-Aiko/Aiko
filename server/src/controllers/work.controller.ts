@@ -18,9 +18,8 @@ export default class WorkController {
      */
     @Post('create-action-item')
     async createActionItem(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK } = req.body;
-        const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = userPayload;
+        const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = usrPayloadParser(req);
         const bundle: IItemBundle = {
             P_PK,
             STEP_PK,
@@ -43,12 +42,10 @@ export default class WorkController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Post('delete-action-item')
     async deleteActionItem(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { ACTION_PK } = req.body;
-        const { grants, DEPARTMENT_PK } = userPayload;
+        const { grants, DEPARTMENT_PK } = usrPayloadParser(req);
 
         try {
             const flag = await this.workService.deleteActionItem(ACTION_PK, DEPARTMENT_PK, grants);
@@ -59,12 +56,10 @@ export default class WorkController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Post('update-action-item')
     async updateActionItem(@Req() req: Request, @Res() res: Response) {
         const { ACTION_PK, OWNER_PK, TITLE, DESCRIPTION, START_DATE, DUE_DATE, P_PK, STEP_PK, updateCols } = req.body;
-        const userPayload = usrPayloadParser(req);
-        const { USER_PK, grants, DEPARTMENT_PK, COMPANY_PK } = userPayload;
+        const { USER_PK, grants, DEPARTMENT_PK, COMPANY_PK } = usrPayloadParser(req);
         const ASSIGNER_PK = USER_PK;
         const bundle: IItemBundle = {
             ACTION_PK,
@@ -92,13 +87,11 @@ export default class WorkController {
         }
     }
 
-    @UseGuards(UserGuard)
     @Get('view-items')
     async viewItems(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
         const { id } = req.query;
         let USER_PK = -1;
-        const { COMPANY_PK } = userPayload;
+        const { COMPANY_PK } = usrPayloadParser(req);
 
         const numOrNaN = Number(id);
         if (numOrNaN && numOrNaN > 0) USER_PK = numOrNaN;
