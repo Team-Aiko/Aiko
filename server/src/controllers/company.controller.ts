@@ -26,10 +26,11 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Get('employee-list')
     async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
-        const { DEPARTMENT_PK, COMPANY_PK } = usrPayloadParser(req);
+        const { COMPANY_PK } = usrPayloadParser(req);
+        const { deptId } = req.query;
 
         try {
-            const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
+            const data = await this.companyService.getDepartmentMembers(Number(deptId), COMPANY_PK);
             resExecutor(res, this.success, data);
         } catch (err) {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
