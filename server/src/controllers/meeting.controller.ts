@@ -64,4 +64,28 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @Get('view-meeting-room')
+    async viewMeetingRoom(@Req() req: Request, @Res() res: Response) {
+        const { roomId } = req.query;
+
+        try {
+            const room = await this.meetingService.viewMeetingRoom(Number(roomId));
+            resExecutor(res, success, room);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
+
+    @Get('meeting-room-list')
+    async getMeetingRoomList(@Req() req: Request, @Res() res: Response) {
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        try {
+            const roomList = await this.meetingService.getMeetRoomList(COMPANY_PK);
+            resExecutor(res, success, roomList);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

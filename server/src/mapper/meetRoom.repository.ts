@@ -68,4 +68,25 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             throw new AikoError('meetRoom/selectOneMeetingRoomWithRoomPK', 500, 591845);
         }
     }
+
+    async viewMeetingRoom(ROOM_PK: number) {
+        try {
+            return await this.createQueryBuilder('mr')
+                .leftJoinAndSelect('mr.meets', 'meets')
+                .where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meetRoom/viewMeetingRoom', 500, 582912);
+        }
+    }
+
+    async getMeetRoomList(COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('mr').where('mr.COMPANY_PK = :COMPANY_PK', { COMPANY_PK }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meetRoom/meetRoomList', 500, 582912);
+        }
+    }
 }

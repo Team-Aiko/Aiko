@@ -50,4 +50,20 @@ export default class MeetingService {
             throw err;
         }
     }
+
+    async viewMeetingRoom(roomId: number) {
+        try {
+            return await getRepo(MeetRoomRepository).viewMeetingRoom(roomId);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async getMeetRoomList(companyId: number) {
+        try {
+            return await getRepo(MeetRoomRepository).getMeetRoomList(companyId);
+        } catch (err) {
+            throw err;
+        }
+    }
 }
