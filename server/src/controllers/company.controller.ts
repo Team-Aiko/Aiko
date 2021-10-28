@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
+import { AikoError, success, resExecutor, usrPayloadParser, unknownError } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 
 @Controller('company')
@@ -32,7 +32,7 @@ export default class CompanyController {
             const data = await this.companyService.getDepartmentMembers(DEPARTMENT_PK, COMPANY_PK);
             resExecutor(res, this.success, data);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
     /**
@@ -57,8 +57,7 @@ export default class CompanyController {
             if (isSuccess) resExecutor(res, this.success, isSuccess);
             else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
-            else console.error(err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -84,7 +83,7 @@ export default class CompanyController {
             if (isSuccess) resExecutor(res, this.success, isSuccess);
             else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -103,8 +102,7 @@ export default class CompanyController {
             if (flag) resExecutor(res, this.success, flag);
             else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
-            console.error(err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -128,7 +126,7 @@ export default class CompanyController {
             if (flag) resExecutor(res, this.success, flag);
             else throw new AikoError('unknown error', 500, 500123);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -146,7 +144,7 @@ export default class CompanyController {
             const users = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
             resExecutor(res, this.success, users);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -167,7 +165,27 @@ export default class CompanyController {
             const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
             resExecutor(res, this.success, departmentTree);
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
+
+    /**
+     * 작성자: Aivyss
+     * 유저에게 부서를 부여하는 api
+     * @param req
+     * @param res
+     */
+    @UseGuards(UserGuard)
+    @Post('add-mem-to-dept')
+    async addMemberToDepartment(@Req() req: Request, @Res() res: Response) {
+        const { departmentPK, userPK } = req.body;
+        const { grants, COMPANY_PK } = usrPayloadParser(req);
+
+        try {
+            const flag = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
+            resExecutor(res, success, flag);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
 }

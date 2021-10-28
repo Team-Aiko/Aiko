@@ -213,4 +213,26 @@ export default class UserRepository extends Repository<User> {
 
         return users;
     }
+
+    async addMemberToDepartment(COMPANY_PK: number, DEPARTMENT_PK: number, USER_PK: number) {
+        let flag = false;
+
+        try {
+            const user = await this.getUserInfoWithUserPK(USER_PK);
+            if (COMPANY_PK === user.COMPANY_PK) {
+                await this.createQueryBuilder()
+                    .update()
+                    .set({ DEPARTMENT_PK })
+                    .where('USER_PK = :USER_PK', { USER_PK })
+                    .execute();
+                flag = true;
+            } else throw new Error();
+        } catch (err) {
+            console.log(err);
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('user/addMemberToDepartment', 500, 578431);
+        }
+
+        return flag;
+    }
 }
