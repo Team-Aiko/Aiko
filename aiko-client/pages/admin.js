@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminDepartmentTree from '../components/AdminDepartmentTree';
+import AdminMemberList from '../components/AdminMemberList';
 import styles from '../styles/Admin.module.css';
 
 export default function admin() {
+    const [department, setDepartment] = useState({});
+
+    useEffect(() => {
+        console.log('department : ', department);
+    }, [department]);
+
     return (
         <div className={styles['admin-container']}>
-            <AdminDepartmentTree />
-            <div className={styles['member-list-container']}>직원리스트</div>
+            <AdminDepartmentTree
+                setDepartment={(value) => {
+                    setDepartment(value);
+                }}
+            />
+            <AdminMemberList department={department} />
         </div>
     );
 }

@@ -200,11 +200,11 @@ function Signup() {
             const url = `/api/company/list?companyName=${company}`;
             get(url).then((res) => {
                 const { result } = res.data;
-                const refinedData = result.map((curr) => {
-                    curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
-                    return curr;
-                });
-                setCompanyList(refinedData);
+                // const refinedData = result.map((curr) => {
+                //     curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
+                //     return curr;
+                // });
+                setCompanyList(result);
             });
         }
 

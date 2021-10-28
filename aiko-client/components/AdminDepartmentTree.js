@@ -26,7 +26,7 @@ const useStyles = makeStyles({
     'department-tree': {
         height: '100%',
         flexGrow: 1,
-        width: 400,
+        minWidth: '280px',
         border: '1px solid #bdbdbd',
         borderRadius: '4px',
     },
@@ -39,7 +39,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function AdminDepartmentTree() {
+export default function AdminDepartmentTree(props) {
+    const { setDepartment } = props;
     const classes = useStyles();
     const theme = unstable_createMuiStrictModeTheme();
     const [topDepartmentName, setTopDepartmentName] = useState('');
@@ -166,6 +167,18 @@ export default function AdminDepartmentTree() {
         setInputModalHandleClick('');
     };
 
+    const filterDepartment = (departmentList, departmentName) => {
+        for (const item of departmentList) {
+            if (item.DEPARTMENT_NAME === departmentName) {
+                return setDepartment(item);
+            }
+
+            if (item.children.length > 0) {
+                filterDepartment(item.children, departmentName);
+            }
+        }
+    };
+
     function treeItemJsx(department) {
         return (
             <TreeItem
@@ -220,8 +233,8 @@ export default function AdminDepartmentTree() {
                     onChange={(e) => setTopDepartmentName(e.target.value)}
                     value={topDepartmentName}
                 />
-                <Button variant='contained' color='primary' onClick={addDepartment}>
-                    추가
+                <Button variant='contained' color='primary' onClick={addDepartment} style={{ flexShrink: 0 }}>
+                    부서추가
                 </Button>
             </div>
 
@@ -230,6 +243,9 @@ export default function AdminDepartmentTree() {
                     className={classes['department-tree']}
                     defaultCollapseIcon={<ExpandMoreIcon />}
                     defaultExpandIcon={<ChevronRightIcon />}
+                    onNodeSelect={(event) => {
+                        filterDepartment(departmentList, event.target.textContent);
+                    }}
                 >
                     {departmentList.map((department) => {
                         return treeItemJsx(department);
