@@ -101,4 +101,12 @@ export default class MeetingService {
             queryRunner.release();
         }
     }
+
+    async checkMeetSchedule(userId: number) {
+        try {
+            return await getRepo(CalledMembersRepository).checkMeetSchedule(userId);
+        } catch (err) {
+            throw err;
+        }
+    }
 }
