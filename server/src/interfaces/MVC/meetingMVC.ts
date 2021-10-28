@@ -1,9 +1,10 @@
 import { Grant } from 'src/entity';
 
 export interface IMeetingRoomBundle {
-    isOnline: boolean;
-    roomName: string;
-    locate: string;
+    ROOM_PK?: number;
+    IS_ONLINE: boolean;
+    ROOM_NAME: string;
+    LOCATE: string;
     grants: Grant[];
-    companyPK: number;
+    COMPANY_PK: number;
 }

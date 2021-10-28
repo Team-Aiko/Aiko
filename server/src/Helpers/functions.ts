@@ -57,6 +57,26 @@ export function isChiefAdmin(grants: Grant[]) {
     }
 }
 
+export function valueChanger<T, O>(changeVal: T, obj: O, propName: string) {
+    if (propName in obj) {
+        if (
+            typeof changeVal === 'boolean' &&
+            (typeof obj[propName] === 'number' ||
+                typeof obj[propName] === 'undefined' ||
+                typeof obj[propName] === 'object') &&
+            changeVal !== obj[propName]
+        ) {
+            obj[propName] = Number(changeVal);
+        }
+
+        if (typeof changeVal === typeof obj[propName] && changeVal !== obj[propName]) {
+            obj[propName] = changeVal;
+        }
+    }
+
+    return obj;
+}
+
 export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
 }
