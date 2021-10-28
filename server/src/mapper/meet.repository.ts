@@ -15,13 +15,6 @@ export default class MeetRepository extends Repository<Meet> {
             const { DATE, MAX_MEM_NUM, ROOM_PK, TITLE, DESCRIPTION } = info;
 
             if (manager) {
-                // const meet = new Meet();
-                // meet.DATE = DATE;
-                // meet.DESCRIPTION = DESCRIPTION;
-                // meet.MAX_MEM_NUM = MAX_MEM_NUM;
-                // meet.ROOM_PK = ROOM_PK;
-                // meet.TITLE = TITLE;
-
                 const insertResult = await manager.insert(Meet, {
                     DATE,
                     DESCRIPTION,
