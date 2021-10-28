@@ -105,18 +105,6 @@ export default class UserRepository extends Repository<User> {
         return user;
     }
 
-    async getUserInfo(userPK: number): Promise<User> {
-        let user: User;
-
-        try {
-            const result = await this.findOneOrFail(userPK, { relations: ['department', 'company'] });
-            user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
-        } catch (err) {
-            throw new AikoError('select error (userInfo)', 500, 500005);
-        }
-        return user;
-    }
-
     async giveAuth(userPK: number): Promise<boolean> {
         let flag = false;
 
@@ -224,5 +212,27 @@ export default class UserRepository extends Repository<User> {
         }
 
         return users;
+    }
+
+    async addMemberToDepartment(COMPANY_PK: number, DEPARTMENT_PK: number, USER_PK: number) {
+        let flag = false;
+
+        try {
+            const user = await this.getUserInfoWithUserPK(USER_PK);
+            if (COMPANY_PK === user.COMPANY_PK) {
+                await this.createQueryBuilder()
+                    .update()
+                    .set({ DEPARTMENT_PK })
+                    .where('USER_PK = :USER_PK', { USER_PK })
+                    .execute();
+                flag = true;
+            } else throw new Error();
+        } catch (err) {
+            console.log(err);
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('user/addMemberToDepartment', 500, 578431);
+        }
+
+        return flag;
     }
 }

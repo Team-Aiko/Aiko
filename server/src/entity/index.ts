@@ -14,8 +14,14 @@ import AuthListTable from './authList.entity';
 import ActionPriority from './actionPriority.entity';
 import Action from './action.entity';
 import StepIndex from './stepIndex.entity';
+import MeetRoom from './meetRoom.entity';
+import Meet from './meet.entity';
+import CalledMembers from './calledMembers.entity';
 
 export {
+    CalledMembers,
+    Meet,
+    MeetRoom,
     ActionPriority,
     Action,
     StepIndex,

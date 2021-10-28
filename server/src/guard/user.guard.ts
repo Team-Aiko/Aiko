@@ -9,7 +9,7 @@ export class UserGuard implements CanActivate {
             const request = context.switchToHttp().getRequest();
             const accessToken = request.cookies.ACCESS_TOKEN;
             const payload = jwt.verify(accessToken, accessTokenBluePrint.secretKey); //임시테스트
-            request.body.userPayload = payload; // jwt payload
+            request.headers.userPayload = JSON.stringify(payload); // jwt payload
         } catch (error) {
             const err = error as jwt.VerifyErrors;
             if (err.name === 'TokenExpiredError') {

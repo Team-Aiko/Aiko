@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Router from 'next/router';
+import Link from 'next/link';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,6 +17,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function Board() {
+
 
   let columns = [
     { field: 'id',
@@ -57,7 +60,7 @@ export default function Board() {
   const [date, setDate] = useState(now.toLocaleString());
   const [title, setTitle] = useState('');
   const [name, setName] = useState('');
-  const [rows, setRows] = useState([{ id: 1, title: 'Snow', name: '이치코', date: date, count:null}])
+  const [rows, setRows] = useState([{ id: 1, title: 'snow', name: '이치코', date: date, count:null}])
 
   const onChangeTitle = (e) => {
     setTitle(e.target.value);
@@ -71,13 +74,17 @@ export default function Board() {
   function onClickAdd() {
     setId(id+1);
     setCount(count+1)
-    setRows([...rows, {id:id, title:title, name:name, date:date, count:count}])
+    setRows([...rows, {id:id, title:title, name:name, date:date, count:count}]);
+    setTitle('');
+    setName('');
   }
 
   return (
     <>
 
+    <Link href="/writeBoard">
     <Button variant="contained" style={{width:170, display:'flex', marginLeft:'auto', padding:'10px'}}>글쓰기</Button>
+    </Link>
 
     <div style={{ height: 800, width: '100%' }}>
       <DataGrid

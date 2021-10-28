@@ -1,7 +1,15 @@
 import Action from 'src/entity/action.entity';
 import { AikoError, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
-import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
+import {
+    Brackets,
+    EntityManager,
+    EntityRepository,
+    InsertResult,
+    Repository,
+    Transaction,
+    TransactionManager,
+} from 'typeorm';
 
 @EntityRepository(Action)
 export default class ActionRepository extends Repository<Action> {
@@ -83,5 +91,34 @@ export default class ActionRepository extends Repository<Action> {
         }
 
         return flag;
+    }
+
+    async viewItems(USER_PK: number, deptIdList: number[]) {
+        let itemList: Action[] = [];
+
+        try {
+            await Promise.all(
+                deptIdList.map(async (curr) => {
+                    // basic query
+                    let fracture = this.createQueryBuilder('a').where('a.DEPARTMENT_PK = :DEPARTMENT_PK', {
+                        DEPARTMENT_PK: curr,
+                    });
+
+                    // target user filter
+                    if (USER_PK !== -1) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
+
+                    const items = await fracture.getMany();
+
+                    if (items.length > 0) itemList = itemList.concat(items);
+
+                    return true;
+                }),
+            );
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('action/viewItems', 500, 900563);
+        }
+
+        return itemList;
     }
 }

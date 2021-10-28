@@ -12,6 +12,7 @@ import {
 import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
 import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
+import CalledMembers from './calledMembers.entity';
 
 @Entity({ name: 'USER_TABLE' })
 export default class User {
@@ -89,4 +90,7 @@ export default class User {
 
     @OneToMany(() => Grant, (grant) => grant.user)
     grants: Grant[];
+
+    @OneToMany(() => CalledMembers, (calledMember) => calledMember.user)
+    calledMembers: CalledMembers[];
 }

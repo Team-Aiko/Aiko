@@ -9,6 +9,7 @@ import ChatModal from '../components/ChatModal';
 // * socket Test
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
+import { get } from 'axios';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
@@ -22,6 +23,7 @@ function PComp(props) {
     const [chat, setChat] = useState([]);
     const [text, setText] = useState('');
     const [client, setClient] = useState(undefined);
+    const [status, setStatus] = useState(undefined);
 
     const [chatModal, setChatModal] = useState(false);
     // 테스트 메세지 발송
@@ -75,7 +77,39 @@ function PComp(props) {
         client.on('client/test/room/sendMsg', (msg) => {
             console.log(msg);
         });
+
+        /**
+         * 이하는 status 테스트
+         */
+        if (userInfo?.USER_PK) {
+            const status = io('http://localhost:5000/status');
+            setStatus(status);
+            const uri = '/api/account/decoding-token';
+            get(uri)
+                .then((res) => {
+                    const { result } = res.data;
+                    console.log('🚀 ~ file: index.js ~ line 89 ~ .then ~ result', result);
+                    status.emit('handleConnection', result);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+            status.on('client/status/loginAlert', (user) => {
+                console.log(user);
+            });
+            status.on('client/status/logoutAlert', (user) => {
+                console.log(user);
+            });
+            status.on('client/status/error', (err) => {
+                console.error(err);
+            });
+        }
     }, []);
+
+    const testStatusChanger = (num) => {
+        console.log(num);
+        status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+    };
 
     return (
         <>
@@ -83,6 +117,34 @@ function PComp(props) {
                 <div>{chat.map((item) => `${item} \n`)}</div>
                 <input type='text' onChange={handleChange} />
                 <button onClick={sendTestMsg}>발송</button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(1);
+                    }}
+                >
+                    status1
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(2);
+                    }}
+                >
+                    status2
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(3);
+                    }}
+                >
+                    status3
+                </button>
+                <button
+                    onClick={() => {
+                        testStatusChanger(4);
+                    }}
+                >
+                    status4
+                </button>
             </div>
             <div>
                 <Button onClick={openChatModal}>Test Chat Modal</Button>

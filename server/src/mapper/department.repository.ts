@@ -41,10 +41,6 @@ export default class DepartmentRepository extends Repository<Department> {
     }
 
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
-        console.log(
-            '🚀 ~ file: department.repository.ts ~ line 43 ~ DepartmentRepository ~ getDepartmentMembers ~ companyPK',
-            companyPK,
-        );
         const userList: User[] = [];
 
         try {
@@ -52,7 +48,7 @@ export default class DepartmentRepository extends Repository<Department> {
             select
                 *
             from DEPARTMENT_TABLE
-            where DEPARTMENT_PK = $1 AND COMPANY_PK = $2
+            where DEPARTMENT_PK = ? AND COMPANY_PK = ?
             union all
             select
                 D1.*
@@ -113,7 +109,13 @@ export default class DepartmentRepository extends Repository<Department> {
             if (result2?.users.length) throw new AikoError('department/deleteDepartment/isMembers', 500, 500451);
             else if (result2 === undefined || result2 === null)
                 throw new AikoError('department/deleteDepartment/noDepartment', 500, 500678);
-            else flag = true;
+            else {
+                this.createQueryBuilder()
+                    .delete()
+                    .where('DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK: departmentPK })
+                    .execute();
+                flag = true;
+            }
         } catch (err) {
             throw err;
         }
@@ -208,6 +210,15 @@ export default class DepartmentRepository extends Repository<Department> {
         }
 
         return departmentTree;
+    }
+
+    async getDepartmentList(COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('d').where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('department/getDepartmentList', 500, 500581);
+        }
     }
 
     // * util functions
