@@ -2,7 +2,15 @@
 export { AikoError } from './classes';
 
 // * functions
-export { resExecutor, getRepo, propsRemover, isChiefAdmin, checkNull } from './functions';
+export {
+    valueChanger,
+    usrPayloadParser,
+    resExecutor,
+    getRepo,
+    propsRemover,
+    isChiefAdmin,
+    unixTimeStamp,
+} from './functions';
 
 // * instances
-export { success } from './instance';
+export { success, unknownError } from './instance';

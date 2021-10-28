@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { createClient } from 'redis';
 import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
-import { Socket as SocketEntity, User } from 'src/entity';
-import { propsRemover, AikoError } from 'src/Helpers';
+import { User } from 'src/entity';
+import { AikoError } from 'src/Helpers';
 import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { Socket, Server } from 'socket.io';
 import { StatusSocketContainer, StatusUserContainer } from 'src/interfaces/MVC/socketMVC';
+import { statusPath } from '../interfaces/MVC/socketMVC';
 
 /**
  * Redis data structure
@@ -139,6 +140,7 @@ export default class SocketService {
                 userPK: USER_PK,
                 logOutPending: false,
                 socketId: socketId,
+                userStatus: !userContainer ? 1 : userContainer.userStatus,
             };
             const isSendable = !userContainer ? true : userContainer.logOutPending;
 
@@ -147,7 +149,8 @@ export default class SocketService {
 
             return { isSendable, user: isSendable ? user : undefined };
         } catch (err) {
-            throw err;
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('socketService/statusConnection', 100, 1);
         }
     }
 
@@ -158,83 +161,148 @@ export default class SocketService {
     async statusDisconnect(socketClient: Socket, wss: Server) {
         console.log('socket/statusDisconnect start');
 
-        const socketContainer = await this.getSocketCont(socketClient.id);
-        const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
-        const { COMPANY_PK, USER_PK } = userInfo;
+        try {
+            const socketContainer = await this.getSocketCont(socketClient.id);
+            if (socketContainer) {
+                const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(socketContainer.userPK);
+                const { COMPANY_PK, USER_PK } = userInfo;
+                const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
 
-        setTimeout(async () => {
-            // delete process
-            console.log('delete process executed');
-            const userContainer = await this.getUsrCont(COMPANY_PK, USER_PK);
-            if (userContainer.logOutPending) {
-                await this.delUsrCont(COMPANY_PK, USER_PK);
-                await this.delSocketCont(socketClient.id);
-                socketClient.emit('client/status/logoutAlert', 'success disconnect process');
-                wss.to(`${COMPANY_PK}`).except(socketClient.id).emit('client/status/logoutAlert', userInfo);
+                setTimeout(async () => {
+                    // delete process
+                    console.log('delete process executed');
+                    if (userContainer.logOutPending) {
+                        await this.delUsrCont(COMPANY_PK, USER_PK);
+                        await this.delSocketCont(socketClient.id);
+                        wss.to(`${COMPANY_PK}`).except(socketClient.id).emit(statusPath.CLIENT_LOGOUT_ALERT, userInfo);
+                    }
+                }, 1000 * 60 * 5); // 5분간격
+
+                await this.setUsrCont(COMPANY_PK, USER_PK, {
+                    userPK: USER_PK,
+                    socketId: socketClient.id,
+                    logOutPending: true,
+                    userStatus: userContainer.userStatus,
+                });
             }
-        }, 1000 * 60 * 5); // 5분간격
-
-        await this.setUsrCont(COMPANY_PK, USER_PK, {
-            userPK: USER_PK,
-            socketId: socketClient.id,
-            logOutPending: true,
-        });
+        } catch (err) {
+            console.error(err);
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('socketService/statusDisconnect', 100, 2);
+        }
     }
-    j;
+
     /**
      * 로그인 시 status를 온라인으로 추가하는 메소드
      * @param user
      */
     async setOnline(user: User) {
-        const { USER_PK, COMPANY_PK } = user;
-        const newUserCont: StatusUserContainer = {
-            userPK: user.USER_PK,
-            logOutPending: false,
-        };
-        this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
+        try {
+            const { USER_PK, COMPANY_PK } = user;
+            const newUserCont: StatusUserContainer = {
+                userPK: user.USER_PK,
+                logOutPending: false,
+                userStatus: 1,
+            };
+            this.setUsrCont(COMPANY_PK, USER_PK, newUserCont);
+        } catch (err) {
+            console.error(err);
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('socketService/setOnline', 500, 500594);
+        }
+    }
+
+    async changeStatus(socketId: string, userStatus: number) {
+        try {
+            const socketContainer = await this.getSocketCont(socketId);
+            const { companyPK, userPK } = socketContainer;
+            const userContainer = await this.getUsrCont(companyPK, userPK);
+            userContainer.userStatus = userStatus;
+            await this.setUsrCont(companyPK, userPK, userContainer);
+            return { userPK, userStatus };
+        } catch (err) {
+            console.error(err);
+            if (err instanceof AikoError) throw err;
+        }
+    }
+
+    async getUserInfoStataus(socketId: string) {
+        try {
+            return await this.getSocketCont(socketId);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/getUserInfoStataus', 0, 4);
+        }
     }
 
     // TODO:후일 지워야함.
     async testSendMsg(text: string) {
         console.log(text);
     }
-
     // * util functions
     async getUsrCont(COMPANY_PK: number, USER_PK: number) {
-        return await new Promise<StatusUserContainer>((resolve, reject) => {
-            client.hget('status/userCont', `${COMPANY_PK}:${USER_PK}`, (err, reply) => {
-                if (err) throw err;
+        try {
+            return await new Promise<StatusUserContainer>((resolve, reject) => {
+                client.hget('status/userCont', `${COMPANY_PK}:${USER_PK}`, (err, reply) => {
+                    if (err) throw err;
 
-                resolve(JSON.parse(reply) as StatusUserContainer);
+                    resolve(JSON.parse(reply) as StatusUserContainer);
+                });
             });
-        });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/getUsrCont', 100, 5091282);
+        }
     }
 
     async setUsrCont(COMPANY_PK: number, USER_PK: number, container: StatusUserContainer) {
-        return client.hset('status/userCont', `${COMPANY_PK}:${USER_PK}`, JSON.stringify(container));
+        try {
+            return client.hset('status/userCont', `${COMPANY_PK}:${USER_PK}`, JSON.stringify(container));
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/setUsrCont', 100, 5091282);
+        }
     }
 
     async delUsrCont(COMPANY_PK: number, USER_PK: number) {
-        client.hdel('status/userCont', `${COMPANY_PK}:${USER_PK}`);
+        try {
+            client.hdel('status/userCont', `${COMPANY_PK}:${USER_PK}`);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/delUsrCont', 100, 5091282);
+        }
     }
 
     async setSocketCont(socketId: string, companyPK: number, userPK: number) {
-        // 'companyList' - 'socketId' - 'companyPK'
-
-        return client.hset('status/socketCont', socketId, JSON.stringify({ companyPK, userPK }));
+        try {
+            return client.hset('status/socketCont', socketId, JSON.stringify({ companyPK, userPK }));
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/setSocketCont', 100, 5091282);
+        }
     }
 
     async getSocketCont(socketId: string) {
-        return await new Promise<StatusSocketContainer>((resolve, rejects) => {
-            client.hget('status/socketCont', socketId, (err, reply) => {
-                if (err) throw err;
+        try {
+            return await new Promise<StatusSocketContainer>((resolve, rejects) => {
+                client.hget('status/socketCont', socketId, (err, reply) => {
+                    if (err) throw err;
 
-                resolve(JSON.parse(reply) as StatusSocketContainer);
+                    resolve(JSON.parse(reply) as StatusSocketContainer);
+                });
             });
-        });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/getSocketCont', 100, 5091282);
+        }
     }
 
     async delSocketCont(socketId: string) {
-        client.hdel('status/socketCont', socketId);
+        try {
+            client.hdel('status/socketCont', socketId);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/delSocketCont', 100, 5091282);
+        }
     }
 }

@@ -14,9 +14,20 @@ export interface StatusUserContainer {
     socketId?: string;
     userPK: number;
     logOutPending: boolean;
+    userStatus: number;
 }
 
 export interface StatusSocketContainer {
     userPK: number;
     companyPK: number;
+}
+
+export enum statusPath {
+    HANDLE_CONNECTION = 'handleConnection',
+    HANDLE_DISCONNECT = 'handleDisconnect',
+    SERVER_CHANGE_STATUS = 'server/status/changeStatus',
+    CLIENT_CHANGE_STATUS = 'client/status/changeStatus',
+    CLIENT_ERROR = 'client/status/error',
+    CLIENT_LOGIN_ALERT = 'client/status/loginAlert',
+    CLIENT_LOGOUT_ALERT = 'client/status/logoutAlert',
 }

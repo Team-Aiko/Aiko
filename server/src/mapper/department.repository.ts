@@ -41,10 +41,6 @@ export default class DepartmentRepository extends Repository<Department> {
     }
 
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
-        console.log(
-            '🚀 ~ file: department.repository.ts ~ line 43 ~ DepartmentRepository ~ getDepartmentMembers ~ companyPK',
-            companyPK,
-        );
         const userList: User[] = [];
 
         try {
@@ -52,7 +48,7 @@ export default class DepartmentRepository extends Repository<Department> {
             select
                 *
             from DEPARTMENT_TABLE
-            where DEPARTMENT_PK = $1 AND COMPANY_PK = $2
+            where DEPARTMENT_PK = ? AND COMPANY_PK = ?
             union all
             select
                 D1.*

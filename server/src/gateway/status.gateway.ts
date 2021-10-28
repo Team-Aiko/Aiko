@@ -4,18 +4,14 @@ import {
     OnGatewayInit,
     OnGatewayConnection,
     OnGatewayDisconnect,
-    WsResponse,
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import * as config from 'config';
 import { Server, Socket } from 'socket.io';
-import { IWebSocketConfig } from 'src/interfaces';
-import { User } from 'src/entity';
-import { UserInfo } from 'src/interfaces/MVC/accountMVC';
 import SocketService from 'src/services/socket.service';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { AikoError } from 'src/Helpers';
+import { AikoError, unknownError } from 'src/Helpers';
+import { statusPath } from 'src/interfaces/MVC/socketMVC';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -36,7 +32,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * 4. 날려진 유저정보는 해당 이벤트를 구독하는 유저들에게 날아온다
      * 5. 이를 통해 해당 유저의 접속 상태를 확인 가능하다.
      */
-    @SubscribeMessage('handleConnection')
+    @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, userPayload: IUserPayload) {
         try {
             if (userPayload) {
@@ -52,10 +48,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                     this.wss
                         .to(`${COMPANY_PK}`)
                         .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
-                        .emit('client/status/loginAlert', connectionResult.user);
+                        .emit(statusPath.CLIENT_LOGIN_ALERT, connectionResult.user);
             }
         } catch (err) {
-            client.to(client.id).emit('client/error', err);
+            client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -66,13 +62,32 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * 4. 유예기간이 지나 재접속을 하게 되면 알람을 보낸다.
      * @param client
      */
-    @SubscribeMessage('handleDisconnect')
+    @SubscribeMessage(statusPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
             this.socketService.statusDisconnect(client, this.wss);
         } catch (err) {
-            client.to(client.id).emit('client/error', err);
+            client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+        }
+    }
+
+    /**
+     * 가상안: status = 1. 일반 / 2. 부재중 / 3. 바쁨 / 4. 회의중
+     * @param client
+     * @param userStatus
+     */
+    @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
+    async changeStatus(client: Socket, userStatus: number) {
+        try {
+            const socketId = client.id;
+            const container = await this.socketService.getUserInfoStataus(socketId);
+            this.wss
+                .to(`${container.companyPK}`)
+                .except(client.id)
+                .emit(statusPath.CLIENT_CHANGE_STATUS, await this.socketService.changeStatus(socketId, userStatus));
+        } catch (err) {
+            client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
     }
 }

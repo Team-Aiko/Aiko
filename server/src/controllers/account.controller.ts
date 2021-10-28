@@ -4,9 +4,9 @@ import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, success, resExecutor, propsRemover, getRepo } from 'src/Helpers';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface'; //에러확인필요
+import { usrPayloadParser, AikoError, success, resExecutor, propsRemover, getRepo } from 'src/Helpers';
 import { UserRepository } from 'src/mapper';
+
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
@@ -156,7 +156,6 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { USER_PK, COMPANY_PK } = req.body.userPayload as IUserPayload;
         const { targetUserId } = req.body;
 
         try {
@@ -191,18 +190,13 @@ export default class AccountController {
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
-        const { userPayload } = req.body;
-        const { USER_PK } = userPayload as IUserPayload;
+        const { USER_PK } = usrPayloadParser(req);
+
         try {
             resExecutor(
                 res,
                 success,
-                propsRemover(
-                    await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK),
-                    'iat',
-                    'exp',
-                    'iss',
-                ) as IUserPayload,
+                propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
             );
         } catch (err) {
             throw resExecutor(res, new AikoError('unknown error', 500, 500612));
