@@ -31,7 +31,7 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             await this.createQueryBuilder()
                 .delete()
                 .where('ROOM_PK = :ROOM_PK', { ROOM_PK })
-                .where('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .execute();
             flag = true;
         } catch (err) {
@@ -45,18 +45,19 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
         let flag = false;
 
         try {
-            room = propsRemover(room, 'grants', 'meets', 'ROOM_PK');
+            room = propsRemover(room, 'grants', 'meets');
 
-            await this.createQueryBuilder('d')
+            await this.createQueryBuilder()
                 .update(MeetRoom)
                 .set({
                     ...room,
                 })
-                .where('d.ROOM_PK = :ROOM_PK', { ROOM_PK: room.ROOM_PK })
+                .where('ROOM_PK = :ROOM_PK', { ROOM_PK: room.ROOM_PK })
                 .execute();
 
             flag = true;
         } catch (err) {
+            console.error(err);
             throw new AikoError('meetRoom/updateMeetingRoom', 500, 404124);
         }
 

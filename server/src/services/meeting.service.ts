@@ -37,13 +37,13 @@ export default class MeetingService {
             isChiefAdmin(bundle.grants);
             let room = await getRepo(MeetRoomRepository).selectOneMeetingRoomWithRoomPK(bundle.ROOM_PK);
             // remove useless props
-            bundle = propsRemover(bundle, 'grants', 'ROOM_PK');
+            bundle = propsRemover(bundle, 'grants');
             // value change process
             Object.keys(bundle).forEach((prop) => {
                 room = valueChanger(bundle[prop], room, prop);
             });
             // remove useless props
-            room = propsRemover(room, 'meets', 'ROOM_PK');
+            room = propsRemover(room, 'meets');
 
             return await getRepo(MeetRoomRepository).updateMeetingRoom(room);
         } catch (err) {

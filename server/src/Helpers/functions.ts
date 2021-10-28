@@ -77,6 +77,16 @@ export function valueChanger<T, O>(changeVal: T, obj: O, propName: string) {
     return obj;
 }
 
+// 시험용, 쓰지말 것
+export function grantPipeline(grants: Grant[], ...cbs: Function[]) {
+    try {
+        isChiefAdmin(grants);
+        return cbs.map((cb) => cb());
+    } catch (err) {
+        if (err instanceof AikoError) throw err;
+    }
+}
+
 export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
 }

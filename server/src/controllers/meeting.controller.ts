@@ -57,8 +57,10 @@ export default class MeetingController {
         };
 
         try {
-            this.meetingService.updateMeetingRoom(bundle);
+            const flag = await this.meetingService.updateMeetingRoom(bundle);
+            resExecutor(res, success, flag);
         } catch (err) {
+            console.error(err);
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
