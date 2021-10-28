@@ -159,4 +159,12 @@ export default class CompanyService {
             throw err;
         }
     }
+
+    async checkAdmin(grants: Grant[]) {
+        try {
+            return isChiefAdmin(grants);
+        } catch (err) {
+            return false;
+        }
+    }
 }
