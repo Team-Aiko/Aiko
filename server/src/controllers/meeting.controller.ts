@@ -4,7 +4,7 @@ import { AikoError, resExecutor, success, unknownError, usrPayloadParser } from 
 import { UserGuard } from 'src/guard/user.guard';
 import MeetingService from 'src/services/meeting.service';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
+import { IMeetingRoomBundle, IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
 
 @UseGuards(UserGuard)
 @Controller('meeting')
@@ -84,6 +84,29 @@ export default class MeetingController {
         try {
             const roomList = await this.meetingService.getMeetRoomList(COMPANY_PK);
             resExecutor(res, success, roomList);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
+
+    @Post('make-meeting')
+    async makeMeeting(@Req() req: Request, @Res() res: Response) {
+        const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        const bundle: IMeetingBundle = {
+            calledMemberList,
+            MAX_MEM_NUM,
+            ROOM_PK,
+            TITLE,
+            DATE,
+            COMPANY_PK,
+            DESCRIPTION,
+        };
+
+        try {
+            const result = await this.meetingService.makeMeeting(bundle);
+            resExecutor(res, success, result);
         } catch (err) {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }

@@ -7,9 +7,9 @@ export default class CalledMembers {
     @PrimaryGeneratedColumn()
     CALL_PK: number;
     @Column()
-    USER_PK: string;
+    USER_PK: number;
     @Column()
-    MEET_PK: string;
+    MEET_PK: number;
 
     @ManyToOne(() => Meet, (meet) => meet.members)
     @JoinColumn({ name: 'MEET_PK' })

@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
+import { IMeetingBundle, IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
 import { AikoError, getRepo, isChiefAdmin, propsRemover, valueChanger } from 'src/Helpers';
 import MeetRoomRepository from 'src/mapper/meetRoom.repository';
 import { Grant, MeetRoom } from 'src/entity';
+import MeetRepository from 'src/mapper/meet.repository';
+import { getConnection } from 'typeorm';
+import CalledMembersRepository from 'src/mapper/calledMembers.repository';
 
 @Injectable()
 export default class MeetingService {
@@ -64,6 +67,38 @@ export default class MeetingService {
             return await getRepo(MeetRoomRepository).getMeetRoomList(companyId);
         } catch (err) {
             throw err;
+        }
+    }
+
+    async makeMeeting(bundle: IMeetingBundle) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+
+        try {
+            const { DATE, MAX_MEM_NUM, ROOM_PK, TITLE, DESCRIPTION, calledMemberList, COMPANY_PK } = bundle;
+            const partial: Omit<Required<IMeetingBundle>, 'MEET_PK' | 'calledMemberList' | 'COMPANY_PK'> = {
+                DATE,
+                MAX_MEM_NUM,
+                ROOM_PK,
+                TITLE,
+                DESCRIPTION,
+            };
+
+            const insertedId = await getRepo(MeetRepository).makeMeetingSchedule(partial, queryRunner.manager);
+            const calledList = await getRepo(CalledMembersRepository).addMeetingMember(
+                calledMemberList,
+                COMPANY_PK,
+                insertedId,
+                queryRunner.manager,
+            );
+            queryRunner.commitTransaction();
+
+            return { MEET_PK: insertedId, calledPKList: calledList };
+        } catch (err) {
+            queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            queryRunner.release();
         }
     }
 }
