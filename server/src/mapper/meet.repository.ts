@@ -1,6 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { Meet } from 'src/entity';
-import { AikoError } from 'src/Helpers';
+import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { unixTimeEnum } from 'src/interfaces';
 import { IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
 import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
 
@@ -42,6 +43,23 @@ export default class MeetRepository extends Repository<Meet> {
         } catch (err) {
             console.error(err);
             throw new AikoError('meet/makeMeetingSchedule', 500, 859234);
+        }
+    }
+
+    async getMeetings(ROOM_PK: number) {
+        try {
+            const currentTime = unixTimeStamp();
+
+            return await this.createQueryBuilder('m')
+                .where('m.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .andWhere('m.DATE <= :DATE', {
+                    DATE: currentTime + unixTimeEnum.ONE_MONTH,
+                })
+                .andWhere('m.DATE > :DATE', { DATE: currentTime })
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meet/getMeetings', 500, 459858);
         }
     }
 }

@@ -1,7 +1,17 @@
 import { ResultSetHeader } from 'mysql2';
 import { MeetRoom } from 'src/entity';
-import { AikoError, propsRemover } from 'src/Helpers';
-import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
+import { AikoError, getRepo, propsRemover, unixTimeStamp } from 'src/Helpers';
+import { unixTimeEnum } from 'src/interfaces';
+import {
+    Brackets,
+    EntityManager,
+    EntityRepository,
+    getConnection,
+    Repository,
+    Transaction,
+    TransactionManager,
+} from 'typeorm';
+import MeetRepository from './meet.repository';
 
 @EntityRepository(MeetRoom)
 export default class MeetRoomRepository extends Repository<MeetRoom> {
@@ -71,10 +81,10 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
 
     async viewMeetingRoom(ROOM_PK: number) {
         try {
-            return await this.createQueryBuilder('mr')
-                .leftJoinAndSelect('mr.meets', 'meets')
-                .where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK })
-                .getOneOrFail();
+            const room = await this.createQueryBuilder('mr').where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK }).getOneOrFail();
+            const meetings = await getRepo(MeetRepository).getMeetings(room.ROOM_PK);
+            room.meets = meetings;
+            return room;
         } catch (err) {
             console.error(err);
             throw new AikoError('meetRoom/viewMeetingRoom', 500, 582912);
