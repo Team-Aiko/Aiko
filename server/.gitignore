@@ -50,3 +50,6 @@ lerna-debug.log*
 
 # rest
 *.rest
+
+#files
+/files/noticeboard/*

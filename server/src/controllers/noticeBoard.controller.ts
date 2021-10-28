@@ -3,6 +3,7 @@ import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, success, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
+import { request } from 'express';
 @UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
@@ -23,9 +24,9 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file'))
     async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
+            console.log(req.body.userPayload);
             const title = req.body.title;
             const content = req.body.content;
-            console.log(req);
             const userPk = req.body.userPayload.USER_PK; // 에러
             const comPk = req.body.userPayload.COMPANY_PK; // 에러
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
