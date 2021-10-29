@@ -189,4 +189,16 @@ export default class CompanyController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @UseGuards(UserGuard)
+    @Get('check-admin')
+    async checkAdmin(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { grants } = usrPayloadParser(req);
+            const flag = await this.companyService.checkAdmin(grants);
+            resExecutor(res, success, flag);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

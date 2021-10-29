@@ -17,7 +17,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function Board(props) {
+export default function Board() {
+
+  console.log(props)
 
 
   let columns = [
@@ -54,30 +56,24 @@ export default function Board(props) {
     },
   ];
 
+    
   const now = new Date
 
   const [count, setCount] = useState(1);
   const [id, setId] = useState(1);
   const [date, setDate] = useState(now.toLocaleString());
-  const [title, setTitle] = useState(props.title);
-  const [name, setName] = useState(props.name);
+  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [rows, setRows] = useState([{ id: 1, title: 'snow', name: '이치코', date: date, count:null}])
-
-
-  function onClickAdd() {
-    setId(id+1);
-    setCount(count+1)
-    setRows([...rows, {id:id, title:title, name:name, date:date, count:count}]);
-    setTitle('');
-    setName('');
-  }
 
 
   return (
     <>
 
     <Link href='/writeBoard'>
-    <Button variant="contained" style={{width:170, display:'flex', marginLeft:'auto', padding:'10px'}}>글쓰기</Button>
+    <Button variant="contained" style={{width:170, display:'flex', marginLeft:'auto', padding:'10px'}}>
+      글쓰기
+    </Button>
     </Link>
 
     <div style={{ height: 800, width: '100%' }}>
@@ -89,6 +85,7 @@ export default function Board(props) {
           disableSelectionOnClick
         />
     </div>
+
 
     </>
   );

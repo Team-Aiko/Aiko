@@ -111,4 +111,63 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @Get('check-meet-schedule')
+    async checkMeetSchedule(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { userId } = req.query;
+            const { USER_PK } = usrPayloadParser(req);
+
+            let sendId = Number(userId);
+
+            if (!sendId) sendId = USER_PK;
+
+            const result = await this.meetingService.checkMeetSchedule(sendId);
+            resExecutor(res, success, result);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
+    /**
+     * meeting schedule을 업데이트하는 api
+     * 인원의 변동이 없을 경우 빈배열 []을 넣는다.
+     * @param req
+     * @param res
+     */
+    @Post('update-meeting')
+    async updateMeeting(@Req() req: Request, @Res() res: Response) {
+        const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        const bundle: IMeetingBundle = {
+            DATE,
+            DESCRIPTION,
+            MAX_MEM_NUM,
+            MEET_PK,
+            ROOM_PK,
+            TITLE,
+            calledMemberList,
+            COMPANY_PK,
+        };
+
+        try {
+            const result = await this.meetingService.updateMeeting(bundle);
+            resExecutor(res, success, result);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
+
+    @Post('delete-meeting')
+    async deleteMeeting(@Req() req: Request, @Res() res: Response) {
+        const { meetPK } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        try {
+            const flag = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
+            resExecutor(res, success, flag);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

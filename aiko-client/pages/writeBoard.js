@@ -19,6 +19,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+let boardContext = React.createContext();
+
 
 export default function writeBoard() {
 
@@ -45,10 +47,6 @@ export default function writeBoard() {
       setPosition(e.target.value);
     };
 
-    const sendPost = () => {
-      title={title}
-      text={text}
-    };
 
 
     
