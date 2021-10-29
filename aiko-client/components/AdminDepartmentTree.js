@@ -135,9 +135,13 @@ export default function AdminDepartmentTree(props) {
         const data = {
             departmentPK: openOptions.department.DEPARTMENT_PK,
         };
-        post(url, data).then((result) => {
-            loadDepartmentList();
-        });
+        post(url, data)
+            .then((result) => {
+                loadDepartmentList();
+            })
+            .catch((error) => {
+                alert('appCode : ', error.response.data.appCode);
+            });
     };
 
     const handleClose = (event) => {
