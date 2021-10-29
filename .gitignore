@@ -37,6 +37,7 @@ server2/yarn.lock
 .yarn/sdks
 .yarn/versions
 .yarnrc
+.yarn.lock
 
 # if you are NOT using Zero-installs, then:
 # comment the following lines
