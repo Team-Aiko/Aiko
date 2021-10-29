@@ -148,10 +148,6 @@ export default class MeetingService {
 
                     return !flag;
                 });
-                console.log(
-                    '🚀 ~ file: meeting.service.ts ~ line 151 ~ MeetingService ~ removedMembers=calledMembers.filter ~ removedMembers',
-                    removedMembers,
-                );
 
                 // remove meeting member
                 const affectedList = await getRepo(CalledMembersRepository).removeMeetingMembers(
@@ -173,10 +169,6 @@ export default class MeetingService {
 
                     return !flag;
                 });
-                console.log(
-                    '🚀 ~ file: meeting.service.ts ~ line 172 ~ MeetingService ~ newMembers=bundle.calledMemberList.filter ~ newMembers',
-                    newMembers,
-                );
 
                 // add new meeting member process
                 insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(
