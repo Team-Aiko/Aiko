@@ -90,20 +90,24 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         }
     }
 
-    async removeMeetingMembers(members: number[], MEET_PK: number, @TransactionManager() manager?: EntityManager) {
+    async removeMeetingMembers(
+        members: CalledMembers[],
+        MEET_PK: number,
+        @TransactionManager() manager?: EntityManager,
+    ) {
         try {
-            const func = async (member: number) => {
+            const func = async (member: CalledMembers) => {
                 if (manager) {
                     return await manager
                         .createQueryBuilder(CalledMembers, 'c')
                         .delete()
-                        .where('c.USER_PK = :', { USER_PK: member })
-                        .andWhere('c.MEET_PK = :MEET_PK', { MEET_PK })
+                        .where('USER_PK = :USER_PK', { USER_PK: member.USER_PK })
+                        .andWhere('MEET_PK = :MEET_PK', { MEET_PK })
                         .execute();
                 } else {
                     return await this.createQueryBuilder('c')
                         .delete()
-                        .where('c.USER_PK = :', { USER_PK: member })
+                        .where('c.USER_PK = :', { USER_PK: member.USER_PK })
                         .andWhere('c.MEET_PK = :MEET_PK', { MEET_PK })
                         .execute();
                 }

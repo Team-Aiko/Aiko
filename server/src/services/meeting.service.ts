@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IMeetingBundle, IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
 import { AikoError, getRepo, isChiefAdmin, propsRemover, valueChanger } from 'src/Helpers';
 import MeetRoomRepository from 'src/mapper/meetRoom.repository';
-import { Grant, MeetRoom } from 'src/entity';
+import { CalledMembers, Grant, MeetRoom } from 'src/entity';
 import MeetRepository from 'src/mapper/meet.repository';
 import { getConnection } from 'typeorm';
 import CalledMembersRepository from 'src/mapper/calledMembers.repository';
@@ -114,8 +114,8 @@ export default class MeetingService {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
         let insertedIds: number[] = [];
-        let newMember: number[] = [];
-        let removedMembers: number[] = [];
+        let newMembers: number[] = [];
+        let removedMembers: CalledMembers[] = [];
 
         try {
             // update meeting info process
@@ -128,13 +128,30 @@ export default class MeetingService {
             // schedule member update process
             if (bundle.calledMemberList.length > 0) {
                 const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
+                console.log(
+                    '🚀 ~ file: meeting.service.ts ~ line 131 ~ MeetingService ~ updateMeeting ~ calledMembers',
+                    calledMembers,
+                );
                 const remainedMembers = bundle.calledMemberList.filter((userId) => {
                     return calledMembers.some((member) => member.USER_PK === userId);
                 });
-                removedMembers = bundle.calledMemberList.filter((userId) => {
-                    const temp = remainedMembers.map((remainedId) => !(remainedId === userId));
-                    return temp.reduce((prev, curr) => prev || curr, false);
+                console.log(
+                    '🚀 ~ file: meeting.service.ts ~ line 138 ~ MeetingService ~ remainedMembers ~ remainedMembers',
+                    remainedMembers,
+                );
+                removedMembers = calledMembers.filter((calledMember) => {
+                    let flag = false;
+
+                    bundle.calledMemberList.forEach((userId) => {
+                        flag = flag ? flag : calledMember.USER_PK === userId;
+                    });
+
+                    return !flag;
                 });
+                console.log(
+                    '🚀 ~ file: meeting.service.ts ~ line 151 ~ MeetingService ~ removedMembers=calledMembers.filter ~ removedMembers',
+                    removedMembers,
+                );
 
                 // remove meeting member
                 const affectedList = await getRepo(CalledMembersRepository).removeMeetingMembers(
@@ -142,26 +159,35 @@ export default class MeetingService {
                     bundle.MEET_PK,
                     queryRunner.manager,
                 );
-                const removeIndx = affectedList.map((curr, idx) => {
-                    if (curr) {
-                        return idx;
-                    }
+
+                newMembers = bundle.calledMemberList.filter((userId) => {
+                    let flag = false;
+
+                    remainedMembers.forEach((remainedMember) => {
+                        flag = flag ? flag : remainedMember === userId;
+                    });
+
+                    removedMembers.forEach((removedMembers) => {
+                        flag = flag ? flag : removedMembers.USER_PK === userId;
+                    });
+
+                    return !flag;
                 });
-                newMember = removedMembers.filter((curr, idx) => {
-                    const temp = removeIndx.map((ridx) => idx === ridx); // 같은 인덱스가 있으면 true 없으면 false
-                    return !temp.reduce((prev, curr) => prev || curr, false); // 종합결과 스캔됐으면 false 안됐으면 true
-                });
+                console.log(
+                    '🚀 ~ file: meeting.service.ts ~ line 172 ~ MeetingService ~ newMembers=bundle.calledMemberList.filter ~ newMembers',
+                    newMembers,
+                );
 
                 // add new meeting member process
                 insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(
-                    newMember,
+                    newMembers,
                     bundle.MEET_PK,
                     queryRunner.manager,
                 );
             }
 
             queryRunner.commitTransaction();
-            return { flag: true, insertedIds, newMember, removedMembers };
+            return { flag: true, insertedIds, newMembers, removedMembers };
         } catch (err) {
             queryRunner.rollbackTransaction();
             throw err;
