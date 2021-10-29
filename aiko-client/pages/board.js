@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Router from 'next/router';
 import Link from 'next/link';
+import writeBoard from './writeBoard.js';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -16,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function Board() {
+export default function Board(props) {
 
 
   let columns = [
@@ -58,17 +59,9 @@ export default function Board() {
   const [count, setCount] = useState(1);
   const [id, setId] = useState(1);
   const [date, setDate] = useState(now.toLocaleString());
-  const [title, setTitle] = useState('');
-  const [name, setName] = useState('');
+  const [title, setTitle] = useState(props.title);
+  const [name, setName] = useState(props.name);
   const [rows, setRows] = useState([{ id: 1, title: 'snow', name: '이치코', date: date, count:null}])
-
-  const onChangeTitle = (e) => {
-    setTitle(e.target.value);
-  }
-
-  const onChangeName = (e) => {
-    setName(e.target.value);
-  }
 
 
   function onClickAdd() {
@@ -79,25 +72,22 @@ export default function Board() {
     setName('');
   }
 
+
   return (
     <>
 
-    <Link href="/writeBoard">
+    <Link href='/writeBoard'>
     <Button variant="contained" style={{width:170, display:'flex', marginLeft:'auto', padding:'10px'}}>글쓰기</Button>
     </Link>
 
     <div style={{ height: 800, width: '100%' }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        pageSize={10}
-        checkboxSelection
-        disableSelectionOnClick
-      />
-
-      <input style={{height:100, width:'20%'}} onChange={onChangeName} value={name}/>
-      <input type="text" style={{height:100, width:'60%'}} onChange={onChangeTitle} value={title}/>
-      <button onClick={onClickAdd}>등록</button>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={10}
+          checkboxSelection
+          disableSelectionOnClick
+        />
     </div>
 
     </>
