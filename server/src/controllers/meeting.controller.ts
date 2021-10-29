@@ -111,4 +111,21 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @Get('check-meet-schedule')
+    async checkMeetSchedule(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { userId } = req.query;
+            const { USER_PK } = usrPayloadParser(req);
+
+            let sendId = Number(userId);
+
+            if (!sendId) sendId = USER_PK;
+
+            const result = await this.meetingService.checkMeetSchedule(sendId);
+            resExecutor(res, success, result);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

@@ -1,7 +1,8 @@
 import { ResultSetHeader } from 'mysql2';
 import { CalledMembers } from 'src/entity';
-import { getRepo, AikoError } from 'src/Helpers';
-import { EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
+import { getRepo, AikoError, unixTimeStamp } from 'src/Helpers';
+import { unixTimeEnum } from 'src/interfaces';
+import { Brackets, EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
 import { UserRepository } from '.';
 
 @EntityRepository(CalledMembers)
@@ -48,6 +49,27 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         } catch (err) {
             console.error(err);
             throw new AikoError('calledMembers/addMeetingMember', 500, 492812);
+        }
+    }
+
+    async checkMeetSchedule(USER_PK: number) {
+        try {
+            const currentTime = unixTimeStamp();
+            return await this.createQueryBuilder('c')
+                .leftJoinAndSelect('c.meet', 'meet')
+                .where('USER_PK = :USER_PK', { USER_PK })
+                .andWhere(
+                    new Brackets((qb) => {
+                        qb.where('meet.DATE <= :DATE1', { DATE1: currentTime + unixTimeEnum.ONE_MONTH }).andWhere(
+                            'meet.DATE > :DATE2',
+                            { DATE2: currentTime },
+                        );
+                    }),
+                )
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('calledMembers/checkMeetSchedule', 500, 549231);
         }
     }
 }
