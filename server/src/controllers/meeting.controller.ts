@@ -128,4 +128,28 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @Post('update-meeting')
+    async updateMeeting(@Req() req: Request, @Res() res: Response) {
+        const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        const bundle: IMeetingBundle = {
+            DATE,
+            DESCRIPTION,
+            MAX_MEM_NUM,
+            MEET_PK,
+            ROOM_PK,
+            TITLE,
+            calledMemberList,
+            COMPANY_PK,
+        };
+
+        try {
+            const result = await this.meetingService.updateMeeting(bundle);
+            resExecutor(res, success, result);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

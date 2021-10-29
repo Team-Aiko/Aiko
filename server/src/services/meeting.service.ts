@@ -109,4 +109,57 @@ export default class MeetingService {
             throw err;
         }
     }
+
+    async updateMeeting(bundle: IMeetingBundle) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+
+        try {
+            let meeting = await getRepo(MeetRepository).getMeeting(bundle.MEET_PK);
+            Object.keys(bundle).forEach((prop) => {
+                meeting = valueChanger(bundle[prop], meeting, prop);
+            });
+            // update meeting info
+            await getRepo(MeetRepository).updateMeeting(meeting, queryRunner.manager);
+            const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
+            const remainedMembers = bundle.calledMemberList.filter((userId) => {
+                return calledMembers.some((member) => member.USER_PK === userId);
+            });
+            const removedMembers = bundle.calledMemberList.filter((userId) => {
+                const temp = remainedMembers.map((remainedId) => !(remainedId === userId));
+                return temp.reduce((prev, curr) => prev || curr, false);
+            });
+
+            // remove meeting member process
+            const affectedList = await getRepo(CalledMembersRepository).removeMeetingMembers(
+                removedMembers,
+                bundle.MEET_PK,
+                queryRunner.manager,
+            );
+            const removeIndx = affectedList.map((curr, idx) => {
+                if (curr) {
+                    return idx;
+                }
+            });
+            const newMember = removedMembers.filter((curr, idx) => {
+                const temp = removeIndx.map((ridx) => idx === ridx); // 같은 인덱스가 있으면 true 없으면 false
+                return !temp.reduce((prev, curr) => prev || curr, false); // 종합결과 스캔됐으면 false 안됐으면 true
+            });
+
+            // add meeting member process
+            const insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(
+                newMember,
+                bundle.MEET_PK,
+                queryRunner.manager,
+            );
+
+            queryRunner.commitTransaction();
+            return { flag: true, insertedIds, newMember, removedMembers };
+        } catch (err) {
+            queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            queryRunner.release();
+        }
+    }
 }
