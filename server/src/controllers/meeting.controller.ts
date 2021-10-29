@@ -157,4 +157,17 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
+
+    @Post('delete-meeting')
+    async deleteMeeting(@Req() req: Request, @Res() res: Response) {
+        const { meetPK } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        try {
+            const flag = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
+            resExecutor(res, success, flag);
+        } catch (err) {
+            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+        }
+    }
 }

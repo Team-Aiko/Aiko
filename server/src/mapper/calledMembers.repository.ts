@@ -1,4 +1,5 @@
 import { ResultSetHeader } from 'mysql2';
+import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
 import { getRepo, AikoError, unixTimeStamp } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
@@ -9,6 +10,7 @@ import {
     EntityRepository,
     InsertResult,
     Repository,
+    SelectQueryBuilder,
     TransactionManager,
 } from 'typeorm';
 import { UserRepository } from '.';
@@ -154,6 +156,22 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
             return insrtedIds;
         } catch (err) {
             console.error(err);
+            throw new AikoError('calledMembers/addMeetingMembers', 500, 591202);
         }
+    }
+
+    async deleteMeetingMembers(MEET_PK: number, @TransactionManager() manager?: EntityManager) {
+        let flag = false;
+
+        try {
+            const fracture = manager ? manager.createQueryBuilder(CalledMembers, 'c') : this.createQueryBuilder();
+            await fracture.delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            flag = true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('calledMembers/deleteMeetingMembers', 500, 591027);
+        }
+
+        return flag;
     }
 }

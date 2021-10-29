@@ -187,4 +187,31 @@ export default class MeetingService {
             queryRunner.release();
         }
     }
+    async deleteMeeting(meetPK: number, COMPANY_PK: number) {
+        let flag = false;
+        const queryRunner = getConnection().createQueryRunner();
+        const { manager } = queryRunner;
+        await queryRunner.startTransaction();
+
+        try {
+            const meeting = await getRepo(MeetRepository).getMeeting(meetPK);
+            const room = await getRepo(MeetRoomRepository).getMeetRoom(meeting.ROOM_PK);
+
+            if (room.COMPANY_PK === COMPANY_PK) {
+                const flag1 = await getRepo(CalledMembersRepository).deleteMeetingMembers(meetPK, manager);
+                const flag2 = await getRepo(MeetRepository).deleteMeeting(meetPK, manager);
+
+                flag = flag1 && flag2;
+                if (!flag) new AikoError('meetingService/deleteMeeting', 500, 839192);
+                queryRunner.commitTransaction();
+            } else throw new AikoError('meetingService/invalidEmployee', 500, 839193);
+        } catch (err) {
+            queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            queryRunner.release();
+        }
+
+        return flag;
+    }
 }

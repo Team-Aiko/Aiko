@@ -91,4 +91,19 @@ export default class MeetRepository extends Repository<Meet> {
 
         return flag;
     }
+
+    async deleteMeeting(MEET_PK: number, @TransactionManager() manager?: EntityManager) {
+        let flag = false;
+
+        try {
+            const fracture = manager ? manager.createQueryBuilder(Meet, 'm') : this.createQueryBuilder();
+            await fracture.delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            flag = true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meet/deleteMeeting', 500, 859312);
+        }
+
+        return flag;
+    }
 }
