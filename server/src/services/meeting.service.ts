@@ -113,45 +113,52 @@ export default class MeetingService {
     async updateMeeting(bundle: IMeetingBundle) {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
+        let insertedIds: number[] = [];
+        let newMember: number[] = [];
+        let removedMembers: number[] = [];
 
         try {
+            // update meeting info process
             let meeting = await getRepo(MeetRepository).getMeeting(bundle.MEET_PK);
             Object.keys(bundle).forEach((prop) => {
                 meeting = valueChanger(bundle[prop], meeting, prop);
             });
-            // update meeting info
             await getRepo(MeetRepository).updateMeeting(meeting, queryRunner.manager);
-            const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
-            const remainedMembers = bundle.calledMemberList.filter((userId) => {
-                return calledMembers.some((member) => member.USER_PK === userId);
-            });
-            const removedMembers = bundle.calledMemberList.filter((userId) => {
-                const temp = remainedMembers.map((remainedId) => !(remainedId === userId));
-                return temp.reduce((prev, curr) => prev || curr, false);
-            });
 
-            // remove meeting member process
-            const affectedList = await getRepo(CalledMembersRepository).removeMeetingMembers(
-                removedMembers,
-                bundle.MEET_PK,
-                queryRunner.manager,
-            );
-            const removeIndx = affectedList.map((curr, idx) => {
-                if (curr) {
-                    return idx;
-                }
-            });
-            const newMember = removedMembers.filter((curr, idx) => {
-                const temp = removeIndx.map((ridx) => idx === ridx); // 같은 인덱스가 있으면 true 없으면 false
-                return !temp.reduce((prev, curr) => prev || curr, false); // 종합결과 스캔됐으면 false 안됐으면 true
-            });
+            // schedule member update process
+            if (bundle.calledMemberList.length > 0) {
+                const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
+                const remainedMembers = bundle.calledMemberList.filter((userId) => {
+                    return calledMembers.some((member) => member.USER_PK === userId);
+                });
+                removedMembers = bundle.calledMemberList.filter((userId) => {
+                    const temp = remainedMembers.map((remainedId) => !(remainedId === userId));
+                    return temp.reduce((prev, curr) => prev || curr, false);
+                });
 
-            // add meeting member process
-            const insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(
-                newMember,
-                bundle.MEET_PK,
-                queryRunner.manager,
-            );
+                // remove meeting member
+                const affectedList = await getRepo(CalledMembersRepository).removeMeetingMembers(
+                    removedMembers,
+                    bundle.MEET_PK,
+                    queryRunner.manager,
+                );
+                const removeIndx = affectedList.map((curr, idx) => {
+                    if (curr) {
+                        return idx;
+                    }
+                });
+                newMember = removedMembers.filter((curr, idx) => {
+                    const temp = removeIndx.map((ridx) => idx === ridx); // 같은 인덱스가 있으면 true 없으면 false
+                    return !temp.reduce((prev, curr) => prev || curr, false); // 종합결과 스캔됐으면 false 안됐으면 true
+                });
+
+                // add new meeting member process
+                insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(
+                    newMember,
+                    bundle.MEET_PK,
+                    queryRunner.manager,
+                );
+            }
 
             queryRunner.commitTransaction();
             return { flag: true, insertedIds, newMember, removedMembers };

@@ -128,7 +128,12 @@ export default class MeetingController {
             throw resExecutor(res, err instanceof AikoError ? err : unknownError);
         }
     }
-
+    /**
+     * meeting schedule을 업데이트하는 api
+     * 인원의 변동이 없을 경우 빈배열 []을 넣는다.
+     * @param req
+     * @param res
+     */
     @Post('update-meeting')
     async updateMeeting(@Req() req: Request, @Res() res: Response) {
         const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
