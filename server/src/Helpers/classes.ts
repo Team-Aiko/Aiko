@@ -141,6 +141,25 @@ export class LinkedList<T> {
             item = item.next;
         }
     }
+
+    static transformToLinkedList<T>(list: T[]) {
+        const linkedList: LinkedList<T> = new LinkedList();
+        list.forEach((item) => {
+            linkedList.insertRight(item);
+        });
+
+        return linkedList;
+    }
+
+    static transformToList<T>(linkedList: LinkedList<T>) {
+        const list: T[] = [];
+
+        linkedList.forEach((curr) => {
+            list.push(curr.data);
+        });
+
+        return list;
+    }
 }
 
 interface IIterableCallback<T> {
