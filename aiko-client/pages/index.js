@@ -27,20 +27,13 @@ function PComp(props) {
     const [status, setStatus] = useState(undefined);
 
     const [chatModal, setChatModal] = useState(false);
+
     axiosInstance
-        .post('/api/account/user-info', {}, { headers: { 'content-type': 'application/json' } })
+        .get('/api/company/searching-members?str=b')
         .then((data) => {
-            console.log('post test = ', data);
+            console.log('get test = ', data);
         })
-        .catch((err) => {
-            console.log('post error = ', err);
-        });
-    // axiosInstance
-    //     .get('/api/company/searching-members?str=b')
-    //     .then((data) => {
-    //         console.log('get test = ', data);
-    //     })
-    //     .catch((err) => console.log('get error = ', err));
+        .catch((err) => console.log('get error = ', err));
 
     // 테스트 메세지 발송
     const sendTestMsg = () => {
