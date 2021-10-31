@@ -29,4 +29,7 @@ axiosInstance.interceptors.response.use(
     },
 );
 
+const { get, post } = axiosInstance;
+
 export default axiosInstance;
+export { get, post };
