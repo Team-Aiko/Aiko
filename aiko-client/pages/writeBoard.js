@@ -19,7 +19,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let boardContext = React.createContext();
 
 
 export default function writeBoard() {

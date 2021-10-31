@@ -2,23 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { IMeetingBundle, IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
 import { AikoError, getRepo, isChiefAdmin, propsRemover, valueChanger } from 'src/Helpers';
 import MeetRoomRepository from 'src/mapper/meetRoom.repository';
-import { CalledMembers, Grant, MeetRoom } from 'src/entity';
+import { CalledMembers, Grant } from 'src/entity';
 import MeetRepository from 'src/mapper/meet.repository';
 import { getConnection } from 'typeorm';
 import CalledMembersRepository from 'src/mapper/calledMembers.repository';
 
 @Injectable()
 export default class MeetingService {
-    async makeMeetingRoom(bundle: IMeetingRoomBundle) {
+    async makeMeetingRoom({ COMPANY_PK, IS_ONLINE, LOCATE, ROOM_NAME, grants }: IMeetingRoomBundle) {
         try {
             // auth filter
-            isChiefAdmin(bundle.grants);
-            return await getRepo(MeetRoomRepository).makeMeetingRoom(
-                bundle.COMPANY_PK,
-                bundle.IS_ONLINE,
-                bundle.LOCATE,
-                bundle.ROOM_NAME,
-            );
+            isChiefAdmin(grants);
+            return await getRepo(MeetRoomRepository).makeMeetingRoom(COMPANY_PK, IS_ONLINE, LOCATE, ROOM_NAME);
         } catch (err) {
             throw err;
         }
@@ -70,12 +65,21 @@ export default class MeetingService {
         }
     }
 
-    async makeMeeting(bundle: IMeetingBundle) {
+    async makeMeeting({
+        DATE,
+        MAX_MEM_NUM,
+        ROOM_PK,
+        TITLE,
+        DESCRIPTION,
+        calledMemberList,
+        COMPANY_PK,
+    }: IMeetingBundle) {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
 
         try {
-            const { DATE, MAX_MEM_NUM, ROOM_PK, TITLE, DESCRIPTION, calledMemberList, COMPANY_PK } = bundle;
+            if (calledMemberList.length > MAX_MEM_NUM) throw new AikoError('exceed maximum member count', 500, 930129);
+
             const partial: Omit<Required<IMeetingBundle>, 'MEET_PK' | 'calledMemberList' | 'COMPANY_PK'> = {
                 DATE,
                 MAX_MEM_NUM,
@@ -128,17 +132,9 @@ export default class MeetingService {
             // schedule member update process
             if (bundle.calledMemberList.length > 0) {
                 const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
-                console.log(
-                    '🚀 ~ file: meeting.service.ts ~ line 131 ~ MeetingService ~ updateMeeting ~ calledMembers',
-                    calledMembers,
-                );
                 const remainedMembers = bundle.calledMemberList.filter((userId) => {
                     return calledMembers.some((member) => member.USER_PK === userId);
                 });
-                console.log(
-                    '🚀 ~ file: meeting.service.ts ~ line 138 ~ MeetingService ~ remainedMembers ~ remainedMembers',
-                    remainedMembers,
-                );
                 removedMembers = calledMembers.filter((calledMember) => {
                     let flag = false;
 
@@ -169,6 +165,12 @@ export default class MeetingService {
 
                     return !flag;
                 });
+
+                const totalCnt = bundle.calledMemberList.length;
+                const removeCnt = removedMembers.length;
+                const newCnt = newMembers.length;
+
+                if (totalCnt - removeCnt - newCnt < 0) throw new AikoError('exceed maximum member count', 500, 930129);
 
                 // add new meeting member process
                 insertedIds = await getRepo(CalledMembersRepository).addMeetingMembers(

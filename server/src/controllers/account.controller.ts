@@ -4,7 +4,7 @@ import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { UserGuard } from 'src/guard/user.guard';
-import { usrPayloadParser, AikoError, success, resExecutor, propsRemover, getRepo } from 'src/Helpers';
+import { usrPayloadParser, AikoError, success, resExecutor, propsRemover, getRepo, unknownError } from 'src/Helpers';
 import { UserRepository } from 'src/mapper';
 
 @Controller('account')

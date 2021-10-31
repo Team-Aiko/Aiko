@@ -19,9 +19,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Board() {
 
-  console.log(props)
-
-
   let columns = [
     { field: 'id',
       headerName: 'ID',
@@ -31,28 +28,28 @@ export default function Board() {
       field: 'title',
       headerName: '제목',
       width: 600,
-      editable: true,
+      editable: false,
     },
     {
       field: 'name',
       headerName: '작성자',
       type: 'string',
       width: 130,
-      editable: true,
+      editable: false,
     },
     {
       field: 'date',
       headerName: '작성일',
       type: 'string',
       width: 230,
-      editable: true,
+      editable: false,
     },
     {
       field: 'count',
       headerName: '조회수',
       type: 'number',
       width: 150,
-      editable: true,
+      editable: false,
     },
   ];
 
@@ -64,14 +61,17 @@ export default function Board() {
   const [date, setDate] = useState(now.toLocaleString());
   const [title, setTitle] = useState('');
   const [name, setName] = useState('');
-  const [rows, setRows] = useState([{ id: 1, title: 'snow', name: '이치코', date: date, count:null}])
+
+  const [rows, setRows] = useState([{ id: id, title: title, name: name, date: date, count:count}])
 
 
   return (
+
     <>
 
     <Link href='/writeBoard'>
     <Button variant="contained" style={{width:170, display:'flex', marginLeft:'auto', padding:'10px'}}>
+      <writeBoard title={title} name={name}/>
       글쓰기
     </Button>
     </Link>

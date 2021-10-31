@@ -2,7 +2,7 @@ import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AikoError } from './classes';
+import { AikoError, LinkedList } from './classes';
 import { Grant } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
@@ -77,15 +77,24 @@ export function valueChanger<T, O>(changeVal: T, obj: O, propName: string) {
     return obj;
 }
 
-// 시험용, 쓰지말 것
-export function grantPipeline(grants: Grant[], ...cbs: Function[]) {
-    try {
-        isChiefAdmin(grants);
-        return cbs.map((cb) => cb());
-    } catch (err) {
-        if (err instanceof AikoError) throw err;
-    }
+export function transformToLinkedList<T>(list: T[]) {
+    const linkedList: LinkedList<T> = new LinkedList();
+    list.forEach((item) => {
+        linkedList.insertRight(item);
+    });
+
+    return linkedList;
 }
+
+// 시험용, 쓰지말 것
+// export function grantPipeline(grants: Grant[], ...cbs: Function[]) {
+//     try {
+//         isChiefAdmin(grants);
+//         return cbs.map((cb) => cb());
+//     } catch (err) {
+//         if (err instanceof AikoError) throw err;
+//     }
+// }
 
 export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);

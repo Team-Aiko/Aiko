@@ -358,8 +358,29 @@ export default class AccountService {
         }
     }
 
-    generateLoginToken(userData: User) {
-        const data = { ...userData };
+    generateLoginToken(userInfo: User) {
+        userInfo = propsRemover(
+            userInfo,
+            'SALT',
+            'PASSWORD',
+            'LAST_NAME',
+            'FIRST_NAME',
+            'EMAIL',
+            'TEL',
+            'IS_DELETED',
+            'IS_VERIFIED',
+            'COUNTRY_PK',
+            'PROFILE_FILE_NAME',
+            'company',
+            'department',
+            'country',
+            'resetPws',
+            'socket',
+            'socket1',
+            'socket2',
+            'calledMembers',
+        );
+        const data = { ...userInfo };
         const userPk = data.USER_PK;
         const tokens = {
             access: jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
@@ -369,38 +390,23 @@ export default class AccountService {
     }
 
     // 어세스 토큰 재 발급 (확인필요)
-
     async getAccessToken(refreshToken: string) {
-        const result: ITokenBundle = {
-            header: false,
-        };
-
         try {
             const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
-            const userPk = payload.userPk;
-            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPk);
-            const userData = await getRepo(UserRepository).getUserInfoWithUserPK(userPk);
-            const data = { ...userData };
+            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(payload.userPk);
+            const userData = await this.getUserInfo(payload.userPk);
 
-            // db토큰이랑 클라이언트 토큰일치 확인
             if (dbToken === refreshToken) {
-                result.accessToken = jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options);
-                result.refreshToken = jwt.sign(
-                    { userPk: userPk },
-                    refreshTokenBluePrint.secretKey,
-                    refreshTokenBluePrint.options,
-                );
-                await getRepo(RefreshRepository).updateRefreshToken(userPk, result.refreshToken);
-                result.header = true;
-            }
+                const tokens = this.generateLoginToken(userData);
+                await getRepo(RefreshRepository).updateRefreshToken(payload.userPk, tokens.refresh);
+                return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
+            } else throw new AikoError('not exact refresh token', 500, 392038);
         } catch (error) {
             const err = error as jwt.VerifyErrors;
             if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
             else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
             else throw error;
         }
-
-        return result;
     }
 
     async getUserInfo(targetUserId: number) {
