@@ -5,7 +5,7 @@ const axiosInstance = axios.create();
 axiosInstance.interceptors.response.use(
     async (response) => {
         console.log('res = ', response);
-        return response.data;
+        return response.data.result;
     },
     async (error) => {
         const obj = { ...error };
