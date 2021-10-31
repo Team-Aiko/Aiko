@@ -416,13 +416,4 @@ export default class AccountService {
             throw err;
         }
     }
-
-    // async issueAccessToken(REFRESH_TOKEN: string) {
-    //     try {
-    //         const { USER_PK } = await getRepo(RefreshRepository).getRefreshTokenRow(REFRESH_TOKEN);
-    //         const userInfo = await this.getUserInfo(USER_PK);
-    //     } catch (err) {
-    //         throw err;
-    //     }
-    // }
 }

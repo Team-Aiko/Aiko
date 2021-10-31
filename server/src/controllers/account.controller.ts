@@ -202,14 +202,4 @@ export default class AccountController {
             throw resExecutor(res, new AikoError('unknown error', 500, 500612));
         }
     }
-
-    // @Post('issue-access-token')
-    // async issueAccessToken(@Req() req: Request, @Res() res: Response) {
-    //     try {
-    //         const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
-    //         this.accountService.issueAccessToken(REFRESH_TOKEN);
-    //     } catch (err) {
-    //         throw resExecutor(res, err instanceof AikoError ? err : unknownError);
-    //     }
-    // }
 }
