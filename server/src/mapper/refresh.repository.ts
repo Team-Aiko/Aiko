@@ -43,4 +43,13 @@ export default class RefreshRepository extends Repository<Refresh> {
             throw new AikoError('update error(refresh token)', 500, 500006);
         }
     }
+
+    async getRefreshTokenRow(USER_TOKEN: string) {
+        try {
+            return await this.createQueryBuilder('r').where('r.USER_TOKEN = USER_TOKEN', { USER_TOKEN }).getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('refresh/getRefreshTokenRow', 500, 929122);
+        }
+    }
 }

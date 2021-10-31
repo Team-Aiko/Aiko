@@ -99,4 +99,13 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             throw new AikoError('meetRoom/meetRoomList', 500, 582912);
         }
     }
+
+    async getMeetRoom(ROOM_PK: number) {
+        try {
+            return await this.createQueryBuilder('mr').where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK }).getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meetRoom/getMeetRoom', 500, 5044911);
+        }
+    }
 }
