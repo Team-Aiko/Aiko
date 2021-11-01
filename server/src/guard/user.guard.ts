@@ -10,7 +10,7 @@ export class UserGuard implements CanActivate {
             const accessToken = request.cookies.ACCESS_TOKEN;
             const payload = jwt.verify(accessToken, accessTokenBluePrint.secretKey); //임시테스트
             request.header.userPayload = payload; // jwt payload
-            request.headers.userPayload = JSON.stringify(payload);
+            request.headers.userPayload = JSON.stringify(payload); //테스트
             // jwt paylo>>>>>>> 9b355d5705db29fce93eb1318bcd3bf76cec9e5b
         } catch (error) {
             const err = error as jwt.VerifyErrors;
