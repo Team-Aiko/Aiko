@@ -24,4 +24,15 @@ export default class UserProfileFileRepository extends Repository<UserProfileFil
             throw new AikoError('UserProfileFileRepository/insertProfileImage', 500, 129384);
         }
     }
+
+    async viewProfileFile(USER_PROFILE_PK: number) {
+        try {
+            return await this.createQueryBuilder('pf')
+                .where('pf.USER_PROFILE_PK = :USER_PROFILE_PK', { USER_PROFILE_PK })
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('UserProfileFileRepository/viewProfileFile', 500, 593211);
+        }
+    }
 }

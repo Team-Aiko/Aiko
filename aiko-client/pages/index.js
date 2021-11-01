@@ -34,6 +34,7 @@ function PComp(props) {
             console.log('get test = ', data);
         })
         .catch((err) => console.log('get error = ', err));
+    // axiosInstance.get('/api/store/view-profile-file?fileId=1').then((data) => {});
 
     // 테스트 메세지 발송
     const sendTestMsg = () => {
@@ -123,6 +124,7 @@ function PComp(props) {
     return (
         <>
             <div>
+                <img src='/api/store/download-profile-file?fileId=1' />
                 <div>{chat.map((item) => `${item} \n`)}</div>
                 <input type='text' onChange={handleChange} />
                 <button onClick={sendTestMsg}>발송</button>
