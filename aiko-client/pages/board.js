@@ -51,6 +51,22 @@ const rows = [
   { id: 12, 성함: 'Roxie', 부서: '인사팀', 직급: '차장'},
 
 ];
+const handleLogin = () => {
+  const url = '/api/notice-board/files';
+  const config = {
+      header: {
+          'content-type': 'application/json',
+      },
+  };
+  (async () => {
+      try {
+      await get(url, config);
+      } catch (err) {
+          console.log(err);
+      }
+  })();
+};
+
 
 export default function Board() {
   return (
@@ -62,6 +78,7 @@ export default function Board() {
         checkboxSelection
         disableSelectionOnClick
       />
+      <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
     </div>
   );
 }
