@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import AdminDepartmentTree from '../components/AdminDepartmentTree';
-import AdminMemberList from '../components/AdminMemberList';
+import OrganizeDepartmentTree from '../components/OrganizeDepartmentTree';
+import OrganizeMemberList from '../components/OrganizeMemberList';
 import styles from '../styles/organize.module.css';
 import { get, post } from 'axios';
 import router from 'next/router';
 
-export default function admin() {
+export default function organize() {
     const [department, setDepartment] = useState({});
     const [admin, setAdmin] = useState(false);
 
@@ -13,21 +13,18 @@ export default function admin() {
         const url = 'api/company/check-admin';
         get(url).then((response) => {
             setAdmin(response.data.result);
-            // if (!response.data.result) {
-            //     setAdmin();
-            //     router.push('/');
-            // }
         });
     }, []);
 
-    return admin ? (
+    return (
         <div className={styles['admin-container']}>
-            <AdminDepartmentTree
+            <OrganizeDepartmentTree
                 setDepartment={(value) => {
                     setDepartment(value);
                 }}
+                admin={admin}
             />
-            <AdminMemberList department={department} />
+            <OrganizeMemberList department={department} admin={admin} />
         </div>
-    ) : null;
+    );
 }

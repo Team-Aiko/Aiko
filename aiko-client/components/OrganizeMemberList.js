@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../styles/components/AdminMemberList.module.css';
+import styles from '../styles/components/OrganizeMemberList.module.css';
 import { Button, Table, TableCell, TableHead, TableRow, Typography, TableBody } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import SearchMemberModal from './SearchMemberModal';
@@ -11,8 +11,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function AdminMemberList(props) {
-    const { department } = props;
+export default function OrganizeMemberList(props) {
+    const { department, admin } = props;
     const classes = useStyles();
     const [memberModal, setMemberModal] = useState(false);
     const [memberList, setMemberList] = useState([]);
@@ -61,9 +61,11 @@ export default function AdminMemberList(props) {
         >
             <div className={styles['header']}>
                 <Typography variant='h6'>{department.DEPARTMENT_NAME}</Typography>
-                <Button variant='contained' color='primary' onClick={openAddMemberModal}>
-                    직원추가
-                </Button>
+                {admin ? (
+                    <Button variant='contained' color='primary' onClick={openAddMemberModal}>
+                        직원추가
+                    </Button>
+                ) : null}
             </div>
             <div className={styles['members-table']}>
                 <Table>
