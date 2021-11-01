@@ -126,7 +126,7 @@ export default class UserRepository extends Repository<User> {
     async createUser(
         @TransactionManager() manager: EntityManager,
         data: ISignup,
-        imageRoute: string,
+        USER_PROFILE_PK: number,
         hash: string,
         salt: string,
     ): Promise<InsertResult> {
@@ -143,7 +143,7 @@ export default class UserRepository extends Repository<User> {
             user.NICKNAME = data.nickname;
             user.PASSWORD = hash;
             user.SALT = salt;
-            user.PROFILE_FILE_NAME = imageRoute;
+            user.USER_PROFILE_PK = USER_PROFILE_PK;
             user.TEL = data.tel;
             user.CREATE_DATE = Math.floor(new Date().getTime() / 1000);
             user.IS_DELETED = 0;

@@ -34,6 +34,8 @@ import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
 import GrantRepository from 'src/mapper/grant.repository';
+import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
+import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -63,7 +65,7 @@ export default class AccountService {
         }
     }
 
-    async signup(data: ISignup, imageRoute: string) {
+    async signup(data: ISignup, fileBundle: IFileBundle) {
         let hash: string;
         let salt: string;
 
@@ -81,6 +83,7 @@ export default class AccountService {
         } catch (err) {
             throw new AikoError('hasher error', 501, 500021);
         }
+
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -88,6 +91,15 @@ export default class AccountService {
 
         try {
             let userPK: number;
+
+            // 이미지 테이블 로우 생성쿼리
+            let profilePK: number;
+            if (fileBundle && fileBundle.FILE_NAME && fileBundle.ORIGINAL_NAME) {
+                profilePK = await getRepo(UserProfileFileRepository).insertProfileImage(
+                    fileBundle,
+                    queryRunner.manager,
+                );
+            }
 
             if (data.position === 0) {
                 // 회사 생성쿼리
@@ -97,11 +109,12 @@ export default class AccountService {
                 const COMPANY_PK = rawData1.insertId as number;
                 console.log('step2');
                 data.companyPK = COMPANY_PK;
+
                 // admin 생성쿼리
                 const result3 = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
-                    imageRoute,
+                    profilePK,
                     hash,
                     salt,
                 );
@@ -115,7 +128,7 @@ export default class AccountService {
                 const result = await getRepo(UserRepository).createUser(
                     queryRunner.manager,
                     data,
-                    imageRoute,
+                    profilePK,
                     hash,
                     salt,
                 );
@@ -359,7 +372,7 @@ export default class AccountService {
     }
 
     generateLoginToken(userInfo: User) {
-        userInfo = propsRemover(
+        let temporaryUserInfo = propsRemover(
             userInfo,
             'SALT',
             'PASSWORD',
@@ -379,11 +392,12 @@ export default class AccountService {
             'socket1',
             'socket2',
             'calledMembers',
+            'profile',
         );
-        const data = { ...userInfo };
-        const userPk = data.USER_PK;
+        temporaryUserInfo = { ...temporaryUserInfo };
+        const userPk = temporaryUserInfo.USER_PK;
         const tokens = {
-            access: jwt.sign(data, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
+            access: jwt.sign(temporaryUserInfo, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
             refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
         };
         return tokens;
