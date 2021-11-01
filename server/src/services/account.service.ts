@@ -34,6 +34,7 @@ import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
 import GrantRepository from 'src/mapper/grant.repository';
+import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -63,7 +64,7 @@ export default class AccountService {
         }
     }
 
-    async signup(data: ISignup, imageRoute: string) {
+    async signup(data: ISignup, fileBundle: IFileBundle) {
         let hash: string;
         let salt: string;
 

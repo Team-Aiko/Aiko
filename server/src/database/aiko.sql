@@ -19,6 +19,8 @@ create table USER_TABLE (
 	PROFILE_FILE_NAME VARCHAR(2000)
 );
 
+create table 
+
 -- COMPANY TABLE
 create table COMPANY_TABLE (
 	COMPANY_PK INT primary key auto_increment,
