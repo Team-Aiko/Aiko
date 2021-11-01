@@ -1,24 +1,33 @@
-import React from 'react';
-import OrganizationTree from '../components/OrganizationTree';
-import OrgRightBottom from '../components/OrgRightBottom';
-import OrgRightTop from '../components/OrgRightTop';
-import moduleStyles from '../styles/organize.module.css';
+import React, { useState, useEffect } from 'react';
+import AdminDepartmentTree from '../components/AdminDepartmentTree';
+import AdminMemberList from '../components/AdminMemberList';
+import styles from '../styles/organize.module.css';
+import { get, post } from 'axios';
+import router from 'next/router';
 
-export default function Organize() {
-    const companyPK = 1; //sessionStorage.getItem('COMPANY_PK');
-    return (
-        <div className={moduleStyles.container}>
-            <div className={moduleStyles.leftSide}>
-                <OrganizationTree companyPK={companyPK} />
-            </div>
-            <div className={moduleStyles.rightSide}>
-                <div className={moduleStyles.rightSideTop}>
-                    <OrgRightTop companyPK={companyPK} />
-                </div>
-                <div className={moduleStyles.rightSideBottom}>
-                    <OrgRightBottom companyPK={companyPK} />
-                </div>
-            </div>
+export default function admin() {
+    const [department, setDepartment] = useState({});
+    const [admin, setAdmin] = useState(false);
+
+    useEffect(() => {
+        const url = 'api/company/check-admin';
+        get(url).then((response) => {
+            setAdmin(response.data.result);
+            // if (!response.data.result) {
+            //     setAdmin();
+            //     router.push('/');
+            // }
+        });
+    }, []);
+
+    return admin ? (
+        <div className={styles['admin-container']}>
+            <AdminDepartmentTree
+                setDepartment={(value) => {
+                    setDepartment(value);
+                }}
+            />
+            <AdminMemberList department={department} />
         </div>
-    );
+    ) : null;
 }
