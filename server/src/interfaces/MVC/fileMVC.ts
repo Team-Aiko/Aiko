@@ -1,4 +1,4 @@
 export interface IFileBundle {
-    originalname: string;
-    filename: string;
+    ORIGINAL_NAME: string;
+    FILE_NAME: string;
 }

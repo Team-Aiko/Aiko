@@ -306,7 +306,7 @@ function Signup() {
             const form = new FormData();
             totalValidation = isValidFirst && errCompanyName;
             form.append('obj', JSON.stringify(packet));
-            form.append('image', fileObj);
+            form.append('file', fileObj);
             const config = {
                 header: {
                     'content-type': 'multipart/form-data',
@@ -503,13 +503,6 @@ function Signup() {
                                     </Button>
                                 </div>
                             </Typography>
-                            <input
-                                type='file'
-                                name='file'
-                                id='profileFile'
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                            />
                         </Container>
                     </Grow>
                     {/* step 2 */}
@@ -566,6 +559,7 @@ function Signup() {
                     </Grow>
                 </div>
             </div>
+            <input type='file' name='file' id='profileFile' style={{ display: 'none' }} onChange={handleFileChange} />
         </>
     );
 }
