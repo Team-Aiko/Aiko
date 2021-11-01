@@ -1,0 +1,28 @@
+.outerContainer {
+    display:block;
+    margin:30px auto;
+    width:80%;
+    height:70%;
+    background-color:#dee1ed;
+    border-radius:10px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: center;
+}
+
+.buttonDiv {
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    margin-left:100px;
+}
+
+.nameDate {
+    display:flex;
+    flex-direction:row;
+    justify-content:space-evenly;
+    width:100%;
+    margin-bottom:10px;
+}
