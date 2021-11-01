@@ -13,9 +13,6 @@ async function bootstrap() {
     // * CORS
     app.enableCors();
 
-    // * image static root
-    app.use('/profile', staticPath(join(__dirname, '..', '..', 'files/profile')));
-
     // * Cookie global middleware
     app.use(cookieParser());
 
