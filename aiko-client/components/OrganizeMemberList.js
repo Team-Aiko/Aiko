@@ -31,6 +31,7 @@ export default function OrganizeMemberList(props) {
     };
 
     const columns = [
+        { id: 'DEPARTMENT_NAME', label: 'Department', minWidth: 110 },
         { id: 'NICKNAME', label: 'Nickname', minWidth: 110 },
         { id: 'FIRST_NAME', label: 'First name', minWidth: 110 },
         { id: 'LAST_NAME', label: 'Last name', minWidth: 110 },
@@ -81,19 +82,16 @@ export default function OrganizeMemberList(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {memberList.map(
-                            (row) =>
-                                row.department &&
-                                row.department.DEPARTMENT_NAME === department.DEPARTMENT_NAME && (
-                                    <TableRow key={row.USER_PK}>
-                                        <TableCell align='center'>{row.NICKNAME}</TableCell>
-                                        <TableCell align='center'>{row.FIRST_NAME}</TableCell>
-                                        <TableCell align='center'>{row.LAST_NAME}</TableCell>
-                                        <TableCell align='center'>{row.TEL}</TableCell>
-                                        <TableCell align='center'>{row.EMAIL}</TableCell>
-                                    </TableRow>
-                                ),
-                        )}
+                        {memberList.map((row) => (
+                            <TableRow key={row.USER_PK}>
+                                <TableCell align='center'>{row.department.DEPARTMENT_NAME}</TableCell>
+                                <TableCell align='center'>{row.NICKNAME}</TableCell>
+                                <TableCell align='center'>{row.FIRST_NAME}</TableCell>
+                                <TableCell align='center'>{row.LAST_NAME}</TableCell>
+                                <TableCell align='center'>{row.TEL}</TableCell>
+                                <TableCell align='center'>{row.EMAIL}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
