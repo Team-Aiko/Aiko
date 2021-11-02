@@ -43,10 +43,10 @@ export default class FileController {
                 FILE_SIZE: size,
             };
 
-            const data = await this.fileService.uploadFilesOnChatMsg(bundle, chatRoomId as string);
-            resExecutor(res, this.success, data);
+            const result = await this.fileService.uploadFilesOnChatMsg(bundle, chatRoomId as string);
+            throw resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -59,9 +59,9 @@ export default class FileController {
     async viewFilesOnChatMsg(@Param('fileId') fileId: string, @Res() res: Response) {
         try {
             const { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
-            resExecutor(res, success, { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle);
+            resExecutor({ res, result: { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -76,7 +76,7 @@ export default class FileController {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
             res.download(`${filePath.CHAT}${FILE_NAME}`, ORIGINAL_NAME);
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -92,7 +92,7 @@ export default class FileController {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewProfileFile(Number(fileId));
             res.download(`${filePath.PROFILE}${FILE_NAME}`, ORIGINAL_NAME);
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 }
