@@ -42,7 +42,7 @@
     flex-direction: column;
     margin-top: 20px;
     align-self: flex-end;
-    align-items: end;
+    align-items: flex-end;
 }
 
 .input-message-wrapper {
