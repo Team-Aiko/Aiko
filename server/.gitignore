@@ -53,3 +53,5 @@ lerna-debug.log*
 
 #files
 /files/noticeboard/*
+/files/chatFles/*
+/files/profile/*
