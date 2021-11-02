@@ -6,6 +6,7 @@ import AccountService from '../services/account.service';
 import { UserGuard } from 'src/guard/user.guard';
 import { usrPayloadParser, AikoError, success, resExecutor, propsRemover, getRepo, unknownError } from 'src/Helpers';
 import { UserRepository } from 'src/mapper';
+import { filePath } from 'src/interfaces/MVC/fileMVC';
 
 @Controller('account')
 export default class AccountController {
@@ -56,7 +57,7 @@ export default class AccountController {
 
     // ! check Complete - api doc
     @Post('signup')
-    @UseInterceptors(FileInterceptor('file', { dest: './files/profile' }))
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.PROFILE }))
     async signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
         const data = JSON.parse(req.body.obj) as ISignup;
         const { originalname, filename } = file;

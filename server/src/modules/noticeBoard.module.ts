@@ -4,6 +4,7 @@ import NoticeBoardService from 'src/services/noticeBoard.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { AikoError } from 'src/Helpers';
+import { filePath } from 'src/interfaces/MVC/fileMVC';
 @Module({
     imports: [
         // file upload multer module
@@ -33,7 +34,7 @@ import { AikoError } from 'src/Helpers';
                 // }, // 파일필터
                 storage: diskStorage({
                     destination: function (req, files, cb) {
-                        const dest = './files/noticeboard';
+                        const dest = filePath.NOTICE_BOARD;
                         cb(null, dest);
                     }, // 저장위치
                 }),
