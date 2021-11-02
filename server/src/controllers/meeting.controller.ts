@@ -23,10 +23,10 @@ export default class MeetingController {
             COMPANY_PK,
         };
         try {
-            const roomPK = await this.meetingService.makeMeetingRoom(bundle);
-            resExecutor(res, success, roomPK);
+            const result = await this.meetingService.makeMeetingRoom(bundle);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -36,10 +36,10 @@ export default class MeetingController {
         const { grants } = usrPayloadParser(req);
 
         try {
-            const flag = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
-            resExecutor(res, success, flag);
+            const result = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -57,11 +57,10 @@ export default class MeetingController {
         };
 
         try {
-            const flag = await this.meetingService.updateMeetingRoom(bundle);
-            resExecutor(res, success, flag);
+            const result = await this.meetingService.updateMeetingRoom(bundle);
+            resExecutor({ res, result });
         } catch (err) {
-            console.error(err);
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -70,10 +69,10 @@ export default class MeetingController {
         const { roomId } = req.query;
 
         try {
-            const room = await this.meetingService.viewMeetingRoom(Number(roomId));
-            resExecutor(res, success, room);
+            const result = await this.meetingService.viewMeetingRoom(Number(roomId));
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -82,10 +81,10 @@ export default class MeetingController {
         const { COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const roomList = await this.meetingService.getMeetRoomList(COMPANY_PK);
-            resExecutor(res, success, roomList);
+            const result = await this.meetingService.getMeetRoomList(COMPANY_PK);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -106,9 +105,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.makeMeeting(bundle);
-            resExecutor(res, success, result);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -123,9 +122,9 @@ export default class MeetingController {
             if (!sendId) sendId = USER_PK;
 
             const result = await this.meetingService.checkMeetSchedule(sendId);
-            resExecutor(res, success, result);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
     /**
@@ -152,9 +151,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.updateMeeting(bundle);
-            resExecutor(res, success, result);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -164,10 +163,10 @@ export default class MeetingController {
         const { COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const flag = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
-            resExecutor(res, success, flag);
+            const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
+            resExecutor({ res, result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor({ res }, err);
         }
     }
 }

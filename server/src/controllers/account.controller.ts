@@ -21,10 +21,10 @@ export default class AccountController {
         const { nickname } = req.query;
 
         try {
-            const data = await this.accountService.checkDuplicateNickname(nickname as string);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.checkDuplicateNickname(nickname as string);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -34,10 +34,10 @@ export default class AccountController {
         const { email } = req.query;
 
         try {
-            const data = await this.accountService.checkDuplicateEmail(email as string);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.checkDuplicateEmail(email as string);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -47,11 +47,10 @@ export default class AccountController {
         const { str } = req.query;
 
         try {
-            const data = await this.accountService.getCountryList(str as string);
-            console.log('🚀 ~ file: account.controller.ts ~ line 54 ~ AccountController ~ getCountryList ~ data', data);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.getCountryList(str as string);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -63,10 +62,10 @@ export default class AccountController {
         const { originalname, filename } = file;
 
         try {
-            await this.accountService.signup(data, { ORIGINAL_NAME: originalname, FILE_NAME: filename });
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.signup(data, { ORIGINAL_NAME: originalname, FILE_NAME: filename });
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -76,10 +75,10 @@ export default class AccountController {
         const { id } = req.query;
 
         try {
-            const data = await this.accountService.grantLoginAuth(id as string);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.grantLoginAuth(id as string);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -97,12 +96,11 @@ export default class AccountController {
             if ('accessToken' in result) {
                 res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
                 res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
-                resExecutor(res, this.success, propsRemover(result, 'accessToken', 'refreshToken'));
+                resExecutor({ res, result: propsRemover(result, 'accessToken', 'refreshToken') });
             } else {
             }
         } catch (err) {
-            console.error(err);
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -111,7 +109,7 @@ export default class AccountController {
     logout(@Req() req: Request, @Res() res: Response) {
         res.cookie('ACCESS_TOKEN', null);
         res.cookie('REFRESH_TOKEN', null);
-        resExecutor(res, this.success, true);
+        resExecutor({ res, result: true });
     }
 
     // ! check complete - api doc
@@ -120,10 +118,10 @@ export default class AccountController {
         const { email } = req.body;
 
         try {
-            const data = await this.accountService.findNickname(email);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.findNickname(email);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -133,10 +131,10 @@ export default class AccountController {
         const { email } = req.body;
 
         try {
-            const data = await this.accountService.requestResetPassword(email);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.requestResetPassword(email);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -146,10 +144,10 @@ export default class AccountController {
         const { uuid, password }: IResetPw = req.body;
 
         try {
-            const data = await this.accountService.resetPassword(uuid, password);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.resetPassword(uuid, password);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -160,10 +158,10 @@ export default class AccountController {
         const { targetUserId } = req.body;
 
         try {
-            const data = await this.accountService.getUserInfo(targetUserId);
-            resExecutor(res, this.success, data);
+            const result = await this.accountService.getUserInfo(targetUserId);
+            resExecutor({ res, result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -179,12 +177,12 @@ export default class AccountController {
             if (result.header) {
                 res.cookie('ACCESS_TOKEN', result.accessToken);
                 res.cookie('REFRESH_TOKEN', result.refreshToken);
-                resExecutor(res, this.success, true);
+                resExecutor({ res, result: true });
             } else {
                 throw new AikoError('unknown error', 500, 500008);
             }
         } catch (err) {
-            throw resExecutor(res, err);
+            throw resExecutor({ res }, err);
         }
     }
 
@@ -194,13 +192,12 @@ export default class AccountController {
         const { USER_PK } = usrPayloadParser(req);
 
         try {
-            resExecutor(
+            resExecutor({
                 res,
-                success,
-                propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
-            );
+                result: propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
+            });
         } catch (err) {
-            throw resExecutor(res, new AikoError('unknown error', 500, 500612));
+            throw resExecutor({ res }, err);
         }
     }
 }

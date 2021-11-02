@@ -5,26 +5,22 @@ import { Request, Response } from 'express';
 import { AikoError, LinkedList } from './classes';
 import { Grant } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { success, unknownError } from '.';
 
-export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError: AikoError, result?: T) {
-    let packet: IHttpError | IResponseData<T>;
+export const resExecutor: IGetResPacket = function <T>(
+    { res, result }: { res: Response; result?: T },
+    error?: AikoError | Error,
+) {
+    const reformedError = 'appCode' in error ? (result ? success : unknownError) : unknownError;
+    const packet: IResponseData<T> = {
+        httpCode: reformedError.stateCode,
+        description: reformedError.description,
+        appCode: reformedError.appCode,
+    };
 
-    if (result === undefined || result === null) {
-        packet = {
-            httpCode: aikoError.stateCode,
-            description: aikoError.description,
-            appCode: aikoError.appCode,
-        };
-
-        return new HttpException(packet, aikoError.stateCode);
-    } else {
-        packet = {
-            httpCode: aikoError.stateCode,
-            description: aikoError.description,
-            appCode: aikoError.appCode,
-            result: result,
-        };
-
+    if (result === undefined || result === null) return new HttpException(packet, reformedError.stateCode);
+    else {
+        packet.result = result;
         res.send(packet);
 
         return undefined;
