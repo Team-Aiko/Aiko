@@ -141,6 +141,16 @@ create table NOTICE_BOARD_TABLE (
 	primary key (NO)
 );
 
+-- 공지 게시판 파일 테이블 생성
+create table NOTICE_BOARD_FILE_TABLE (
+	NBF_PK int auto_increment,
+	UUID varchar(128),
+	NOTICE_BOARD_PK int not null,
+	USER_PK int not null,
+	ORIGINAL_NAME varchar(512),
+	IS_DELETE int,
+	primary key(NBf_PK)
+);
 
 
 -- TEST COMPANY LIST

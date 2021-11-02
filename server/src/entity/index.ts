@@ -14,6 +14,7 @@ import AuthListTable from './authList.entity';
 import ActionPriority from './actionPriority.entity';
 import Action from './action.entity';
 import StepIndex from './stepIndex.entity';
+import NoticeBoardFile from './noticeBoardFile.entity';
 
 export {
     ActionPriority,
@@ -32,4 +33,5 @@ export {
     ChatFile,
     NoticeBoard,
     Refresh,
+    NoticeBoardFile,
 };

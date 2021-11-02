@@ -14,8 +14,8 @@ import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
 import { request, Response } from 'express';
-import { createReadStream } from 'fs';
-@UseGuards(UserGuard)
+// import { createReadStream } from 'fs';
+// @UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
     readonly success = success;
@@ -122,7 +122,7 @@ export default class NoticeBoardController {
 
     // 파일 다운로드 테스트
     @Get('files')
-    getFile(@Req() req, @Res() res: Response) {
-        res.download('./files/noticeboard/hello.txt');
+    getFile(@Req() req, @Res() res) {
+        res.download('./files/noticeboard/e1de0edc64e4a0b7b340bd7e3dc7677a', 'as.xlsx');
     }
 }

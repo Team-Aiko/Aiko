@@ -23,6 +23,7 @@ import {
     Action,
     ActionPriority,
     StepIndex,
+    NoticeBoardFile,
 } from './entity';
 
 import OneToOneMessageGateway from './gateway/message.gateway';
@@ -53,6 +54,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
         OTOChatRoom,
         Refresh,
         NoticeBoard,
+        NoticeBoardFile,
     ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };

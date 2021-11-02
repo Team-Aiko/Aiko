@@ -9,10 +9,10 @@ import { AikoError } from 'src/Helpers';
         // file upload multer module
         MulterModule.registerAsync({
             useFactory: () => ({
-                limits: {
-                    fileSize: 1 * 1000 * 1000,
-                    files: 3,
-                },
+                // limits: {
+                //     fileSize: 1 * 1000 * 1000,
+                //     files: 3,
+                // },
                 // fileFilter: function (req, files, cb) {
                 //     console.log(files.mimetype);
                 //     if (files.mimetype.match(/\/(jpg|jpeg|plain|zip)$/)) {
