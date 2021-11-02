@@ -7,23 +7,21 @@ import { Grant } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { success, unknownError } from '.';
 
-export const resExecutor: IGetResPacket = function <T>(
-    { res, result }: { res: Response; result?: T },
-    error?: AikoError | Error,
-) {
-    const reformedError = 'appCode' in error ? (result ? success : unknownError) : unknownError;
-    const packet: IResponseData<T> = {
-        httpCode: reformedError.stateCode,
-        description: reformedError.description,
-        appCode: reformedError.appCode,
+export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
+    const { result, err } = pack;
+
+    const packet: IResponseData<any> = {
+        httpCode: err instanceof AikoError ? err.stateCode : result ? success.stateCode : unknownError.stateCode,
+        description:
+            err instanceof AikoError ? err.description : result ? success.description : unknownError.description,
+        appCode: err instanceof AikoError ? err.appCode : result ? success.appCode : unknownError.appCode,
     };
 
-    if (result === undefined || result === null) return new HttpException(packet, reformedError.stateCode);
+    if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);
     else {
         packet.result = result;
-        res.send(packet);
 
-        return undefined;
+        res.send(packet);
     }
 };
 

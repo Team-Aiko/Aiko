@@ -1,10 +1,8 @@
 import { Controller, Get, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import WorkService from 'src/services/work.service';
-import { success } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 
 @UseGuards(UserGuard)
@@ -36,9 +34,9 @@ export default class WorkController {
 
         try {
             const result = await this.workService.createActionItem(bundle);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -49,10 +47,10 @@ export default class WorkController {
 
         try {
             const result = await this.workService.deleteActionItem(ACTION_PK, DEPARTMENT_PK, grants);
-            if (result) resExecutor({ res, result });
-            else throw new AikoError('unknown error', 500, 500328);
+            if (result) resExecutor(res, { result });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -80,10 +78,10 @@ export default class WorkController {
         try {
             const result = await this.workService.updateActionItem(bundle);
 
-            if (result) throw resExecutor({ res, result });
-            else throw new AikoError('unknown error', 500, 500281);
+            if (result) resExecutor(res, { result });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -98,9 +96,9 @@ export default class WorkController {
 
         try {
             const result = await this.workService.viewItems(USER_PK, COMPANY_PK);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 }
