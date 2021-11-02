@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Req,
+    Res,
+    UploadedFiles,
+    UseGuards,
+    UseInterceptors,
+    StreamableFile,
+} from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
+import { request, Response } from 'express';
+import { createReadStream } from 'fs';
 @UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
@@ -23,12 +35,11 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file'))
     async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
-            const userPayload = usrPayloadParser(req.headers.userPayload);
+            const userPayload = JSON.parse(req.headers.userPayload);
             const title = req.body.title;
             const content = req.body.content;
-            console.log(req);
-            const userPk = userPayload.USER_PK; // 에러
-            const comPk = userPayload.COMPANY_PK; // 에러
+            const userPk = userPayload.USER_PK;
+            const comPk = userPayload.COMPANY_PK;
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, this.success, true);
         } catch (err) {
@@ -107,5 +118,11 @@ export default class NoticeBoardController {
         } else {
             throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
         }
+    }
+
+    // 파일 다운로드 테스트
+    @Get('files')
+    getFile(@Req() req, @Res() res: Response) {
+        res.download('./files/noticeboard/hello.txt');
     }
 }

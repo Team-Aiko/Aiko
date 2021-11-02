@@ -21,7 +21,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         } catch (err) {
             return err;
         }
-    }
+    }   
     deleteArticle(userPk: number, num: number) {
         try {
             return this.createQueryBuilder()
