@@ -1,0 +1,20 @@
+.department-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-department-wrapper {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.tree-item-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.MuiTreeItem-content {
+    height: 50px;
+}

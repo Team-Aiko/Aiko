@@ -15,8 +15,16 @@ import ActionPriority from './actionPriority.entity';
 import Action from './action.entity';
 import StepIndex from './stepIndex.entity';
 import NoticeBoardFile from './noticeBoardFile.entity';
+import MeetRoom from './meetRoom.entity';
+import Meet from './meet.entity';
+import CalledMembers from './calledMembers.entity';
+import UserProfileFile from './userProfileFile.entity';
 
 export {
+    UserProfileFile,
+    CalledMembers,
+    Meet,
+    MeetRoom,
     ActionPriority,
     Action,
     StepIndex,

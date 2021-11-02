@@ -1,23 +1,11 @@
 // response types
-import { IHttpError, IResponseData } from './responseInterfaces';
-export { IHttpError, IResponseData };
+export { IHttpError, IResponseData } from './responseInterfaces';
 
 // helpers
-import { IGetResPacket } from './helper';
-export { IGetResPacket };
+export { IGetResPacket } from './helper';
 
 // DBTables
-import {
-    ChatFileTable,
-    CompanyTable,
-    CountryTable,
-    DepartmentTable,
-    LoginAuthTable,
-    OneToOneChatRoomTable,
-    ResetPwTable,
-    SocketTable,
-    UserTable,
-} from './DBTables';
+
 export {
     ChatFileTable,
     CompanyTable,
@@ -28,8 +16,9 @@ export {
     ResetPwTable,
     SocketTable,
     UserTable,
-};
+} from './DBTables';
+
+export { unixTimeEnum } from './otherEnums';
 
 // other types
-import { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig } from './configInterfaces';
-export { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig };
+export { RDBMSConfig, IWebSocketConfig, IMailBotConfig, IMailConfig } from './configInterfaces';

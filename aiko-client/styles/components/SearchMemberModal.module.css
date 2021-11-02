@@ -1,0 +1,12 @@
+.search-member-container {
+    overflow: auto;
+    padding: 4px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+}
+
+.search-input {
+    display: flex;
+    margin-bottom: 10px;
+}

@@ -41,10 +41,6 @@ export default class DepartmentRepository extends Repository<Department> {
     }
 
     async getDepartmentMembers(departmentPK: number, companyPK: number) {
-        console.log(
-            '🚀 ~ file: department.repository.ts ~ line 43 ~ DepartmentRepository ~ getDepartmentMembers ~ companyPK',
-            companyPK,
-        );
         const userList: User[] = [];
 
         try {
@@ -52,7 +48,7 @@ export default class DepartmentRepository extends Repository<Department> {
             select
                 *
             from DEPARTMENT_TABLE
-            where DEPARTMENT_PK = $1 AND COMPANY_PK = $2
+            where DEPARTMENT_PK = ? AND COMPANY_PK = ?
             union all
             select
                 D1.*
@@ -68,7 +64,15 @@ export default class DepartmentRepository extends Repository<Department> {
                 result1.map(async (dept) => {
                     return await getRepo(UserRepository)
                         .createQueryBuilder('U')
-                        .select(['U.USER_PK', 'U.FIRST_NAME', 'U.LAST_NAME', 'U.EMAIL', 'U.TEL', 'U.DEPARTMENT_PK'])
+                        .select([
+                            'U.USER_PK',
+                            'U.FIRST_NAME',
+                            'U.LAST_NAME',
+                            'U.EMAIL',
+                            'U.TEL',
+                            'U.DEPARTMENT_PK',
+                            'U.NICKNAME',
+                        ])
                         .leftJoinAndSelect('U.department', 'D')
                         .where('U.DEPARTMENT_PK = D.DEPARTMENT_PK')
                         .andWhere('D.DEPARTMENT_PK = :departmentPK', { departmentPK: dept.DEPARTMENT_PK })

@@ -7,7 +7,11 @@ export default class ChatFile implements ChatFileTable {
     @PrimaryGeneratedColumn()
     CF_PK: number;
     @Column()
-    FILE_ROOT: string;
+    ORIGINAL_NAME: string;
+    @Column()
+    FILE_NAME: string;
+    @Column()
+    FILE_SIZE: number;
     @Column()
     CR_PK: string;
 }

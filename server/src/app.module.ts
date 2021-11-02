@@ -2,11 +2,10 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import * as config from 'config';
-import AccountModule from './modules/account.module';
-import FileModule from './modules/file.module';
+import { AccountModule, FileModule, CompanyModule, MeetingModule, NoticeBoardModule, SocketModule } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
-
 import {
+    UserProfileFile,
     Grant,
     AuthListTable,
     LoginAuth,
@@ -24,13 +23,12 @@ import {
     ActionPriority,
     StepIndex,
     NoticeBoardFile,
+    CalledMembers,
+    Meet,
+    MeetRoom,
 } from './entity';
-
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
-import CompanyModule from './modules/company.module';
-import SocketModule from './modules/socket.module';
-import NoticeBoardModule from './modules/noticeBoard.module';
 import WorkModule from './modules/work.module';
 
 // orm
@@ -38,6 +36,10 @@ console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        UserProfileFile,
+        CalledMembers,
+        Meet,
+        MeetRoom,
         Action,
         ActionPriority,
         StepIndex,
@@ -61,7 +63,16 @@ const typeORMConfig: TypeOrmModuleOptions = {
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
 
 @Module({
-    imports: [AccountModule, CompanyModule, ORMModule, SocketModule, FileModule, NoticeBoardModule, WorkModule],
+    imports: [
+        AccountModule,
+        CompanyModule,
+        ORMModule,
+        SocketModule,
+        FileModule,
+        NoticeBoardModule,
+        WorkModule,
+        MeetingModule,
+    ],
     providers: [],
 })
 export class AppModule {

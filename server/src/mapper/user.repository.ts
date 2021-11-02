@@ -96,7 +96,7 @@ export default class UserRepository extends Repository<User> {
         let user: User;
 
         try {
-            const result = await this.findOneOrFail({ USER_PK: userPK }, { relations: ['company', 'department'] });
+            const result = await this.findOne({ USER_PK: userPK }, { relations: ['company', 'department'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
             throw new AikoError('select error (user information)', 500, 500012);
@@ -126,7 +126,7 @@ export default class UserRepository extends Repository<User> {
     async createUser(
         @TransactionManager() manager: EntityManager,
         data: ISignup,
-        imageRoute: string,
+        USER_PROFILE_PK: number,
         hash: string,
         salt: string,
     ): Promise<InsertResult> {
@@ -143,7 +143,7 @@ export default class UserRepository extends Repository<User> {
             user.NICKNAME = data.nickname;
             user.PASSWORD = hash;
             user.SALT = salt;
-            user.PROFILE_FILE_NAME = imageRoute;
+            user.USER_PROFILE_PK = USER_PROFILE_PK;
             user.TEL = data.tel;
             user.CREATE_DATE = Math.floor(new Date().getTime() / 1000);
             user.IS_DELETED = 0;
@@ -212,5 +212,27 @@ export default class UserRepository extends Repository<User> {
         }
 
         return users;
+    }
+
+    async addMemberToDepartment(COMPANY_PK: number, DEPARTMENT_PK: number, USER_PK: number) {
+        let flag = false;
+
+        try {
+            const user = await this.getUserInfoWithUserPK(USER_PK);
+            if (COMPANY_PK === user.COMPANY_PK) {
+                await this.createQueryBuilder()
+                    .update()
+                    .set({ DEPARTMENT_PK })
+                    .where('USER_PK = :USER_PK', { USER_PK })
+                    .execute();
+                flag = true;
+            } else throw new Error();
+        } catch (err) {
+            console.log(err);
+            if (err instanceof AikoError) throw err;
+            else throw new AikoError('user/addMemberToDepartment', 500, 578431);
+        }
+
+        return flag;
     }
 }

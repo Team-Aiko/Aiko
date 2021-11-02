@@ -9,7 +9,8 @@ import ChatModal from '../components/ChatModal';
 // * socket Test
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
-import { get } from 'axios';
+import axios, { get } from 'axios';
+import axiosInstance from '../_axios/interceptor';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
@@ -26,6 +27,15 @@ function PComp(props) {
     const [status, setStatus] = useState(undefined);
 
     const [chatModal, setChatModal] = useState(false);
+
+    axiosInstance
+        .get('/api/company/searching-members?str=b')
+        .then((data) => {
+            console.log('get test = ', data);
+        })
+        .catch((err) => console.log('get error = ', err));
+    // axiosInstance.get('/api/store/view-profile-file?fileId=1').then((data) => {});
+
     // 테스트 메세지 발송
     const sendTestMsg = () => {
         client.emit('server/test', text);
@@ -114,6 +124,7 @@ function PComp(props) {
     return (
         <>
             <div>
+                <img src='/api/store/download-profile-file?fileId=1' />
                 <div>{chat.map((item) => `${item} \n`)}</div>
                 <input type='text' onChange={handleChange} />
                 <button onClick={sendTestMsg}>발송</button>

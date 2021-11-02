@@ -12,6 +12,8 @@ import {
 import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
 import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
+import CalledMembers from './calledMembers.entity';
+import UserProfileFile from './userProfileFile.entity';
 
 @Entity({ name: 'USER_TABLE' })
 export default class User {
@@ -57,8 +59,8 @@ export default class User {
     @Column({ type: 'integer', nullable: false })
     COUNTRY_PK: number;
 
-    @Column({ type: 'varchar', length: 2000 })
-    PROFILE_FILE_NAME: string;
+    @Column()
+    USER_PROFILE_PK: number;
 
     @ManyToOne((type) => Company, (company) => company.user)
     @JoinColumn({ name: 'COMPANY_PK' })
@@ -89,4 +91,11 @@ export default class User {
 
     @OneToMany(() => Grant, (grant) => grant.user)
     grants: Grant[];
+
+    @OneToMany(() => CalledMembers, (calledMember) => calledMember.user)
+    calledMembers: CalledMembers[];
+
+    @OneToOne(() => UserProfileFile, (profile) => profile.user)
+    @JoinColumn({ name: 'USER_PROFILE_PK' })
+    profile: UserProfileFile;
 }

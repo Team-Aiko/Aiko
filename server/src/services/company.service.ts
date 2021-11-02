@@ -149,4 +149,22 @@ export default class CompanyService {
             throw err;
         }
     }
+
+    async addMemberToDepartment(companyPK: number, departmentPK: number, userPK: number, grants: Grant[]) {
+        try {
+            // auth filter
+            isChiefAdmin(grants);
+            return await getRepo(UserRepository).addMemberToDepartment(companyPK, departmentPK, userPK);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async checkAdmin(grants: Grant[]) {
+        try {
+            return isChiefAdmin(grants);
+        } catch (err) {
+            return false;
+        }
+    }
 }
