@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { AikoError } from './classes';
 import { Grant } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import * as fs from 'fs';
 
 export const resExecutor: IGetResPacket = function <T>(res: Response, aikoError: AikoError, result?: T) {
     let packet: IHttpError | IResponseData<T>;
@@ -59,4 +60,22 @@ export function isChiefAdmin(grants: Grant[]) {
 
 export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
+}
+
+// 파일들 삭제
+export function deleteFiles(files) {
+    for (const i in files) {
+        const target = files[i].destination + '/' + files[i].filename;
+        fs.unlink(target, (log) => {
+            console.log(log);
+        });
+    }
+}
+
+// 파일 삭제
+export function deleteFile(file) {
+    const target = file.destination + '/' + file.filename;
+    fs.unlink(target, (log) => {
+        console.log(log);
+    });
 }

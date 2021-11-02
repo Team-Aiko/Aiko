@@ -14,6 +14,9 @@ import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
 import { request, Response } from 'express';
+import { NoticeBoardFileOption } from 'src/fileOptions/noticeBoardFileOption';
+import { deleteFiles } from 'src/Helpers/functions';
+
 // import { createReadStream } from 'fs';
 // @UseGuards(UserGuard)
 @Controller('notice-board')
@@ -32,7 +35,7 @@ export default class NoticeBoardController {
     // }
 
     @Post('write')
-    @UseInterceptors(FilesInterceptor('file'))
+    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
         try {
             const userPayload = JSON.parse(req.headers.userPayload);
@@ -44,6 +47,7 @@ export default class NoticeBoardController {
             resExecutor(res, this.success, true);
         } catch (err) {
             console.log(err);
+            deleteFiles(files);
             throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
         }
     }
