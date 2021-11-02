@@ -32,7 +32,7 @@ export default class FileController {
      * @param s
      */
     @Post('files-on-chat-msg')
-    @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         try {
             const { chatRoomId } = req.body;

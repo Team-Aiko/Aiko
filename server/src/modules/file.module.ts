@@ -6,11 +6,7 @@ import FileService from 'src/services/file.service';
 import { Company, Department, Country, LoginAuth, ResetPw, Socket, User, ChatFile } from '../entity';
 
 @Module({
-    imports: [
-        MulterModule.register({
-            dest: './files',
-        }),
-    ],
+    imports: [MulterModule.register()],
     controllers: [FileController],
     providers: [FileService],
 })
