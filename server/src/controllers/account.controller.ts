@@ -4,14 +4,13 @@ import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
 import AccountService from '../services/account.service';
 import { UserGuard } from 'src/guard/user.guard';
-import { usrPayloadParser, AikoError, success, resExecutor, propsRemover, getRepo, unknownError } from 'src/Helpers';
+import { usrPayloadParser, AikoError, resExecutor, propsRemover, getRepo, unknownError } from 'src/Helpers';
 import { UserRepository } from 'src/mapper';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
 
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
-    readonly success = success;
 
     constructor(private accountService: AccountService) {}
 
@@ -22,9 +21,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.checkDuplicateNickname(nickname as string);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -35,9 +34,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.checkDuplicateEmail(email as string);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -48,9 +47,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.getCountryList(str as string);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -63,9 +62,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.signup(data, { ORIGINAL_NAME: originalname, FILE_NAME: filename });
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -76,9 +75,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.grantLoginAuth(id as string);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -91,16 +90,16 @@ export default class AccountController {
         };
 
         try {
-            const result = await this.accountService.login(data);
-            console.log('🚀 ~ file: account.controller.ts ~ line 98 ~ AccountController ~ login ~ result', result);
+            let result = await this.accountService.login(data);
             if ('accessToken' in result) {
                 res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
                 res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
-                resExecutor({ res, result: propsRemover(result, 'accessToken', 'refreshToken') });
+                result = propsRemover(result, 'accessToken', 'refreshToken');
+                resExecutor(res, { result });
             } else {
             }
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -109,7 +108,7 @@ export default class AccountController {
     logout(@Req() req: Request, @Res() res: Response) {
         res.cookie('ACCESS_TOKEN', null);
         res.cookie('REFRESH_TOKEN', null);
-        resExecutor({ res, result: true });
+        resExecutor(res, { result: true });
     }
 
     // ! check complete - api doc
@@ -119,9 +118,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.findNickname(email);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -132,9 +131,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.requestResetPassword(email);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -145,9 +144,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.resetPassword(uuid, password);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -159,9 +158,9 @@ export default class AccountController {
 
         try {
             const result = await this.accountService.getUserInfo(targetUserId);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -177,12 +176,12 @@ export default class AccountController {
             if (result.header) {
                 res.cookie('ACCESS_TOKEN', result.accessToken);
                 res.cookie('REFRESH_TOKEN', result.refreshToken);
-                resExecutor({ res, result: true });
+                resExecutor(res, { result: true });
             } else {
                 throw new AikoError('unknown error', 500, 500008);
             }
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -192,12 +191,11 @@ export default class AccountController {
         const { USER_PK } = usrPayloadParser(req);
 
         try {
-            resExecutor({
-                res,
+            resExecutor(res, {
                 result: propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
             });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 }

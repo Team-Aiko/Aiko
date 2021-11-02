@@ -1,9 +1,8 @@
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { AikoError, resExecutor, success, unknownError, usrPayloadParser } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import MeetingService from 'src/services/meeting.service';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { IMeetingRoomBundle, IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
 
 @UseGuards(UserGuard)
@@ -24,9 +23,9 @@ export default class MeetingController {
         };
         try {
             const result = await this.meetingService.makeMeetingRoom(bundle);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -37,9 +36,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -58,9 +57,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.updateMeetingRoom(bundle);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -70,9 +69,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.viewMeetingRoom(Number(roomId));
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -82,9 +81,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.getMeetRoomList(COMPANY_PK);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -105,9 +104,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.makeMeeting(bundle);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -122,9 +121,9 @@ export default class MeetingController {
             if (!sendId) sendId = USER_PK;
 
             const result = await this.meetingService.checkMeetSchedule(sendId);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
     /**
@@ -151,9 +150,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.updateMeeting(bundle);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -164,9 +163,9 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 }

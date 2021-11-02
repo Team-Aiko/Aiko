@@ -2,13 +2,11 @@ import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, success, resExecutor, usrPayloadParser, unknownError } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 
 @Controller('company')
 export default class CompanyController {
-    readonly success = success;
-
     constructor(private companyService: CompanyService) {}
 
     // 회사 리스트 출력
@@ -16,7 +14,7 @@ export default class CompanyController {
     async list(@Req() req: Request, @Res() res: Response) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName as string);
-        resExecutor({ res, result });
+        resExecutor(res, { result });
     }
 
     /**
@@ -31,9 +29,9 @@ export default class CompanyController {
 
         try {
             const result = await this.companyService.getDepartmentMembers(Number(deptId), COMPANY_PK);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
     /**
@@ -55,10 +53,10 @@ export default class CompanyController {
             };
 
             const isSuccess = await this.companyService.createDepartment(bundle);
-            if (isSuccess) resExecutor({ res, result: isSuccess });
-            else throw new AikoError('unknown error', 500, 500123);
+            if (isSuccess) resExecutor(res, { result: isSuccess });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -81,10 +79,10 @@ export default class CompanyController {
         };
         try {
             const isSuccess = await this.companyService.givePermission(bundle);
-            if (isSuccess) resExecutor({ res, result: isSuccess });
-            else throw new AikoError('unknown error', 500, 500123);
+            if (isSuccess) resExecutor(res, { result: isSuccess });
+            else throw Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -100,10 +98,10 @@ export default class CompanyController {
 
         try {
             const result = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
-            if (result) resExecutor({ res, result });
-            else throw new AikoError('unknown error', 500, 500123);
+            if (result) resExecutor(res, { result });
+            else throw Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -124,10 +122,10 @@ export default class CompanyController {
                 COMPANY_PK,
                 grants,
             );
-            if (result) resExecutor({ res, result });
-            else throw new AikoError('unknown error', 500, 500123);
+            if (result) resExecutor(res, { result });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -143,9 +141,9 @@ export default class CompanyController {
 
         try {
             const result = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -164,9 +162,9 @@ export default class CompanyController {
 
             if (!DEPARTMENT_PK) DEPARTMENT_PK = -1;
             const result = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -184,9 +182,9 @@ export default class CompanyController {
 
         try {
             const result = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -196,9 +194,9 @@ export default class CompanyController {
         try {
             const { grants } = usrPayloadParser(req);
             const result = await this.companyService.checkAdmin(grants);
-            resExecutor({ res, result });
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor({ res }, err);
+            throw resExecutor(res, { err });
         }
     }
 }
