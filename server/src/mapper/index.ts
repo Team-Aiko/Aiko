@@ -9,6 +9,7 @@ import ChatFileRepository from './chatFile.repository';
 import OTOChatRoomRepository from './otoChatRoom.repository';
 import RefreshRepository from './refresh.repository';
 import GrantRepository from './grant.repository';
+import NoticeBoardFileRepository from './noticeBoardFile.repository';
 
 export {
     DepartmentRepository,
@@ -22,4 +23,5 @@ export {
     OTOChatRoomRepository,
     RefreshRepository,
     GrantRepository,
+    NoticeBoardFileRepository,
 };

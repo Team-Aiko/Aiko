@@ -22,6 +22,7 @@ import {
     Action,
     ActionPriority,
     StepIndex,
+    NoticeBoardFile,
     CalledMembers,
     Meet,
     MeetRoom,
@@ -55,6 +56,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
         OTOChatRoom,
         Refresh,
         NoticeBoard,
+        NoticeBoardFile,
     ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
