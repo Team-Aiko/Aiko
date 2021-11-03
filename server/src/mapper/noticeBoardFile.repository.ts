@@ -4,5 +4,5 @@ import { unixTimeStamp } from 'src/Helpers/functions';
 
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardFileRepository extends Repository<NoticeBoard> {
-       
+    
 }
