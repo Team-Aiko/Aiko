@@ -56,13 +56,13 @@ export default class AccountController {
 
     // ! check Complete - api doc
     @Post('signup')
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FileInterceptor('file', { dest: './files/profile' }))
     async signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
         const data = JSON.parse(req.body.obj) as ISignup;
-        const imageRoute = file?.filename;
+        const { originalname, filename } = file;
 
         try {
-            await this.accountService.signup(data, imageRoute);
+            await this.accountService.signup(data, { ORIGINAL_NAME: originalname, FILE_NAME: filename });
             resExecutor(res, this.success, data);
         } catch (err) {
             if (err instanceof AikoError) throw resExecutor(res, err);

@@ -8,7 +8,8 @@ import {
     Toolbar,
     Typography,
     TextField,
-    TextareaAutosize,
+    ThemeProvider,
+    unstable_createMuiStrictModeTheme,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 
@@ -64,52 +65,55 @@ const useStyles = makeStyles((theme) => ({
 export default function ChatModal(props) {
     const classes = useStyles();
     const { open, onClose } = props;
+    const theme = unstable_createMuiStrictModeTheme();
 
     return (
-        <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
-            <div className={styles['member-container']}>
-                <Toolbar classes={{ root: classes.memberToolbar }}>
-                    <Typography className={classes.memberTitle}>Members</Typography>
-                </Toolbar>
-            </div>
-            <div className={styles['message-container']}>
-                <Toolbar classes={{ root: classes.toolbar }}>
-                    <div className={styles['member-info']}>
-                        <div className={styles['profile-image']}></div>
-                        <Typography className={classes.title}>Member name</Typography>
-                    </div>
-                    <IconButton className={classes.closeButton} onClick={onClose}>
-                        <CloseIcon className={classes.closeIcon} />
-                    </IconButton>
-                </Toolbar>
-                <div className={styles['messages-wrapper']}>
-                    <div className={styles['message-wrapper']}>
-                        <Typography variant='body2'>Username</Typography>
-                        <Typography variant='body2' className={classes.message}>
-                            UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                        </Typography>
-                        <Typography variant='caption' className={classes.time}>
-                            00:00
-                        </Typography>
-                    </div>
+        <ThemeProvider theme={theme}>
+            <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
+                <div className={styles['member-container']}>
+                    <Toolbar classes={{ root: classes.memberToolbar }}>
+                        <Typography className={classes.memberTitle}>Members</Typography>
+                    </Toolbar>
+                </div>
+                <div className={styles['message-container']}>
+                    <Toolbar classes={{ root: classes.toolbar }}>
+                        <div className={styles['member-info']}>
+                            <div className={styles['profile-image']}></div>
+                            <Typography className={classes.title}>Member name</Typography>
+                        </div>
+                        <IconButton className={classes.closeButton} onClick={onClose}>
+                            <CloseIcon className={classes.closeIcon} />
+                        </IconButton>
+                    </Toolbar>
+                    <div className={styles['messages-wrapper']}>
+                        <div className={styles['message-wrapper']}>
+                            <Typography variant='body2'>Username</Typography>
+                            <Typography variant='body2' className={classes.message}>
+                                UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
+                            </Typography>
+                            <Typography variant='caption' className={classes.time}>
+                                00:00
+                            </Typography>
+                        </div>
 
-                    <div className={styles['message-wrapper-right']}>
-                        <Typography variant='body2'>Username</Typography>
-                        <Typography variant='body2' className={classes['message-right']}>
-                            UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                        </Typography>
-                        <Typography variant='caption' className={classes['time-right']}>
-                            00:00
-                        </Typography>
+                        <div className={styles['message-wrapper-right']}>
+                            <Typography variant='body2'>Username</Typography>
+                            <Typography variant='body2' className={classes['message-right']}>
+                                UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
+                            </Typography>
+                            <Typography variant='caption' className={classes['time-right']}>
+                                00:00
+                            </Typography>
+                        </div>
+                    </div>
+                    <div className={styles['input-message-wrapper']}>
+                        <TextField className={classes['inputMessage']} />
+                        <Button variant='contained' color='primary'>
+                            보내기
+                        </Button>
                     </div>
                 </div>
-                <div className={styles['input-message-wrapper']}>
-                    <TextField className={classes['inputMessage']} />
-                    <Button variant='contained' color='primary'>
-                        보내기
-                    </Button>
-                </div>
-            </div>
-        </Dialog>
+            </Dialog>
+        </ThemeProvider>
     );
 }

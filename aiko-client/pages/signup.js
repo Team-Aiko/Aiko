@@ -200,11 +200,11 @@ function Signup() {
             const url = `/api/company/list?companyName=${company}`;
             get(url).then((res) => {
                 const { result } = res.data;
-                const refinedData = result.map((curr) => {
-                    curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
-                    return curr;
-                });
-                setCompanyList(refinedData);
+                // const refinedData = result.map((curr) => {
+                //     curr.COMPANY_NAME += ` ID: ${curr.COMPANY_PK}`;
+                //     return curr;
+                // });
+                setCompanyList(result);
             });
         }
 
@@ -306,7 +306,7 @@ function Signup() {
             const form = new FormData();
             totalValidation = isValidFirst && errCompanyName;
             form.append('obj', JSON.stringify(packet));
-            form.append('image', fileObj);
+            form.append('file', fileObj);
             const config = {
                 header: {
                     'content-type': 'multipart/form-data',
@@ -446,7 +446,7 @@ function Signup() {
                                             }}
                                         >
                                             <option aria-label='None' value={-1} />
-                                            <option value={0}>Owner</option>
+                                            <option value={0}>Admin</option>
                                             <option value={1}>Member</option>
                                         </NativeSelect>
                                         <FormHelperText>Select your job position</FormHelperText>
@@ -503,13 +503,6 @@ function Signup() {
                                     </Button>
                                 </div>
                             </Typography>
-                            <input
-                                type='file'
-                                name='file'
-                                id='profileFile'
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                            />
                         </Container>
                     </Grow>
                     {/* step 2 */}
@@ -566,6 +559,7 @@ function Signup() {
                     </Grow>
                 </div>
             </div>
+            <input type='file' name='file' id='profileFile' style={{ display: 'none' }} onChange={handleFileChange} />
         </>
     );
 }

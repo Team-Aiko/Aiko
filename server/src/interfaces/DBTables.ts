@@ -55,7 +55,8 @@ export interface SocketTable {
 
 export interface ChatFileTable {
     CF_PK: number;
-    FILE_ROOT: string;
+    ORIGINAL_NAME: string;
+    FILE_NAME: string;
     CR_PK: string;
 }
 
@@ -80,4 +81,10 @@ export interface GrantTable {
     GRNT_PK: number;
     USER_PK: number;
     AUTH_LIST_PK: number;
+}
+
+export interface UserProfileFileTable {
+    USER_PROFILE_PK: number;
+    ORIGINAL_NAME: string;
+    FILE_NAME: string;
 }

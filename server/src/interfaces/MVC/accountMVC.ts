@@ -55,7 +55,7 @@ export type UserInfo = Partial<
         | 'DEPARTMENT_PK'
         | 'FIRST_NAME'
         | 'NICKNAME'
-        | 'PROFILE_FILE_NAME'
+        | 'USER_PROFILE_PK'
         | 'LAST_NAME'
         | 'EMAIL'
         | 'USER_PK'

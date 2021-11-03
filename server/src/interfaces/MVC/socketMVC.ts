@@ -1,8 +1,8 @@
 import { User } from 'src/entity';
 
 export interface IOneToOnePacket {
-    sender: Pick<User, 'USER_PK' | 'PROFILE_FILE_NAME' | 'FIRST_NAME' | 'LAST_NAME'>;
-    receiver: Pick<User, 'USER_PK' | 'PROFILE_FILE_NAME' | 'FIRST_NAME' | 'LAST_NAME'>;
+    sender: Pick<User, 'USER_PK' | 'USER_PROFILE_PK' | 'FIRST_NAME' | 'LAST_NAME'>;
+    receiver: Pick<User, 'USER_PK' | 'USER_PROFILE_PK' | 'FIRST_NAME' | 'LAST_NAME'>;
     companyPK: number;
     roomId: string;
     data: {
