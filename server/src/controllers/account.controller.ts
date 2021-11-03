@@ -155,9 +155,10 @@ export default class AccountController {
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
         const { targetUserId } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const result = await this.accountService.getUserInfo(targetUserId);
+            const result = await this.accountService.getUserInfo(targetUserId, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });
