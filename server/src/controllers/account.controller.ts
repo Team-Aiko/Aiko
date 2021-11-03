@@ -58,9 +58,16 @@ export default class AccountController {
     @UseInterceptors(FileInterceptor('file', { dest: filePath.PROFILE }))
     async signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
         const data = JSON.parse(req.body.obj) as ISignup;
-        const { originalname, filename } = file;
 
         try {
+            let originalname: string;
+            let filename: string;
+
+            if (file) {
+                originalname = file.originalname;
+                filename = file.filename;
+            }
+
             const result = await this.accountService.signup(data, { ORIGINAL_NAME: originalname, FILE_NAME: filename });
             resExecutor(res, { result });
         } catch (err) {
