@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity({ name: 'NOTICE_BOARD_FILE_TABLE' })
 export default class NoticeBoardFile {
     @PrimaryGeneratedColumn()
-    NBF_FK: number;
+    NBF_PK: number;
 
     @Column()
     UUID: string;
