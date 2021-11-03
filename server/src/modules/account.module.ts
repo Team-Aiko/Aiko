@@ -3,12 +3,13 @@ import { MulterModule } from '@nestjs/platform-express';
 import AccountController from 'src/controllers/account.controller';
 import AccountService from '../services/account.service';
 import SocketService from 'src/services/socket.service';
+import { filePath } from 'src/interfaces/MVC/fileMVC';
 
 @Module({
     imports: [
         // file upload multer module
         MulterModule.register({
-            dest: './files/profile',
+            dest: filePath.PROFILE,
         }),
     ],
     controllers: [AccountController],

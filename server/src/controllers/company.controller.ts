@@ -2,13 +2,11 @@ import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, success, resExecutor, usrPayloadParser, unknownError } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 
 @Controller('company')
 export default class CompanyController {
-    readonly success = success;
-
     constructor(private companyService: CompanyService) {}
 
     // 회사 리스트 출력
@@ -16,7 +14,7 @@ export default class CompanyController {
     async list(@Req() req: Request, @Res() res: Response) {
         const { companyName } = req.query;
         const result = await this.companyService.list(companyName as string);
-        resExecutor(res, this.success, result);
+        resExecutor(res, { result });
     }
 
     /**
@@ -30,10 +28,10 @@ export default class CompanyController {
         const { deptId } = req.query;
 
         try {
-            const data = await this.companyService.getDepartmentMembers(Number(deptId), COMPANY_PK);
-            resExecutor(res, this.success, data);
+            const result = await this.companyService.getDepartmentMembers(Number(deptId), COMPANY_PK);
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
     /**
@@ -55,10 +53,10 @@ export default class CompanyController {
             };
 
             const isSuccess = await this.companyService.createDepartment(bundle);
-            if (isSuccess) resExecutor(res, this.success, isSuccess);
-            else throw new AikoError('unknown error', 500, 500123);
+            if (isSuccess) resExecutor(res, { result: isSuccess });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -81,10 +79,10 @@ export default class CompanyController {
         };
         try {
             const isSuccess = await this.companyService.givePermission(bundle);
-            if (isSuccess) resExecutor(res, this.success, isSuccess);
-            else throw new AikoError('unknown error', 500, 500123);
+            if (isSuccess) resExecutor(res, { result: isSuccess });
+            else throw Error();
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -99,11 +97,11 @@ export default class CompanyController {
         const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const flag = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
-            if (flag) resExecutor(res, this.success, flag);
-            else throw new AikoError('unknown error', 500, 500123);
+            const result = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
+            if (result) resExecutor(res, { result });
+            else throw Error();
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -118,16 +116,16 @@ export default class CompanyController {
         const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const flag = await this.companyService.updateDepartmentName(
+            const result = await this.companyService.updateDepartmentName(
                 departmentPK,
                 departmentName,
                 COMPANY_PK,
                 grants,
             );
-            if (flag) resExecutor(res, this.success, flag);
-            else throw new AikoError('unknown error', 500, 500123);
+            if (result) resExecutor(res, { result });
+            else throw new Error();
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -142,10 +140,10 @@ export default class CompanyController {
         const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const users = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
-            resExecutor(res, this.success, users);
+            const result = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -163,10 +161,10 @@ export default class CompanyController {
             let DEPARTMENT_PK = Number(departmentPK);
 
             if (!DEPARTMENT_PK) DEPARTMENT_PK = -1;
-            const departmentTree = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
-            resExecutor(res, this.success, departmentTree);
+            const result = await this.companyService.getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -183,10 +181,10 @@ export default class CompanyController {
         const { grants, COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const flag = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
-            resExecutor(res, success, flag);
+            const result = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -195,10 +193,10 @@ export default class CompanyController {
     async checkAdmin(@Req() req: Request, @Res() res: Response) {
         try {
             const { grants } = usrPayloadParser(req);
-            const flag = await this.companyService.checkAdmin(grants);
-            resExecutor(res, success, flag);
+            const result = await this.companyService.checkAdmin(grants);
+            resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 }

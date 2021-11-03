@@ -6,7 +6,9 @@ export default class NoticeBoardService {
     async createArtcle(title: string, content: string, userPk: number, comPk: number, files) {
         try {
             await getRepo(NoticeBoardRepository).createArticle(title, content, userPk, comPk);
-            console.log(files);
+            for (let i = 0; i < files.length; i++) {
+                console.log(files[i].size);
+            }
         } catch (err) {
             throw new AikoError('QUERY ERROR[insert문 에러 발생]:' + err.name, 451, 500000);
         }
