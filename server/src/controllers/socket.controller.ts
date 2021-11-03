@@ -2,12 +2,10 @@ import { Controller, Get, HttpException, HttpStatus, Post, Req, Res } from '@nes
 import { Request, Response } from 'express';
 import SocketService from 'src/services/socket.service';
 import { User } from 'src/entity';
-import { AikoError, success, resExecutor, propsRemover } from 'src/Helpers';
+import { resExecutor, propsRemover } from 'src/Helpers';
 
 @Controller('socket')
 export default class SocketController {
-    readonly success = success;
-
     constructor(private socketService: SocketService) {}
 
     // @Get('generation-chat-room')

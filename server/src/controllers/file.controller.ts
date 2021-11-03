@@ -13,15 +13,13 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
-import { AikoError, success, resExecutor, unknownError } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 
 @UseGuards(UserGuard)
 @Controller('store')
 export default class FileController {
-    readonly success = success;
-
     constructor(private fileService: FileService) {}
 
     /**
@@ -32,7 +30,7 @@ export default class FileController {
      * @param s
      */
     @Post('files-on-chat-msg')
-    @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         try {
             const { chatRoomId } = req.body;
@@ -43,10 +41,10 @@ export default class FileController {
                 FILE_SIZE: size,
             };
 
-            const data = await this.fileService.uploadFilesOnChatMsg(bundle, chatRoomId as string);
-            resExecutor(res, this.success, data);
+            const result = await this.fileService.uploadFilesOnChatMsg(bundle, chatRoomId as string);
+            throw resExecutor(res, { result });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -59,9 +57,9 @@ export default class FileController {
     async viewFilesOnChatMsg(@Param('fileId') fileId: string, @Res() res: Response) {
         try {
             const { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
-            resExecutor(res, success, { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle);
+            resExecutor(res, { result: { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle });
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -76,7 +74,7 @@ export default class FileController {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
             res.download(`${filePath.CHAT}${FILE_NAME}`, ORIGINAL_NAME);
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 
@@ -92,7 +90,7 @@ export default class FileController {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewProfileFile(Number(fileId));
             res.download(`${filePath.PROFILE}${FILE_NAME}`, ORIGINAL_NAME);
         } catch (err) {
-            throw resExecutor(res, err instanceof AikoError ? err : unknownError);
+            throw resExecutor(res, { err });
         }
     }
 }

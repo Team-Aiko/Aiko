@@ -9,7 +9,7 @@ import { expiredTokenError, invalidTokenError } from 'src/Helpers/instance';
 export class UserGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const request = context.switchToHttp().getRequest() as Request;
-        const response = context.switchToHttp().getResponse() as Response;
+        const res = context.switchToHttp().getResponse() as Response;
 
         try {
             const accessToken = request.cookies.ACCESS_TOKEN;
@@ -21,7 +21,7 @@ export class UserGuard implements CanActivate {
             const err = error as jwt.VerifyErrors;
             if (err.name === 'TokenExpiredError') {
                 // 토큰 유효하지 않을 때
-                throw resExecutor(response, expiredTokenError);
+                throw resExecutor(res, { err: expiredTokenError });
                 // new HttpException(
                 //     {
                 //         status: HttpStatus.FORBIDDEN,
@@ -32,9 +32,9 @@ export class UserGuard implements CanActivate {
                 // );
             } else if (err.name === 'JsonWebTokenError') {
                 // 토큰 유효하지 않을 때
-                throw resExecutor(response, invalidTokenError);
+                throw resExecutor(res, { err: invalidTokenError });
             } else {
-                throw resExecutor(response, unknownError);
+                throw resExecutor(res);
             }
         }
         return true;

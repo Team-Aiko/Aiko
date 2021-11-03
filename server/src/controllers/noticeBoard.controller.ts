@@ -10,7 +10,7 @@ import {
     StreamableFile,
 } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
-import { AikoError, success, resExecutor, usrPayloadParser } from 'src/Helpers';
+import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
 import { request, Response } from 'express';
@@ -21,8 +21,6 @@ import { deleteFiles } from 'src/Helpers/functions';
 // @UseGuards(UserGuard)
 @Controller('notice-board')
 export default class NoticeBoardController {
-    readonly success = success;
-
     constructor(private noticeboardService: NoticeBoardService) {}
 
     // fileWriter(@UploadedFile() file) {
@@ -44,11 +42,11 @@ export default class NoticeBoardController {
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
-            resExecutor(res, this.success, true);
+            throw resExecutor(res, { result: true });
         } catch (err) {
             console.log(err);
             deleteFiles(files);
-            throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+            throw resExecutor(res, { err });
         }
     }
 
@@ -61,9 +59,9 @@ export default class NoticeBoardController {
             const userPk = userPayload.USER_PK;
             const num = req.body.num;
             await this.noticeboardService.updateArtcle(title, content, userPk, num);
-            resExecutor(res, this.success, true);
+            throw resExecutor(res, { result: true });
         } catch (err) {
-            throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+            throw resExecutor(res, { err });
         }
     }
 
@@ -74,9 +72,9 @@ export default class NoticeBoardController {
             const num = req.body.num;
             const userPk = userPayload.USER_PK;
             await this.noticeboardService.deleteArtcle(userPk, num);
-            resExecutor(res, this.success, true);
+            throw resExecutor(res, { result: true });
         } catch (err) {
-            throw resExecutor(res, new AikoError('ERROR:' + err.name, 451, 400000));
+            throw resExecutor(res, { err });
         }
     }
 
@@ -86,10 +84,10 @@ export default class NoticeBoardController {
         const option = parseInt(req.query.option);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
-            const maxBtn = await this.noticeboardService.createBtnSize(option, comPk);
-            resExecutor(res, this.success, maxBtn);
+            const result = await this.noticeboardService.createBtnSize(option, comPk);
+            throw resExecutor(res); // 에러가 아닌데 throw...? 모르겠음;;
         } else {
-            throw resExecutor(res, new AikoError('ERROR: option value', 451, 400000));
+            throw resExecutor(res); // 이거 에러처리 모르겠음
         }
     }
 
@@ -101,9 +99,9 @@ export default class NoticeBoardController {
         const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
         if (comPk !== undefined && option >= 10 && pageNum >= 0) {
             const result = await this.noticeboardService.getList(option, comPk, pageNum);
-            resExecutor(res, this.success, result);
+            throw resExecutor(res, { result });
         } else {
-            throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
+            throw resExecutor(res, { err: new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000) }); // 이거 에러처리 모르겠음
         }
     }
 
@@ -115,12 +113,11 @@ export default class NoticeBoardController {
         if (num !== undefined) {
             const result = await this.noticeboardService.getDetail(num, userPk);
             if (result === undefined) {
-                throw resExecutor(res, new AikoError('ERROR: 해당 num 존재하지않음', 451, 400000));
+                throw resExecutor(res, { err: new AikoError('ERROR: 해당 num 존재하지않음', 451, 400000) }); // 이거 에러처리 모르겠음
             } else {
-                resExecutor(res, this.success, result);
             }
         } else {
-            throw resExecutor(res, new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000));
+            throw resExecutor(res, { err: new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000) }); // 이거 에러처리 모르겠음
         }
     }
 
