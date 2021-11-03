@@ -141,18 +141,6 @@ function PComp(props) {
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { userInfo } = props;
     const { USER_PK } = userInfo;
-    const [admin, setAdmin] = useState(false);
-
-    useEffect(() => {
-        if (USER_PK) {
-            const url = 'api/company/check-admin';
-            get(url).then((response) => {
-                setAdmin(response.data.result);
-            });
-        } else {
-            setAdmin(false);
-        }
-    }, [USER_PK]);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);

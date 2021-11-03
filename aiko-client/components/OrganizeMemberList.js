@@ -4,6 +4,7 @@ import { Button, Table, TableCell, TableHead, TableRow, Typography, TableBody } 
 import { makeStyles } from '@material-ui/styles';
 import SearchMemberModal from './SearchMemberModal';
 import { get, post } from 'axios';
+import Router from 'next/router';
 
 const useStyles = makeStyles({
     membersTable: {
@@ -83,7 +84,13 @@ export default function OrganizeMemberList(props) {
                     </TableHead>
                     <TableBody>
                         {memberList.map((row) => (
-                            <TableRow key={row.USER_PK}>
+                            <TableRow
+                                key={row.USER_PK}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    Router.push(`/member-info/${row.NICKNAME}`);
+                                }}
+                            >
                                 <TableCell align='center'>{row.department.DEPARTMENT_NAME}</TableCell>
                                 <TableCell align='center'>{row.NICKNAME}</TableCell>
                                 <TableCell align='center'>{row.FIRST_NAME}</TableCell>
