@@ -133,6 +133,6 @@ export default class NoticeBoardController {
             // res.download('./files/noticeboard/e1de0edc64e4a0b7b340bd7e3dc7677a', 'as.xlsx');
         } catch (err) {
             throw resExecutor(res, { err });
-        }
+        } //push
     }
 }
