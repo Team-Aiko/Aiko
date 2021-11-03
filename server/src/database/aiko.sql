@@ -65,9 +65,13 @@ create table SOCKET_TABLE (
 -- CHAT FILE TABLE
 create table CHAT_FILE_TABLE (
     CF_PK INT PRIMARY KEY AUTO_INCREMENT,
-    FILE_ROOT VARCHAR(2000) NOT NULL,
+    ORIGINAL_NAME VARCHAR(256) NOT NULL,
+    FILE_NAME varchar(256) NOT NULL,
+    FILE_SIZE INT NOT NULL,
     CR_PK VARCHAR(256) NOT NULL
 );
+
+drop table CHAT_FILE_TABLE;
 
 -- ONE TO ONE CHAT ROMM TABLE
 create table ONE_TO_ONE_CHAT_ROOM_TABLE(
@@ -158,8 +162,6 @@ create table USER_PROFILE_FILE_TABLE (
     FILE_NAME VARCHAR(256) NOT NULL
 );
 
-drop table USER_PROFILE_FILE_TABLE;
-
 -- 공지 게시판 테이블 생성
 create table NOTICE_BOARD_TABLE (
 	NO int auto_increment,
@@ -172,6 +174,16 @@ create table NOTICE_BOARD_TABLE (
 	primary key (NO)
 );
 
+-- 공지 게시판 파일 테이블 생성
+create table NOTICE_BOARD_FILE_TABLE (
+	NBF_PK int auto_increment,
+	UUID varchar(128),
+	NOTICE_BOARD_PK int not null,
+	USER_PK int not null,
+	ORIGINAL_NAME varchar(512),
+	IS_DELETE int,
+	primary key(NBf_PK)
+);
 
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);

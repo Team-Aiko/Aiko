@@ -1,13 +1,25 @@
-import { Controller, Post, Req, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+    Controller,
+    Post,
+    Req,
+    Res,
+    UseInterceptors,
+    UploadedFile,
+    Get,
+    Param,
+    UseGuards,
+    Query,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
-import { AikoError, success, resExecutor } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
+import { UserGuard } from 'src/guard/user.guard';
+import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 
+@UseGuards(UserGuard)
 @Controller('store')
 export default class FileController {
-    readonly success = success;
-
     constructor(private fileService: FileService) {}
 
     /**
@@ -18,32 +30,67 @@ export default class FileController {
      * @param s
      */
     @Post('files-on-chat-msg')
-    @UseInterceptors(FileInterceptor('file', { dest: './files/chatFiles' }))
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
-        const fileName = file?.filename;
-        const { chatRoomId } = req.body as { chatRoomId: string };
-
         try {
-            const data = await this.fileService.uploadFilesOnChatMsg(fileName, chatRoomId);
-            resExecutor(res, this.success, data);
+            const { chatRoomId } = req.body;
+            const { filename, originalname, size } = file;
+            const bundle: IFileBundle = {
+                FILE_NAME: filename,
+                ORIGINAL_NAME: originalname,
+                FILE_SIZE: size,
+            };
+
+            const result = await this.fileService.uploadFilesOnChatMsg(bundle, chatRoomId as string);
+            throw resExecutor(res, { result });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, { err });
         }
     }
 
     /**
-     * 파일 아이디로부터 파일의 저장위치를 불러오는 api
+     * 파일 아이디를 이용해 채팅에 업로드 된 파일의 정보를 불러오는 메소드
      * @param req
      * @param res
      */
-    @Post('view-files')
-    async viewFilesOnChatMsg(@Req() req: Request, @Res() res: Response) {
-        const { fileId } = req.body as { fileId: number };
+    @Get('view-chat-file-info')
+    async viewFilesOnChatMsg(@Param('fileId') fileId: string, @Res() res: Response) {
         try {
-            const data = await this.fileService.viewFilesOnChatMsg(fileId);
-            resExecutor(res, this.success, data);
+            const { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
+            resExecutor(res, { result: { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle });
         } catch (err) {
-            if (err instanceof AikoError) throw resExecutor(res, err);
+            throw resExecutor(res, { err });
+        }
+    }
+
+    /**
+     * 채팅에서 공유된 파일을 실제로 다운로드하는 api
+     * @param fileId
+     * @param res
+     */
+    @Get('download-chat-file')
+    async downloadChatFile(@Param('fileId') fileId: string, @Res() res: Response) {
+        try {
+            const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
+            res.download(`${filePath.CHAT}${FILE_NAME}`, ORIGINAL_NAME);
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    /**
+     * 유저의 프로필 이미지를 불러오기위해 사용하는 api
+     * 용례: <img src='/api/store/download-profile-file?fileId=1' />
+     * @param fileId
+     * @param res
+     */
+    @Get('download-profile-file')
+    async downloadProfileFile(@Query('fileId') fileId: string, @Res() res: Response) {
+        try {
+            const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewProfileFile(Number(fileId));
+            res.download(`${filePath.PROFILE}${FILE_NAME}`, ORIGINAL_NAME);
+        } catch (err) {
+            throw resExecutor(res, { err });
         }
     }
 }
