@@ -29,13 +29,17 @@ import {
     ResetPwRepository,
     LoginAuthRepository,
     CompanyRepository,
+    GrantRepository,
 } from '../mapper';
+import { Meet } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
-import GrantRepository from 'src/mapper/grant.repository';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
+import CalledMembersRepository from 'src/mapper/calledMembers.repository';
+import MeetingService from './meeting.service';
+import WorkService from './work.service';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -47,7 +51,11 @@ const hasher = pbkdf2();
 
 @Injectable()
 export default class AccountService {
-    constructor(private socketService: SocketService) {}
+    constructor(
+        private socketService: SocketService,
+        private meetingService: MeetingService,
+        private workService: WorkService,
+    ) {}
 
     async checkDuplicateEmail(email: string): Promise<number> {
         try {
@@ -410,7 +418,7 @@ export default class AccountService {
             const dbToken = await getRepo(RefreshRepository).checkRefreshToken(payload.userPk);
             const userData = await this.getUserInfo(payload.userPk);
 
-            if (dbToken === refreshToken) {
+            if (dbToken === refreshToken && !('userEntity' in userData)) {
                 const tokens = this.generateLoginToken(userData);
                 await getRepo(RefreshRepository).updateRefreshToken(payload.userPk, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
@@ -423,9 +431,27 @@ export default class AccountService {
         }
     }
 
-    async getUserInfo(targetUserId: number) {
+    /**
+     * companyPK가 없을시 일반 유저검색, 있을 시 memberInfo페이지를 위한 것
+     * 권한 -> userEntity.grants
+     * 미팅스케줄 -> meets (조회 당시로부터 30일 앞까지)
+     * 회사정보 -> userEntity.company
+     * 부서정보 -> userEntity.department
+     * 액션아이템 -> actionItems
+     * @param targetUserId
+     * @returns
+     */
+    async getUserInfo(targetUserId: number, companyPK?: number) {
         try {
-            return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
+            if (!companyPK) return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
+
+            let meets: Meet[] = [];
+            const userEntity = await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
+            const meetingSchedules = await this.meetingService.checkMeetSchedule(targetUserId);
+            const actionItems = await this.workService.viewItems(targetUserId, companyPK);
+            meets = meetingSchedules.map((schedule) => schedule.meet);
+
+            return { userEntity, meets, actionItems };
         } catch (err) {
             throw err;
         }
