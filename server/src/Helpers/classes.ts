@@ -11,6 +11,73 @@ export class AikoError extends Error {
     }
 }
 
+export class Pagination {
+    private _currentPage: number;
+    private _pageGroupCnt: number;
+    private _feedPerPage: number; // 페이지당 보이는 아티클, 피드 등의 데이터 수 === offset
+    private _totPageCnt: number;
+    private _totalFeedCnt: number; // 총 피드, 아티클의 수
+    private _pageGroup: number[] = [];
+    private _offset: number;
+
+    constructor(currentPage: number, totalFeedCnt: number, feedPerPage = 10, pageGroupCnt = 5) {
+        this._currentPage = currentPage;
+        this._totalFeedCnt = totalFeedCnt;
+        this._pageGroupCnt = pageGroupCnt;
+        this._feedPerPage = feedPerPage;
+
+        this._totPageCnt = Math.ceil(totalFeedCnt / feedPerPage);
+        // const groupNum = Math.ceil(this._totPageCnt / pageGroupCnt);
+
+        // page group generator
+        const groupOffset = Math.floor(currentPage / pageGroupCnt);
+        console.log('🚀 ~ file: classes.ts ~ line 34 ~ Pagination ~ constructor ~ groupOffset', groupOffset);
+        const groupIndex = currentPage % pageGroupCnt; // 1 2 3 4 0
+        console.log('🚀 ~ file: classes.ts ~ line 35 ~ Pagination ~ constructor ~ groupIndex', groupIndex);
+        for (let i = 0; i < pageGroupCnt; i += 1) {
+            this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
+        }
+
+        // set offset
+        this._offset = (currentPage - 1) * feedPerPage;
+    }
+
+    get currentPage() {
+        return this._currentPage;
+    }
+
+    get pageGroupCnt() {
+        return this._pageGroupCnt;
+    }
+
+    get feedPerPage() {
+        return this._feedPerPage;
+    }
+
+    get offset() {
+        return this._offset;
+    }
+
+    get totalFeedCnt() {
+        return this._totalFeedCnt;
+    }
+
+    get totPageCnt() {
+        return this._totPageCnt;
+    }
+
+    test = () => {
+        console.log('클래스 테스트 로그');
+        console.log('🚀 ~ file: classes.ts ~ line 71 ~ Pagination ~ _pageGroupCnt', this._pageGroupCnt);
+        console.log('🚀 ~ file: classes.ts ~ line 71 ~ Pagination ~ _currentPage', this._currentPage);
+        console.log('🚀 ~ file: classes.ts ~ line 18 ~ Pagination ~ _feedPerPage', this._feedPerPage);
+        console.log('🚀 ~ file: classes.ts ~ line 22 ~ Pagination ~ _pageGroup', this._pageGroup);
+        console.log('🚀 ~ file: classes.ts ~ line 74 ~ Pagination ~ _offset', this._offset);
+        console.log('🚀 ~ file: classes.ts ~ line 73 ~ Pagination ~ _totalFeedCnt', this._totalFeedCnt);
+        console.log('🚀 ~ file: classes.ts ~ line 73 ~ Pagination ~ _totPageCnt', this._totPageCnt);
+    };
+}
+
 class NodeData<T> {
     data: T;
     next: NodeData<T>;
