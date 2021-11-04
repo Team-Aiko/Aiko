@@ -1,0 +1,7 @@
+.list-view {
+    min-width: 280px;
+    height: 100%;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    display: flex;
+}
