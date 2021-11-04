@@ -19,6 +19,7 @@ export class Pagination {
     private _totalFeedCnt: number; // 총 피드, 아티클의 수
     private _pageGroup: number[] = [];
     private _offset: number;
+    private _maxFlag: boolean;
 
     constructor(currentPage: number, totalFeedCnt: number, feedPerPage = 10, pageGroupCnt = 5) {
         this._currentPage = currentPage;
@@ -30,16 +31,17 @@ export class Pagination {
         // const groupNum = Math.ceil(this._totPageCnt / pageGroupCnt);
 
         // page group generator
-        const groupOffset = Math.floor(currentPage / pageGroupCnt);
-        console.log('🚀 ~ file: classes.ts ~ line 34 ~ Pagination ~ constructor ~ groupOffset', groupOffset);
-        const groupIndex = currentPage % pageGroupCnt; // 1 2 3 4 0
-        console.log('🚀 ~ file: classes.ts ~ line 35 ~ Pagination ~ constructor ~ groupIndex', groupIndex);
+        let groupIndex = currentPage % pageGroupCnt; // 1 2 3 4 0
         for (let i = 0; i < pageGroupCnt; i += 1) {
+            if (groupIndex === 0) groupIndex = 5;
             this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
         }
 
         // set offset
         this._offset = (currentPage - 1) * feedPerPage;
+
+        // max flag => if exit limit, throw error.
+        this._maxFlag = this._offset >= this._totalFeedCnt;
     }
 
     get currentPage() {
@@ -66,16 +68,9 @@ export class Pagination {
         return this._totPageCnt;
     }
 
-    test = () => {
-        console.log('클래스 테스트 로그');
-        console.log('🚀 ~ file: classes.ts ~ line 71 ~ Pagination ~ _pageGroupCnt', this._pageGroupCnt);
-        console.log('🚀 ~ file: classes.ts ~ line 71 ~ Pagination ~ _currentPage', this._currentPage);
-        console.log('🚀 ~ file: classes.ts ~ line 18 ~ Pagination ~ _feedPerPage', this._feedPerPage);
-        console.log('🚀 ~ file: classes.ts ~ line 22 ~ Pagination ~ _pageGroup', this._pageGroup);
-        console.log('🚀 ~ file: classes.ts ~ line 74 ~ Pagination ~ _offset', this._offset);
-        console.log('🚀 ~ file: classes.ts ~ line 73 ~ Pagination ~ _totalFeedCnt', this._totalFeedCnt);
-        console.log('🚀 ~ file: classes.ts ~ line 73 ~ Pagination ~ _totPageCnt', this._totPageCnt);
-    };
+    get maxFlag() {
+        return this._maxFlag;
+    }
 }
 
 class NodeData<T> {
