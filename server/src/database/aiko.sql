@@ -159,7 +159,7 @@ CREATE TABLE CALLED_MEMBERS_TABLE(
 create table USER_PROFILE_FILE_TABLE (
     USER_PROFILE_PK INT PRIMARY KEY AUTO_INCREMENT,
     ORIGINAL_NAME VARCHAR(256) NOT NULL,
-    FILE_NAME VARCHAR(256) NOT NULL,
+    FILE_NAME VARCHAR(256) NOT NULL
 );
 
 -- 공지 게시판 테이블 생성
@@ -174,6 +174,16 @@ create table NOTICE_BOARD_TABLE (
 	primary key (NO)
 );
 
+-- 공지 게시판 파일 테이블 생성
+create table NOTICE_BOARD_FILE_TABLE (
+	NBF_PK int auto_increment,
+	UUID varchar(128),
+	NOTICE_BOARD_PK int not null,
+	USER_PK int not null,
+	ORIGINAL_NAME varchar(512),
+	IS_DELETE int,
+	primary key(NBf_PK)
+);
 
 -- TEST COMPANY LIST
 insert into COMPANY_TABLE (COMPANY_NAME, CREATE_DATE) values ('A', 10000);

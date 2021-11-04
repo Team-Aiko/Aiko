@@ -15,7 +15,7 @@ export default function SearchMemberModal(props) {
         { id: 'LAST_NAME', label: 'Last name', minWidth: 110 },
         { id: 'TEL', label: 'Phone number', minWidth: 140 },
         { id: 'EMAIL', label: 'Email', minWidth: 220 },
-        { id: 'department', label: 'Department', minWidth: 100 },
+        { id: 'DEPARTMENT_NAME', label: 'Department', minWidth: 100 },
     ];
 
     const searchMember = () => {

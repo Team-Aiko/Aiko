@@ -4,6 +4,8 @@ import styles from '../styles/WriteBoard.module.css';
 import {useState} from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import axios from 'axios';
+import { get, post } from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,11 +17,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-
 export default function writeBoard() {
 
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
+    const [file, setFile] = useState(null);
 
     const classes = useStyles();
   
@@ -31,6 +33,35 @@ export default function writeBoard() {
       setText(e.target.value);
     };
 
+    const handleFile = (e) => {
+      setFile(e.target.file);
+    };
+
+
+    const upload = () => {
+      const formData = new FormData();
+      const url = '/api/notice-board/write'
+      const data = {
+        title: title,
+        content: text,
+      }
+      formData.append('data', JSON.stringify(data))
+      formData.append('image', file);
+      const config = {
+        headers: {
+          "content-type" : "multipart/form-data"
+        },
+      };
+      axios.post(url, formData, config)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    };
+
+    
     
     return (
         <>
@@ -55,10 +86,11 @@ export default function writeBoard() {
           style={{marginTop:'50px'}}
         />
       </div>
+      <input type="file" multiple onChange={handleFile}/>
     </form>
 
       <Button variant="contained" color="primary" style={{marginTop:'30px',
-      width:'150px', height:'50px'}}>
+      width:'150px', height:'50px'}} onClick={upload}>
         등록
       </Button>
 

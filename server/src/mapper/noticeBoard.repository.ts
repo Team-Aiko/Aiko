@@ -1,12 +1,13 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { NoticeBoard } from '../entity';
 import { unixTimeStamp } from 'src/Helpers/functions';
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
-    createArticle(title: string, content: string, userPk: number, comPk: number) {
+    async createArticle(title: string, content: string, userPk: number, comPk: number) {
+        let insertResult: InsertResult;
         try {
             const time = unixTimeStamp();
-            return this.createQueryBuilder()
+            insertResult = await this.createQueryBuilder()
                 .insert()
                 .into(NoticeBoard)
                 .values({
@@ -21,7 +22,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         } catch (err) {
             return err;
         }
-    }   
+        return insertResult.raw.insertId;
+    }
     deleteArticle(userPk: number, num: number) {
         try {
             return this.createQueryBuilder()
