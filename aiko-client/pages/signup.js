@@ -316,7 +316,9 @@ function Signup() {
                 .then((res) => {
                     const isSuccess = res.data;
                     console.log('🚀 ~ file: signup.js ~ line 283 ~ handleSubmit ~ isSuccess', isSuccess);
-                    if (isSuccess) Router.push('/');
+                    if (isSuccess) {
+                        Router.push('/');
+                    }
                 })
                 .catch((err) => console.log(err));
         } else {
@@ -340,7 +342,10 @@ function Signup() {
                     .then((res) => {
                         const isSuccess = res.data;
                         console.log('🚀 ~ file: signup.js ~ line 283 ~ handleSubmit ~ isSuccess', isSuccess);
-                        if (isSuccess) Router.push('/');
+                        if (isSuccess) {
+                            alert('입력한 이메일로 인증 후 로그인이 가능합니다');
+                            Router.push('/');
+                        }
                     })
                     .catch((err) => console.log(err));
             }

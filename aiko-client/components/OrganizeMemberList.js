@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../styles/components/AdminMemberList.module.css';
+import styles from '../styles/components/OrganizeMemberList.module.css';
 import { Button, Table, TableCell, TableHead, TableRow, Typography, TableBody } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import SearchMemberModal from './SearchMemberModal';
 import { get, post } from 'axios';
+import Router from 'next/router';
 
 const useStyles = makeStyles({
     membersTable: {
@@ -11,8 +12,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function AdminMemberList(props) {
-    const { department } = props;
+export default function OrganizeMemberList(props) {
+    const { department, admin } = props;
     const classes = useStyles();
     const [memberModal, setMemberModal] = useState(false);
     const [memberList, setMemberList] = useState([]);
@@ -31,6 +32,7 @@ export default function AdminMemberList(props) {
     };
 
     const columns = [
+        { id: 'DEPARTMENT_NAME', label: 'Department', minWidth: 110 },
         { id: 'NICKNAME', label: 'Nickname', minWidth: 110 },
         { id: 'FIRST_NAME', label: 'First name', minWidth: 110 },
         { id: 'LAST_NAME', label: 'Last name', minWidth: 110 },
@@ -61,9 +63,11 @@ export default function AdminMemberList(props) {
         >
             <div className={styles['header']}>
                 <Typography variant='h6'>{department.DEPARTMENT_NAME}</Typography>
-                <Button variant='contained' color='primary' onClick={openAddMemberModal}>
-                    직원추가
-                </Button>
+                {admin ? (
+                    <Button variant='contained' color='primary' onClick={openAddMemberModal}>
+                        직원추가
+                    </Button>
+                ) : null}
             </div>
             <div className={styles['members-table']}>
                 <Table>
@@ -79,19 +83,22 @@ export default function AdminMemberList(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {memberList.map(
-                            (row) =>
-                                row.department &&
-                                row.department.DEPARTMENT_NAME === department.DEPARTMENT_NAME && (
-                                    <TableRow key={row.USER_PK}>
-                                        <TableCell align='center'>{row.NICKNAME}</TableCell>
-                                        <TableCell align='center'>{row.FIRST_NAME}</TableCell>
-                                        <TableCell align='center'>{row.LAST_NAME}</TableCell>
-                                        <TableCell align='center'>{row.TEL}</TableCell>
-                                        <TableCell align='center'>{row.EMAIL}</TableCell>
-                                    </TableRow>
-                                ),
-                        )}
+                        {memberList.map((row) => (
+                            <TableRow
+                                key={row.USER_PK}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    Router.push(`/member-info/${row.NICKNAME}`);
+                                }}
+                            >
+                                <TableCell align='center'>{row.department.DEPARTMENT_NAME}</TableCell>
+                                <TableCell align='center'>{row.NICKNAME}</TableCell>
+                                <TableCell align='center'>{row.FIRST_NAME}</TableCell>
+                                <TableCell align='center'>{row.LAST_NAME}</TableCell>
+                                <TableCell align='center'>{row.TEL}</TableCell>
+                                <TableCell align='center'>{row.EMAIL}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
