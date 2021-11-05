@@ -3,7 +3,7 @@ import styles from '../styles/ElectronicApproval.module.css';
 import ListView from '../components/ListView';
 import { Button, makeStyles, Typography } from '@material-ui/core';
 import ReportWriting from '../components/ReportWriting';
-import Table from '../components/Table';
+import Table from '../components/TableView';
 
 const useStyles = makeStyles({
     button: {
@@ -15,6 +15,121 @@ const useStyles = makeStyles({
 export default function electronicApproval() {
     const [currentItem, setCurrentItem] = useState('writing');
     const classes = useStyles();
+
+    const totalColumns = [
+        {
+            value: 'writer',
+            view: '작성자',
+        },
+        {
+            value: 'title',
+            view: '제목',
+        },
+        {
+            value: 'progress',
+            view: '진행',
+        },
+        {
+            value: 'date',
+            view: '날짜',
+        },
+    ];
+
+    const totalData = [
+        {
+            value: 'writer',
+            view: 'soso',
+        },
+        {
+            value: 'title',
+            view: '11월 연차',
+        },
+        {
+            value: 'progress',
+            view: '완료',
+        },
+        {
+            value: 'date',
+            view: '',
+        },
+    ];
+
+    const waitingColumns = [
+        {
+            value: 'writer',
+            view: '작성자',
+        },
+        {
+            value: 'title',
+            view: '제목',
+        },
+        {
+            value: 'waiting',
+            view: '결재대기',
+        },
+        {
+            value: 'date',
+            view: '날짜',
+        },
+    ];
+
+    const waitingData = [
+        {
+            value: 'writer',
+            view: 'soso',
+        },
+        {
+            value: 'title',
+            view: '11월 연차',
+        },
+        {
+            value: 'waiting',
+            view: '대기중',
+        },
+        {
+            value: 'date',
+            view: '',
+        },
+    ];
+
+    const progressColumns = [
+        {
+            value: 'writer',
+            view: '작성자',
+        },
+        {
+            value: 'title',
+            view: '제목',
+        },
+        {
+            value: 'waiting',
+            view: '현재 결재선',
+        },
+        {
+            value: 'date',
+            view: '날짜',
+        },
+    ];
+
+    const progressData = [
+        {
+            value: 'writer',
+            view: 'soso',
+        },
+        {
+            value: 'title',
+            view: '11월 연차',
+        },
+        {
+            value: 'waiting',
+            view: 'Avyss 검토 중',
+        },
+        {
+            value: 'date',
+            view: '',
+        },
+    ];
+
     const list = [
         {
             value: 'total',
@@ -22,7 +137,7 @@ export default function electronicApproval() {
             onClick: () => {
                 setCurrentItem('total');
             },
-            component: <Table />,
+            component: <Table columns={totalColumns} view='view' value='value' data={totalData} />,
         },
         {
             value: 'waiting',
@@ -30,7 +145,7 @@ export default function electronicApproval() {
             onClick: () => {
                 setCurrentItem('waiting');
             },
-            component: <Table />,
+            component: <Table columns={waitingColumns} view='view' value='value' data={waitingData} />,
         },
         {
             value: 'progress',
@@ -38,7 +153,7 @@ export default function electronicApproval() {
             onClick: () => {
                 setCurrentItem('progress');
             },
-            component: <Table />,
+            component: <Table columns={progressColumns} view='view' value='value' data={progressData} />,
         },
         {
             value: 'done',
@@ -46,9 +161,10 @@ export default function electronicApproval() {
             onClick: () => {
                 setCurrentItem('done');
             },
-            component: <Table />,
+            component: <Table columns={totalColumns} view='view' value='value' data={totalData} />,
         },
     ];
+
     return (
         <div className={styles['electronic-approval']}>
             <div className={styles.menu}>
@@ -67,7 +183,9 @@ export default function electronicApproval() {
             <div className={styles['item-container']}>
                 {currentItem === 'writing' ? (
                     <>
-                        <Typography variant='h6'>기안서 작성</Typography>
+                        <Typography variant='h6' style={{ marginBottom: '20px' }}>
+                            기안서 작성
+                        </Typography>
                         <ReportWriting />
                     </>
                 ) : (
@@ -75,7 +193,9 @@ export default function electronicApproval() {
                         if (item.value === currentItem) {
                             return (
                                 <div key={item.value}>
-                                    <Typography variant='h6'>{item.name}</Typography>
+                                    <Typography variant='h6' style={{ marginBottom: '20px' }}>
+                                        {item.name}
+                                    </Typography>
                                     {item.component}
                                 </div>
                             );
