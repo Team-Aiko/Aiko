@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function writeBoard() {
+export default function writePost() {
 
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
@@ -34,19 +34,18 @@ export default function writeBoard() {
     };
 
     const handleFile = (e) => {
-      setFile(e.target.file);
+      setFile(e.target.files);
     };
 
 
     const upload = () => {
       const formData = new FormData();
-      const url = '/api/notice-board/write'
-      const data = {
-        title: title,
-        content: text,
+      const url = '/api/notice-board/write';
+      formData.append("title", JSON.stringify(title));
+      formData.append("content", JSON.stringify(text));
+      for (let i=0; i<file.length; i++) {
+      formData.append("file", JSON.stringify(file[i]));
       }
-      formData.append('data', JSON.stringify(data))
-      formData.append('image', file);
       const config = {
         headers: {
           "content-type" : "multipart/form-data"

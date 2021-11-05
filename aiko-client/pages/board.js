@@ -4,9 +4,9 @@ import axios from 'axios';
 import { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import Router from 'next/router';
+import router from 'next/router';
 import Link from 'next/link';
-import writeBoard from './writeBoard.js';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -32,7 +32,7 @@ const handleLogin = () => {
     })();
 };
 
-export default function Board() {
+export default function board() {
     let columns = [
         { field: 'id', headerName: 'ID', width: 100 },
         {
@@ -76,13 +76,12 @@ export default function Board() {
 
     return (
         <>
-            <Link href='/writeBoard'>
+            <Link href="/board">
                 <Button
                     variant='contained'
                     style={{ width: 170, display: 'flex', marginLeft: 'auto', padding: '10px' }}
                 >
-                    <writeBoard title={title} name={name} />
-                    글쓰기
+                게시글 작성
                 </Button>
             </Link>
 

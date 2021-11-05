@@ -18,15 +18,21 @@ const useStyles = makeStyles((theme) => ({
 
 export default function innerPost() {
 
+  const deletePost = () => {
+    const url = '/api/notice-board/delete-article';
+  }
+
     const classes = useStyles();
 
     return (
         <>
 
-
         <div className={styles.outerContainer}>
 
         <div className={styles.nameDate}>
+        <Grid style={{width:'10%'}}>
+          <Paper className={classes.paper} style={{textAlign:'center'}}>1</Paper>
+        </Grid>
         <Grid style={{width:'30%'}}>
           <Paper className={classes.paper} style={{textAlign:'left'}}>작성자</Paper>
         </Grid>
