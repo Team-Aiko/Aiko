@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IMeetingBundle, IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
-import { AikoError, getRepo, isChiefAdmin, propsRemover, valueChanger } from 'src/Helpers';
+import { AikoError, getRepo, isChiefAdmin, Pagination, propsRemover, valueChanger } from 'src/Helpers';
 import MeetRoomRepository from 'src/mapper/meetRoom.repository';
 import { CalledMembers, Grant } from 'src/entity';
 import MeetRepository from 'src/mapper/meet.repository';
@@ -215,5 +215,21 @@ export default class MeetingService {
         }
 
         return flag;
+    }
+
+    async checkMeetScheduleForUserInfo(
+        userPK: number,
+        currentPage: number,
+        feedPerPage?: number,
+        pageGroupCnt?: number,
+    ) {
+        try {
+            const scheduleCnt = await getRepo(CalledMembersRepository).getMeetingScheduleCnt(userPK);
+            const pagination = new Pagination(currentPage, scheduleCnt, feedPerPage, pageGroupCnt);
+
+            return await getRepo(CalledMembersRepository).checkMeetScheduleForUserInfo(userPK, pagination);
+        } catch (err) {
+            throw err;
+        }
     }
 }

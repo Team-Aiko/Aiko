@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import WorkService from 'src/services/work.service';
-import { IItemBundle } from 'src/interfaces/MVC/workMVC';
+import { IItemBundle, IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 
 @UseGuards(UserGuard)
 @Controller('work')
@@ -87,15 +87,23 @@ export default class WorkController {
 
     @Get('view-items')
     async viewItems(@Req() req: Request, @Res() res: Response) {
-        const { id } = req.query;
+        const { id, currentPage, feedsPerPage, groupCnt } = req.query;
         let USER_PK = -1;
         const { COMPANY_PK } = usrPayloadParser(req);
 
         const numOrNaN = Number(id);
         if (numOrNaN && numOrNaN > 0) USER_PK = numOrNaN;
 
+        const bundle: IPaginationBundle = {
+            USER_PK,
+            COMPANY_PK,
+            currentPage: Number(currentPage) | 1,
+            feedsPerPage: Number(feedsPerPage) | 10,
+            groupCnt: Number(groupCnt) | 5,
+        };
+
         try {
-            const result = await this.workService.viewItems(USER_PK, COMPANY_PK);
+            const result = await this.workService.viewItems(bundle);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

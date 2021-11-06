@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
-import { getRepo, AikoError, unixTimeStamp } from 'src/Helpers';
+import { getRepo, AikoError, unixTimeStamp, Pagination } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
 import {
     Brackets,
@@ -173,5 +173,27 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         }
 
         return flag;
+    }
+
+    async getMeetingScheduleCnt(USER_PK: number) {
+        try {
+            return await this.createQueryBuilder('c').where('c.USER_PK = :USER_PK', { USER_PK }).getCount();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async checkMeetScheduleForUserInfo(USER_PK: number, pagination: Pagination) {
+        try {
+            return await this.createQueryBuilder('c')
+                .where('c.USER_PK = :"USER_PK', { USER_PK })
+                .offset(pagination.offset)
+                .limit(pagination.feedPerPage)
+                .orderBy('c.MEET_PK', 'DESC')
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('calledMembers/checkMeetScheduleForUserInfo', 500, 281291);
+        }
     }
 }
