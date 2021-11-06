@@ -14,17 +14,19 @@ export default function TableView(props) {
                 </TableRow>
             </TableHead>
             <TableBody>
-                <TableRow>
-                    {data.map((item) => (
-                        <TableCell
-                            key={item[value]}
-                            onClick={item.onClick ? onClick : null}
-                            style={{ cursor: item.onClick ? 'pointer' : 'default' }}
+                {data.map((row, index) => {
+                    return (
+                        <TableRow
+                            key={index}
+                            onClick={row.rowClick ? row.rowClick : null}
+                            style={{ cursor: row.rowClick ? 'pointer' : 'default' }}
                         >
-                            {item[view]}
-                        </TableCell>
-                    ))}
-                </TableRow>
+                            {row.data.map((item) => (
+                                <TableCell key={item[value]}>{item[view]}</TableCell>
+                            ))}
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );

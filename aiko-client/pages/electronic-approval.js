@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import styles from '../styles/ElectronicApproval.module.css';
 import ListView from '../components/ListView';
 import { Button, makeStyles, Typography } from '@material-ui/core';
-import WriteReport from '../components/Report';
+import Report from '../components/Report';
 import Table from '../components/TableView';
+import Modal from '../components/Modal';
 
 const useStyles = makeStyles({
     button: {
@@ -14,6 +15,7 @@ const useStyles = makeStyles({
 
 export default function electronicApproval() {
     const [currentItem, setCurrentItem] = useState('writing');
+    const [openReport, setOpenReport] = useState(false);
     const classes = useStyles();
 
     const totalColumns = [
@@ -37,20 +39,27 @@ export default function electronicApproval() {
 
     const totalData = [
         {
-            value: 'writer',
-            view: 'soso',
-        },
-        {
-            value: 'title',
-            view: '11월 연차',
-        },
-        {
-            value: 'progress',
-            view: '완료',
-        },
-        {
-            value: 'date',
-            view: '',
+            rowClick: () => {
+                setOpenReport(true);
+            },
+            data: [
+                {
+                    value: 'writer',
+                    view: 'soso',
+                },
+                {
+                    value: 'title',
+                    view: '11월 연차',
+                },
+                {
+                    value: 'progress',
+                    view: '완료',
+                },
+                {
+                    value: 'date',
+                    view: '',
+                },
+            ],
         },
     ];
 
@@ -75,20 +84,27 @@ export default function electronicApproval() {
 
     const waitingData = [
         {
-            value: 'writer',
-            view: 'soso',
-        },
-        {
-            value: 'title',
-            view: '11월 연차',
-        },
-        {
-            value: 'waiting',
-            view: '대기중',
-        },
-        {
-            value: 'date',
-            view: '',
+            rowClick: () => {
+                setOpenReport(true);
+            },
+            data: [
+                {
+                    value: 'writer',
+                    view: 'soso',
+                },
+                {
+                    value: 'title',
+                    view: '11월 연차',
+                },
+                {
+                    value: 'waiting',
+                    view: '대기중',
+                },
+                {
+                    value: 'date',
+                    view: '',
+                },
+            ],
         },
     ];
 
@@ -113,20 +129,27 @@ export default function electronicApproval() {
 
     const progressData = [
         {
-            value: 'writer',
-            view: 'soso',
-        },
-        {
-            value: 'title',
-            view: '11월 연차',
-        },
-        {
-            value: 'waiting',
-            view: 'Avyss 검토 중',
-        },
-        {
-            value: 'date',
-            view: '',
+            rowClick: () => {
+                setOpenReport(true);
+            },
+            data: [
+                {
+                    value: 'writer',
+                    view: 'soso',
+                },
+                {
+                    value: 'title',
+                    view: '11월 연차',
+                },
+                {
+                    value: 'waiting',
+                    view: 'Avyss 검토 중',
+                },
+                {
+                    value: 'date',
+                    view: '',
+                },
+            ],
         },
     ];
 
@@ -186,7 +209,7 @@ export default function electronicApproval() {
                         <Typography variant='h6' style={{ marginBottom: '20px' }}>
                             기안서 작성
                         </Typography>
-                        <WriteReport />
+                        <Report mode='write' />
                     </>
                 ) : (
                     list.map((item) => {
@@ -203,6 +226,14 @@ export default function electronicApproval() {
                     })
                 )}
             </div>
+            <Modal
+                open={openReport}
+                onClose={() => {
+                    setOpenReport(false);
+                }}
+            >
+                <Report mode='readonly' containerStyles={{ margin: '0 20px 20px', minHeight: '600px' }} />
+            </Modal>
         </div>
     );
 }

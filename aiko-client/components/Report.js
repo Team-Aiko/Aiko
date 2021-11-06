@@ -6,15 +6,19 @@ const useStyles = makeStyles({
     textField: {
         height: '100%',
     },
+    input: {
+        height: '100%',
+    },
 });
 
-export default function Report() {
+export default function Report(props) {
+    const { mode, containerStyles } = props;
     const classes = useStyles();
     return (
-        <div className={styles['report']}>
+        <div className={styles['report']} style={containerStyles}>
             <div className={styles['top-container']}>
                 <div className={styles['top-item']}>
-                    <Typography>기본 설정</Typography>
+                    {mode === 'write' && <Typography>기본 설정</Typography>}
                     <table className={styles['default-settings']}>
                         <tbody>
                             <tr>
@@ -23,15 +27,13 @@ export default function Report() {
                             </tr>
                             <tr>
                                 <td>문서종류</td>
-                                <td>
-                                    <select />
-                                </td>
+                                <td>{mode === 'write' ? <select /> : <></>}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div className={styles['top-item']}>
-                    <Typography>결재선</Typography>
+                    {mode === 'write' && <Typography>결재선</Typography>}
                     <table className={styles.approval}>
                         <tbody>
                             <tr className={styles.name}>
@@ -51,23 +53,34 @@ export default function Report() {
                 </div>
             </div>
             <div className={styles['body-container']}>
-                <Typography>상세입력</Typography>
+                {mode === 'write' && <Typography>상세입력</Typography>}
                 <div className={styles.title}>
-                    <Typography style={{ flexShrink: 0, marginRight: '60px' }}>제목</Typography>
-                    <TextField fullWidth variant='outlined' size='small' />
+                    {mode === 'write' ? (
+                        <>
+                            <Typography style={{ flexShrink: 0, marginRight: '60px' }}>제목</Typography>
+                            <TextField fullWidth variant='outlined' size='small' />
+                        </>
+                    ) : (
+                        <Typography>제목ㄱㄱㄱㄱㄱ</Typography>
+                    )}
                 </div>
-                <TextField
-                    multiline
-                    variant='outlined'
-                    style={{ marginTop: '10px', height: '100%' }}
-                    inputProps={{
-                        style: {
-                            flex: 1,
-                            height: '100%',
-                        },
-                    }}
-                    classes={{ root: classes.textField }}
-                />
+                {mode === 'write' ? (
+                    <TextField
+                        multiline
+                        variant='outlined'
+                        style={{ marginTop: '10px', height: '100%' }}
+                        inputProps={{
+                            style: {
+                                flex: 1,
+                                height: '100%',
+                            },
+                        }}
+                        InputProps={{ className: classes.input }}
+                        classes={{ root: classes.textField }}
+                    />
+                ) : (
+                    <Typography>내용ㅇㅇㅇㅇㅇ</Typography>
+                )}
             </div>
         </div>
     );
