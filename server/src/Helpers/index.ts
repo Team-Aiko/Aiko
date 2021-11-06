@@ -1,5 +1,5 @@
 // * classes
-export { AikoError } from './classes';
+export { AikoError, Pagination, LinkedList } from './classes';
 
 // * functions
 export {

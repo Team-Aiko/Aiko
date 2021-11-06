@@ -11,6 +11,68 @@ export class AikoError extends Error {
     }
 }
 
+export class Pagination {
+    private _currentPage: number;
+    private _pageGroupCnt: number;
+    private _feedPerPage: number; // 페이지당 보이는 아티클, 피드 등의 데이터 수 === offset
+    private _totPageCnt: number;
+    private _totalFeedCnt: number; // 총 피드, 아티클의 수
+    private _pageGroup: number[] = [];
+    private _offset: number;
+    private _maxFlag: boolean;
+
+    constructor(currentPage: number, totalFeedCnt: number, feedPerPage = 10, pageGroupCnt = 5) {
+        this._currentPage = currentPage;
+        this._totalFeedCnt = totalFeedCnt;
+        this._pageGroupCnt = pageGroupCnt;
+        this._feedPerPage = feedPerPage;
+
+        this._totPageCnt = Math.ceil(totalFeedCnt / feedPerPage);
+        // const groupNum = Math.ceil(this._totPageCnt / pageGroupCnt);
+
+        // page group generator
+        let groupIndex = currentPage % pageGroupCnt; // 1 2 3 4 0
+        for (let i = 0; i < pageGroupCnt; i += 1) {
+            if (groupIndex === 0) groupIndex = 5;
+            this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
+        }
+
+        // set offset
+        this._offset = (currentPage - 1) * feedPerPage;
+
+        // max flag => if exit limit, throw error.
+        this._maxFlag = this._offset >= this._totalFeedCnt;
+    }
+
+    get currentPage() {
+        return this._currentPage;
+    }
+
+    get pageGroupCnt() {
+        return this._pageGroupCnt;
+    }
+
+    get feedPerPage() {
+        return this._feedPerPage;
+    }
+
+    get offset() {
+        return this._offset;
+    }
+
+    get totalFeedCnt() {
+        return this._totalFeedCnt;
+    }
+
+    get totPageCnt() {
+        return this._totPageCnt;
+    }
+
+    get maxFlag() {
+        return this._maxFlag;
+    }
+}
+
 class NodeData<T> {
     data: T;
     next: NodeData<T>;
