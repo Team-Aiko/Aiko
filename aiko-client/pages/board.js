@@ -1,20 +1,12 @@
 import * as React from 'react';
-import { DataGrid } from '@material-ui/data-grid';
 import axios from 'axios';
 import { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import router from 'next/router';
 import Link from 'next/link';
+import { useSelector, useDispatch } from 'react-redux';
+import {selectRow} from '../_redux/boardReducer';
 
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-}));
 
 const handleLogin = () => {
     const url = '/api/notice-board/files';
@@ -33,62 +25,58 @@ const handleLogin = () => {
 };
 
 export default function board() {
-    let columns = [
-        { field: 'id', headerName: 'ID', width: 100 },
-        {
-            field: 'title',
-            headerName: '제목',
-            width: 600,
-            editable: false,
-        },
-        {
-            field: 'name',
-            headerName: '작성자',
-            type: 'string',
-            width: 130,
-            editable: false,
-        },
-        {
-            field: 'date',
-            headerName: '작성일',
-            type: 'string',
-            width: 230,
-            editable: false,
-        },
-        {
-            field: 'count',
-            headerName: '조회수',
-            type: 'number',
-            width: 150,
-            editable: false,
-        },
-    ];
 
-    const now = new Date();
+const {inputData} = useSelector((state) => state.boardReducer);
+const {lastId} = useSelector((state) => state.boardReducer);
 
-    const [count, setCount] = useState(1);
-    const [id, setId] = useState(1);
-    const [date, setDate] = useState(now.toLocaleString());
-    const [title, setTitle] = useState('');
-    const [name, setName] = useState('');
+const dispatch = useDispatch();
 
-    const [rows, setRows] = useState([{ id: id, title: title, name: name, date: date, count: count }]);
+const selectContent = (id) => {
+    dispatch(selectRow(id))
+};
 
-    return (
-        <>
-            <Link href="/board">
-                <Button
-                    variant='contained'
-                    style={{ width: 170, display: 'flex', marginLeft: 'auto', padding: '10px' }}
-                >
-                게시글 작성
-                </Button>
-            </Link>
+return (
+    <>
+    <div>
+        <table className="table">
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>날짜</th>
+                    <th>조회수</th>
+                </tr>
+            </thead>
 
-            <div style={{ height: 800, width: '100%' }}>
-                <DataGrid rows={rows} columns={columns} pageSize={10} checkboxSelection disableSelectionOnClick />
-                <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
-            </div>
-        </>
-    );
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {
+                    lastId !== 0 ?
+                    inputData.map(rowData => (
+                        rowData.id !== '' &&
+                    <tr>
+                        <td onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.id}</a></Link></td>
+                        <td onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.title}</a></Link></td>
+                    </tr>
+                    )) :
+                    <tr>
+                        <td></td>
+                        <td>작성된 글이 없습니다.</td>
+                    </tr>
+                }   
+            </tbody>
+        </table>
+    </div>
+
+    <button onClick={()=>{router.push('/writePost')}}>글작성</button>
+
+        <div style={{ height: 800, width: '100%' }}>
+            <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
+        </div>
+    </>
+);
 }

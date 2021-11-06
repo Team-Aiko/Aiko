@@ -11,6 +11,7 @@ import ChatBtn from '../components/commons/chat/ChatBtn';
 
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
+
     return (
         <>
             <ReduxProvider store={store}>

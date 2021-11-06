@@ -4,6 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import { useState } from 'react';
+import {useDispatch , useSelector} from 'react-redux';
+import router from 'next/router';
+import {editContent, removeContent} from '../_redux/boardReducer.js';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,58 +22,61 @@ const useStyles = makeStyles((theme) => ({
 
 export default function innerPost() {
 
-  const deletePost = () => {
-    const url = '/api/notice-board/delete-article';
+  const { selectRowData } = useSelector(state => state.boardReducer);
+
+  const [title, setTitle] = useState(selectRowData.title);
+  const [content, setContent] = useState(selectRowData.content);
+
+  const handleTitle = (e) => {
+    setTitle(e.target.value);
   }
+
+  const handleContent = (e) => {
+    setContent(e.target.value);
+  }
+
+  const dispatch = useDispatch();
+
+  const onChange = () => {
+    const _inputData = {
+      id: selectRowData.id,
+      title:title,
+      content: content
+    }
+    dispatch(editContent(_inputData))
+    setTitle('');
+    setContent('');
+    router.push('/board');
+  }
+
+  const onRemove = () => {
+    dispatch(removeContent(selectRowData.id))
+    setTitle('');
+    setContent('');
+    router.push('/board');
+  }
+
 
     const classes = useStyles();
 
     return (
         <>
 
-        <div className={styles.outerContainer}>
-
-        <div className={styles.nameDate}>
-        <Grid style={{width:'10%'}}>
-          <Paper className={classes.paper} style={{textAlign:'center'}}>1</Paper>
-        </Grid>
-        <Grid style={{width:'30%'}}>
-          <Paper className={classes.paper} style={{textAlign:'left'}}>작성자</Paper>
-        </Grid>
-        <Grid style={{width:'30%'}}>
-          <Paper className={classes.paper} style={{textAlign:'left'}}>작성일</Paper>
-        </Grid>
+        <div>
+          <input type='text' value={title} onChange={handleTitle} />
         </div>
 
-            
-        <Grid
-          container
-          direction="column"
-          justifyContent="flex-start"
-          alignItems="stretch"
-          style={{width:'80%', marginBottom:'10px'}}
-        >
-          <Paper className={classes.paper} style={{textAlign:'left'}}>제목</Paper>
-        </Grid>
-
-        <Grid
-          container
-          direction="column"
-          justifyContent="flex-start"
-          alignItems="stretch"
-          style={{width:'80%'}}
-        >
-          <Paper className={classes.paper} style={{height:'300px', textAlign:'left'}}>내용</Paper>
-        </Grid>
+        <div>
+          <textarea value={content} onChange={handleContent} />
         </div>
 
 
         <div className={styles.reviseDelete}>
         <Button variant="outlined" style={{marginRight:'20px'}}>목록으로</Button>
-        <Button variant="outlined" color="primary" style={{marginRight:'20px'}}>
+        <Button variant="outlined" color="primary" style={{marginRight:'20px'}} onClick={onChange}>
           수정
         </Button>
-        <Button variant="outlined" color="secondary">
+        <Button variant="outlined" color="secondary" onClick={onRemove}>
           삭제
         </Button>
         </div>

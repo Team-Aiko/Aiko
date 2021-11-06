@@ -3,9 +3,10 @@ import { makeStyles } from '@material-ui/core/styles';
 import styles from '../styles/WriteBoard.module.css';
 import {useState} from 'react';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import axios from 'axios';
-import { get, post } from 'axios';
+import {useDispatch} from 'react-redux';
+import {dataSave} from '../_redux/boardReducer';
+import router from 'next/router';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,8 +20,20 @@ const useStyles = makeStyles((theme) => ({
 
 export default function writePost() {
 
+  const onSave = () => {
+    const _inputData = {
+      id: '',
+      title:title,
+      content: content
+    }
+    dispatch(dataSave(_inputData))
+    setTitle('')
+    setContent('')
+    router.push('/board')
+  }
+
     const [title, setTitle] = useState('');
-    const [text, setText] = useState('');
+    const [content, setContent] = useState('');
     const [file, setFile] = useState(null);
 
     const classes = useStyles();
@@ -29,36 +42,38 @@ export default function writePost() {
       setTitle(e.target.value);
     };
     
-    const textChange = (e) => {
-      setText(e.target.value);
+    const contentChange = (e) => {
+      setContent(e.target.value);
     };
 
     const handleFile = (e) => {
       setFile(e.target.files);
     };
 
+    const dispatch = useDispatch();
 
-    const upload = () => {
-      const formData = new FormData();
-      const url = '/api/notice-board/write';
-      formData.append("title", JSON.stringify(title));
-      formData.append("content", JSON.stringify(text));
-      for (let i=0; i<file.length; i++) {
-      formData.append("file", JSON.stringify(file[i]));
-      }
-      const config = {
-        headers: {
-          "content-type" : "multipart/form-data"
-        },
-      };
-      axios.post(url, formData, config)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    };
+
+    // const upload = () => {
+    //   const formData = new FormData();
+    //   const url = '/api/notice-board/write';
+    //   formData.append("title", JSON.stringify(title));
+    //   formData.append("content", JSON.stringify(text));
+    //   for (let i=0; i<file.length; i++) {
+    //   formData.append("file", JSON.stringify(file[i]));
+    //   }
+    //   const config = {
+    //     headers: {
+    //       "content-type" : "multipart/form-data"
+    //     },
+    //   };
+    //   axios.post(url, formData, config)
+    //     .then((response) => {
+    //       console.log(response);
+    //     })
+    //     .catch((error) => {
+    //       console.log(error)
+    //     })
+    // };
 
     
     
@@ -67,29 +82,20 @@ export default function writePost() {
 
     <div className={styles.writeBoard}>
 
-    <form className={styles.root} noValidate autoComplete="off">
-      <div className={styles.titleInput}>
-        <TextField
-          id="standard-multiline-flexible"
-          label="제목"
-          multiline
-          maxRows={4}
-          onChange={titleChange}
-        />
-        <TextField
-          id="standard-multiline-static"
-          label="내용"
-          multiline
-          rows={12}
-          onChange={textChange}
-          style={{marginTop:'50px'}}
-        />
+      <div>
+      <input type="text" value={title} placeholder="제목을 입력해주세요" onChange={titleChange}/>
       </div>
+
+      <div>
+      <textarea type="text" value={content} placeholder="내용을 입력해주세요" onChange={contentChange} />
+      </div>
+      
+      <div>
       <input type="file" multiple onChange={handleFile}/>
-    </form>
+      </div>
 
       <Button variant="contained" color="primary" style={{marginTop:'30px',
-      width:'150px', height:'50px'}} onClick={upload}>
+      width:'150px', height:'50px'}} onClick={onSave}>
         등록
       </Button>
 
