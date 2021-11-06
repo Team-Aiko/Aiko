@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from '../styles/ElectronicApproval.module.css';
 import ListView from '../components/ListView';
 import { Button, makeStyles, Typography } from '@material-ui/core';
-import ReportWriting from '../components/ReportWriting';
+import WriteReport from '../components/Report';
 import Table from '../components/TableView';
 
 const useStyles = makeStyles({
@@ -186,7 +186,7 @@ export default function electronicApproval() {
                         <Typography variant='h6' style={{ marginBottom: '20px' }}>
                             기안서 작성
                         </Typography>
-                        <ReportWriting />
+                        <WriteReport />
                     </>
                 ) : (
                     list.map((item) => {

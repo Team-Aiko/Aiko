@@ -8,9 +8,7 @@ export default function TableView(props) {
         <Table>
             <TableHead>
                 <TableRow>
-                    {console.log(columns)}
                     {columns.map((column) => {
-                        console.log(column);
                         return <TableCell key={column[value]}>{column[view]}</TableCell>;
                     })}
                 </TableRow>

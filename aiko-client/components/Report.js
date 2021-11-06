@@ -1,10 +1,17 @@
-import { TextField, Typography } from '@material-ui/core';
+import { makeStyles, TextField, Typography } from '@material-ui/core';
 import React from 'react';
-import styles from '../styles/components/ReportWriting.module.css';
+import styles from '../styles/components/Report.module.css';
 
-export default function ReportWriting() {
+const useStyles = makeStyles({
+    textField: {
+        height: '100%',
+    },
+});
+
+export default function Report() {
+    const classes = useStyles();
     return (
-        <div className={styles['report-writing']}>
+        <div className={styles['report']}>
             <div className={styles['top-container']}>
                 <div className={styles['top-item']}>
                     <Typography>기본 설정</Typography>
@@ -49,7 +56,18 @@ export default function ReportWriting() {
                     <Typography style={{ flexShrink: 0, marginRight: '60px' }}>제목</Typography>
                     <TextField fullWidth variant='outlined' size='small' />
                 </div>
-                <TextField multiline variant='outlined' style={{ marginTop: '10px', height: '100%' }} maxRows={100} />
+                <TextField
+                    multiline
+                    variant='outlined'
+                    style={{ marginTop: '10px', height: '100%' }}
+                    inputProps={{
+                        style: {
+                            flex: 1,
+                            height: '100%',
+                        },
+                    }}
+                    classes={{ root: classes.textField }}
+                />
             </div>
         </div>
     );
