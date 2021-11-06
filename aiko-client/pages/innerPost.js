@@ -43,6 +43,24 @@ export default function innerPost() {
       title:title,
       content: content
     }
+    const url = '/api/notice-board/update-article'
+    const data = {
+      'num': selectRowData.id,
+      'title': JSON.stringify(title),
+      'content': JSON.stringify(content)
+    }
+    const config = {
+      headers: {
+        "content-type" : 'application/json'
+      }
+    };
+    axios.post(url, data, config)
+    .then((response)=> {
+      console.log(response.result)
+    })
+    .catch((error) => {
+      console.log(error)
+    });
     dispatch(editContent(_inputData))
     setTitle('');
     setContent('');
@@ -53,6 +71,22 @@ export default function innerPost() {
     dispatch(removeContent(selectRowData.id))
     setTitle('');
     setContent('');
+    const url = "/api/notice-board/delete-article";
+    const data = {
+      'num' : selectRowData.id
+    }
+    const config ={
+      headers: {
+        'content-type' : 'application/json'
+      }
+    };
+    axios.post(url, data, config)
+    .then((response)=> {
+      console.log(response.result)
+    })
+    .catch((error)=> {
+      console.log(error)
+    });
     router.push('/board');
   }
 
