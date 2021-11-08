@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { IMeetingBundle, IMeetingRoomBundle } from 'src/interfaces/MVC/meetingMVC';
+import {
+    IMeetingBundle,
+    IMeetingPagination,
+    IMeetingRoomBundle,
+    IMeetingSchedulePagination,
+} from 'src/interfaces/MVC/meetingMVC';
 import { AikoError, getRepo, isChiefAdmin, Pagination, propsRemover, valueChanger } from 'src/Helpers';
 import MeetRoomRepository from 'src/mapper/meetRoom.repository';
 import { CalledMembers, Grant } from 'src/entity';
 import MeetRepository from 'src/mapper/meet.repository';
 import { getConnection } from 'typeorm';
 import CalledMembersRepository from 'src/mapper/calledMembers.repository';
+import { UserRepository } from 'src/mapper';
 
 @Injectable()
 export default class MeetingService {
@@ -106,9 +112,33 @@ export default class MeetingService {
         }
     }
 
-    async checkMeetSchedule(userId: number) {
+    async meetingSchedule({ COMPANY_PK, ROOM_PK, currentPage, feedsPerPage, groupCnt }: IMeetingPagination) {
         try {
-            return await getRepo(CalledMembersRepository).checkMeetSchedule(userId);
+            const meetRoom = await getRepo(MeetRoomRepository).getMeetRoom(ROOM_PK);
+            // company filter
+            if (meetRoom.COMPANY_PK !== COMPANY_PK)
+                throw new AikoError('meetingService/meetingSchedule/not valid company member', 500, 2920123);
+            const meetingCnt = await getRepo(MeetRepository).meetingCnt(ROOM_PK);
+            const pag = new Pagination(currentPage, meetingCnt, feedsPerPage, groupCnt);
+
+            return await getRepo(MeetRepository).getMeetingSchedules(ROOM_PK, pag);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async checkMeetSchedule({ COMPANY_PK, USER_PK, currentPage, feedsPerPage, groupCnt }: IMeetingSchedulePagination) {
+        try {
+            const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK);
+
+            // company filter
+            if (userInfo.COMPANY_PK !== COMPANY_PK)
+                throw new AikoError('meetingService/checkMeetSchedule/not valid company member', 500, 2920123);
+
+            const cnt = await getRepo(CalledMembersRepository).getMeetingScheduleCnt(USER_PK);
+            const pag = new Pagination(currentPage, cnt, feedsPerPage, groupCnt);
+
+            return await getRepo(CalledMembersRepository).checkMeetSchedule(USER_PK, pag);
         } catch (err) {
             throw err;
         }

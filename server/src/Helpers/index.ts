@@ -10,6 +10,8 @@ export {
     propsRemover,
     isChiefAdmin,
     unixTimeStamp,
+    getExtensionOfFilename,
+    transformToLinkedList,
 } from './functions';
 
 // * instances

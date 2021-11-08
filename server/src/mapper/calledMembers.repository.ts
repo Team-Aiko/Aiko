@@ -3,6 +3,7 @@ import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
 import { getRepo, AikoError, unixTimeStamp, Pagination } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
+import { IMeetingPagination } from 'src/interfaces/MVC/meetingMVC';
 import {
     Brackets,
     DeleteResult,
@@ -62,9 +63,10 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         }
     }
 
-    async checkMeetSchedule(USER_PK: number) {
+    async checkMeetSchedule(USER_PK: number, pag: Pagination) {
         try {
             const currentTime = unixTimeStamp();
+
             return await this.createQueryBuilder('c')
                 .leftJoinAndSelect('c.meet', 'meet')
                 .where('USER_PK = :USER_PK', { USER_PK })
@@ -76,6 +78,8 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                         );
                     }),
                 )
+                .offset(pag.offset)
+                .limit(pag.feedPerPage)
                 .getMany();
         } catch (err) {
             console.error(err);

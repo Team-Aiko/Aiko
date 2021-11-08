@@ -1,9 +1,10 @@
 import { ResultSetHeader } from 'mysql2';
 import { Meet } from 'src/entity';
-import { AikoError, propsRemover, unixTimeStamp } from 'src/Helpers';
+import { AikoError, getRepo, Pagination, propsRemover, unixTimeStamp } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
-import { IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
+import { IMeetingBundle, meetingScheduleDTO } from 'src/interfaces/MVC/meetingMVC';
 import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
+import { UserRepository } from '.';
 
 @EntityRepository(Meet)
 export default class MeetRepository extends Repository<Meet> {
@@ -105,5 +106,54 @@ export default class MeetRepository extends Repository<Meet> {
         }
 
         return flag;
+    }
+
+    /**
+     * 미팅 스케쥴 pagination을 위해 총 미팅 스케줄의 카운트를 산출하는 쿼리문
+     * @param ROOM_PK
+     * @returns
+     */
+    async meetingCnt(ROOM_PK: number) {
+        try {
+            return await this.createQueryBuilder('m').where('m.ROOM_PK = :ROOM_PK', { ROOM_PK }).getCount();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meet/meetingCnt', 500, 494091);
+        }
+    }
+
+    /**
+     * 해당룸의 특정 페이지의 미팅 스케줄을 조회하는 쿼리문
+     * @param ROOM_PK
+     * @param pagination
+     */
+    async getMeetingSchedules(ROOM_PK: number, pagination: Pagination) {
+        try {
+            const schedules = await this.createQueryBuilder('c')
+                .leftJoinAndSelect('c.members', 'members')
+                .where('c.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .offset(pagination.offset)
+                .limit(pagination.feedPerPage)
+                .getMany();
+            return await Promise.all(
+                schedules.map(async (schedule) => {
+                    const userInfos = await Promise.all(
+                        schedule.members.map(async (member) => {
+                            const { USER_PK } = member;
+                            return await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK);
+                        }),
+                    );
+
+                    const dto: meetingScheduleDTO = {
+                        ...schedule,
+                        userInfos,
+                    };
+                    return dto;
+                }),
+            );
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('calledMembers/getMeetingSchedules', 500, 292913);
+        }
     }
 }
