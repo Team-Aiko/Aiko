@@ -93,6 +93,14 @@ export default class ActionRepository extends Repository<Action> {
         return flag;
     }
 
+    /**
+     * USER_PK가 없으면(undefined, null) 또는 -1이면 andWhere가 없어 해당 부서리스트의의 일감들을 보여줌
+     * 부서리스트에 부서 하나만 넣으면 한 부서의 일감 리스트를 보여줌.
+     * USER_PK가 있으면 해당 유저에게 할당된 일감들을 보여줌.
+     * @param USER_PK
+     * @param deptIdList
+     * @returns
+     */
     async viewItems(USER_PK: number, deptIdList: number[]) {
         let itemList: Action[] = [];
 
@@ -105,7 +113,7 @@ export default class ActionRepository extends Repository<Action> {
                     });
 
                     // target user filter
-                    if (USER_PK !== -1) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
+                    if (USER_PK !== -1 || !USER_PK) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
 
                     const items = await fracture.getMany();
 

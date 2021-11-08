@@ -1,24 +1,30 @@
-import React from 'react';
-import OrganizationTree from '../components/OrganizationTree';
-import OrgRightBottom from '../components/OrgRightBottom';
-import OrgRightTop from '../components/OrgRightTop';
-import moduleStyles from '../styles/organize.module.css';
+import React, { useState, useEffect } from 'react';
+import OrganizeDepartmentTree from '../components/OrganizeDepartmentTree';
+import OrganizeMemberList from '../components/OrganizeMemberList';
+import styles from '../styles/organize.module.css';
+import { get, post } from 'axios';
+import router from 'next/router';
 
-export default function Organize() {
-    const companyPK = 1; //sessionStorage.getItem('COMPANY_PK');
+export default function organize() {
+    const [department, setDepartment] = useState({});
+    const [admin, setAdmin] = useState(false);
+
+    useEffect(() => {
+        const url = 'api/company/check-admin';
+        get(url).then((response) => {
+            setAdmin(response.data.result);
+        });
+    }, []);
+
     return (
-        <div className={moduleStyles.container}>
-            <div className={moduleStyles.leftSide}>
-                <OrganizationTree companyPK={companyPK} />
-            </div>
-            <div className={moduleStyles.rightSide}>
-                <div className={moduleStyles.rightSideTop}>
-                    <OrgRightTop companyPK={companyPK} />
-                </div>
-                <div className={moduleStyles.rightSideBottom}>
-                    <OrgRightBottom companyPK={companyPK} />
-                </div>
-            </div>
+        <div className={styles['admin-container']}>
+            <OrganizeDepartmentTree
+                setDepartment={(value) => {
+                    setDepartment(value);
+                }}
+                admin={admin}
+            />
+            <OrganizeMemberList department={department} admin={admin} />
         </div>
     );
 }

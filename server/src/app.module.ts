@@ -30,6 +30,7 @@ import {
 import OneToOneMessageGateway from './gateway/message.gateway';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
+import TestModule from './modules/test.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
@@ -72,6 +73,7 @@ const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
         NoticeBoardModule,
         WorkModule,
         MeetingModule,
+        TestModule,
     ],
     providers: [],
 })

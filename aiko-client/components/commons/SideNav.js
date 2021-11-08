@@ -4,7 +4,7 @@ import Router from 'next/router';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { ListItemText, ListItemIcon, Drawer, Button, List, ListItem } from '@material-ui/core';
-import { MeetingRoom, GroupAdd, Home, Create, Settings } from '@material-ui/icons';
+import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment } from '@material-ui/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { handleSideNav } from '../../_redux/popupReducer';
 
@@ -45,6 +45,9 @@ function PComp(props) {
     const goToOrganize = () => {
         Router.push('/organize');
     };
+    const goToElectronicApproval = () => {
+        Router.push('/electronic-approval');
+    };
 
     return (
         <>
@@ -68,6 +71,13 @@ function PComp(props) {
                                 <MeetingRoom />
                             </ListItemIcon>
                             <ListItemText primary='Meet' />
+                        </ListItem>
+                        <ListItem button onClick={goToElectronicApproval}>
+                            <ListItemIcon>
+                                <Assignment />
+                            </ListItemIcon>
+                            {/* Electronic approval */}
+                            <ListItemText primary='전자결재' />
                         </ListItem>
                         <ListItem button>
                             <ListItemIcon>

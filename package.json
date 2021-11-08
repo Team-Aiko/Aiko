@@ -9,11 +9,8 @@
         "lint": "eslint **/*.ts --quiet"
     },
     "dependencies": {
-        "@material-ui/core": "^4.12.3",
-        "@material-ui/icons": "^4.11.2",
         "concurrently": "^6.2.1",
-        "create-next-app": "^11.1.2",
-        "socket.io-client": "^4.2.0"
+        "create-next-app": "^11.1.2"
     },
     "devDependencies": {
         "nodemon": "^2.0.12",

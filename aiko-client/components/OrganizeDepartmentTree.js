@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, createRef } from 'react';
-import styles from '../styles/components/AdminDepartmentTree.module.css';
+import styles from '../styles/components/OrganizeDepartmentTree.module.css';
 import { makeStyles } from '@material-ui/core/styles';
 import TreeView from '@material-ui/lab/TreeView';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -39,8 +39,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function AdminDepartmentTree(props) {
-    const { setDepartment } = props;
+export default function OrganizeDepartmentTree(props) {
+    const { setDepartment, admin } = props;
     const classes = useStyles();
     const theme = unstable_createMuiStrictModeTheme();
     const [topDepartmentName, setTopDepartmentName] = useState('');
@@ -190,15 +190,17 @@ export default function AdminDepartmentTree(props) {
                 label={
                     <div className={styles['tree-item-label']}>
                         {department.DEPARTMENT_NAME}
-                        <IconButton
-                            id={department.DEPARTMENT_PK}
-                            aria-controls='basic-menu'
-                            aria-haspopup='true'
-                            aria-expanded={openOptions.department.DEPARTMENT_NAME === department.DEPARTMENT_NAME}
-                            onClick={(e) => handleMore(e, department)}
-                        >
-                            <MoreIcon />
-                        </IconButton>
+                        {admin ? (
+                            <IconButton
+                                id={department.DEPARTMENT_PK}
+                                aria-controls='basic-menu'
+                                aria-haspopup='true'
+                                aria-expanded={openOptions.department.DEPARTMENT_NAME === department.DEPARTMENT_NAME}
+                                onClick={(e) => handleMore(e, department)}
+                            >
+                                <MoreIcon />
+                            </IconButton>
+                        ) : null}
                         <Menu
                             anchorEl={openOptions.anchorEl}
                             open={openOptions.department.DEPARTMENT_NAME === department.DEPARTMENT_NAME}

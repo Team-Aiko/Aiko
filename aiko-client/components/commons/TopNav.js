@@ -19,7 +19,6 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
-import SettingsIcon from '@material-ui/icons/Settings';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -142,18 +141,6 @@ function PComp(props) {
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { userInfo } = props;
     const { USER_PK } = userInfo;
-    const [admin, setAdmin] = useState(false);
-
-    useEffect(() => {
-        if (USER_PK) {
-            const url = 'api/company/check-admin';
-            get(url).then((response) => {
-                setAdmin(response.data.result);
-            });
-        } else {
-            setAdmin(false);
-        }
-    }, [USER_PK]);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -251,14 +238,6 @@ function PComp(props) {
                     <p>Profile</p>
                 </MenuItem>
             ) : null}
-            {admin && (
-                <MenuItem onClick={goToAdmin}>
-                    <IconButton aria-label='show 11 new notifications' color='inherit'>
-                        <SettingsIcon />
-                    </IconButton>
-                    <p>Admin</p>
-                </MenuItem>
-            )}
         </Menu>
     );
     const accountBtns = (
@@ -317,11 +296,6 @@ function PComp(props) {
                                             <NotificationsIcon />
                                         </Badge>
                                     </IconButton>
-                                    {admin && (
-                                        <IconButton color='inherit' onClick={goToAdmin}>
-                                            <SettingsIcon />
-                                        </IconButton>
-                                    )}
                                     <IconButton
                                         edge='end'
                                         aria-label='account of current user'
