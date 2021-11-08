@@ -118,7 +118,7 @@ export default class MeetingController {
     /**
      * 미팅 룸 인포페이지에서 스케쥴의 정보를 받아오기 위한 api
      */
-    @Get('meet-schedule')
+    @Get('meet-schedule-room-page')
     async meetingSchedule(@Req() req: Request, @Res() res: Response) {
         try {
             const { roomId, currentPage, feedsPerPage, groupCnt } = req.query;
@@ -144,7 +144,7 @@ export default class MeetingController {
     /**
      *
      */
-    @Get('check-meet-schedule')
+    @Get('meeting-schedule-user')
     async checkMeetSchedule(@Req() req: Request, @Res() res: Response) {
         try {
             const { userId, currentPage, feedsPerPage, groupCnt } = req.query;
