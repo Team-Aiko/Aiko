@@ -80,6 +80,7 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                 )
                 .offset(pag.offset)
                 .limit(pag.feedPerPage)
+                .orderBy('c.CALL_PK', 'DESC')
                 .getMany();
         } catch (err) {
             console.error(err);

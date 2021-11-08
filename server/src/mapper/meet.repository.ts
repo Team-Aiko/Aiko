@@ -129,11 +129,12 @@ export default class MeetRepository extends Repository<Meet> {
      */
     async getMeetingSchedules(ROOM_PK: number, pagination: Pagination) {
         try {
-            const schedules = await this.createQueryBuilder('c')
+            const schedules = await this.createQueryBuilder('m')
                 .leftJoinAndSelect('c.members', 'members')
-                .where('c.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .where('m.ROOM_PK = :ROOM_PK', { ROOM_PK })
                 .offset(pagination.offset)
                 .limit(pagination.feedPerPage)
+                .orderBy('m.MEET_PK', 'DESC')
                 .getMany();
             return await Promise.all(
                 schedules.map(async (schedule) => {
