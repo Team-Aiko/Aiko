@@ -40,11 +40,13 @@ export default class NoticeBoardController {
             const content = req.body.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
+            const originalName = files.map((file: Express.Multer.File) => file.originalname);
+            const fileName = files.map((file: Express.Multer.File) => file.filename);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
         } catch (err) {
             console.log(err);
-            deleteFiles(files);
+            // deleteFiles(files);
             throw resExecutor(res, { err });
         }
     }
