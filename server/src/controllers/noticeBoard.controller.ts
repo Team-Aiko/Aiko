@@ -1,19 +1,9 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Req,
-    Res,
-    UploadedFiles,
-    UseGuards,
-    UseInterceptors,
-    StreamableFile,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
-import { request, Response } from 'express';
+import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
 import { deleteFiles } from 'src/Helpers/functions';
 
@@ -33,19 +23,19 @@ export default class NoticeBoardController {
 
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
-    async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
+    async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
             const userPayload = usrPayloadParser(req);
             const title = req.body.title;
             const content = req.body.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
-            const originalName = files.map((file: Express.Multer.File) => file.originalname);
-            const fileName = files.map((file: Express.Multer.File) => file.filename);
+            // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
         } catch (err) {
             console.log(err);
+            const uuid = files.map((file) => file.filename);
             // deleteFiles(files);
             throw resExecutor(res, { err });
         }

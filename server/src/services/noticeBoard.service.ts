@@ -6,7 +6,7 @@ import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
 
 export default class NoticeBoardService {
     //게시글 생성
-    async createArtcle(title: string, content: string, userPk: number, comPk: number, files) {
+    async createArtcle(title: string, content: string, userPk: number, comPk: number, files: Express.Multer.File[]) {
         try {
             const nbfPk = await getRepo(NoticeBoardRepository).createArticle(title, content, userPk, comPk);
             await getRepo(NoticeBoardFileRepository).createFiles(files, nbfPk, userPk); //파일 생성
