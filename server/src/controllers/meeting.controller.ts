@@ -3,7 +3,12 @@ import { Request, Response } from 'express';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import MeetingService from 'src/services/meeting.service';
-import { IMeetingRoomBundle, IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
+import {
+    IMeetingRoomBundle,
+    IMeetingBundle,
+    IMeetingPagination,
+    IMeetingSchedulePagination,
+} from 'src/interfaces/MVC/meetingMVC';
 
 @UseGuards(UserGuard)
 @Controller('meeting')
@@ -110,17 +115,50 @@ export default class MeetingController {
         }
     }
 
+    /**
+     * 미팅 룸 인포페이지에서 스케쥴의 정보를 받아오기 위한 api
+     */
+    @Get('meet-schedule')
+    async meetingSchedule(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { roomId, currentPage, feedsPerPage, groupCnt } = req.query;
+            const { COMPANY_PK, USER_PK } = usrPayloadParser(req);
+
+            const bundle: IMeetingPagination = {
+                COMPANY_PK,
+                USER_PK,
+                ROOM_PK: Number(roomId),
+                currentPage: Number(currentPage),
+                feedsPerPage: feedsPerPage ? Number(feedsPerPage) : 10,
+                groupCnt: groupCnt ? Number(groupCnt) : 5,
+            };
+
+            const result = await this.meetingService.meetingSchedule(bundle);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    /**
+     *
+     */
     @Get('check-meet-schedule')
     async checkMeetSchedule(@Req() req: Request, @Res() res: Response) {
         try {
-            const { userId } = req.query;
-            const { USER_PK } = usrPayloadParser(req);
+            const { userId, currentPage, feedsPerPage, groupCnt } = req.query;
+            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
 
-            let sendId = Number(userId);
+            const bundle: IMeetingSchedulePagination = {
+                USER_PK: !userId ? USER_PK : Number(userId),
+                COMPANY_PK,
+                currentPage: Number(currentPage),
+                feedsPerPage: feedsPerPage ? Number(feedsPerPage) : 10,
+                groupCnt: groupCnt ? Number(groupCnt) : 5,
+            };
 
-            if (!sendId) sendId = USER_PK;
-
-            const result = await this.meetingService.checkMeetSchedule(sendId);
+            const result = await this.meetingService.checkMeetSchedule(bundle);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

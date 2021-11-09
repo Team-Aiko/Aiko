@@ -7,12 +7,13 @@ import { UserGuard } from 'src/guard/user.guard';
 import { usrPayloadParser, AikoError, resExecutor, propsRemover, getRepo, unknownError } from 'src/Helpers';
 import { UserRepository } from 'src/mapper';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
+import MeetingService from 'src/services/meeting.service';
 
 @Controller('account')
 export default class AccountController {
     // private accountService: AccountService;
 
-    constructor(private accountService: AccountService) {}
+    constructor(private accountService: AccountService, private meetingService: MeetingService) {}
 
     // ! check complete - api doc
     @Get('checkDuplicateNickname')
@@ -161,7 +162,7 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { targetUserId } = req.body;
+        const { targetUserId, currentPage, feedPerPage, pageGroupCnt } = req.body;
         const { COMPANY_PK } = usrPayloadParser(req);
 
         try {

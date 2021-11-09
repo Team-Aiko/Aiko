@@ -1,5 +1,5 @@
 import Action from 'src/entity/action.entity';
-import { AikoError, propsRemover } from 'src/Helpers';
+import { AikoError, Pagination, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import {
     Brackets,
@@ -10,6 +10,9 @@ import {
     Transaction,
     TransactionManager,
 } from 'typeorm';
+
+import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
+import { Company, Department } from 'src/entity';
 
 @EntityRepository(Action)
 export default class ActionRepository extends Repository<Action> {
@@ -101,32 +104,58 @@ export default class ActionRepository extends Repository<Action> {
      * @param deptIdList
      * @returns
      */
-    async viewItems(USER_PK: number, deptIdList: number[]) {
-        let itemList: Action[] = [];
-
+    async viewItems(USER_PK: number, COMPANY_PK: number, pg: Pagination) {
         try {
-            await Promise.all(
-                deptIdList.map(async (curr) => {
-                    // basic query
-                    let fracture = this.createQueryBuilder('a').where('a.DEPARTMENT_PK = :DEPARTMENT_PK', {
-                        DEPARTMENT_PK: curr,
-                    });
+            let fracture = this.createQueryBuilder('a')
+                .innerJoin(Department, 'd', 'd.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .leftJoinAndSelect('a.owner', 'owner')
+                .leftJoinAndSelect('a.assigner', 'assigner')
+                .where('a.DEPARTMENT_PK = d.DEPARTMENT_PK');
 
-                    // target user filter
-                    if (USER_PK !== -1 || !USER_PK) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
+            if (USER_PK !== -1 && USER_PK > 0) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
 
-                    const items = await fracture.getMany();
+            const itemList = await fracture
+                .orderBy('a.DUE_DATE', 'DESC')
+                .offset(pg.offset)
+                .limit(pg.feedPerPage)
+                .getMany();
 
-                    if (items.length > 0) itemList = itemList.concat(items);
+            const deleteInfo = [
+                'PASSWORD',
+                'SALT',
+                'IS_DELETED',
+                'IS_VERIFIED',
+                'CREATE_DATE',
+                'USER_PROFILE_PK',
+                'COUNTRY_PK',
+            ];
+            return itemList.map((item) => {
+                item.owner = propsRemover(item.owner, ...deleteInfo);
 
-                    return true;
-                }),
-            );
+                item.assigner = propsRemover(item.assigner, ...deleteInfo);
+                return item;
+            });
         } catch (err) {
             console.error(err);
             throw new AikoError('action/viewItems', 500, 900563);
         }
+    }
 
-        return itemList;
+    async getItemCnt(USER_PK: number, COMPANY_PK: number) {
+        try {
+            let fracture = this.createQueryBuilder('a')
+                .innerJoin(Department, 'd', 'd.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .where('a.DEPARTMENT_PK = d.DEPARTMENT_PK');
+
+            if (USER_PK !== -1 && USER_PK > 0) {
+                // 유저를 특정하는 경우.
+                fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
+            }
+
+            return await fracture.getCount();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('action/getItemCnt', 500, 200563);
+        }
     }
 }

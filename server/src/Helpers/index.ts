@@ -1,5 +1,5 @@
 // * classes
-export { AikoError } from './classes';
+export { AikoError, Pagination, LinkedList } from './classes';
 
 // * functions
 export {
@@ -10,6 +10,8 @@ export {
     propsRemover,
     isChiefAdmin,
     unixTimeStamp,
+    getExtensionOfFilename,
+    transformToLinkedList,
 } from './functions';
 
 // * instances

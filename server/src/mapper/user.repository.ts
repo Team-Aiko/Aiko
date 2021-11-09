@@ -235,4 +235,16 @@ export default class UserRepository extends Repository<User> {
 
         return flag;
     }
+
+    async getUserInfoWithUserPKAndCompanyPK(USER_PK: number, COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('u')
+                .where('u.USER_PK = :USER_PK', { USER_PK })
+                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('user/getUserInfoWithUserPKAndCompanyPK', 500, 100203);
+        }
+    }
 }
