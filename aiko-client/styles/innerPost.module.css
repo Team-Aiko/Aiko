@@ -12,7 +12,15 @@
     justify-content: center;
 }
 
-.buttonDiv {
+.reviseDelete {
+    display:flex;
+    flex-direction:row;
+    justify-content:flex-end;
+    margin-right:200px;
+    margin-bottom:30px;
+}
+
+.anotherPost {
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
@@ -25,4 +33,14 @@
     justify-content:space-evenly;
     width:100%;
     margin-bottom:10px;
+}
+
+.previousPost {
+    display:flex;
+    direction:row;
+}
+
+.nextPost {
+    display:flex;
+    direction:row;
 }
