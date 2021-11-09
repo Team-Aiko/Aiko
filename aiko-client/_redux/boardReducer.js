@@ -49,7 +49,8 @@ const initialState = {
 
 export default function boardReducer(state = initialState, action) {
     switch(action.type) {
-        case SAVE: return {
+        case SAVE:
+            return {
             lastId: state.lastId + 1,
             inputData: state.inputData.concat({
                 ...action.inputData,

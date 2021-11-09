@@ -20,17 +20,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function writePost() {
 
-  const onSave = () => {
-    const _inputData = {
-      id: '',
-      title:title,
-      content: content
-    }
-    dispatch(dataSave(_inputData))
-    setTitle('')
-    setContent('')
-    router.push('/board')
-  }
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -53,27 +42,40 @@ export default function writePost() {
     const dispatch = useDispatch();
 
 
-    // const upload = () => {
-    //   const formData = new FormData();
-    //   const url = '/api/notice-board/write';
-    //   formData.append("title", JSON.stringify(title));
-    //   formData.append("content", JSON.stringify(text));
-    //   for (let i=0; i<file.length; i++) {
-    //   formData.append("file", JSON.stringify(file[i]));
-    //   }
-    //   const config = {
-    //     headers: {
-    //       "content-type" : "multipart/form-data"
-    //     },
-    //   };
-    //   axios.post(url, formData, config)
-    //     .then((response) => {
-    //       console.log(response);
-    //     })
-    //     .catch((error) => {
-    //       console.log(error)
-    //     })
-    // };
+    const upload = () => {
+      const formData = new FormData();
+      const url = '/api/notice-board/write';
+      formData.append("title", JSON.stringify(title));
+      formData.append("content", JSON.stringify(content));
+      for (let i=0; i<3; i++) {
+      formData.append("file", JSON.stringify(file[i]));
+      }
+      const config = {
+        headers: {
+          "content-type" : "multipart/form-data"
+        },
+      };
+      axios.post(url, formData, config)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    };
+
+    const onSave = () => {
+      const _inputData = {
+        id: '',
+        title:title,
+        content: content
+      }
+      dispatch(dataSave(_inputData))
+      setTitle('')
+      setContent('')
+      router.push('/board')
+      upload();
+    }
 
     
     

@@ -8,6 +8,8 @@ import { useState } from 'react';
 import {useDispatch , useSelector} from 'react-redux';
 import router from 'next/router';
 import {editContent, removeContent} from '../_redux/boardReducer.js';
+import axios from 'axios';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,7 +58,7 @@ export default function innerPost() {
     };
     axios.post(url, data, config)
     .then((response)=> {
-      console.log(response.result)
+      console.log(selectRowData.id)
     })
     .catch((error) => {
       console.log(error)
@@ -82,7 +84,7 @@ export default function innerPost() {
     };
     axios.post(url, data, config)
     .then((response)=> {
-      console.log(response.result)
+      console.log(data)
     })
     .catch((error)=> {
       console.log(error)
