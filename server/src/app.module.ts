@@ -28,6 +28,7 @@ import {
     MeetRoom,
 } from './entity';
 import OneToOneMessageGateway from './gateway/message.gateway';
+import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
@@ -62,12 +63,14 @@ const typeORMConfig: TypeOrmModuleOptions = {
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
 const ORMModule = TypeOrmModule.forRoot(typeORMConfig);
+const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
 
 @Module({
     imports: [
         AccountModule,
         CompanyModule,
         ORMModule,
+        MongoDBModule,
         SocketModule,
         FileModule,
         NoticeBoardModule,
