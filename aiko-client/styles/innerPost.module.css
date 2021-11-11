@@ -1,38 +1,28 @@
-.outerContainer {
-    display:block;
-    margin:30px auto;
-    width:80%;
-    height:70%;
-    background-color:#dee1ed;
-    border-radius:10px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content: center;
-}
 
 .reviseDelete {
     display:flex;
-    flex-direction:row;
-    justify-content:flex-end;
-    margin-right:200px;
-    margin-bottom:30px;
+    justify-content:space-between;
+    margin-top:10px;
+}
+
+.align {
+    display:flex;
+}
+
+.outerContainer {
+    display:block;
+    margin:30px auto;
+    width:90%;
+    height:80%;
+    background-color:white;
+    border-radius:10px;
 }
 
 .anotherPost {
     display:flex;
     flex-direction:column;
-    justify-content:flex-end;
+    text-align:middle;
     margin-left:100px;
-}
-
-.nameDate {
-    display:flex;
-    flex-direction:row;
-    justify-content:space-evenly;
-    width:100%;
-    margin-bottom:10px;
 }
 
 .previousPost {
@@ -43,4 +33,43 @@
 .nextPost {
     display:flex;
     direction:row;
+}
+
+.contentInput {
+    width:85%;
+    border: 2px solid #aaa;
+    border-radius:4px;
+    outline: none;
+    padding: 8px;
+    box-sizing:border-box;
+    transition:.3s;
+    resize:none;
+    height:300px;
+    font-size:15px;
+}
+
+.contentInput:focus {
+    border-color:dodgerBlue;
+    box-shadow: 0 0 8px 0 dodgerBlue;
+}
+
+.titleName {
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    margin-top:50px;
+    margin-bottom:30px;
+    justify-content:center;
+}
+
+.contentArea {
+    text-align:center;
+}
+
+.titleInput {
+    width:40%;
+    height:50px;
+    font-size:20px;
+    border:none;
+    background:transparent;
 }
