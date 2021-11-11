@@ -30,6 +30,7 @@ export default class NoticeBoardController {
             const content = req.body.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
+            console.log(files);
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
