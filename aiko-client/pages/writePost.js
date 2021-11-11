@@ -37,10 +37,10 @@ export default function writePost() {
     const upload = () => {
       const formData = new FormData();
       const url = '/api/notice-board/write';
-      formData.append("title", JSON.stringify(title));
-      formData.append("content", JSON.stringify(content));
+      formData.append("title", title);
+      formData.append("content", content);
       for (let i=0; i<3; i++) {
-      formData.append("file", JSON.stringify(file[i]));
+      formData.append("file", file[i]);
       }
       const config = {
         headers: {
