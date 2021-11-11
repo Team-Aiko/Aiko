@@ -15,7 +15,10 @@ export default class NoticeBoardFile {
     USER_PK: number;
 
     @Column()
-    ORIGINAL_NAME: number;
+    COMPANY_PK: number;
+
+    @Column()
+    ORIGINAL_NAME: string;
 
     @Column()
     IS_DELETE: number;

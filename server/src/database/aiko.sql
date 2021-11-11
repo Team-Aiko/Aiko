@@ -180,9 +180,10 @@ create table NOTICE_BOARD_FILE_TABLE (
 	UUID varchar(128),
 	NOTICE_BOARD_PK int not null,
 	USER_PK int not null,
+	COMPANY_PK int not null,
 	ORIGINAL_NAME varchar(512),
-	IS_DELETE int,
-	primary key(NBf_PK)
+	IS_DELETE int not null,
+	primary key(nbf_pk)
 );
 
 -- TEST COMPANY LIST

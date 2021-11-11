@@ -11,10 +11,6 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
-import Pagination from '@material-ui/lab/Pagination';
-import { useEffect } from 'react';
-import Posts from '../components/Posts.js';
-import Paginations from '../components/Paginations.js';
 
 const handleLogin = () => {
     const url = '/api/notice-board/files';
@@ -57,7 +53,6 @@ const handleChange = (e) => {
 };
 
 const [row, setRow] = useState('');
-const [pagingNum, setPagingNum] = useState(10);
 
 const classes = useStyles();
 
