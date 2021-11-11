@@ -33,7 +33,7 @@ export class Pagination {
         // page group generator
         let groupIndex = currentPage % pageGroupCnt; // 1 2 3 4 0
         for (let i = 0; i < pageGroupCnt; i += 1) {
-            if (groupIndex === 0) groupIndex = 5;
+            if (groupIndex === 0) groupIndex = pageGroupCnt;
             this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
         }
 

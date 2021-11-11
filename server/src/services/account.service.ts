@@ -431,27 +431,11 @@ export default class AccountService {
         }
     }
 
-    /**
-     * companyPK가 없을시 일반 유저검색, 있을 시 memberInfo페이지를 위한 것
-     * 권한 -> userEntity.grants
-     * 미팅스케줄 -> meets (조회 당시로부터 30일 앞까지)
-     * 회사정보 -> userEntity.company
-     * 부서정보 -> userEntity.department
-     * 액션아이템 -> actionItems
-     * @param targetUserId
-     * @returns
-     */
     async getUserInfo(targetUserId: number, companyPK?: number) {
         try {
-            if (!companyPK) return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
-
-            let meets: Meet[] = [];
-            const userEntity = await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
-            const meetingSchedules = await this.meetingService.checkMeetSchedule(targetUserId);
-            const actionItems = await this.workService.viewItems(targetUserId, companyPK);
-            meets = meetingSchedules.map((schedule) => schedule.meet);
-
-            return { userEntity, meets, actionItems };
+            if (companyPK)
+                return await getRepo(UserRepository).getUserInfoWithUserPKAndCompanyPK(targetUserId, companyPK);
+            else return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
         } catch (err) {
             throw err;
         }

@@ -16,3 +16,12 @@ export interface IItemBundle {
     updateCols?: string[];
     IS_FINISHED?: number;
 }
+
+export interface IPaginationBundle {
+    USER_PK: number;
+    COMPANY_PK: number;
+    currentPage: number;
+    feedsPerPage?: number;
+    groupCnt?: number;
+    totCnt?: number;
+}

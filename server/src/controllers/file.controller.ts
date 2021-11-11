@@ -54,7 +54,7 @@ export default class FileController {
      * @param res
      */
     @Get('view-chat-file-info')
-    async viewFilesOnChatMsg(@Param('fileId') fileId: string, @Res() res: Response) {
+    async viewFilesOnChatMsg(@Query('fileId') fileId: string, @Res() res: Response) {
         try {
             const { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
             resExecutor(res, { result: { FILE_NAME, ORIGINAL_NAME, FILE_SIZE } as IFileBundle });
@@ -69,7 +69,7 @@ export default class FileController {
      * @param res
      */
     @Get('download-chat-file')
-    async downloadChatFile(@Param('fileId') fileId: string, @Res() res: Response) {
+    async downloadChatFile(@Query('fileId') fileId: string, @Res() res: Response) {
         try {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewFilesOnChatMsg(Number(fileId));
             res.download(`${filePath.CHAT}${FILE_NAME}`, ORIGINAL_NAME);

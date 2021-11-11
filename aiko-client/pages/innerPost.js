@@ -8,6 +8,8 @@ import { useState } from 'react';
 import {useDispatch , useSelector} from 'react-redux';
 import router from 'next/router';
 import {editContent, removeContent} from '../_redux/boardReducer.js';
+import axios from 'axios';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,6 +28,8 @@ export default function innerPost() {
 
   const [title, setTitle] = useState(selectRowData.title);
   const [content, setContent] = useState(selectRowData.content);
+  const [name, setName] = useState(selectRowData.name);
+  const [date, setDate] = useState(selectRowData.date);
 
   const handleTitle = (e) => {
     setTitle(e.target.value);
@@ -35,13 +39,19 @@ export default function innerPost() {
     setContent(e.target.value);
   }
 
+  const handleName = (e) => {
+    setName(e.target.value);
+  }
+
   const dispatch = useDispatch();
 
   const onChange = () => {
     const _inputData = {
       id: selectRowData.id,
       title:title,
-      content: content
+      content: content,
+      name: name,
+      date : date
     }
     const url = '/api/notice-board/update-article'
     const data = {
@@ -56,7 +66,7 @@ export default function innerPost() {
     };
     axios.post(url, data, config)
     .then((response)=> {
-      console.log(response.result)
+      console.log(selectRowData.id)
     })
     .catch((error) => {
       console.log(error)
@@ -64,6 +74,7 @@ export default function innerPost() {
     dispatch(editContent(_inputData))
     setTitle('');
     setContent('');
+    setName('');
     router.push('/board');
   }
 
@@ -71,6 +82,7 @@ export default function innerPost() {
     dispatch(removeContent(selectRowData.id))
     setTitle('');
     setContent('');
+    setName('');
     const url = "/api/notice-board/delete-article";
     const data = {
       'num' : selectRowData.id
@@ -82,7 +94,7 @@ export default function innerPost() {
     };
     axios.post(url, data, config)
     .then((response)=> {
-      console.log(response.result)
+      console.log(data)
     })
     .catch((error)=> {
       console.log(error)
@@ -96,27 +108,43 @@ export default function innerPost() {
     return (
         <>
 
-        <div>
-          <input type='text' value={title} onChange={handleTitle} />
+        <div className={styles.outerContainer}>
+
+        <div className={styles.titleName}>
+          <input className={styles.titleInput} onChange={handleTitle} value={title}/>
+          <p style={{fontSize:'17px', color:'#6F6A6A'}}>Posted by {name}, {date}</p>
         </div>
 
-        <div>
-          <textarea value={content} onChange={handleContent} />
+        <div className={styles.contentArea}>
+          <textarea className={styles.contentInput} value={content} onChange={handleContent} />
         </div>
 
 
-        <div className={styles.reviseDelete}>
-        <Button variant="outlined" style={{marginRight:'20px'}}>목록으로</Button>
-        <Button variant="outlined" color="primary" style={{marginRight:'20px'}} onClick={onChange}>
-          수정
+      <div className={styles.reviseDelete}>
+
+        <Button variant="contained" color="primary"style={{
+          width:'100px', height:'50px', borderRadius:'15px', marginLeft:'15%' , backgroundColor:'#969696'}}
+        onClick={()=>{router.push('/board')}}>
+            LIST
         </Button>
-        <Button variant="outlined" color="secondary" onClick={onRemove}>
-          삭제
-        </Button>
+
+          <div className={styles.align} style={{marginRight:'10%'}}>
+          <Button variant="contained" color="primary" style={{
+            width:'100px', height:'50px', borderRadius:'15px'}}
+          onClick={onChange}>
+              REVISE
+          </Button>
+
+          <Button variant="contained" color="primary" style={{
+            width:'100px', height:'50px', borderRadius:'15px', marginLeft:'10px', backgroundColor:'#D93D3D'}}
+          onClick={onRemove}>
+              DELETE
+          </Button>
+          </div>
         </div>
 
 
-        <div className={styles.anotherPost}>
+        <div className={styles.anotherPost} style={{marginTop:'15px'}}>
           
             <div className={styles.previousPost}>
           <Button size="small" className={classes.margin} style={{width:'20%'}}>
@@ -137,6 +165,9 @@ export default function innerPost() {
             alert('아직 기능 구현 중입니다.')
           }}>2021년도 Aiko 프로젝트 감사 결과</p>
           </div>
+
+        </div>
+
         </div>
 
         </>

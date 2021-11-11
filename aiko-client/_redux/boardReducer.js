@@ -3,12 +3,16 @@ const SELECT = 'DATA_SELECT';
 const EDIT = 'DATA_EDIT';
 const DELETE = 'DATA_DELETE';
 
+const date = new Date();
+
 export const dataSave = (inputData) => ({
     type: SAVE,
     inputData: {
         id: inputData.id,
         title: inputData.title,
-        content: inputData.content
+        content: inputData.content,
+        name: inputData.name,
+        date: date.toLocaleString()
     }
 });
 
@@ -24,7 +28,9 @@ export const editContent = (inputData) => ({
     inputData: {
         id: inputData.id,
         title: inputData.title,
-        content:inputData.content
+        content:inputData.content,
+        name: inputData.name,
+        date: inputData.date
     }
 });
 
@@ -35,13 +41,17 @@ export const removeContent = (id) => ({
     }
 });
 
+
+
 const initialState = {
     lastId: 0,
     inputData: [
         {
             id:'',
             title:'',
-            content:''
+            content:'',
+            name:'',
+            date: date.toLocaleString()
         }
     ],
     selectRowData: {}
@@ -49,7 +59,8 @@ const initialState = {
 
 export default function boardReducer(state = initialState, action) {
     switch(action.type) {
-        case SAVE: return {
+        case SAVE:
+            return {
             lastId: state.lastId + 1,
             inputData: state.inputData.concat({
                 ...action.inputData,

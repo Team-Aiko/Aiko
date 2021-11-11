@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
-import { AikoError, getRepo, isChiefAdmin } from 'src/Helpers';
+import { AikoError, getRepo, isChiefAdmin, Pagination } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
+import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { DepartmentRepository, UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
 
@@ -82,15 +83,12 @@ export default class WorkService {
         return flag;
     }
 
-    async viewItems(USER_PK: number, COMPANY_PK: number) {
+    async viewItems({ COMPANY_PK, USER_PK, currentPage, feedsPerPage, groupCnt }: IPaginationBundle) {
         try {
-            // department selection
-            const deptList = await getRepo(DepartmentRepository).getDepartmentList(COMPANY_PK);
-            if (deptList.length <= 0) throw new AikoError('no dept list', 500, 500819);
+            const cnt = await getRepo(ActionRepository).getItemCnt(USER_PK, COMPANY_PK);
+            const pag = new Pagination(currentPage, cnt, feedsPerPage, groupCnt);
 
-            // item selection
-            const deptIdList = deptList.map((dept) => dept.DEPARTMENT_PK);
-            return await getRepo(ActionRepository).viewItems(USER_PK, deptIdList);
+            return await getRepo(ActionRepository).viewItems(USER_PK, COMPANY_PK, pag);
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from '.';
 import CalledMembers from './calledMembers.entity';
 import MeetRoom from './meetRoom.entity';
 
