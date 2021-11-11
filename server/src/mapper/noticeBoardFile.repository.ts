@@ -4,11 +4,12 @@ import { unixTimeStamp } from 'src/Helpers/functions';
 
 @EntityRepository(NoticeBoardFile)
 export default class NoticeBoardFileRepository extends Repository<NoticeBoardFile> {
-    async createFiles(files, noticeboardPk: number, userPk: number) {
+    // 파일 저장
+    async createFiles(files: Express.Multer.File[], noticeboardPk: number, userPk: number, comPk: number) {
         try {
-            for (const i in files) {
-                const originalName = await files[i].originalname;
-                const uuid = await files[i].filename;
+            for (const file of files) {
+                const originalName = file.originalname;
+                const uuid = file.filename;
                 await this.createQueryBuilder()
                     .insert()
                     .into(NoticeBoardFile)
@@ -17,6 +18,7 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
                         UUID: uuid,
                         NOTICE_BOARD_PK: noticeboardPk,
                         USER_PK: userPk,
+                        COMPANY_PK: comPk,
                         IS_DELETE: 0,
                     })
                     .execute();
@@ -24,5 +26,13 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
         } catch (err) {
             console.log(err);
         }
+    }
+    async downloadFile(fileId: number, comPk: number) {
+        const result = await this.createQueryBuilder('n')
+            .select(['n.UUID', 'n.ORIGINAL_NAME'])
+            .where('NBF_PK = :fileId', { fileId: `${fileId}` })
+            .andWhere('COMPANY_PK = :comPk', { comPk: `${comPk}` })
+            .getOne();
+        return result;
     }
 }

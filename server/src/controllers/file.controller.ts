@@ -13,7 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
-import { resExecutor } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 
@@ -92,5 +92,18 @@ export default class FileController {
         } catch (err) {
             throw resExecutor(res, { err });
         }
+    }
+
+    @Get('download-noticeboard-file')
+    async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+        try {
+            const userPayload = usrPayloadParser(req);
+            const comPk = userPayload.COMPANY_PK;
+            const { UUID, ORIGINAL_NAME } = await this.fileService.downloadNoticeBoardFile(Number(fileId), comPk);
+            const target = filePath.NOTICE_BOARD + '/' + UUID;
+            res.download(target, ORIGINAL_NAME);
+        } catch (err) {
+            throw resExecutor(res, { err });
+        } //push
     }
 }

@@ -36,13 +36,13 @@ export default class NoticeBoardController {
         } catch (err) {
             console.log(err);
             const uuid = files.map((file) => file.filename);
-            // deleteFiles(files);
+            deleteFiles(files[0].destination, ...uuid);
             throw resExecutor(res, { err });
         }
     }
 
     @Post('update-article')
-    async updateArticle(@Req() req, @Res() res) {
+    async updateArticle(@Req() req: Request, @Res() res: Response) {
         try {
             const userPayload = usrPayloadParser(req);
             const title = req.body.title;
@@ -57,7 +57,7 @@ export default class NoticeBoardController {
     }
 
     @Post('delete-article')
-    async deleteArticle(@Req() req, @Res() res) {
+    async deleteArticle(@Req() req: Request, @Res() res: Response) {
         try {
             const userPayload = usrPayloadParser(req);
             const num = req.body.num;
@@ -70,9 +70,9 @@ export default class NoticeBoardController {
     }
 
     @Get('btn-size')
-    async createBtnSize(@Req() req, @Res() res) {
+    async createBtnSize(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
-        const option = parseInt(req.query.option);
+        const option = parseInt(req.query.option as string);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
             const result = await this.noticeboardService.createBtnSize(option, comPk);
@@ -83,11 +83,11 @@ export default class NoticeBoardController {
     }
 
     @Get('list')
-    async getList(@Req() req, @Res() res) {
+    async getList(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
         const comPk = userPayload.COMPANY_PK;
-        const option = parseInt(req.query.option);
-        const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
+        const option = parseInt(req.query.option as string);
+        const pageNum = (parseInt(req.query.pageNum as string) - 1) * 10;
         if (comPk !== undefined && option >= 10 && pageNum >= 0) {
             const result = await this.noticeboardService.getList(option, comPk, pageNum);
             resExecutor(res, { result });
@@ -97,9 +97,9 @@ export default class NoticeBoardController {
     }
 
     @Get('detail')
-    async getDetail(@Req() req, @Res() res) {
+    async getDetail(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
-        const num = parseInt(req.query.num);
+        const num = parseInt(req.query.num as string);
         const userPk = userPayload.USER_PK;
         if (num !== undefined) {
             const result = await this.noticeboardService.getDetail(num, userPk);
