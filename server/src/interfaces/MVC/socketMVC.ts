@@ -1,13 +1,12 @@
-export enum otoPath {
+export enum privateChatPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
-    CLIENT_USERINFO_BROADCAST = 'client/userInfo-broadcast',
     CLIENT_CONNECTED = 'client/connected',
     CLIENT_ERROR = 'client/error',
     CLIENT_SEND = 'client/send',
-    CLIENT_RECEIVE_CHAT_LOG = 'client/receiveChatLog',
+    CLIENT_RECEIVE_CHAT_LOG = 'client/receive-chatlog',
     SERVER_SEND = 'server/send',
-    SERVER_CALL_CHAT_LOG = 'server/callChatLog',
+    SERVER_CALL_CHAT_LOG = 'server/call-chatLog',
 }
 
 export enum statusPath {
@@ -18,4 +17,13 @@ export enum statusPath {
     CLIENT_ERROR = 'client/status/error',
     CLIENT_LOGIN_ALERT = 'client/status/loginAlert',
     CLIENT_LOGOUT_ALERT = 'client/status/logoutAlert',
+}
+
+export interface IMessagePayload {
+    roomId: string;
+    sender: number;
+    receiver: number;
+    file?: number;
+    message: string;
+    date: number;
 }

@@ -1,9 +1,8 @@
 import { PrimaryColumn, Column, Entity, ManyToMany, OneToMany, JoinColumn } from 'typeorm';
-import { OneToOneChatRoomTable } from 'src/interfaces';
 import { User } from '.';
 
-@Entity({ name: 'ONE_TO_ONE_CHAT_ROOM_TABLE' })
-export default class OTOChatRoom implements OneToOneChatRoomTable {
+@Entity({ name: 'PRIVATE_CHAT_ROOM_TABLE' })
+export default class PrivateChatRoom {
     @PrimaryColumn()
     CR_PK: string;
     @Column()
