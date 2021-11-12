@@ -51,43 +51,6 @@ function PComp(props) {
     };
 
     useEffect(() => {
-        const client = io('http://localhost:5000/chat1');
-        setClient(client);
-
-        client.emit('handleConnection', '테스트라 일단 백엔드 비활성화함');
-
-        // room list를 받고 구독을 실시
-        client.on('client/OTOChatRoomList', (roomList) => {
-            const { USER_PK } = userInfo;
-            const list = roomList.map((room) => {
-                const { CR_PK } = room;
-                return CR_PK;
-            });
-
-            client.emit('server/joinRoom', list);
-        });
-
-        /**
-         * 여기부터는 테스트 파트
-         */
-        // 1:1 테스트
-        client.on('client/test', (payload) => {
-            console.log(payload);
-            const chatList = [...chat];
-            chatList.push(payload);
-            setChat(chatList);
-        });
-
-        // 방테스트
-        client.emit('server/test/joinRoom', { roomId: '1', msg: '방입장했습니다.' });
-        client.on('client/test/joinedRoom', (msg) => {
-            console.log(msg);
-        });
-
-        client.on('client/test/room/sendMsg', (msg) => {
-            console.log(msg);
-        });
-
         /**
          * 이하는 status 테스트
          */

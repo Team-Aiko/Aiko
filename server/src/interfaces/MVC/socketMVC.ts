@@ -1,39 +1,3 @@
-import { User } from 'src/entity';
-
-export interface IOneToOnePacket {
-    sender: Pick<User, 'USER_PK' | 'USER_PROFILE_PK' | 'FIRST_NAME' | 'LAST_NAME'>;
-    receiver: Pick<User, 'USER_PK' | 'USER_PROFILE_PK' | 'FIRST_NAME' | 'LAST_NAME'>;
-    companyPK: number;
-    roomId: string;
-    data: {
-        msg: string;
-        file: number; // CF_PK (database socket_table)
-        date: number;
-    };
-}
-
-export interface StatusUserContainer {
-    socketId?: string;
-    userPK: number;
-    logOutPending: boolean;
-    userStatus: number;
-}
-
-export interface StatusSocketContainer {
-    userPK: number;
-    companyPK: number;
-}
-
-export interface IRedisChatLog {
-    chats: {
-        sender: number;
-        receiver: number;
-        msg: string;
-        file: number;
-        date: number;
-    }[];
-}
-
 export enum otoPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
