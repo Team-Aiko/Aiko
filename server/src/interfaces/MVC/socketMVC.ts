@@ -5,7 +5,7 @@ export enum privateChatPath {
     CLIENT_ERROR = 'client/private-chat/error',
     CLIENT_SEND = 'client/private-chat/send',
     CLIENT_RECEIVE_CHAT_LOG = 'client/private-chat/receive-chatlog',
-    SERVER_SEND = 'server/send',
+    SERVER_SEND = 'server/private-chat/send',
     SERVER_CALL_CHAT_LOG = 'server/private-chat/call-chatLog',
 }
 
