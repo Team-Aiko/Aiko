@@ -171,7 +171,7 @@ create table NOTICE_BOARD_TABLE (
 	CREATE_DATE int,
 	UPDATE_DATE int,
 	IS_DELETE int,
-	primary key (NO)
+	primary key (NOTICE_BOARD_PK)
 );
 
 -- 공지 게시판 파일 테이블 생성
