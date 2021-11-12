@@ -162,7 +162,7 @@ create table USER_PROFILE_FILE_TABLE (
     FILE_NAME VARCHAR(256) NOT NULL
 );
 
--- 공지 게시판 테이블 생성
+-- 공지 게시판 테이블 생성 //수정
 create table NOTICE_BOARD_TABLE (
 	NOTICE_BOARD_PK int auto_increment,
 	TITLE varchar(80),
@@ -174,7 +174,7 @@ create table NOTICE_BOARD_TABLE (
 	primary key (NOTICE_BOARD_PK)
 );
 
--- 공지 게시판 파일 테이블 생성
+-- 공지 게시판 파일 테이블 생성 
 create table NOTICE_BOARD_FILE_TABLE (
 	NBF_PK int auto_increment,
 	UUID varchar(128),
