@@ -1,20 +1,18 @@
 import * as React from 'react';
-import { DataGrid } from '@material-ui/data-grid';
 import axios from 'axios';
 import { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import Router from 'next/router';
+import router from 'next/router';
 import Link from 'next/link';
-import writeBoard from './writeBoard.js';
+import { useSelector, useDispatch } from 'react-redux';
+import {selectRow} from '../_redux/boardReducer';
+import styles from '../styles/Board.module.css';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import { makeStyles } from '@material-ui/core/styles';
+import InputLabel from '@material-ui/core/InputLabel';
+import Pagination from '@material-ui/lab/Pagination';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        '& > *': {
-            margin: theme.spacing(1),
-        },
-    },
-}));
 
 const handleLogin = () => {
     const url = '/api/notice-board/files';
@@ -32,64 +30,111 @@ const handleLogin = () => {
     })();
 };
 
-export default function Board() {
-    let columns = [
-        { field: 'id', headerName: 'ID', width: 100 },
-        {
-            field: 'title',
-            headerName: '제목',
-            width: 600,
-            editable: false,
-        },
-        {
-            field: 'name',
-            headerName: '작성자',
-            type: 'string',
-            width: 130,
-            editable: false,
-        },
-        {
-            field: 'date',
-            headerName: '작성일',
-            type: 'string',
-            width: 230,
-            editable: false,
-        },
-        {
-            field: 'count',
-            headerName: '조회수',
-            type: 'number',
-            width: 150,
-            editable: false,
-        },
-    ];
+const useStyles = makeStyles((theme) => ({
+  root: {
+    '& > *': {
+      marginTop: theme.spacing(2),
+    },
+  },
+}));
 
-    const now = new Date();
 
-    const [count, setCount] = useState(1);
-    const [id, setId] = useState(1);
-    const [date, setDate] = useState(now.toLocaleString());
-    const [title, setTitle] = useState('');
-    const [name, setName] = useState('');
+export default function board() {
 
-    const [rows, setRows] = useState([{ id: id, title: title, name: name, date: date, count: count }]);
+const {inputData} = useSelector((state) => state.boardReducer);
+const {lastId} = useSelector((state) => state.boardReducer);
 
-    return (
-        <>
-            <Link href='/writeBoard'>
-                <Button
-                    variant='contained'
-                    style={{ width: 170, display: 'flex', marginLeft: 'auto', padding: '10px' }}
-                >
-                    <writeBoard title={title} name={name} />
-                    글쓰기
-                </Button>
-            </Link>
+const dispatch = useDispatch();
 
-            <div style={{ height: 800, width: '100%' }}>
-                <DataGrid rows={rows} columns={columns} pageSize={10} checkboxSelection disableSelectionOnClick />
-                <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
-            </div>
-        </>
-    );
+const selectContent = (id) => {
+    dispatch(selectRow(id))
+};
+
+const handleChange = (e) => {
+        setRow(e.target.value)
+};
+
+const [row, setRow] = useState('');
+const [pagingNum, setPagingNum] = useState(10)
+
+const classes = useStyles();
+
+return (
+    <>
+    <div className={styles.desc}>
+        <h2 className={styles.aikoBoard}>AIKO notice board</h2>
+
+        <div style={{marginRight:'30px'}}>
+        <FormControl variant="outlined" className={styles.formControl}>
+            <InputLabel htmlFor="outlined-age-native-simple">Rows</InputLabel>
+            <Select
+            native
+            value={row}
+            onChange={handleChange}
+            label="Age"
+            >
+            <option aria-label="None" value="" />
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={30}>30</option>
+            </Select>
+        </FormControl>
+        </div>
+    </div>
+
+    <div>
+        <table className={styles.table}>
+            <thead className={styles.thead}>
+                <tr>
+                    <th className={styles.th} style={{width:'7%'}}>No.</th>
+                    <th className={styles.th} style={{width:'50%', textAlign:'left'}}>Title</th>
+                    <th className={styles.th} style={{width:'20%', textAlign:'left'}}>Posted by</th>
+                    <th className={styles.th} style={{width:'15%', textAlign:'left'}}>Date</th>
+                </tr>
+            </thead>
+
+            <tbody className={styles.tbody}>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {
+                    lastId !== 0 ?
+                    inputData.map(rowData => (
+                        rowData.id !== '' &&
+                    <tr>
+                        <td className={styles.td} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.id}</a></Link></td>
+                        <td className={styles.td} style={{textAlign:'left'}} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.title}</a></Link></td>
+                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.name}</td>
+                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.date}</td>
+                    </tr>
+                    )) :
+                    <tr>
+                        <td className={styles.td}></td>
+                        <td className={styles.td}>작성된 글이 없습니다.</td>
+                    </tr>
+                }   
+            </tbody>
+        </table>
+    </div>
+
+    <div className={styles.postButtonContainer}>
+        <Button variant="contained" color="primary" style={{
+          width:'100px', height:'50px', borderRadius:'15px'}}
+        onClick={()=>{router.push('/writePost')}}>
+            NEW POST
+        </Button>
+    </div>
+
+    <div className={styles.root}>
+      <Pagination count={pagingNum}/>
+    </div>
+
+
+    <div style={{ height: 300, width: '30%' }}>
+        <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
+    </div>
+
+    </>
+);
 }
