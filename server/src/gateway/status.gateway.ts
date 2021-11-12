@@ -78,14 +78,13 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, userStatus: number) {
+    async changeStatus(client: Socket, userStatus: { userPK: number; userStatus: number }) {
         try {
             const socketId = client.id;
-            const container = await this.socketService.getUserInfoStataus(socketId);
-            this.wss
-                .to(`${container.companyPK}`)
-                .except(client.id)
-                .emit(statusPath.CLIENT_CHANGE_STATUS, await this.socketService.changeStatus(socketId, userStatus));
+            const container = await this.socketService.getUserInfoStatus(socketId);
+            console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
+            const result = await this.socketService.changeStatus(socketId, userStatus);
+            this.wss.to(`${container.companyPK}`).except(client.id).emit(statusPath.CLIENT_CHANGE_STATUS, result);
         } catch (err) {
             client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }

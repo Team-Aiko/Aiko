@@ -27,7 +27,6 @@ import {
     Meet,
     MeetRoom,
 } from './entity';
-import OneToOneMessageGateway from './gateway/message.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';

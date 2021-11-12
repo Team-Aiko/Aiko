@@ -90,6 +90,10 @@ export default class SocketService {
 
         try {
             const userContainer = await this.getUserStatus(COMPANY_PK, USER_PK);
+            console.log(
+                '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ userContainer',
+                userContainer,
+            );
             const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK);
             const newUserContainer = new Status();
             newUserContainer.userPK = USER_PK;
@@ -100,7 +104,8 @@ export default class SocketService {
 
             const isSendable = !userContainer ? true : userContainer.logoutPending;
 
-            await this.setUserStatus(newUserContainer);
+            if (userContainer) await this.updateStatus(newUserContainer);
+            else await this.setUserStatus(newUserContainer);
 
             return { isSendable, user: isSendable ? user : undefined };
         } catch (err) {
@@ -166,16 +171,33 @@ export default class SocketService {
         }
     }
 
-    async changeStatus(socketId: string, status: number) {
+    async changeStatus(socketId: string, status: { userPK: number; userStatus: number }) {
+        console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
-            userStatus.status = status;
-            await this.setUserStatus(userStatus);
+            userStatus.status = status.userStatus;
+            const temp = await this.updateStatus(userStatus);
+            console.log('🚀 ~ file: socket.service.ts ~ line 178 ~ SocketService ~ changeStatus ~ temp', temp);
             return { userPK: userStatus.userPK, userStatus: userStatus.status };
         } catch (err) {
             console.error(err);
             if (err instanceof AikoError) throw err;
         }
+    }
+
+    async getUserInfoStatus(socketId: string) {
+        try {
+            const userStatus = await this.getUserStatusWithSocketId(socketId);
+            return userStatus;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/getUserInfoStataus', 0, 4);
+        }
+    }
+
+    // TODO:후일 지워야함.
+    async testSendMsg(text: string) {
+        console.log(text);
     }
 
     /**
@@ -210,7 +232,8 @@ export default class SocketService {
     async setUserStatus(container: Status) {
         try {
             const dto = new this.statusModel(container);
-            return dto.save();
+            this.statusModel.create(container);
+            return await dto.save();
         } catch (err) {
             console.error(err);
             throw new AikoError('socketService/setUsrCont', 100, 5091282);
@@ -226,9 +249,23 @@ export default class SocketService {
         }
     }
 
+    async updateStatus(userStatus: Status) {
+        try {
+            return await this.statusModel
+                .findOneAndUpdate(
+                    { userPK: userStatus.userPK, companyPK: userStatus.companyPK },
+                    { status: userStatus.status, socketId: userStatus.socketId },
+                )
+                .exec();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socket/Service/updateStatus', 100, 2039483);
+        }
+    }
+
     async getUserStatusWithSocketId(socketId: string) {
         try {
-            return (await this.statusModel.findOne({ socketId }).exec()) as Status;
+            return (await this.statusModel.findOne({ socketId })) as Status;
         } catch (err) {
             console.error(err);
             throw new AikoError('socketService/getSocketCont', 100, 5091282);
