@@ -1,12 +1,12 @@
 export enum privateChatPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
-    CLIENT_CONNECTED = 'client/connected',
-    CLIENT_ERROR = 'client/error',
-    CLIENT_SEND = 'client/send',
-    CLIENT_RECEIVE_CHAT_LOG = 'client/receive-chatlog',
+    CLIENT_CONNECTED = 'client/private-chat/connected',
+    CLIENT_ERROR = 'client/private-chat/error',
+    CLIENT_SEND = 'client/private-chat/send',
+    CLIENT_RECEIVE_CHAT_LOG = 'client/private-chat/receive-chatlog',
     SERVER_SEND = 'server/send',
-    SERVER_CALL_CHAT_LOG = 'server/call-chatLog',
+    SERVER_CALL_CHAT_LOG = 'server/private-chat/call-chatLog',
 }
 
 export enum statusPath {
