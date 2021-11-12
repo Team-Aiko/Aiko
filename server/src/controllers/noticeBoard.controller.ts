@@ -43,6 +43,7 @@ export default class NoticeBoardController {
     }
 
     @Post('update-article')
+    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async updateArticle(@Req() req: Request, @Res() res: Response) {
         try {
             const userPayload = usrPayloadParser(req);
@@ -112,20 +113,5 @@ export default class NoticeBoardController {
         } else {
             throw resExecutor(res, { err: new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000) }); // 이거 에러처리 모르겠음
         }
-    }
-
-    // 파일 다운로드 테스트
-
-    @Get('file')
-    getFile(@Req() req, @Res() res) {
-        try {
-            const { uuid } = req.query;
-            const userPayload = usrPayloadParser(req);
-            const userPk = userPayload.USER_PK;
-            this.noticeboardService.getFile(uuid, userPk);
-            // res.download('./files/noticeboard/e1de0edc64e4a0b7b340bd7e3dc7677a', 'as.xlsx');
-        } catch (err) {
-            throw resExecutor(res, { err });
-        } //push
     }
 }

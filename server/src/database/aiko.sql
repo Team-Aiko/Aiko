@@ -164,7 +164,7 @@ create table USER_PROFILE_FILE_TABLE (
 
 -- 공지 게시판 테이블 생성
 create table NOTICE_BOARD_TABLE (
-	NO int auto_increment,
+	NOTICE_BOARD_PK int auto_increment,
 	TITLE varchar(80),
 	CONTENT varchar(6000),
 	USER_PK int,
