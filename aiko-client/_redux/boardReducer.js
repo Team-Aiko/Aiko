@@ -41,8 +41,6 @@ export const removeContent = (id) => ({
     }
 });
 
-
-
 const initialState = {
     lastId: 0,
     inputData: [

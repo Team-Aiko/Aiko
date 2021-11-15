@@ -29,7 +29,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             return this.createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ IS_DELETE: 1 })
-                .where('NO like :num', { num: `${num}` })
+                .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
@@ -42,7 +42,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             return this.createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time })
-                .where('NO like :num', { num: `${num}` })
+                .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
@@ -59,7 +59,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     }
     async getList(option: number, comPk: number, pageNum: number) {
         return await this.createQueryBuilder('n')
-            .select(['n.NO', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
+            .select(['n.NOTICE_BOARD_PK', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
             .limit(option)
             .offset(pageNum)
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })

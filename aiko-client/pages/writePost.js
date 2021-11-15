@@ -15,6 +15,7 @@ export default function writePost() {
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
     const [file, setFile] = useState(null);
+
   
     const titleChange = (e) => {
       setTitle(e.target.value);
@@ -32,8 +33,6 @@ export default function writePost() {
       setName(e.target.value);
     };
 
-    const dispatch = useDispatch();
-
     const upload = () => {
       const formData = new FormData();
       const url = '/api/notice-board/write';
@@ -50,29 +49,17 @@ export default function writePost() {
       axios.post(url, formData, config)
         .then((response) => {
           console.log(response);
+          setTitle('');
+          setName('');
+          setContent('');
+          setFile(null);
+          router.push('/board');
         })
         .catch((error) => {
-          console.log(error)
+          console.log(error);
+          alert('게시글 작성에 실패하셨습니다.')
         })
     };
-
-    const date = new Date();
-
-    const onSave = () => {
-      const _inputData = {
-        id: '',
-        title:title,
-        content: content,
-        name: name,
-        date: Date.toLocaleString()
-      }
-      dispatch(dataSave(_inputData))
-      setTitle('')
-      setContent('')
-      setName('')
-      router.push('/board')
-      upload();
-    }
     
     return (
   <>
@@ -103,7 +90,7 @@ export default function writePost() {
         + Attach File
       </label>
         <Button variant="contained" color="primary" style={{
-          width:'100px', height:'50px', borderRadius:'15px'}} onClick={onSave}>
+          width:'100px', height:'50px', borderRadius:'15px'}} onClick={upload}>
             SUBMIT
         </Button>
       </div>
