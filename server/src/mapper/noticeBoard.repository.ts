@@ -67,9 +67,9 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     }
     async getDetail(num: number, userPk: number) {
         return await this.createQueryBuilder('n')
-            .select()
-            .where('USER_PK like :userPk', { userPk: `${userPk}` })
-            .andWhere('NOTICE_BOARD_PK like :num', { num: `${num}` })
+            .innerJoin('n.noticeboardFiles', 'noticeboard')
+            // .where('USER_PK like :userPk', { userPk: `${userPk}` })
+            // .andWhere('NOTICE_BOARD_PK like :num', { num: `${num}` })
             .getOne();
     }
 }
