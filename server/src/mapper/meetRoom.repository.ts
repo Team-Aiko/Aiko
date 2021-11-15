@@ -81,9 +81,10 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
 
     async viewMeetingRoom(ROOM_PK: number) {
         try {
-            const room = await this.createQueryBuilder('mr').where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK }).getOneOrFail();
-            const meetings = await getRepo(MeetRepository).getMeetings(room.ROOM_PK);
-            room.meets = meetings;
+            const room = await this.createQueryBuilder('mr')
+                .where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .leftJoinAndSelect('mr.meets', 'meets')
+                .getOneOrFail();
             return room;
         } catch (err) {
             console.error(err);
