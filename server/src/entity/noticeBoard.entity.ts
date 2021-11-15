@@ -26,6 +26,6 @@ export default class NoticeBoard {
     @Column()
     COMPANY_PK: number;
 
-    @OneToMany(() => NoticeBoardFile, (nbf) => nbf.noticeboard)
-    noticeboardFiles: NoticeBoardFile[];
+    @OneToMany(() => NoticeBoardFile, (nbf) => nbf.nb)
+    files: NoticeBoardFile[];
 }

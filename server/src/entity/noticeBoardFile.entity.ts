@@ -23,6 +23,6 @@ export default class NoticeBoardFile {
     @Column()
     IS_DELETE: number;
 
-    @ManyToOne(() => NoticeBoard, (nb) => nb.noticeboardFiles)
-    noticeboard: NoticeBoard;
+    @ManyToOne(() => NoticeBoard, (nb) => nb.files)
+    nb: NoticeBoard;
 }
