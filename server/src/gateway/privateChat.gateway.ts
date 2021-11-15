@@ -34,7 +34,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
             roomList.forEach((room) => client.join(room.CR_PK));
 
-            client.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, roomList);
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, roomList);
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }
