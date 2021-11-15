@@ -1,4 +1,4 @@
-import { PrimaryColumn, Column, Entity, ManyToMany, OneToMany, JoinColumn } from 'typeorm';
+import { PrimaryColumn, Column, Entity, ManyToMany, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '.';
 
 @Entity({ name: 'PRIVATE_CHAT_ROOM_TABLE' })
@@ -12,11 +12,11 @@ export default class PrivateChatRoom {
     @Column()
     COMPANY_PK: number;
 
-    @OneToMany(() => User, (user) => user.socket1)
+    @ManyToOne(() => User, (user) => user.socket1)
     @JoinColumn({ name: 'USER_1' })
     user1: User;
 
-    @OneToMany(() => User, (user) => user.socket2)
+    @ManyToOne(() => User, (user) => user.socket2)
     @JoinColumn({ name: 'USER_2' })
     user2: User;
 }

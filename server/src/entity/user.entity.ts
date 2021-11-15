@@ -9,7 +9,7 @@ import {
     ManyToMany,
     JoinTable,
 } from 'typeorm';
-import { Department, Company, Country, LoginAuth, ResetPw, Socket, OTOChatRoom } from '.';
+import { Department, Company, Country, LoginAuth, ResetPw, Socket, PrivateChatRoom } from '.';
 import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
 import CalledMembers from './calledMembers.entity';
@@ -83,11 +83,11 @@ export default class User {
     @OneToOne(() => Socket, (socket) => socket.user)
     socket: Socket;
 
-    @ManyToMany(() => OTOChatRoom, (otoChatRoom) => otoChatRoom.USER_1)
-    socket1: OTOChatRoom[];
+    @ManyToMany(() => PrivateChatRoom, (chatRoom) => chatRoom.USER_1)
+    socket1: PrivateChatRoom[];
 
-    @ManyToMany(() => OTOChatRoom, (otoChatRoom) => otoChatRoom.USER_2)
-    socket2: OTOChatRoom[];
+    @ManyToMany(() => PrivateChatRoom, (chatRoom) => chatRoom.USER_2)
+    socket2: PrivateChatRoom[];
 
     @OneToMany(() => Grant, (grant) => grant.user)
     grants: Grant[];

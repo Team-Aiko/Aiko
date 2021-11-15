@@ -7,7 +7,7 @@ import { filePath } from 'src/interfaces/MVC/fileMVC';
 import MeetingService from 'src/services/meeting.service';
 import WorkService from 'src/services/work.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PriavateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
+import { PrivateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
 import { Status, StatusSchema } from 'src/schemas/status.schema';
 
 @Module({
@@ -18,7 +18,7 @@ import { Status, StatusSchema } from 'src/schemas/status.schema';
         }),
         // mongodb imports
         MongooseModule.forFeature([
-            { name: PriavateChatlog.name, schema: PrivateChatlogSchema },
+            { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
             { name: Status.name, schema: StatusSchema },
         ]),
     ],

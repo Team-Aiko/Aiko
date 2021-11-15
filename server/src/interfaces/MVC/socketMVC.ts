@@ -22,7 +22,6 @@ export enum statusPath {
 export interface IMessagePayload {
     roomId: string;
     sender: number;
-    receiver: number;
     file?: number;
     message: string;
     date: number;

@@ -47,12 +47,7 @@ export default class SocketService {
     ): Promise<boolean> {
         try {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
-            return await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(
-                manager,
-                userPK,
-                userList,
-                companyPK,
-            );
+            await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
 
             const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
 
@@ -66,6 +61,8 @@ export default class SocketService {
                     return true;
                 }),
             );
+
+            return true;
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
@@ -330,12 +327,11 @@ export default class SocketService {
      *
      */
 
-    async updateChatlog({ date, message, receiver, roomId, sender, file }: IMessagePayload) {
+    async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
         try {
             const chatlog = await this.chatlogModel.findOne({ roomId });
             chatlog.messages.push({
                 sender,
-                receiver,
                 file: file || -1,
                 date,
                 message: message || '',

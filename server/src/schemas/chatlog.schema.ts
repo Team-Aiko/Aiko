@@ -10,7 +10,6 @@ export class PrivateChatlog {
     @Prop({ required: true })
     messages: {
         sender: number;
-        receiver: number;
         file: number;
         message: string;
         date: number;
