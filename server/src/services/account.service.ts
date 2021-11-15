@@ -141,7 +141,7 @@ export default class AccountService {
                     salt,
                 );
                 userPK = (result.raw as ResultSetHeader).insertId as number;
-                await this.socketService.makeOneToOneChatRooms(queryRunner.manager, data.companyPK, userPK);
+                await this.socketService.makePrivateChatRoomList(queryRunner.manager, data.companyPK, userPK);
             }
 
             // * email auth

@@ -81,9 +81,31 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
 
     async viewMeetingRoom(ROOM_PK: number) {
         try {
-            const room = await this.createQueryBuilder('mr').where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK }).getOneOrFail();
-            const meetings = await getRepo(MeetRepository).getMeetings(room.ROOM_PK);
-            room.meets = meetings;
+            const room = await this.createQueryBuilder('mr')
+                .where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK })
+                .leftJoinAndSelect('mr.meets', 'meets')
+                .leftJoinAndSelect('meets.members', 'members')
+                .leftJoinAndSelect('members.user', 'user')
+                .leftJoinAndSelect('user.department', 'department')
+                .getOneOrFail();
+
+            room.meets = room.meets.map((meet) => {
+                meet.members = meet.members.map((member) => {
+                    member.user = propsRemover(
+                        member.user,
+                        'PASSWORD',
+                        'SALT',
+                        'IS_DELETED',
+                        'IS_VERIFIED',
+                        'CREATE_DATE',
+                    );
+
+                    return member;
+                });
+
+                return meet;
+            });
+
             return room;
         } catch (err) {
             console.error(err);

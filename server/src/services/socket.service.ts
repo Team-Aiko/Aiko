@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { SocketRepository, UserRepository, OTOChatRoomRepository } from 'src/mapper';
+import { SocketRepository, UserRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
-import { User } from 'src/entity';
+import { PrivateChatRoom, User } from 'src/entity';
 import { AikoError } from 'src/Helpers';
 import { EntityManager, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { Socket, Server } from 'socket.io';
-import { statusPath } from '../interfaces/MVC/socketMVC';
+import { IMessagePayload, statusPath } from '../interfaces/MVC/socketMVC';
 import { InjectModel } from '@nestjs/mongoose';
-import { PriavateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
+import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
 import { Model } from 'mongoose';
 import { Status, statusDocument } from 'src/schemas/status.schema';
+import PrivateChatRoomRepository from 'src/mapper/privateChatRoom.repository';
 
 @Injectable()
 export default class SocketService {
     constructor(
-        @InjectModel(PriavateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>,
+        @InjectModel(PrivateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>,
         @InjectModel(Status.name) private statusModel: Model<statusDocument>,
     ) {}
     /**
@@ -39,24 +40,66 @@ export default class SocketService {
      * @param userInfo
      * @returns
      */
-    async makeOneToOneChatRooms(
+    async makePrivateChatRoomList(
         @TransactionManager() manager: EntityManager,
         companyPK: number,
         userPK: number,
     ): Promise<boolean> {
         try {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
-            return await getRepo(OTOChatRoomRepository).makeOneToOneChatRooms(manager, userPK, userList, companyPK);
+            await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
+
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
+
+            await Promise.all(
+                roomList.map(async (room) => {
+                    const dto = new PrivateChatlog();
+                    dto.roomId = room.CR_PK;
+                    dto.messages = [];
+                    await this.chatlogModel.create(dto);
+
+                    return true;
+                }),
+            );
+
+            return true;
         } catch (err) {
             throw new AikoError('testError', 451, 500000);
         }
     }
 
-    async getOneToOneChatRoomList(userId: number, companyPK: number) {
+    /**
+     *
+     *
+     * private chat methods
+     *
+     *
+     */
+
+    async connectPrivateChat(socketId: string, { userPK, companyPK }: { userPK: number; companyPK: number }) {
         try {
-            return await getRepo(OTOChatRoomRepository).getOneToOneChatRoomList(userId, companyPK);
+            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+
+            if (user.COMPANY_PK !== companyPK || user.USER_PK !== userPK)
+                throw new AikoError('socketService/invalid user information', 100, 49921);
+
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
+                user.USER_PK,
+                user.COMPANY_PK,
+            );
+
+            return roomList;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            console.error(err);
+            throw err;
+        }
+    }
+
+    async sendMessage(payload: IMessagePayload) {
+        try {
+            await this.updateChatlog(payload);
+        } catch (err) {
+            throw err;
         }
     }
 
@@ -195,11 +238,6 @@ export default class SocketService {
         }
     }
 
-    // TODO:후일 지워야함.
-    async testSendMsg(text: string) {
-        console.log(text);
-    }
-
     /**
      *
      *
@@ -218,8 +256,6 @@ export default class SocketService {
      *
      *
      */
-
-    //
     async getUserStatus(companyPK: number, userPK: number) {
         try {
             return (await this.statusModel.findOne({ userPK, companyPK }).exec()) as Status;
@@ -269,6 +305,50 @@ export default class SocketService {
         } catch (err) {
             console.error(err);
             throw new AikoError('socketService/getSocketCont', 100, 5091282);
+        }
+    }
+
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     * * util functions (private chat)
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     */
+
+    async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
+        try {
+            const chatlog = await this.chatlogModel.findOne({ roomId });
+            chatlog.messages.push({
+                sender,
+                file: file || -1,
+                date,
+                message: message || '',
+            });
+
+            await this.chatlogModel.findOneAndUpdate({ roomId }, chatlog).exec();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async getChalog(roomId: string) {
+        try {
+            return (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     }
 }

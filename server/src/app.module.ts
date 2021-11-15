@@ -16,7 +16,6 @@ import {
     ResetPw,
     Socket,
     ChatFile,
-    OTOChatRoom,
     Refresh,
     NoticeBoard,
     Action,
@@ -26,6 +25,7 @@ import {
     CalledMembers,
     Meet,
     MeetRoom,
+    PrivateChatRoom,
 } from './entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
@@ -54,7 +54,7 @@ const typeORMConfig: TypeOrmModuleOptions = {
         ResetPw,
         Socket,
         ChatFile,
-        OTOChatRoom,
+        PrivateChatRoom,
         Refresh,
         NoticeBoard,
         NoticeBoardFile,
