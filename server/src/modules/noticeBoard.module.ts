@@ -1,8 +1,6 @@
 import { HttpException, HttpStatus, Module, Res } from '@nestjs/common';
 import NoticeBoardController from 'src/controllers/noticeBoard.controller';
 import NoticeBoardService from 'src/services/noticeBoard.service';
-import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { AikoError } from 'src/Helpers';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
 @Module({

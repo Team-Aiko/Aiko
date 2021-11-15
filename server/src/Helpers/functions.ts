@@ -111,20 +111,16 @@ export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
 }
 
-// 파일들 삭제
-export function deleteFiles(files) {
-    for (const i in files) {
-        const target = files[i].destination + '/' + files[i].filename;
+// 파일삭제
+export function deleteFiles(destination: string, ...uuid: string[]) {
+    for (const _uuid of uuid) {
+        const target = destination + '/' + _uuid;
         fs.unlink(target, (log) => {
-            console.log(log);
+            if (log === null) {
+                console.log('파일 삭제 성공');
+            } else {
+                console.log('파일 삭제 실패:' + log);
+            }
         });
     }
-}
-
-// 파일 삭제
-export function deleteFile(file) {
-    const target = file.destination + '/' + file.filename;
-    fs.unlink(target, (log) => {
-        console.log(log);
-    });
 }

@@ -1,19 +1,9 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Req,
-    Res,
-    UploadedFiles,
-    UseGuards,
-    UseInterceptors,
-    StreamableFile,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
-import { request, Response } from 'express';
+import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
 import { deleteFiles } from 'src/Helpers/functions';
 
@@ -33,24 +23,28 @@ export default class NoticeBoardController {
 
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
-    async createArticle(@Req() req, @Res() res, @UploadedFiles() files) {
+    async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
             const userPayload = usrPayloadParser(req);
             const title = req.body.title;
             const content = req.body.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
+            console.log(files);
+            // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
         } catch (err) {
             console.log(err);
-            deleteFiles(files);
+            const uuid = files.map((file) => file.filename);
+            deleteFiles(files[0].destination, ...uuid);
             throw resExecutor(res, { err });
         }
     }
 
     @Post('update-article')
-    async updateArticle(@Req() req, @Res() res) {
+    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
+    async updateArticle(@Req() req: Request, @Res() res: Response) {
         try {
             const userPayload = usrPayloadParser(req);
             const title = req.body.title;
@@ -65,7 +59,7 @@ export default class NoticeBoardController {
     }
 
     @Post('delete-article')
-    async deleteArticle(@Req() req, @Res() res) {
+    async deleteArticle(@Req() req: Request, @Res() res: Response) {
         try {
             const userPayload = usrPayloadParser(req);
             const num = req.body.num;
@@ -78,9 +72,9 @@ export default class NoticeBoardController {
     }
 
     @Get('btn-size')
-    async createBtnSize(@Req() req, @Res() res) {
+    async createBtnSize(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
-        const option = parseInt(req.query.option);
+        const option = parseInt(req.query.option as string);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
             const result = await this.noticeboardService.createBtnSize(option, comPk);
@@ -91,11 +85,11 @@ export default class NoticeBoardController {
     }
 
     @Get('list')
-    async getList(@Req() req, @Res() res) {
+    async getList(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
         const comPk = userPayload.COMPANY_PK;
-        const option = parseInt(req.query.option);
-        const pageNum = (parseInt(req.query.pageNum) - 1) * 10;
+        const option = parseInt(req.query.option as string);
+        const pageNum = (parseInt(req.query.pageNum as string) - 1) * 10;
         if (comPk !== undefined && option >= 10 && pageNum >= 0) {
             const result = await this.noticeboardService.getList(option, comPk, pageNum);
             resExecutor(res, { result });
@@ -105,9 +99,9 @@ export default class NoticeBoardController {
     }
 
     @Get('detail')
-    async getDetail(@Req() req, @Res() res) {
+    async getDetail(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
-        const num = parseInt(req.query.num);
+        const num = parseInt(req.query.num as string);
         const userPk = userPayload.USER_PK;
         if (num !== undefined) {
             const result = await this.noticeboardService.getDetail(num, userPk);
@@ -119,20 +113,5 @@ export default class NoticeBoardController {
         } else {
             throw resExecutor(res, { err: new AikoError('ERROR: 파라미터값 확인 필요', 451, 400000) }); // 이거 에러처리 모르겠음
         }
-    }
-
-    // 파일 다운로드 테스트
-
-    @Get('file')
-    getFile(@Req() req, @Res() res) {
-        try {
-            const { uuid } = req.query;
-            const userPayload = usrPayloadParser(req);
-            const userPk = userPayload.USER_PK;
-            this.noticeboardService.getFile(uuid, userPk);
-            // res.download('./files/noticeboard/e1de0edc64e4a0b7b340bd7e3dc7677a', 'as.xlsx');
-        } catch (err) {
-            throw resExecutor(res, { err });
-        } //push
     }
 }

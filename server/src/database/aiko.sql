@@ -162,27 +162,28 @@ create table USER_PROFILE_FILE_TABLE (
     FILE_NAME VARCHAR(256) NOT NULL
 );
 
--- 공지 게시판 테이블 생성
+-- 공지 게시판 테이블 생성 //수정
 create table NOTICE_BOARD_TABLE (
-	NO int auto_increment,
+	NOTICE_BOARD_PK int auto_increment,
 	TITLE varchar(80),
 	CONTENT varchar(6000),
 	USER_PK int,
 	CREATE_DATE int,
 	UPDATE_DATE int,
 	IS_DELETE int,
-	primary key (NO)
+	primary key (NOTICE_BOARD_PK)
 );
 
--- 공지 게시판 파일 테이블 생성
+-- 공지 게시판 파일 테이블 생성 
 create table NOTICE_BOARD_FILE_TABLE (
 	NBF_PK int auto_increment,
 	UUID varchar(128),
 	NOTICE_BOARD_PK int not null,
 	USER_PK int not null,
+	COMPANY_PK int not null,
 	ORIGINAL_NAME varchar(512),
-	IS_DELETE int,
-	primary key(NBf_PK)
+	IS_DELETE int not null,
+	primary key(nbf_pk)
 );
 
 -- TEST COMPANY LIST

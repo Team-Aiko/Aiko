@@ -4,7 +4,7 @@ import { getRepo } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
-
+import { NoticeBoardFileRepository } from 'src/mapper';
 @Injectable()
 export default class FileService {
     async uploadFilesOnChatMsg(bundle: IFileBundle, chatRoomId: string): Promise<number> {
@@ -29,5 +29,8 @@ export default class FileService {
         } catch (err) {
             throw err;
         }
+    }
+    async downloadNoticeBoardFile(fileId: number, comPk: number) {
+        return await getRepo(NoticeBoardFileRepository).downloadFile(fileId, comPk);
     }
 }
