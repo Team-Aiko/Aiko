@@ -69,7 +69,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         return await this.createQueryBuilder('n')
             .select()
             .where('USER_PK like :userPk', { userPk: `${userPk}` })
-            .andWhere('NO like :num', { num: `${num}` })
+            .andWhere('NOTICE_BOARD_PK like :num', { num: `${num}` })
             .getOne();
     }
 }
