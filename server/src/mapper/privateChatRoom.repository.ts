@@ -4,7 +4,7 @@ import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';
 import { propsRemover } from 'src/Helpers';
 
-const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK'];
+const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
 
 @EntityRepository(PrivateChatRoom)
 export default class PrivateChatRoomRepository extends Repository<PrivateChatRoom> {
@@ -58,25 +58,26 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
         return flag;
     }
 
-    async getPrivateChatRoomList(userId: number, companyPK: number): Promise<PrivateChatRoom[]> {
+    async getPrivateChatRoomList(userId: number, companyPK: number) {
         let list: PrivateChatRoom[] = [];
 
         try {
             list = await this.createQueryBuilder('o')
                 .where('o.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .leftJoinAndSelect('o.USER1', 'user1')
-                .leftJoinAndSelect('o.USER1', 'user2')
+                .leftJoinAndSelect('o.user1', 'user1')
+                .leftJoinAndSelect('o.user2', 'user2')
                 .where('o.USER_1 = :USER1', { USER1: userId })
                 .orWhere('o.USER_2 = :USER2', { USER2: userId })
                 .getMany();
 
-            list = list.map((room) => {
+            return list.map((room) => {
                 room.user1 = propsRemover(room.user1, ...criticalInfos);
                 room.user2 = propsRemover(room.user2, ...criticalInfos);
 
                 return room;
             });
         } catch (err) {
+            console.error(err);
             throw new AikoError('otoChat/getOneToOneChatRoomList', 500, 500360);
         }
 
