@@ -93,7 +93,7 @@ export default class FileController {
             throw resExecutor(res, { err });
         }
     }
-    // 파일 다운로드
+    // 파일 다운로드 s
     @Get('download-noticeboard-file')
     async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
         try {
