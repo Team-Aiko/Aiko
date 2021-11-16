@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import router from 'next/router';
 import axios from 'axios';
 
@@ -39,12 +39,22 @@ export default function innerPost() {
     setName(e.target.value);
   };
 
+
+  useEffect(() => {
+    const getDetail = async () => {
+      const res = await axios.get('/api/notice-board/detail?num=1');
+      setTitle(res.data.result.TITLE);
+      setContent(res.data.result.CONTENT);
+    }
+    getDetail()
+  },[]);
+
   const onChange = () => {
     const url = '/api/notice-board/update-article'
     const data = {
       'num': selectRowData.id,
-      'title': JSON.stringify(title),
-      'content': JSON.stringify(content)
+      'title': title,
+      'content': content
     }
     const config = {
       headers: {
@@ -62,10 +72,9 @@ export default function innerPost() {
     setContent('');
     setName('');
     router.push('/board');
-  }
+  };
 
   const onRemove = () => {
-    dispatch(removeContent(selectRowData.id))
     setTitle('');
     setContent('');
     setName('');
