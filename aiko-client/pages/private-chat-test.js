@@ -40,6 +40,15 @@ export default function PrivateChatDemo() {
         }
     };
 
+    // msg receiver
+    socketClient?.on('client/private-chat/send', (payload) => {
+        console.log('🚀 ~ file: private-chat-test.js ~ line 28 ~ client.on ~ payload', payload);
+        const newList = [...logList];
+        console.log('🚀 ~ file: private-chat-test.js ~ line 81 ~ client.on ~ newList', newList);
+        newList.push(payload.message);
+        setLogList(newList);
+    });
+
     useEffect(() => {
         get('api/account/decoding-token').then((data) => {
             console.log('🚀 ~ file: private-chat-test.js ~ line 40 ~ get ~ data', data);
@@ -72,15 +81,6 @@ export default function PrivateChatDemo() {
 
                 const logbundles = logs.map((log) => <p>{log.message}</p>);
                 setLogList(logbundles);
-            });
-
-            // msg receiver
-            client.on('client/private-chat/send', (payload) => {
-                console.log('🚀 ~ file: private-chat-test.js ~ line 28 ~ client.on ~ payload', payload);
-                const newList = [...logList];
-                console.log('🚀 ~ file: private-chat-test.js ~ line 81 ~ client.on ~ newList', newList);
-                newList.push(payload.message);
-                setLogList(newList);
             });
         });
     }, []);
