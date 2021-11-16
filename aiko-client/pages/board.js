@@ -12,23 +12,7 @@ import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import Posts from '../components/Posts.js';
-import Pagination from '../components/Pagination.js';
 
-const handleLogin = () => {
-    const url = '/api/notice-board/files';
-    const config = {
-        header: {
-            'content-type': 'application/json',
-        },
-    };
-    (async () => {
-        try {
-            await get(url, config);
-        } catch (err) {
-            console.log(err);
-        }
-    })();
-};
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,36 +22,28 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
 export default function board() {
 
 const [posts, setPosts] = useState([]);
 const [loading, setLoading] = useState(false);
 const [currentPage, setCurrentPage] = useState(1);
 const [postsPerPage, setPostsPerPage] = useState(10);
+const [row, setRow] = useState(10);
 
 useEffect(() => {
     const fetchPosts = async () => {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/notice-board/list?option=10&pageNum=1');
-        setPosts(res.result);
+        const res = await axios.get(`/api/notice-board/list?option=${postsPerPage}&pageNum=${currentPage}`);
+        setPosts(res.data.result);
+        console.log(res.data.result);
         setLoading(false);
     }
     fetchPosts()
-},[]);
-
-//Get current posts
-const indexOfLastPost = currentPage * postsPerPage;
-const indexOfFirstPost = indexOfLastPost - postsPerPage;
-const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-
-const paginate = (pageNumber) => setCurrentPage(pageNumber);
+},[currentPage]);
 
 const handleChange = (e) => {
         setRow(e.target.value)
 };
-
-const [row, setRow] = useState(10);
 
 const classes = useStyles();
 
@@ -86,9 +62,9 @@ return (
             label="Age"
             >
             <option aria-label="None" value="" />
-            <option value={row}>10</option>
-            <option value={20} onClick={() => setRow(20)}>20</option>
-            <option value={30} onClick={() => setRow(30)}>30</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={30}>30</option>
             </Select>
         </FormControl>
         </div>
@@ -106,7 +82,7 @@ return (
             </thead>
 
             <tbody className={styles.tbody}>
-                <Posts posts={currentPosts} loading={loading}/>
+                <Posts posts={posts} loading={loading}/>
             </tbody>
         </table>
     </div>
@@ -119,13 +95,14 @@ return (
         </Button>
     </div>
 
-    <div className={styles.paginateDiv}>
-        <Pagination postsPerPage={postsPerPage} totalPosts={posts.length} paginate={paginate}/>
-    </div>
-
-
-    <div style={{ height: 300, width: '30%' }}>
-        <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
+    <div>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(1)}}>1</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(2)}}>2</a>
+        <a className={styles.aTag}>3</a>
+        <a className={styles.aTag}>4</a>
+        <a className={styles.aTag}>5</a>
+        <a className={styles.aTag}>6</a>
+        <a className={styles.aTag}>7</a>
     </div>
 
     </>
