@@ -68,6 +68,21 @@ export default class SocketService {
         }
     }
 
+    async generateUserStatus(userPK: number, companyPK: number) {
+        try {
+            const status = new Status();
+            status.companyPK = companyPK;
+            status.userPK = userPK;
+            status.socketId = 'initialized';
+            status.logoutPending = false;
+            status.status = -1;
+            await this.setUserStatus(status);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService/generateUserStatus', 100, 193948);
+        }
+    }
+
     /**
      *
      *
@@ -193,27 +208,6 @@ export default class SocketService {
         }
     }
 
-    /**
-     * 로그인 시 status를 온라인으로 추가하는 메소드
-     * @param user
-     */
-    async setOnline(user: User) {
-        try {
-            const { USER_PK, COMPANY_PK } = user;
-            this.setUserStatus({
-                userPK: USER_PK,
-                companyPK: COMPANY_PK,
-                socketId: '',
-                logoutPending: false,
-                status: 1,
-            });
-        } catch (err) {
-            console.error(err);
-            if (err instanceof AikoError) throw err;
-            else throw new AikoError('socketService/setOnline', 500, 500594);
-        }
-    }
-
     async changeStatus(socketId: string, status: { userPK: number; userStatus: number }) {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
@@ -266,6 +260,7 @@ export default class SocketService {
     }
 
     async setUserStatus(container: Status) {
+        console.log('🚀 ~ file: socket.service.ts ~ line 269 ~ SocketService ~ setUserStatus ~ container', container);
         try {
             const dto = new this.statusModel(container);
             this.statusModel.create(container);
