@@ -24,6 +24,7 @@ export default class NoticeBoardController {
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
+        console.log('hello');
         try {
             const userPayload = usrPayloadParser(req);
             const title = req.body.title;

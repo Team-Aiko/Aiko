@@ -1,6 +1,6 @@
 import * as React from 'react';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import router from 'next/router';
 import Link from 'next/link';
@@ -11,10 +11,8 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
-import Pagination from '@material-ui/lab/Pagination';
-import { useEffect } from 'react';
 import Posts from '../components/Posts.js';
-import Paginations from '../components/Paginations.js';
+import Pagination from '../components/Pagination.js';
 
 const handleLogin = () => {
     const url = '/api/notice-board/files';
@@ -43,29 +41,41 @@ const useStyles = makeStyles((theme) => ({
 
 export default function board() {
 
-const {inputData} = useSelector((state) => state.boardReducer);
-const {lastId} = useSelector((state) => state.boardReducer);
+const [posts, setPosts] = useState([]);
+const [loading, setLoading] = useState(false);
+const [currentPage, setCurrentPage] = useState(1);
+const [postsPerPage, setPostsPerPage] = useState(10);
 
-const dispatch = useDispatch();
+useEffect(() => {
+    const fetchPosts = async () => {
+        setLoading(true);
+        const res = await axios.get('http://localhost:5000/notice-board/list?option=10&pageNum=1');
+        setPosts(res.result);
+        setLoading(false);
+    }
+    fetchPosts()
+},[]);
 
-const selectContent = (id) => {
-    dispatch(selectRow(id))
-};
+//Get current posts
+const indexOfLastPost = currentPage * postsPerPage;
+const indexOfFirstPost = indexOfLastPost - postsPerPage;
+const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
+const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 const handleChange = (e) => {
         setRow(e.target.value)
 };
 
-const [row, setRow] = useState('');
-const [pagingNum, setPagingNum] = useState(10);
+const [row, setRow] = useState(10);
 
 const classes = useStyles();
 
 return (
     <>
+
     <div className={styles.desc}>
         <h2 className={styles.aikoBoard}>AIKO notice board</h2>
-
         <div style={{marginRight:'30px'}}>
         <FormControl variant="outlined" className={styles.formControl}>
             <InputLabel htmlFor="outlined-age-native-simple">Rows</InputLabel>
@@ -76,14 +86,14 @@ return (
             label="Age"
             >
             <option aria-label="None" value="" />
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={30}>30</option>
+            <option value={row}>10</option>
+            <option value={20} onClick={() => setRow(20)}>20</option>
+            <option value={30} onClick={() => setRow(30)}>30</option>
             </Select>
         </FormControl>
         </div>
     </div>
-
+    
     <div>
         <table className={styles.table}>
             <thead className={styles.thead}>
@@ -96,37 +106,23 @@ return (
             </thead>
 
             <tbody className={styles.tbody}>
-                <tr>
-                    <td></td>
-                    <td></td>
-                </tr>
-                {
-                    lastId !== 0 ?
-                    inputData.map(rowData => (
-                        rowData.id !== '' &&
-                    <tr>
-                        <td className={styles.td} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.id}</a></Link></td>
-                        <td className={styles.td} style={{textAlign:'left'}} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.title}</a></Link></td>
-                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.name}</td>
-                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.date}</td>
-                    </tr>
-                    )) :
-                    <tr>
-                        <td className={styles.td}></td>
-                        <td className={styles.td}>작성된 글이 없습니다.</td>
-                    </tr>
-                }   
+                <Posts posts={currentPosts} loading={loading}/>
             </tbody>
         </table>
     </div>
 
     <div className={styles.postButtonContainer}>
         <Button variant="contained" color="primary" style={{
-          width:'100px', height:'50px', borderRadius:'15px'}}
+        width:'100px', height:'50px', borderRadius:'15px'}}
         onClick={()=>{router.push('/writePost')}}>
             NEW POST
         </Button>
     </div>
+
+    <div className={styles.paginateDiv}>
+        <Pagination postsPerPage={postsPerPage} totalPosts={posts.length} paginate={paginate}/>
+    </div>
+
 
     <div style={{ height: 300, width: '30%' }}>
         <div onClick={handleLogin}> 파일 다운로드 테스트 </div>

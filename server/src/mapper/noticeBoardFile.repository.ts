@@ -7,6 +7,7 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
     // 파일 저장
     async createFiles(files: Express.Multer.File[], noticeboardPk: number, userPk: number, comPk: number) {
         try {
+            console.log(noticeboardPk);
             for (const file of files) {
                 const originalName = file.originalname;
                 const uuid = file.filename;
