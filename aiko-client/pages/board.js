@@ -95,14 +95,17 @@ return (
         </Button>
     </div>
 
-    <div>
+    <div className={styles.paginateDiv}>
         <a className={styles.aTag} onClick={()=>{setCurrentPage(1)}}>1</a>
         <a className={styles.aTag} onClick={()=>{setCurrentPage(2)}}>2</a>
-        <a className={styles.aTag}>3</a>
-        <a className={styles.aTag}>4</a>
-        <a className={styles.aTag}>5</a>
-        <a className={styles.aTag}>6</a>
-        <a className={styles.aTag}>7</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(3)}}>3</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(4)}}>4</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(5)}}>5</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(6)}}>6</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(7)}}>7</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(8)}}>8</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(9)}}>9</a>
+        <a className={styles.aTag} onClick={()=>{setCurrentPage(10)}}>10</a>
     </div>
 
     </>
