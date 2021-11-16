@@ -11,7 +11,7 @@ export default function PrivateChatDemo() {
     const [roomList, setRoomList] = useState([]);
     const [targetRoomId, setTargetRoomId] = useState('');
     const [socketClient, setSocketClient] = useState(undefined);
-    const [logDiv, setLogDiv] = useState(<div></div>);
+    const [logList, setLogList] = useState([]);
 
     const handleString = (e) => {
         const { value } = e.target;
@@ -33,10 +33,15 @@ export default function PrivateChatDemo() {
             message: msg,
             date: Math.floor(new Date().getTime() / 1000),
         });
+
+        if (msg.length > 0) {
+            setMsg('');
+            document.getElementById('msg').value = '';
+        }
     };
 
     useEffect(() => {
-        get('/api/account/decoding-token').then((data) => {
+        get('api/account/decoding-token').then((data) => {
             console.log('🚀 ~ file: private-chat-test.js ~ line 40 ~ get ~ data', data);
 
             const { USER_PK, COMPANY_PK } = data;
@@ -66,20 +71,24 @@ export default function PrivateChatDemo() {
                 const logs = chatlog.messages;
 
                 const logbundles = logs.map((log) => <p>{log.message}</p>);
-                setLogDiv(<div>{logbundles}</div>);
+                setLogList(logbundles);
             });
 
             // msg receiver
             client.on('client/private-chat/send', (payload) => {
                 console.log('🚀 ~ file: private-chat-test.js ~ line 28 ~ client.on ~ payload', payload);
+                const newList = [...logList];
+                console.log('🚀 ~ file: private-chat-test.js ~ line 81 ~ client.on ~ newList', newList);
+                newList.push(payload.message);
+                setLogList(newList);
             });
         });
     }, []);
 
     return (
         <>
-            {logDiv}
-            <input type='text' onChange={handleString} />
+            <div>{logList?.map((log) => log)}</div>
+            <input id='msg' type='text' onChange={handleString} />
             <button onClick={handleSendMessage}>send</button>
             <select onChange={handleSelectChange}>
                 {roomList.map((room, idx) => (

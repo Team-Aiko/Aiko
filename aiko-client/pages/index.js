@@ -9,8 +9,7 @@ import ChatModal from '../components/ChatModal';
 // * socket Test
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
-import axios, { get } from 'axios';
-import axiosInstance from '../_axios/interceptor';
+import { get } from '../_axios';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
@@ -21,34 +20,7 @@ export default function CComp() {
 
 function PComp(props) {
     const { userInfo } = props;
-    const [chat, setChat] = useState([]);
-    const [text, setText] = useState('');
-    const [client, setClient] = useState(undefined);
     const [status, setStatus] = useState(undefined);
-
-    const [chatModal, setChatModal] = useState(false);
-
-    axiosInstance
-        .get('/api/company/searching-members?str=b')
-        .then((data) => {
-            console.log('get test = ', data);
-        })
-        .catch((err) => console.log('get error = ', err));
-    // axiosInstance.get('/api/store/view-profile-file?fileId=1').then((data) => {});
-
-    // 테스트 메세지 발송
-    const sendTestMsg = () => {
-        client.emit('server/test', text);
-    };
-
-    const handleChange = (e) => {
-        const typedText = e.target.value;
-        setText(typedText);
-    };
-
-    const openChatModal = () => {
-        setChatModal(true);
-    };
 
     useEffect(() => {
         /**
@@ -57,12 +29,11 @@ function PComp(props) {
         if (userInfo?.USER_PK) {
             const status = io('http://localhost:5000/status');
             setStatus(status);
-            const uri = '/api/account/decoding-token';
+            const uri = 'api/account/decoding-token';
             get(uri)
-                .then((res) => {
-                    const { result } = res.data;
-                    console.log('🚀 ~ file: index.js ~ line 89 ~ .then ~ result', result);
-                    status.emit('handleConnection', result);
+                .then((data) => {
+                    console.log('🚀 ~ file: index.js ~ line 89 ~ .then ~ result', data);
+                    status.emit('handleConnection', data);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -81,16 +52,12 @@ function PComp(props) {
 
     const testStatusChanger = (num) => {
         console.log(num);
-        status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+        // status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
     };
 
     return (
         <>
             <div>
-                <img src='/api/store/download-profile-file?fileId=1' />
-                <div>{chat.map((item) => `${item} \n`)}</div>
-                <input type='text' onChange={handleChange} />
-                <button onClick={sendTestMsg}>발송</button>
                 <button
                     onClick={() => {
                         testStatusChanger(1);
@@ -119,10 +86,6 @@ function PComp(props) {
                 >
                     status4
                 </button>
-            </div>
-            <div>
-                <Button onClick={openChatModal}>Test Chat Modal</Button>
-                <ChatModal open={chatModal} onClose={() => setChatModal(false)} />
             </div>
         </>
     );
