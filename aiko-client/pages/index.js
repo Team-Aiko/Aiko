@@ -29,6 +29,7 @@ function PComp(props) {
         if (userInfo?.USER_PK) {
             const status = io('http://localhost:5000/status');
             setStatus(status);
+
             const uri = 'api/account/decoding-token';
             get(uri)
                 .then((data) => {
@@ -38,21 +39,24 @@ function PComp(props) {
                 .catch((err) => {
                     console.error(err);
                 });
-            status.on('client/status/loginAlert', (user) => {
-                console.log(user);
+
+            status.on('client/status/loginAlert', (payload) => {
+                console.log('🚀 ~ file: index.js ~ line 42 ~ status.on ~ payload', payload);
             });
-            status.on('client/status/logoutAlert', (user) => {
-                console.log(user);
+            status.on('client/status/logoutAlert', (payload) => {
+                console.log('🚀 ~ file: index.js ~ line 45 ~ status.on ~ payload', payload);
             });
             status.on('client/status/error', (err) => {
                 console.error(err);
+            });
+            status.on('client/status/changeStatus', (payload) => {
+                console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
             });
         }
     }, []);
 
     const testStatusChanger = (num) => {
-        console.log(num);
-        // status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+        status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
     };
 
     return (

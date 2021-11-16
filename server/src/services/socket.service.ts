@@ -138,12 +138,15 @@ export default class SocketService {
      */
 
     /**
-     * status connection 실시메소드, setOnline과 별개로 필요한 과정.
+     * status connection 실시메소드
      * @param socketId
      * @param userPayload
      * @returns
      */
-    async statusConnection(socketId: string, userPayload: IUserPayload): Promise<{ isSendable: boolean; user?: User }> {
+    async statusConnection(
+        socketId: string,
+        userPayload: IUserPayload,
+    ): Promise<{ isSendable: boolean; user?: Status }> {
         const { USER_PK, COMPANY_PK } = userPayload;
 
         try {
@@ -154,18 +157,17 @@ export default class SocketService {
             );
             const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK);
             const newUserContainer = new Status();
-            newUserContainer.userPK = USER_PK;
-            newUserContainer.companyPK = COMPANY_PK;
+            newUserContainer.userPK = user.USER_PK;
+            newUserContainer.companyPK = user.COMPANY_PK;
             newUserContainer.socketId = socketId;
             newUserContainer.logoutPending = false;
             newUserContainer.status = !userContainer ? 1 : userContainer.status;
 
-            const isSendable = !userContainer ? true : userContainer.logoutPending;
+            await this.updateStatus(newUserContainer);
 
-            if (userContainer) await this.updateStatus(newUserContainer);
-            else await this.setUserStatus(newUserContainer);
+            const isSendable = userContainer.logoutPending;
 
-            return { isSendable, user: isSendable ? user : undefined };
+            return { isSendable, user: newUserContainer };
         } catch (err) {
             if (err instanceof AikoError) throw err;
             else throw new AikoError('socketService/statusConnection', 100, 1);
@@ -174,7 +176,6 @@ export default class SocketService {
 
     /**
      * status disconnect를 시행하는 메소드, 5분의 유예기간을 줌
-     * @param socketId
      */
     async statusDisconnect(socketClient: Socket, wss: Server) {
         console.log('socket/statusDisconnect start');
@@ -184,10 +185,13 @@ export default class SocketService {
             if (userStatus?.userPK) {
                 setTimeout(async () => {
                     // delete process
-                    console.log('delete process executed');
+                    console.log('logout process executed');
                     if (userStatus.logoutPending) {
-                        await this.deleteUserStatus(userStatus.companyPK, userStatus.userPK);
-                        wss.to(`${userStatus.companyPK}`)
+                        userStatus.status = -1;
+                        userStatus.logoutPending = false;
+
+                        await this.updateStatus(userStatus);
+                        wss.to(`company:${userStatus.companyPK}`)
                             .except(socketClient.id)
                             .emit(statusPath.CLIENT_LOGOUT_ALERT, userStatus);
                     }
@@ -213,9 +217,9 @@ export default class SocketService {
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
             userStatus.status = status.userStatus;
-            const temp = await this.updateStatus(userStatus);
-            console.log('🚀 ~ file: socket.service.ts ~ line 178 ~ SocketService ~ changeStatus ~ temp', temp);
-            return { userPK: userStatus.userPK, userStatus: userStatus.status };
+            await this.updateStatus(userStatus);
+
+            return userStatus;
         } catch (err) {
             console.error(err);
             if (err instanceof AikoError) throw err;
@@ -285,7 +289,11 @@ export default class SocketService {
             return await this.statusModel
                 .findOneAndUpdate(
                     { userPK: userStatus.userPK, companyPK: userStatus.companyPK },
-                    { status: userStatus.status, socketId: userStatus.socketId },
+                    {
+                        status: userStatus.status,
+                        socketId: userStatus.socketId,
+                        logoutPending: userStatus.logoutPending,
+                    },
                 )
                 .exec();
         } catch (err) {

@@ -38,25 +38,24 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
         try {
             if (!userPayload) return;
-            console.log(
-                '🚀 ~ file: status.gateway.ts ~ line 39 ~ StatusGateway ~ handleConnection ~ userPayload',
-                userPayload,
-            );
-            console.log('client ID = ', client.id, ' user ID = ', userPayload.USER_PK);
-            const { COMPANY_PK } = userPayload;
-            const { id } = client;
-            // join company
-            client.join(COMPANY_PK.toString());
-            // connection check and select user info
-            const connectionResult = await this.socketService.statusConnection(id, userPayload);
 
-            if (connectionResult.isSendable)
+            console.log('client ID = ', client.id, ' user ID = ', userPayload.USER_PK);
+            const { id } = client;
+
+            // connection check and select user info
+            const connResult = await this.socketService.statusConnection(id, userPayload);
+
+            // join company
+            client.join(`company:${connResult.user.companyPK}`);
+
+            if (connResult.isSendable)
                 this.wss
-                    .to(`company:${COMPANY_PK}`)
+                    .to(`company:${connResult.user.companyPK}`)
                     .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
-                    .emit(statusPath.CLIENT_LOGIN_ALERT, connectionResult.user);
+                    .emit(statusPath.CLIENT_LOGIN_ALERT, connResult);
         } catch (err) {
-            console.error(err);
+            console.error('handleConnection error: ', err);
+            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
     }
 
@@ -75,12 +74,12 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             console.log('client ID = ', client.id, 'status socket disconnection');
             this.socketService.statusDisconnect(client, this.wss);
         } catch (err) {
-            client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
     }
 
     /**
-     * 가상안: status = 1. 일반 / 2. 부재중 / 3. 바쁨 / 4. 회의중
+     * 가상안: status = 1. 일반 / 2. 부재중 / 3. 바쁨 / 4. 회의중 / -1. 로그아웃
      * @param client
      * @param userStatus
      */
@@ -95,9 +94,12 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             const container = await this.socketService.getUserInfoStatus(socketId);
             console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
             const result = await this.socketService.changeStatus(socketId, userStatus);
-            this.wss.to(`${container.companyPK}`).except(client.id).emit(statusPath.CLIENT_CHANGE_STATUS, result);
+            this.wss
+                .to(`company:${container.companyPK}`)
+                .except(client.id)
+                .emit(statusPath.CLIENT_CHANGE_STATUS, result);
         } catch (err) {
-            client.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
     }
 }
