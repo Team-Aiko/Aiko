@@ -28,6 +28,7 @@ const [posts, setPosts] = useState([]);
 const [loading, setLoading] = useState(false);
 const [currentPage, setCurrentPage] = useState(1);
 const [postsPerPage, setPostsPerPage] = useState(10);
+const [btnNumbers, setBtnNumbers] = useState([]);
 const [row, setRow] = useState(10);
 
 useEffect(() => {
@@ -39,7 +40,37 @@ useEffect(() => {
         setLoading(false);
     }
     fetchPosts()
-},[currentPage]);
+},[currentPage, postsPerPage]);
+
+const pageBtn = () => {
+    const pageButtons = [];
+    axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
+    .then((res) => {
+        for(let i=0; i<=res.data.result; i++) {
+            pageButtons = [...pageButtons, i];
+        }
+        setBtnNumbers(pageButtons)
+    })
+}
+
+useEffect(() => {
+    pageBtn()
+},[])
+
+
+// useEffect(() => {
+//     axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
+//     .then((res) => {
+//         console.log(res.data.result);
+//         for (let i=1; i <= res.data.result; i++){
+//         setBtnNumbers([...btnNumbers, i]);
+//         }
+//     })
+//     .catch((error) => {
+//         console.log(error)
+//     })
+// },[postsPerPage])
+
 
 const handleChange = (e) => {
         setRow(e.target.value)
@@ -52,22 +83,11 @@ return (
 
     <div className={styles.desc}>
         <h2 className={styles.aikoBoard}>AIKO notice board</h2>
-        <div style={{marginRight:'30px'}}>
-        <FormControl variant="outlined" className={styles.formControl}>
-            <InputLabel htmlFor="outlined-age-native-simple">Rows</InputLabel>
-            <Select
-            native
-            value={row}
-            onChange={handleChange}
-            label="Age"
-            >
-            <option aria-label="None" value="" />
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={30}>30</option>
-            </Select>
-        </FormControl>
-        </div>
+            <div style={{marginRight:'30px'}}>
+                <button onClick={() => {setPostsPerPage(10)}}>10</button>
+                <button onClick={() => {setPostsPerPage(20)}}>20</button>
+                <button onClick={() => {setPostsPerPage(30)}}>30</button>
+            </div>
     </div>
     
     <div>
@@ -96,16 +116,11 @@ return (
     </div>
 
     <div className={styles.paginateDiv}>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(1)}}>1</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(2)}}>2</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(3)}}>3</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(4)}}>4</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(5)}}>5</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(6)}}>6</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(7)}}>7</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(8)}}>8</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(9)}}>9</a>
-        <a className={styles.aTag} onClick={()=>{setCurrentPage(10)}}>10</a>
+        {btnNumbers.map(btn => (
+            <a className={styles.aTag} onClick={()=>{setCurrentPage(btn)}}>
+                {btn}
+            </a>
+        ))}
     </div>
 
     </>
