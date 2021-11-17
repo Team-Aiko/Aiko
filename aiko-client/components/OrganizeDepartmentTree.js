@@ -64,7 +64,7 @@ export default function OrganizeDepartmentTree(props) {
     }, []);
 
     const loadDepartmentList = () => {
-        const url = 'api/company/department-tree';
+        const url = '/api/company/department-tree';
         setDepartmentList([]);
         get(url).then((response) => {
             setDepartmentList(response.data.result);

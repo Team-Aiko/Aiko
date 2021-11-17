@@ -49,6 +49,10 @@ function PComp(props) {
         Router.push('/electronic-approval');
     };
 
+    const goToMeetingRoom = () => {
+        Router.push('/meeting-room');
+    };
+
     return (
         <>
             <Drawer open={sideNavIsOpen} onClose={closeDrawer}>
@@ -66,7 +70,7 @@ function PComp(props) {
                             </ListItemIcon>
                             <ListItemText primary='Organize' />
                         </ListItem>
-                        <ListItem button>
+                        <ListItem button onClick={goToMeetingRoom}>
                             <ListItemIcon>
                                 <MeetingRoom />
                             </ListItemIcon>
