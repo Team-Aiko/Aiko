@@ -1,8 +1,6 @@
 import react from 'react';
 import styles from '../styles/innerPost.module.css';
 import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { useState, useEffect } from 'react';
 import router from 'next/router';
@@ -26,6 +24,9 @@ export default function innerPost() {
   const [content, setContent] = useState('');
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [postNum, setPostNum] = useState(4);
+
+  console.log(innerPost)
 
   const handleTitle = (e) => {
     setTitle(e.target.value);
@@ -42,60 +43,12 @@ export default function innerPost() {
 
   useEffect(() => {
     const getDetail = async () => {
-      const res = await axios.get('/api/notice-board/detail?num=1');
+      const res = await axios.get(`/api/notice-board/detail?num=${postNum}`);
       setTitle(res.data.result.TITLE);
       setContent(res.data.result.CONTENT);
     }
     getDetail()
   },[]);
-
-  const onChange = () => {
-    const url = '/api/notice-board/update-article'
-    const data = {
-      'num': selectRowData.id,
-      'title': title,
-      'content': content
-    }
-    const config = {
-      headers: {
-        "content-type" : 'application/json'
-      }
-    };
-    axios.post(url, data, config)
-    .then((response)=> {
-      console.log(response)
-    })
-    .catch((error) => {
-      console.log(error)
-    });
-    setTitle('');
-    setContent('');
-    setName('');
-    router.push('/board');
-  };
-
-  const onRemove = () => {
-    setTitle('');
-    setContent('');
-    setName('');
-    const url = "/api/notice-board/delete-article";
-    const data = {
-      'num' : selectRowData.id
-    }
-    const config ={
-      headers: {
-        'content-type' : 'application/json'
-      }
-    };
-    axios.post(url, data, config)
-    .then((response)=> {
-      console.log(data)
-    })
-    .catch((error)=> {
-      console.log(error)
-    });
-    router.push('/board');
-  };
 
 
   const classes = useStyles();
@@ -125,13 +78,13 @@ export default function innerPost() {
         <div className={styles.align} style={{marginRight:'10%'}}>
           <Button variant="contained" color="primary" style={{
             width:'100px', height:'50px', borderRadius:'15px'}}
-          onClick={onChange}>
+          >
               REVISE
           </Button>
 
           <Button variant="contained" color="primary" style={{
             width:'100px', height:'50px', borderRadius:'15px', marginLeft:'10px', backgroundColor:'#D93D3D'}}
-          onClick={onRemove}>
+          >
               DELETE
           </Button>
         </div>
@@ -156,6 +109,8 @@ export default function innerPost() {
             }}>2021년도 Aiko 프로젝트 감사 결과</p>
           </div>
       </div>
+
+
 
     </div>
 

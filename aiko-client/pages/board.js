@@ -12,6 +12,7 @@ import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import Posts from '../components/Posts.js';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -46,8 +47,8 @@ const pageBtn = () => {
     const pageButtons = [];
     axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
     .then((res) => {
-        for(let i=0; i<=res.data.result; i++) {
-            pageButtons = [...pageButtons, i];
+        for(let i=1; i<=res.data.result; i++) {
+            pageButtons.push(i);
         }
         setBtnNumbers(pageButtons)
     })
@@ -55,7 +56,7 @@ const pageBtn = () => {
 
 useEffect(() => {
     pageBtn()
-},[])
+},[postsPerPage])
 
 
 // useEffect(() => {
@@ -83,10 +84,13 @@ return (
 
     <div className={styles.desc}>
         <h2 className={styles.aikoBoard}>AIKO notice board</h2>
-            <div style={{marginRight:'30px'}}>
-                <button onClick={() => {setPostsPerPage(10)}}>10</button>
-                <button onClick={() => {setPostsPerPage(20)}}>20</button>
-                <button onClick={() => {setPostsPerPage(30)}}>30</button>
+            <div className={styles.forRows} style={{marginRight:'30px'}}>
+                <h5 style={{color:'#3f51b5'}}>For rows :</h5>
+                <ButtonGroup variant="text" color="primary" aria-label="text primary button group">
+                    <Button onClick={() => {setPostsPerPage(10)}}>10</Button>
+                    <Button onClick={() => {setPostsPerPage(20)}}>20</Button>
+                    <Button onClick={() => {setPostsPerPage(30)}}>30</Button>
+                </ButtonGroup>
             </div>
     </div>
     
