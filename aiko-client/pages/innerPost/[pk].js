@@ -161,7 +161,7 @@ const innerPost = () => {
 
         </div>
 
-        <DeletePostModal loading={loading} />
+        <DeletePostModal popup={popup} />
 
 </>
     )

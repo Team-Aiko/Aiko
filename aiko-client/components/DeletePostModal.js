@@ -12,15 +12,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DeletePostModal = ({loading}) => {
+const DeletePostModal = ({popup}) => {
 
-    if(loading) {
-        return <h1>Hello z</h1>
-    }
-
-    const classes = useStyles();
-
-    return (
+    if(popup === true) {
+        return 
         <div className={styles.window}>
             <div className={styles.outerContainer}>
 
@@ -45,6 +40,15 @@ const DeletePostModal = ({loading}) => {
 
             </div>
         </div>
+    }
+
+    const classes = useStyles();
+
+    return (
+        <>
+        <div>
+        </div>
+        </>
     )
 }
 

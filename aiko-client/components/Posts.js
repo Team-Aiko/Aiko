@@ -9,6 +9,16 @@ const Posts = ({posts, loading}) => {
         return <h2 style={{color:'#3f51b5'}}> Loading... </h2>
     };
 
+    const [time, setTime] = ([]);
+
+    const timestamp = 1636968635
+    var myDate = new Date(timestamp * 1000);
+
+    var date = myDate.getFullYear() + "-" + (myDate.getMonth()+1) + "-" + myDate.getDate() +
+    " " + myDate.getHours() + "h" + myDate.getMinutes() + "m";
+
+    console.log(myDate);
+
     return (
         <>
             {posts.map(post => (
