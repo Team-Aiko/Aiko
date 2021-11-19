@@ -8,6 +8,7 @@ import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
 import ContactMailIcon from '@material-ui/icons/ContactMail';
 import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import SettingsIcon from '@material-ui/icons/Settings';
+import {useState} from 'react';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,6 +24,8 @@ const useStyles = makeStyles((theme) => ({
 
 const MemberInfo = () => {
 
+    const [buttonColor, setButtonColor] = useState('#68A8F4');
+
     const classes = useStyles();
 
     return (
@@ -36,7 +39,6 @@ const MemberInfo = () => {
                 </div>
 
             <div className={styles.profileInfo}>
-
                 <div className={styles.leftDiv}>
                     <div className={styles.icons}>
                         <PersonIcon style={{ fontSize: 40 }}/>
@@ -64,41 +66,42 @@ const MemberInfo = () => {
                     }}/>
 
                 </div>
-
             </div>
 
-            <div className={styles.lowerContainer}>
-                <div className={styles.btnDiv}>
-                    <div className={styles.buttons}>
-                        <Button variant="contained" style={{backgroundColor: '#2dccff', color:'white'}}>
-                        Available
-                        </Button>
+            <div style={{marginLeft:'7%', marginBottom:'-1.2%'}}>
+                <ul style={{listStyle:'none'}}>
+                    <li className={styles.tabs} style={{backgroundColor:buttonColor}}>Action Items</li>
+                    <li className={styles.tabs}>Meeting Schedules</li>
+                </ul>
+            </div>
 
-                        <Button variant="contained" style={{backgroundColor: '#ffb302', color:'white'}}>
-                        Busy
-                        </Button>
-
-                        <Button variant="contained" style={{backgroundColor: '#9ea7ad', color:'white'}}>
-                        Unavailable
-                        </Button>
-                    </div>
+            <div className={styles.actionItemContainer}>
+                <div>
+                    <Button variant="contained" color="primary" style={{
+                    width:'70px', height:'40px', borderRadius:'15px', marginLeft:'5%', marginTop:'2%'}}>
+                        ADD
+                    </Button>
                 </div>
 
-                <div className={styles.logDiv}>
+                <div className={styles.tableDiv}>
+
+                    <table className={styles.outerTable}>
+                        <tr>
+                            <th className={styles.th} style={{width:'15%'}}>Title</th>
+                            <th className={styles.th} style={{width:'5%'}}>Priority</th>
+                            <th className={styles.th} style={{width:'10%'}}>Status</th>
+                            <th className={styles.th} style={{width:'9%'}}>Start Date</th>
+                            <th className={styles.th} style={{width:'9%'}}>Due Date</th>
+                            <th className={styles.th} style={{width:'9%'}}>Assigner</th>
+                            <th className={styles.th} style={{width:'9%'}}>Owner</th>
+                            <th className={styles.th}>Description</th>
+                            <th className={styles.th} style={{width:'7%'}}>Del.</th>
+                        </tr>
+                    </table>
                 </div>
 
-                <div className={styles.optionDiv}>
-                    <Button variant="contained" style={{backgroundColor: '#68A8F4', color:'white'}}>
-                    Invite
-                    </Button>
-
-                    <Button variant="contained" style={{backgroundColor: '#68A8F4', color:'white'}}>
-                    Message
-                    </Button>
-
-                    <Button variant="contained" style={{backgroundColor: '#68A8F4', color:'white'}}>
-                    Assign
-                    </Button>
+                <div className={styles.underTableDiv}>
+                
                 </div>
             </div>
 
