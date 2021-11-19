@@ -121,7 +121,8 @@ export default class MeetingService {
             const meetingCnt = await getRepo(MeetRepository).meetingCnt(ROOM_PK);
             const pag = new Pagination(currentPage, meetingCnt, feedsPerPage, groupCnt);
 
-            return await getRepo(MeetRepository).getMeetingSchedules(ROOM_PK, pag);
+            const schedules = await getRepo(MeetRepository).getMeetingSchedules(ROOM_PK, pag);
+            return { pagination: pag, schedules: schedules };
         } catch (err) {
             throw err;
         }
