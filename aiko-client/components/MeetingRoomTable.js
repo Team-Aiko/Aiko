@@ -28,7 +28,23 @@ export default function MeetingRoomTable(props) {
     const [inputDate, setInputDate] = useState(moment().format('YYYY-MM-DD' + 'T' + 'hh:mm'));
     const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
 
-    useEffect(() => {}, []);
+    useEffect(() => {
+        if (meetingRoom.ROOM_PK) {
+            loadSchedule();
+        }
+    }, [meetingRoom]);
+
+    const loadSchedule = () => {
+        const url = '/api/meeting/meet-schedule';
+        const params = {
+            roomId: meetingRoom.ROOM_PK,
+            currentPage: 1,
+        };
+
+        axiosInstance.get(url, { params: params }).then((result) => {
+            console.log(result);
+        });
+    };
 
     const removeMember = (index) => {
         const memberList = [...inputMember];
