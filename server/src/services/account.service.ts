@@ -144,6 +144,9 @@ export default class AccountService {
                 await this.socketService.makePrivateChatRoomList(queryRunner.manager, data.companyPK, userPK);
             }
 
+            // * generate status database (mongodb)
+            this.socketService.generateUserStatus(userPK, data.companyPK);
+
             // * email auth
             const uuid = v1();
             await getRepo(RefreshRepository).createRow(queryRunner.manager, userPK);
@@ -226,8 +229,6 @@ export default class AccountService {
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
                             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
-                            // update status socket
-                            await this.socketService.setOnline(result);
 
                             const bundle: SuccessPacket = {
                                 header: flag,

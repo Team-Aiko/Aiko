@@ -60,7 +60,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             if (!roomId) return;
 
             const chatlog = await this.socketService.getChalog(roomId);
-            client.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }
