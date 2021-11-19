@@ -2,11 +2,26 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../_axios';
 import styles from '../styles/components/MeetingRoomTable.module.css';
 import moment from 'moment';
-import { Button, Grid, IconButton, makeStyles, TextField, Typography } from '@material-ui/core';
+import {
+    Button,
+    Grid,
+    IconButton,
+    makeStyles,
+    TextField,
+    Typography,
+    Table,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    TablePagination,
+    ThemeProvider,
+    unstable_createMuiStrictModeTheme,
+} from '@material-ui/core';
 import Modal from '../components/Modal';
 import SearchMemberModal from './SearchMemberModal';
 import CloseIcon from '@material-ui/icons/Close';
-import TableView from '../components/TableView';
 
 const useStyles = makeStyles({
     TextField: {
@@ -20,6 +35,7 @@ const useStyles = makeStyles({
 export default function MeetingRoomTable(props) {
     const { meetingRoom } = props;
     const classes = useStyles();
+    const theme = unstable_createMuiStrictModeTheme();
     const [openAddScheduleModal, setOpenAddScheduleModal] = useState(false);
     const [inputTitle, setInputTitle] = useState('');
     const [inputMember, setInputMember] = useState([]);
@@ -27,6 +43,10 @@ export default function MeetingRoomTable(props) {
     const [inputDescription, setInputDescription] = useState('');
     const [inputDate, setInputDate] = useState(moment().format('YYYY-MM-DD' + 'T' + 'hh:mm'));
     const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState([]);
+    const [scheduleList, setScheduleList] = useState([]);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     useEffect(() => {
         if (meetingRoom.ROOM_PK) {
@@ -38,11 +58,12 @@ export default function MeetingRoomTable(props) {
         const url = '/api/meeting/meet-schedule';
         const params = {
             roomId: meetingRoom.ROOM_PK,
-            currentPage: 1,
+            currentPage: currentPage,
         };
 
         axiosInstance.get(url, { params: params }).then((result) => {
-            console.log(result);
+            setPagination(result.pagination);
+            setScheduleList(result.schedules);
         });
     };
 
@@ -88,22 +109,37 @@ export default function MeetingRoomTable(props) {
 
     const columns = [
         {
-            value: 'ROOM_NAME',
-            view: '회의실',
-        },
-        {
             value: 'TITLE',
             view: '회의 주제',
+            width: 1000,
         },
         {
             value: 'MAX_MEM_NUM',
             view: '최대 인원',
+            width: 100,
+            style: { flexShrink: 1 },
         },
         {
             value: 'DATE',
             view: '일시',
+            width: 500,
+        },
+        {
+            value: 'IS_FINISHED',
+            view: '진행 상태',
+            width: 100,
+            style: { flexShrink: 1 },
         },
     ];
+
+    const handleChangePage = (event, newPage) => {
+        setCurrentPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setCurrentPage(1);
+    };
 
     return (
         <div
@@ -122,6 +158,58 @@ export default function MeetingRoomTable(props) {
                     일정 추가
                 </Button>
             </div>
+            <ThemeProvider theme={theme}>
+                <Table style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <TableHead>
+                        <TableRow style={{ display: 'flex' }}>
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={column.value}
+                                    width={column.width}
+                                    style={column.style ? column.style : null}
+                                    align='center'
+                                >
+                                    {column.view}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {scheduleList.map((row) => (
+                            <TableRow
+                                key={row.MEET_PK}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    console.log('detail');
+                                }}
+                            >
+                                <TableCell width={1000} align='center'>
+                                    {row.TITLE}
+                                </TableCell>
+                                <TableCell width={100} align='center'>
+                                    {row.MAX_MEM_NUM}
+                                </TableCell>
+                                <TableCell width={500} align='center'>
+                                    {moment.unix(row.DATE).format('YYYY-MM-DD LT')}
+                                </TableCell>
+                                <TableCell width={100} align='center'>
+                                    {row.IS_FINISHED}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                <TablePagination
+                    component='div'
+                    rowsPerPageOptions={[10, 25, 100]}
+                    count={pagination ? pagination._totalFeedCnt - 1 : 0}
+                    rowsPerPage={rowsPerPage}
+                    page={currentPage - 1}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+            </ThemeProvider>
+
             <Modal open={openAddScheduleModal} onClose={() => setOpenAddScheduleModal(false)} title='일정 추가'>
                 <Grid container spacing={2} style={{ padding: '20px', maxWidth: '600px' }}>
                     <Grid item xs={2}>
