@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity({ name: 'NOTICE_BOARD_TABLE' })
 export default class NoticeBoard {
     @PrimaryGeneratedColumn()
-    NO: number;
+    NOTICE_BOARD_PK: number;
 
     @Column()
     TITLE: string;
