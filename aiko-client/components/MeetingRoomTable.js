@@ -97,6 +97,7 @@ export default function MeetingRoomTable(props) {
         axiosInstance.post(url, data).then((result) => {
             setOpenAddScheduleModal(false);
             resetInput();
+            loadSchedule();
         });
     };
     const resetInput = () => {

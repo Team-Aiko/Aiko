@@ -19,6 +19,7 @@ export default function meetingRoom() {
         <div className={styles['meeting-container']}>
             <MeetingRoomList
                 admin={admin}
+                meetingRoom={meetingRoom}
                 setMeetingRoom={(value) => {
                     setMeetingRoom(value);
                 }}
