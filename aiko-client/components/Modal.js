@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'column',
         maxWidth: '1000px',
+        overflow: 'hidden',
     },
     toolbar: {
         display: 'flex',
