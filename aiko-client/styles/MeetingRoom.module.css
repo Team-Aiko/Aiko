@@ -1,0 +1,11 @@
+.meeting-container {
+    margin: 20px;
+    height: calc(100% - 106px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.search-meeting-room {
+    display: flex;
+}

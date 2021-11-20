@@ -10,7 +10,7 @@ export default function organize() {
     const [admin, setAdmin] = useState(false);
 
     useEffect(() => {
-        const url = 'api/company/check-admin';
+        const url = '/api/company/check-admin';
         get(url).then((response) => {
             setAdmin(response.data.result);
         });

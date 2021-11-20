@@ -37,6 +37,8 @@ export class Pagination {
             this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
         }
 
+        this._pageGroup = this._pageGroup.filter((number) => (number - 1) * feedPerPage < this._totalFeedCnt);
+
         // set offset
         this._offset = (currentPage - 1) * feedPerPage;
 

@@ -130,7 +130,7 @@ export default class MeetRepository extends Repository<Meet> {
     async getMeetingSchedules(ROOM_PK: number, pagination: Pagination) {
         try {
             const schedules = await this.createQueryBuilder('m')
-                .leftJoinAndSelect('c.members', 'members')
+                .leftJoinAndSelect('m.members', 'members')
                 .where('m.ROOM_PK = :ROOM_PK', { ROOM_PK })
                 .offset(pagination.offset)
                 .limit(pagination.feedPerPage)

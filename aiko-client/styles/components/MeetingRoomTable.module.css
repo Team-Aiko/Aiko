@@ -1,28 +1,23 @@
-.search-member-container {
-    overflow: auto;
-    padding: 4px 20px 20px;
+.meeting-room-table {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    height: 600px;
-    align-items: center;
-    width: 100%;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    padding: 20px;
+    overflow: auto;
 }
 
-.search-input {
+.header {
     display: flex;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.table-wrapper {
-    height: 100%;
-    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .selected-user-list {
     display: flex;
     gap: 8px;
-    margin: 10px 0;
     width: 100%;
     flex-wrap: wrap;
 }
