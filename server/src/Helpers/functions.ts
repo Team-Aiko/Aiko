@@ -7,6 +7,8 @@ import { Grant } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
+import { typeMismatchError } from './instance';
+import { type } from 'os';
 
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
@@ -79,6 +81,44 @@ export function transformToLinkedList<T>(list: T[]) {
     });
 
     return linkedList;
+}
+
+export function bodyChecker<T>(
+    body: T,
+    sample: {
+        [idx: string]:
+            | 'undefined'
+            | 'number'
+            | 'string'
+            | 'boolean'
+            | 'object'
+            | 'number[]'
+            | 'string[]'
+            | 'boolean[]'
+            | 'object[]';
+    },
+) {
+    const keys = Object.keys(body);
+
+    const flag = keys.some((key) => {
+        const type1 = typeof body[key];
+        const type2 = sample[key];
+        let isArr = false;
+
+        // undefined filter
+        if (type1 === 'undefined') return true;
+
+        // array filter
+        if (type2.slice(-2) === '[]') isArr = Array.isArray(body[key]);
+        if (isArr) {
+            if (body[key].length > 0 && typeof body[key][0] !== type2.slice(0, -2)) return true;
+        } else {
+            return type1 !== type2;
+        }
+    });
+
+    if (flag) throw typeMismatchError;
+    return true;
 }
 
 export function getExtensionOfFilename(filename: string) {
