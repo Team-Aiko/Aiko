@@ -62,7 +62,7 @@ export default function MeetingRoomTable(props) {
         const params = {
             roomId: meetingRoom.ROOM_PK,
             currentPage: currentPage,
-            feedsPerPage: rowsPerPage,
+            feedsPerPage: 10,
         };
 
         axiosInstance.get(url, { params: params }).then((result) => {
