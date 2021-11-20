@@ -8,7 +8,7 @@ export default class TestController {
     @Post('pagination')
     async testPagination(@Req() req: Request, @Res() res: Response) {
         const { currentPage, feedPerPage } = req.body;
-        const pagination = new Pagination(currentPage, 150, feedPerPage);
+        const pagination = new Pagination(currentPage, 10, feedPerPage);
         res.send(pagination);
     }
 
