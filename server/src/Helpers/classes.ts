@@ -43,7 +43,7 @@ export class Pagination {
         this._offset = (currentPage - 1) * feedPerPage;
 
         // max flag => if exit limit, throw error.
-        this._maxFlag = this._offset >= this._totalFeedCnt;
+        this._maxFlag = this._offset >= this._totPageCnt - 1;
     }
 
     get currentPage() {

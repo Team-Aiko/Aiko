@@ -136,6 +136,7 @@ export default class MeetRepository extends Repository<Meet> {
                 .limit(pagination.feedPerPage)
                 .orderBy('m.MEET_PK', 'DESC')
                 .getMany();
+
             return await Promise.all(
                 schedules.map(async (schedule) => {
                     const userInfos = await Promise.all(
