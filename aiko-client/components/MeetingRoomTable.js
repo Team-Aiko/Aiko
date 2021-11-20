@@ -241,16 +241,20 @@ export default function MeetingRoomTable(props) {
                         <Typography>일시</Typography>
                     </Grid>
                     <Grid item xs={10}>
-                        <TextField
-                            variant='outlined'
-                            fullWidth
-                            size='small'
-                            type='datetime-local'
-                            value={inputDate}
-                            onChange={(e) => {
-                                setInputDate(e.target.value);
-                            }}
-                        />
+                        {modalStatus !== 'view' ? (
+                            <TextField
+                                variant='outlined'
+                                fullWidth
+                                size='small'
+                                type='datetime-local'
+                                value={inputDate}
+                                onChange={(e) => {
+                                    setInputDate(e.target.value);
+                                }}
+                            />
+                        ) : (
+                            <Typography>{moment.unix(row.DATE).format('YYYY-MM-DD LT')}</Typography>
+                        )}
                     </Grid>
                     <Grid item xs={2}>
                         <Typography>참석자</Typography>
