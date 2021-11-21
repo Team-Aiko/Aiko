@@ -16,12 +16,12 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
+            const obj = JSON.parse(req.body.obj);
             const userPayload = usrPayloadParser(req);
-            const title = req.body.title;
-            const content = req.body.content;
+            const title = obj.title;
+            const content = obj.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
-            console.log(files);
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
@@ -37,16 +37,20 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
+            const obj = JSON.parse(req.body.obj);
+            console.log('obj' + obj);
             const userPayload = usrPayloadParser(req);
-            const title = req.body.title;
-            const content = req.body.content;
+            const title = obj.title;
+            const content = obj.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
-            const num = req.body.num;
+            const num = obj.num;
             const delFilePks = req.body.delFilePks;
             await this.noticeboardService.updateArtcle(title, content, userPk, comPk, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
+            const uuid = files.map((file) => file.filename);
+            deleteFiles(files[0].destination, ...uuid);
             throw resExecutor(res, { err });
         }
     }
