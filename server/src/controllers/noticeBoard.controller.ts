@@ -16,7 +16,7 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
-            console.log(files);
+            console.log(files); //merge  test
             const obj = JSON.parse(req.body.obj);
             const userPayload = usrPayloadParser(req);
             const title = obj.title;
