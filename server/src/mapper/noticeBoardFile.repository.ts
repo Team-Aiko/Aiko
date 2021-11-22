@@ -28,11 +28,33 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
             console.log(err);
         }
     }
+    async deleteFiles(delFilePks: number[]) {
+        try {
+            const parse = [1, 2, 3];
+            for (const pk of parse) {
+                console.log(pk);
+                return await this.createQueryBuilder()
+                    .update(NoticeBoardFile)
+                    .set({
+                        IS_DELETE: 1,
+                    })
+                    .where('NBF_PK = :pk', { pk: `${pk}` })
+                    // .andWhere('comPK = :comPk', { comPk: `${comPk}`})
+                    .execute();
+            }
+        } catch (err) {
+            return err;
+        }
+    }
+
+    // 게시글 삭제
+
     async downloadFile(fileId: number, comPk: number) {
         const result = await this.createQueryBuilder('n')
             .select(['n.UUID', 'n.ORIGINAL_NAME'])
             .where('NBF_PK = :fileId', { fileId: `${fileId}` })
             .andWhere('COMPANY_PK = :comPk', { comPk: `${comPk}` })
+            .andWhere('IS_DELETE = 0')
             .getOne();
         return result;
     }

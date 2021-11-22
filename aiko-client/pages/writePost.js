@@ -14,9 +14,9 @@ export default function writePost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
-    const [file, setFile] = useState(null);
 
-  
+    const files = [];
+
     const titleChange = (e) => {
       setTitle(e.target.value);
     };
@@ -26,7 +26,7 @@ export default function writePost() {
     };
 
     const handleFile = (e) => {
-      setFile(e.target.files);
+      files.push(e.target.files)
     };
 
     const nameChange = (e) => {
@@ -36,11 +36,15 @@ export default function writePost() {
     const upload = () => {
       const formData = new FormData();
       const url = '/api/notice-board/write';
-      formData.append("title", title);
-      formData.append("content", content);
-      for (let i=0; i<3; i++) {
-      formData.append("file", file[i]);
+      const obj = {
+        'title' : title,
+        'content' : content
+      };
+      const file = {
+        'file': files[0,2]
       }
+      formData.append('obj', obj);
+      formData.append('file', file);
       const config = {
         headers: {
           "content-type" : "multipart/form-data"
@@ -48,15 +52,12 @@ export default function writePost() {
       };
       axios.post(url, formData, config)
         .then((response) => {
+          console.log(formData);
           console.log(response);
-          setTitle('');
-          setName('');
-          setContent('');
-          setFile(null);
           router.push('/board');
         })
         .catch((error) => {
-          console.log(error);
+          console.log('작성 실패 이유' + error);
           alert('게시글 작성에 실패하셨습니다.')
         })
     };
@@ -83,7 +84,8 @@ export default function writePost() {
     <div style={{width:'70%'}}>
       <h4 style={{color:'#656565'}}>Content</h4>
       <textarea className={styles.contentInput} type="text" value={content} placeholder="내용을 입력해주세요" onChange={contentChange} />
-      <input value={file} disabled/>
+      
+      
 
       <div className={styles.fileSubmit}>
         <label className={styles.fileLabel} onChange={handleFile}>

@@ -24,28 +24,32 @@ const innerPost = () => {
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [name, SetName] = useState('Chiko');
+    const [name, setName] = useState('');
     const [date, setDate] = useState('')
-
     const [pkNum, setPkNum] = useState('');
-
     const [popup, setPopup] = useState(false);
+    const [files, setFiles] = useState([])
+    const [isdel, setIsDel] = useState(0);
 
     const router = useRouter();
-    const {pk} = router.query
+    const {pk} = router.query;
 
     useEffect(() => {
         const getDetails = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`);
-            console.log(res.data);
-            setInnerPosts(res.data.result);
-            setTitle(res.data.result.TITLE);
-            setContent(res.data.result.CONTENT);
-            setDate(res.data.result.CREATE_DATE);
-            setPkNum(res.data.result.NOTICE_BOARD_PK);
+            console.log(res.data.result[0]);
+            setInnerPosts(res.data.result[0]);
+            setTitle(res.data.result[0].TITLE);
+            setContent(res.data.result[0].CONTENT);
+            setName(res.data.result[0].USER_PK)
+            setDate(res.data.result[0].CREATE_DATE);
+            setPkNum(res.data.result[0].NOTICE_BOARD_PK);
+            setFiles(res.data.result[0].files[0].ORIGINAL_NAME);
+            setisDel(res.data.result[0].files[0].IS_DELETE)
         }
         getDetails()
     }, []);
+
 
     const handleTitle = (e) => {
         setTitle(e.target.value);
@@ -92,7 +96,7 @@ const innerPost = () => {
         .then((response) => {
             console.log(response);
             alert('삭제되었습니다.');
-            router.push('/board');
+            router.push('/board')
         })
         .catch((error) => {
             console.log(error)
@@ -115,6 +119,12 @@ const innerPost = () => {
         <div className={styles.contentArea}>
             <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
         </div>
+
+        <label style={{fontSize:'15px'}}>
+            <input style={{display:'none'}}/>
+                {files}
+            <p onClick={() => {setIsDel(1)}}>x</p>
+        </label>
 
 
         <div className={styles.reviseDelete}>
