@@ -30,6 +30,12 @@ const innerPost = () => {
     const [popup, setPopup] = useState(false);
     const [files, setFiles] = useState([])
     const [isdel, setIsDel] = useState(0);
+    const [filePkNum, setFilePkNum] = useState('');
+    const [deletedFilePk, setDeletedFilePk] = useState('');
+
+    const [normalColor, setNormalColor] = useState('black');
+    const [deleteColor, setDeleteColor] = useState('grey');
+
 
     const router = useRouter();
     const {pk} = router.query;
@@ -45,7 +51,8 @@ const innerPost = () => {
             setDate(res.data.result[0].CREATE_DATE);
             setPkNum(res.data.result[0].NOTICE_BOARD_PK);
             setFiles(res.data.result[0].files[0].ORIGINAL_NAME);
-            setisDel(res.data.result[0].files[0].IS_DELETE)
+            setIsDel(res.data.result[0].files[0].IS_DELETE);
+            setFilePkNum(res.data.result[0].files[0].NBF_PK)
         }
         getDetails()
     }, []);
@@ -59,13 +66,23 @@ const innerPost = () => {
         setContent(e.target.value);
     };
 
+    const deleteFile = () => {
+        setDeletedFilePk(filePkNum);
+        setNormalColor(deleteColor);
+    };
+
+    const returnColor =() => {
+        setNormalColor('black')
+    }
+
 
     const updateArticle = () => {
         const url = '/api/notice-board/update-article';
         const data = {
             'num' : pkNum,
             'title': title,
-            'content': content
+            'content': content,
+            'delFilePks[]': deletedFilePk
         }
         const config = {
         headers: {
@@ -120,10 +137,11 @@ const innerPost = () => {
             <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
         </div>
 
-        <label style={{fontSize:'15px'}}>
+        <label style={{fontSize:'50px', color:normalColor}}>
             <input style={{display:'none'}}/>
                 {files}
-            <p onClick={() => {setIsDel(1)}}>x</p>
+            <a onClick={deleteFile}>x</a>
+            <a onClick={returnColor}>O</a>
         </label>
 
 

@@ -17,9 +17,11 @@ export default class NoticeBoardController {
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         console.log('hello');
         try {
+            console.log(files);
             const obj = JSON.parse(req.body.obj);
             const userPayload = usrPayloadParser(req);
             const title = obj.title;
+
             const content = obj.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;

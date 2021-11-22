@@ -47,9 +47,9 @@ export default function writePost() {
           "content-type" : "multipart/form-data"
         },
       };
+      console.log(files);
       axios.post(url, formData, config)
         .then((response) => {
-          console.log(formData);
           console.log(response);
           router.push('/board');
         })
