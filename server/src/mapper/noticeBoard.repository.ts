@@ -24,26 +24,27 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         }
         return insertResult.raw.insertId;
     }
-    deleteArticle(userPk: number, num: number) {
+    async deleteArticle(userPk: number, num: number) {
         try {
-            return this.createQueryBuilder()
+            return await this.createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ IS_DELETE: 1 })
-                .where('NO like :num', { num: `${num}` })
+                .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
             return err;
         }
     }
-    updateArticle(title: string, content: string, userPk: number, num: number) {
+    async updateArticle(title: string, content: string, userPk: number, num: number) {
         try {
             const time = unixTimeStamp();
-            return this.createQueryBuilder()
+            return await this.createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time })
-                .where('NO like :num', { num: `${num}` })
+                .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
+                .andWhere('IS_DELETE = 0')
                 .execute();
         } catch (err) {
             return err;
@@ -59,17 +60,19 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     }
     async getList(option: number, comPk: number, pageNum: number) {
         return await this.createQueryBuilder('n')
-            .select(['n.NO', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
+            .select(['n.NOTICE_BOARD_PK', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
             .limit(option)
             .offset(pageNum)
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
+            .andWhere('IS_DELETE = 0')
             .getMany();
     }
-    async getDetail(num: number, userPk: number) {
-        return await this.createQueryBuilder('n')
-            .select()
-            .where('USER_PK like :userPk', { userPk: `${userPk}` })
-            .andWhere('NO like :num', { num: `${num}` })
-            .getOne();
+    async getDetail(num: number, comPk: number) {
+        return await this.createQueryBuilder('nb')
+            .leftJoinAndSelect('nb.files', 'files')
+            .where('nb.COMPANY_PK = :comPk', { comPk: `${comPk}` })
+            .andWhere('nb.NOTICE_BOARD_PK = :num', { num: `${num}` })
+            .andWhere('nb.IS_DELETE = 0')
+            .getMany();
     }
 }

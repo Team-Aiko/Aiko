@@ -1,5 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
+import { NoticeBoard } from '.';
 @Entity({ name: 'NOTICE_BOARD_FILE_TABLE' })
 export default class NoticeBoardFile {
     @PrimaryGeneratedColumn()
@@ -22,4 +22,8 @@ export default class NoticeBoardFile {
 
     @Column()
     IS_DELETE: number;
+
+    @ManyToOne(() => NoticeBoard, (nb) => nb.files)
+    @JoinColumn({ name: 'NOTICE_BOARD_PK' })
+    nb: NoticeBoard;
 }
