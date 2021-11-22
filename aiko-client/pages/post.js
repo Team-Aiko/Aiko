@@ -7,7 +7,6 @@ import axiosInstance from '../_axios/interceptor.js';
 import { useDispatch } from 'react-redux';
 
 const post = () => {
-
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -17,12 +16,12 @@ const post = () => {
         const fetchPosts = async () => {
             setLoading(true);
             const res = await axios.get('https://jsonplaceholder.typicode.com/posts');
-            setPosts(res.data); 
+            setPosts(res.data);
             setLoading(false);
-        }
+        };
 
         fetchPosts();
-    },[]);
+    }, []);
 
     //GET CURRENT POSTS
     const indexOfLastPost = currentPage * postsPerPage;
@@ -32,16 +31,16 @@ const post = () => {
     // Change Page
 
     const paginate = (pageNumber) => {
-        setCurrentPage(pageNumber)
-    }
+        setCurrentPage(pageNumber);
+    };
 
     return (
         <div>
             <h1>PAGINATION TEST</h1>
-            <Posts posts={currentPosts} loading={loading}/>
-            <Paginations postsPerPage={postsPerPage} totalPosts={posts.length} paginate={paginate}/>
+            <Posts posts={currentPosts} loading={loading} />
+            <Paginations postsPerPage={postsPerPage} totalPosts={posts.length} paginate={paginate} />
         </div>
-    )
-}
+    );
+};
 
-export default post
+export default post;

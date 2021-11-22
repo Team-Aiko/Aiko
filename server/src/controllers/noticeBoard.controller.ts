@@ -15,6 +15,7 @@ export default class NoticeBoardController {
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
+        console.log('hello');
         try {
             console.log(files); //merge  test
             const obj = JSON.parse(req.body.obj);
@@ -27,6 +28,7 @@ export default class NoticeBoardController {
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
+            console.log(files[0]);
         } catch (err) {
             console.log(err);
             const uuid = files.map((file) => file.filename);

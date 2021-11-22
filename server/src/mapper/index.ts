@@ -6,7 +6,7 @@ import CompanyRepository from './company.repository';
 import DepartmentRepository from './department.repository';
 import SocketRepository from './socket.repository';
 import ChatFileRepository from './chatFile.repository';
-import OTOChatRoomRepository from './otoChatRoom.repository';
+import PrivateChatRoomRepository from './privateChatRoom.repository';
 import RefreshRepository from './refresh.repository';
 import GrantRepository from './grant.repository';
 import NoticeBoardFileRepository from './noticeBoardFile.repository';
@@ -20,7 +20,7 @@ export {
     ResetPwRepository,
     SocketRepository,
     ChatFileRepository,
-    OTOChatRoomRepository,
+    PrivateChatRoomRepository,
     RefreshRepository,
     GrantRepository,
     NoticeBoardFileRepository,

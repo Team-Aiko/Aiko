@@ -6,7 +6,7 @@ import Department from './department.entity';
 import Company from './company.entity';
 import Socket from './socket.entity';
 import ChatFile from './chatFile.entity';
-import OTOChatRoom from './otoChatRoom.entity';
+import PrivateChatRoom from './privateChatRoom.entity';
 import Refresh from './refresh.entity';
 import NoticeBoard from './noticeBoard.entity';
 import Grant from './Grant.entity';
@@ -30,7 +30,7 @@ export {
     StepIndex,
     AuthListTable,
     Grant,
-    OTOChatRoom,
+    PrivateChatRoom,
     User,
     LoginAuth,
     Country,

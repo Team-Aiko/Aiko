@@ -37,11 +37,13 @@ export class Pagination {
             this._pageGroup.push(groupIndex === 1 ? currentPage + i : currentPage - groupIndex + i + 1);
         }
 
+        this._pageGroup = this._pageGroup.filter((number) => (number - 1) * feedPerPage < this._totalFeedCnt);
+
         // set offset
         this._offset = (currentPage - 1) * feedPerPage;
 
         // max flag => if exit limit, throw error.
-        this._maxFlag = this._offset >= this._totalFeedCnt;
+        this._maxFlag = this._offset >= this._totPageCnt - 1;
     }
 
     get currentPage() {

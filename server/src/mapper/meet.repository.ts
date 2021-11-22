@@ -130,28 +130,32 @@ export default class MeetRepository extends Repository<Meet> {
     async getMeetingSchedules(ROOM_PK: number, pagination: Pagination) {
         try {
             const schedules = await this.createQueryBuilder('m')
-                .leftJoinAndSelect('c.members', 'members')
+                .leftJoinAndSelect('m.members', 'members')
+                .leftJoinAndSelect('members.user', 'user')
+                .leftJoinAndSelect('user.department', 'department')
+                .leftJoinAndSelect('user.profile', 'profile')
                 .where('m.ROOM_PK = :ROOM_PK', { ROOM_PK })
                 .offset(pagination.offset)
                 .limit(pagination.feedPerPage)
                 .orderBy('m.MEET_PK', 'DESC')
                 .getMany();
-            return await Promise.all(
-                schedules.map(async (schedule) => {
-                    const userInfos = await Promise.all(
-                        schedule.members.map(async (member) => {
-                            const { USER_PK } = member;
-                            return await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK);
-                        }),
+
+            return schedules.map((schedule) => {
+                schedule.members = schedule.members.map((member) => {
+                    member.user = propsRemover(
+                        member.user,
+                        'PASSWORD',
+                        'SALT',
+                        'IS_VERIFIED',
+                        'IS_DELETED',
+                        'COUNTRY_PK',
                     );
 
-                    const dto: meetingScheduleDTO = {
-                        ...schedule,
-                        userInfos,
-                    };
-                    return dto;
-                }),
-            );
+                    return member;
+                });
+
+                return schedule;
+            });
         } catch (err) {
             console.error(err);
             throw new AikoError('calledMembers/getMeetingSchedules', 500, 292913);

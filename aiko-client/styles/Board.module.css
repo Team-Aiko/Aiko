@@ -1,35 +1,36 @@
 .table {
     width:100%;
     margin-top: 0px;
-    border-top: 1px solid #9e9e9e;
+    border-top: 2px solid #515050;
     border-collapse: collapse;
 }
 
 .th {
-    border-bottom: 1px solid #9e9e9e;
+    border-bottom: 1px solid #515050;
     padding:10px;
     text-align:center;
     background-color: white;
+    color: #666666;
 }
 
 .td {
-    border-bottom: 1px solid #9e9e9e;
     padding:10px;
     text-align:center;
     background-color: white;
 }
 
 .desc {
+    width:80%;
     display:flex;
-    flex-direction: row;
-    align-items:center;
     justify-content: space-between;
+    margin: 0 auto;
+    margin-top:3%;
 }
 
 .aikoBoard {
-    color:#3f51b5;
-    margin-left:30px;
+    color:#575353
 }
+
 
 .formControl {
     width:100px;
@@ -46,4 +47,41 @@
 .root{
     display:flex;
     justify-content:center;
+}
+
+.tbody {
+    width:100%;
+}
+
+.paginateDiv {
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    text-align:center;
+    justify-content:center;
+}
+
+.aTag {
+    text-decoration:none;
+    border: 1px solid #eee;
+    text-align:center;
+    float:left;
+    padding:6px;
+    margin-right:3px;
+    width:30px;
+    font: bold 12px tahoma;
+    color:#3f51b5;
+}
+
+.aTag:hover {
+    border: 1px solid #3f51b5;
+    transition: all 0.5s;
+    cursor: pointer;
+}
+
+.forRows {
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    text-align:center;
 }

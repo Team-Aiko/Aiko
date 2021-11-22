@@ -1,6 +1,6 @@
 .outerContainer {
     width:90%;
-    height:80%;
+    height:170%;
     background-color: #DEE1ED;
     display:block;
     margin:50px auto;
@@ -11,7 +11,7 @@
 .upperContainer {
     background-color:#dee1ed;
     width:100%;
-    height:40%;
+    height:20%;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -20,7 +20,7 @@
 
 
 .profileInfo {
-    width:70%;
+    width:60%;
     height:70%;
     background-color:white;
     margin-left:30px;
@@ -104,4 +104,53 @@
     flex-direction:column;
     align-items:flex-start;
     justify-content:space-evenly;
+}
+
+.tabs {
+    background:none;
+    cursor: pointer;
+    display:inline-block;
+    border-top:1px solid #c4c4c4;
+    border-left:1px solid #c4c4c4;
+    border-right:1px solid #c4c4c4;
+    background-color:white;
+    border-radius: 10px 10px 0px 0px;
+    color:#5c5c5c;
+    height:50px;
+}
+
+.actionItemContainer {
+    width:90%;
+    height:70%;
+    background-color:white;
+    display:block;
+    margin: 0 auto;
+    border-radius:50px;
+    border: 1px solid #c4c4c4;
+    overflow:hidden;
+}
+
+.outerTable {
+    width:95%;
+    border:1px solid #c4c4c4;
+    border-collapse:collapse;
+}
+
+.th {
+    border: 1px solid #c4c4c4;
+    padding:8px;
+}
+
+.tableDiv {
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+}
+
+.underTableDiv {
+    width:95%;
+    background-color:#c4c4c4;
+    height:75%;
+    display:block;
+    margin: 0 auto;
 }

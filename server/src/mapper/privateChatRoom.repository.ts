@@ -1,11 +1,14 @@
 import { EntityManager, EntityRepository, getConnection, InsertResult, Repository, TransactionManager } from 'typeorm';
-import { OTOChatRoom, User } from '../entity';
+import { PrivateChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';
+import { propsRemover } from 'src/Helpers';
 
-@EntityRepository(OTOChatRoom)
-export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
-    async makeOneToOneChatRooms(
+const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
+
+@EntityRepository(PrivateChatRoom)
+export default class PrivateChatRoomRepository extends Repository<PrivateChatRoom> {
+    async makePrivateChatRoomList(
         manager: EntityManager,
         userId: number,
         userList: User[],
@@ -29,7 +32,7 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
 
                         if (cnt > 0) return true;
 
-                        await manager.insert(OTOChatRoom, {
+                        await manager.insert(PrivateChatRoom, {
                             CR_PK: v1(),
                             USER_1: userId,
                             USER_2: id,
@@ -44,10 +47,10 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
                     return flag2;
                 }),
             );
-            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 45 ~ OTOChatRoomRepository ~ result', result);
+            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 45 ~ PrivateChatRoomRepository ~ result', result);
 
             flag = result.reduce((prev, curr) => prev && curr, true);
-            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 48 ~ OTOChatRoomRepository ~ flag', flag);
+            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 48 ~ PrivateChatRoomRepository ~ flag', flag);
         } catch (err) {
             throw err;
         }
@@ -55,18 +58,26 @@ export default class OTOChatRoomRepository extends Repository<OTOChatRoom> {
         return flag;
     }
 
-    async getOneToOneChatRoomList(userId: number, companyPK: number): Promise<OTOChatRoom[]> {
-        let list: OTOChatRoom[] = [];
+    async getPrivateChatRoomList(userId: number, companyPK: number) {
+        let list: PrivateChatRoom[] = [];
 
         try {
             list = await this.createQueryBuilder('o')
                 .where('o.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .leftJoinAndSelect('o.USER1', 'user1')
-                .leftJoinAndSelect('o.USER1', 'user2')
+                .leftJoinAndSelect('o.user1', 'user1')
+                .leftJoinAndSelect('o.user2', 'user2')
                 .where('o.USER_1 = :USER1', { USER1: userId })
                 .orWhere('o.USER_2 = :USER2', { USER2: userId })
                 .getMany();
+
+            return list.map((room) => {
+                room.user1 = propsRemover(room.user1, ...criticalInfos);
+                room.user2 = propsRemover(room.user2, ...criticalInfos);
+
+                return room;
+            });
         } catch (err) {
+            console.error(err);
             throw new AikoError('otoChat/getOneToOneChatRoomList', 500, 500360);
         }
 

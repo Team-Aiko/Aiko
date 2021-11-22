@@ -1,6 +1,6 @@
 import * as React from 'react';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import router from 'next/router';
 import Link from 'next/link';
@@ -11,26 +11,9 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
-import Pagination from '@material-ui/lab/Pagination';
-import { useEffect } from 'react';
 import Posts from '../components/Posts.js';
-import Paginations from '../components/Paginations.js';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 
-const handleLogin = () => {
-    const url = '/api/notice-board/files';
-    const config = {
-        header: {
-            'content-type': 'application/json',
-        },
-    };
-    (async () => {
-        try {
-            await get(url, config);
-        } catch (err) {
-            console.log(err);
-        }
-    })();
-};
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,96 +23,110 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
 export default function board() {
 
-const {inputData} = useSelector((state) => state.boardReducer);
-const {lastId} = useSelector((state) => state.boardReducer);
+const [posts, setPosts] = useState([]);
+const [loading, setLoading] = useState(false);
+const [currentPage, setCurrentPage] = useState(1);
+const [postsPerPage, setPostsPerPage] = useState(10);
+const [btnNumbers, setBtnNumbers] = useState([]);
+const [row, setRow] = useState(10);
 
-const dispatch = useDispatch();
+useEffect(() => {
+    const fetchPosts = async () => {
+        setLoading(true);
+        const res = await axios.get(`/api/notice-board/list?option=${postsPerPage}&pageNum=${currentPage}`);
+        setPosts(res.data.result);
+        console.log(res.data.result);
+        setLoading(false);
+    }
+    fetchPosts()
+},[currentPage, postsPerPage]);
 
-const selectContent = (id) => {
-    dispatch(selectRow(id))
-};
+const pageBtn = () => {
+    const pageButtons = [];
+    axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
+    .then((res) => {
+        for(let i=1; i<=res.data.result; i++) {
+            pageButtons.push(i);
+        }
+        setBtnNumbers(pageButtons)
+    })
+}
+
+useEffect(() => {
+    pageBtn()
+},[postsPerPage])
+
+
+// useEffect(() => {
+//     axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
+//     .then((res) => {
+//         console.log(res.data.result);
+//         for (let i=1; i <= res.data.result; i++){
+//         setBtnNumbers([...btnNumbers, i]);
+//         }
+//     })
+//     .catch((error) => {
+//         console.log(error)
+//     })
+// },[postsPerPage])
+
 
 const handleChange = (e) => {
         setRow(e.target.value)
 };
 
-const [row, setRow] = useState('');
-const [pagingNum, setPagingNum] = useState(10);
-
 const classes = useStyles();
 
 return (
     <>
+
     <div className={styles.desc}>
-        <h2 className={styles.aikoBoard}>AIKO notice board</h2>
+        <h3 className={styles.aikoBoard}><span style={{color:'#3f51b5', fontSize:'35px'}}>AIKO</span> notice board</h3>
+            <div className={styles.forRows}>
+                <h5 style={{color:'#3f51b5'}}>For rows :</h5>
+                <ButtonGroup variant="text" aria-label="text primary button group">
+                    <Button onClick={() => {setPostsPerPage(10)}}>10</Button>
+                    <Button onClick={() => {setPostsPerPage(20)}}>20</Button>
+                    <Button onClick={() => {setPostsPerPage(30)}}>30</Button>
+                </ButtonGroup>
+            </div>
+    </div>
+    
+    <div style={{width:'80%', height:'80%', display:'block', margin:'3% auto'}}>
+        <div>
+            <table className={styles.table}>
+                <thead className={styles.thead}>
+                    <tr>
+                        <th className={styles.th} style={{width:'7%'}}>No.</th>
+                        <th className={styles.th} style={{width:'50%', textAlign:'left'}}>Title</th>
+                        <th className={styles.th} style={{width:'20%', textAlign:'left'}}>Posted by</th>
+                        <th className={styles.th} style={{width:'15%', textAlign:'left'}}>Date</th>
+                    </tr>
+                </thead>
 
-        <div style={{marginRight:'30px'}}>
-        <FormControl variant="outlined" className={styles.formControl}>
-            <InputLabel htmlFor="outlined-age-native-simple">Rows</InputLabel>
-            <Select
-            native
-            value={row}
-            onChange={handleChange}
-            label="Age"
-            >
-            <option aria-label="None" value="" />
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={30}>30</option>
-            </Select>
-        </FormControl>
+                <tbody className={styles.tbody}>
+                    <Posts posts={posts} loading={loading}/>
+                </tbody>
+            </table>
         </div>
-    </div>
 
-    <div>
-        <table className={styles.table}>
-            <thead className={styles.thead}>
-                <tr>
-                    <th className={styles.th} style={{width:'7%'}}>No.</th>
-                    <th className={styles.th} style={{width:'50%', textAlign:'left'}}>Title</th>
-                    <th className={styles.th} style={{width:'20%', textAlign:'left'}}>Posted by</th>
-                    <th className={styles.th} style={{width:'15%', textAlign:'left'}}>Date</th>
-                </tr>
-            </thead>
+        <div className={styles.postButtonContainer}>
+            <Button variant="contained" color="primary" style={{
+            width:'100px', height:'50px', borderRadius:'15px'}}
+            onClick={()=>{router.push('/writePost')}}>
+                NEW POST
+            </Button>
+        </div>
 
-            <tbody className={styles.tbody}>
-                <tr>
-                    <td></td>
-                    <td></td>
-                </tr>
-                {
-                    lastId !== 0 ?
-                    inputData.map(rowData => (
-                        rowData.id !== '' &&
-                    <tr>
-                        <td className={styles.td} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.id}</a></Link></td>
-                        <td className={styles.td} style={{textAlign:'left'}} onClick={() => selectContent(rowData.id)}><Link href='/innerPost'><a>{rowData.title}</a></Link></td>
-                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.name}</td>
-                        <td className={styles.td} style={{textAlign:'left'}}>{rowData.date}</td>
-                    </tr>
-                    )) :
-                    <tr>
-                        <td className={styles.td}></td>
-                        <td className={styles.td}>작성된 글이 없습니다.</td>
-                    </tr>
-                }   
-            </tbody>
-        </table>
-    </div>
-
-    <div className={styles.postButtonContainer}>
-        <Button variant="contained" color="primary" style={{
-          width:'100px', height:'50px', borderRadius:'15px'}}
-        onClick={()=>{router.push('/writePost')}}>
-            NEW POST
-        </Button>
-    </div>
-
-    <div style={{ height: 300, width: '30%' }}>
-        <div onClick={handleLogin}> 파일 다운로드 테스트 </div>
+        <div className={styles.paginateDiv}>
+            {btnNumbers.map(btn => (
+                <a className={styles.aTag} onClick={()=>{setCurrentPage(btn)}}>
+                    {btn}
+                </a>
+            ))}
+        </div>
     </div>
 
     </>
