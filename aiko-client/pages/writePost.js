@@ -14,9 +14,8 @@ export default function writePost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
+    const [files, setFiles] = useState([]);
     
-
-    const files = [];
 
     const titleChange = (e) => {
       setTitle(e.target.value);
@@ -27,8 +26,7 @@ export default function writePost() {
     };
 
     const handleFile = (e) => {
-      files.push(e.target.files[0])
-      console.log(files)
+      setFiles([...files, e.target.files])
     };
 
     const nameChange = (e) => {
@@ -42,11 +40,8 @@ export default function writePost() {
         'title' : title,
         'content' : content
       }
-      const file = {
-        'file' : [files[0]]
-      }
       formData.append('obj', JSON.stringify(obj));
-      formData.append('file', file);
+      formData.append('file', files);
       const config = {
         headers: {
           "content-type" : "multipart/form-data"
