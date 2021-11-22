@@ -14,6 +14,7 @@ export default function writePost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
+    
 
     const files = [];
 
@@ -26,7 +27,8 @@ export default function writePost() {
     };
 
     const handleFile = (e) => {
-      files.push(e.target.files)
+      files.push(e.target.files[0])
+      console.log(files)
     };
 
     const nameChange = (e) => {
@@ -39,11 +41,11 @@ export default function writePost() {
       const obj = {
         'title' : title,
         'content' : content
-      };
-      const file = {
-        'file': files[0,2]
       }
-      formData.append('obj', obj);
+      const file = {
+        'file' : [files[0]]
+      }
+      formData.append('obj', JSON.stringify(obj));
       formData.append('file', file);
       const config = {
         headers: {

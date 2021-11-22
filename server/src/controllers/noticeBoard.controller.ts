@@ -26,6 +26,7 @@ export default class NoticeBoardController {
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
+            console.log(files[0]);
         } catch (err) {
             console.log(err);
             const uuid = files.map((file) => file.filename);
