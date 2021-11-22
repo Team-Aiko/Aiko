@@ -17,9 +17,19 @@ export default class NoticeBoardService {
 
     //게시글 수정
 
-    async updateArtcle(title: string, content: string, userPk: number, num: number) {
+    async updateArtcle(
+        title: string,
+        content: string,
+        userPk: number,
+        comPk: number,
+        num: number,
+        delFilePks: number[],
+        files: Express.Multer.File[],
+    ) {
         try {
             await getRepo(NoticeBoardRepository).updateArticle(title, content, userPk, num);
+            await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk); //파일 생성
+            await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks);
         } catch (err) {
             throw new AikoError('QUERY ERROR[update문 에러 발생]:' + err.name, 451, 500000);
         }
@@ -51,12 +61,5 @@ export default class NoticeBoardService {
 
     async getDetail(num: number, userPk: number) {
         return await getRepo(NoticeBoardRepository).getDetail(num, userPk);
-    }
-
-    // 파일 다운로드
-
-    async getFile(uuid: number, userPk: number) {
-        console.log(uuid, userPk);
-        // throw new AikoError('에러테스트', 451, 500000);
     }
 }

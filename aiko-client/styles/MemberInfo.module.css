@@ -110,15 +110,13 @@
     background:none;
     cursor: pointer;
     display:inline-block;
-    padding:10px 1px;
     border-top:1px solid #c4c4c4;
     border-left:1px solid #c4c4c4;
     border-right:1px solid #c4c4c4;
     background-color:white;
     border-radius: 10px 10px 0px 0px;
-    font-size:20px;
-    height:50px;
     color:#5c5c5c;
+    height:50px;
 }
 
 .actionItemContainer {
@@ -129,6 +127,7 @@
     margin: 0 auto;
     border-radius:50px;
     border: 1px solid #c4c4c4;
+    overflow:hidden;
 }
 
 .outerTable {
