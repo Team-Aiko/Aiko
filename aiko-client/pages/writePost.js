@@ -26,7 +26,7 @@ export default function writePost() {
     };
 
     const handleFile = (e) => {
-      setFiles([...files, e.target.files])
+      setFiles([...files, e.target.files[0]])
     };
 
     const nameChange = (e) => {
