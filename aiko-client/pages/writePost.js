@@ -59,8 +59,6 @@ export default function writePost() {
         })
     };
     
-
-    
     return (
   <>
 
