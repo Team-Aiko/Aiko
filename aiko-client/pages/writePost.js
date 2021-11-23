@@ -1,7 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import styles from '../styles/WritePost.module.css';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Button from '@material-ui/core/Button';
 import axios from 'axios';
 import {useDispatch} from 'react-redux';
@@ -26,12 +26,23 @@ export default function writePost() {
     };
 
     const handleFile = (e) => {
-      setFiles([...files, e.target.files[0]])
+      setFiles([...files, e.target.files[0], e.target.files[1], e.target.files[2]])
     };
 
     const nameChange = (e) => {
       setName(e.target.value);
     };
+
+    const maxFileAlert = (handleFile) => {
+      if(files.length > 3) {
+        alert('파일은 최대 3개까지 업로드 가능합니다.')
+      }
+    }
+
+    useEffect(() => {
+      maxFileAlert();
+      console.log(files[0]);
+    }, [files])
 
     const upload = () => {
       const formData = new FormData();
@@ -41,7 +52,9 @@ export default function writePost() {
         'content' : content
       }
       formData.append('obj', JSON.stringify(obj));
-      formData.append('file', files);
+      formData.append('file', files[0]);
+      formData.append('file', files[1]);
+      formData.append('file', files[2]);
       const config = {
         headers: {
           "content-type" : "multipart/form-data"
@@ -66,6 +79,8 @@ export default function writePost() {
 
   <h2 style={{color:'#3F51B5', paddingTop:'20px', paddingLeft:'15%'}}>New Post</h2>
 
+  <hr className={styles.writeHr}/>
+
   <div className={styles.titleName} style={{marginBottom:'20px'}}>
     <div style={{width:'50%'}}>
         <h4 style={{color:'#656565'}}>Title</h4>
@@ -82,7 +97,15 @@ export default function writePost() {
       <h4 style={{color:'#656565'}}>Content</h4>
       <textarea className={styles.contentInput} type="text" value={content} placeholder="내용을 입력해주세요" onChange={contentChange} />
       
-      
+      {
+        files.map(file => (
+          <div>
+            <label style={{fontSize:'10px'}}>
+              <input value={file} disabled style={{color:'#aaa', borderStyle:"none"}}/>
+            </label>
+          </div>
+        ))
+      }
 
       <div className={styles.fileSubmit}>
         <label className={styles.fileLabel} onChange={handleFile}>

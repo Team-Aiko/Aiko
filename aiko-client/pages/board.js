@@ -94,7 +94,7 @@ return (
             </div>
     </div>
     
-    <div style={{width:'80%', height:'80%', display:'block', margin:'3% auto'}}>
+    <div style={{width:'80%', height:'90%', display:'block', margin:'3% auto'}}>
         <div>
             <table className={styles.table}>
                 <thead className={styles.thead}>

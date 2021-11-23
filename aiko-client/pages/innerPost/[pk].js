@@ -33,12 +33,30 @@ const innerPost = () => {
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState('');
 
-    const [normalColor, setNormalColor] = useState('black');
-    const [deleteColor, setDeleteColor] = useState('grey');
+    const [normalColor, setNormalColor] = useState('#3F51B5');
+    const [deleteColor, setDeleteColor] = useState('light-grey');
 
 
     const router = useRouter();
     const {pk} = router.query;
+
+    useEffect(() => {
+        const getFileNames = async () => {
+            const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
+            .then((res) => {
+                const fileNumber = [];
+                for(let i=0; i<res.data.result[0].files.length; i++) {
+                    fileNumber.push(res.data.result[0].files[i].ORIGINAL_NAME)
+                };
+            setFiles([...files, fileNumber]);
+            console.log(files)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        }
+        getFileNames()
+    },[])
 
     useEffect(() => {
         const getDetails = async () => {
@@ -50,7 +68,6 @@ const innerPost = () => {
             setName(res.data.result[0].USER_PK)
             setDate(res.data.result[0].CREATE_DATE);
             setPkNum(res.data.result[0].NOTICE_BOARD_PK);
-            setFiles(res.data.result[0].files[0].ORIGINAL_NAME);
             setIsDel(res.data.result[0].files[0].IS_DELETE);
             setFilePkNum(res.data.result[0].files[0].NBF_PK)
         }
@@ -68,11 +85,11 @@ const innerPost = () => {
 
     const deleteFile = () => {
         setDeletedFilePk(filePkNum);
-        setNormalColor(deleteColor);
+        setNormalColor('#E0E0E0');
     };
 
     const returnColor =() => {
-        setNormalColor('black')
+        setNormalColor("#3F51B5")
     }
 
 
@@ -137,30 +154,35 @@ const innerPost = () => {
             <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
         </div>
 
-        <label style={{fontSize:'50px', color:normalColor}}>
-            <input style={{display:'none'}}/>
-                {files}
-            <a onClick={deleteFile}>x</a>
-            <a onClick={returnColor}>O</a>
-        </label>
+        {
+        files.map(file => (
+            <>
+                <div className={styles.fileInput}>
+                    <a className={styles.files}>{file[0]}</a>
+                    <a className={styles.files}>{file[1]}</a>
+                    <a className={styles.files}>{file[2]}</a>
+                </div>
+            </>
+            ))
+        }
 
 
         <div className={styles.reviseDelete}>
             <Button variant="contained" color="primary"style={{
-            width:'100px', height:'50px', borderRadius:'15px', marginLeft:'15%' , backgroundColor:'#969696'}}
+            width:'80px', height:'40px', borderRadius:'15px', backgroundColor:'#969696'}}
             onClick={()=>{router.push('/board')}}>
                 LIST
             </Button>
 
-            <div className={styles.align} style={{marginRight:'10%'}}>
+            <div className={styles.align}>
             <Button onClick={updateArticle} variant="contained" color="primary" style={{
-                width:'100px', height:'50px', borderRadius:'15px'}}
+                width:'80px', height:'40px', borderRadius:'15px'}}
             >
                 REVISE
             </Button>
 
             <Button onClick={deleteArticle} variant="contained" color="primary" style={{
-                width:'100px', height:'50px', borderRadius:'15px', marginLeft:'10px', backgroundColor:'#D93D3D'}}
+                width:'80px', height:'40px', borderRadius:'15px', marginLeft:'5px', backgroundColor:'#D93D3D'}}
             >
                 DELETE
             </Button>

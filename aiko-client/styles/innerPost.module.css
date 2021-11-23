@@ -2,7 +2,10 @@
 .reviseDelete {
     display:flex;
     justify-content:space-between;
-    margin-top:10px;
+    width:70%;
+    margin:auto;
+    margin-top:2%;
+    margin-bottom: 5%;
 }
 
 .align {
@@ -13,7 +16,7 @@
     display:block;
     margin:30px auto;
     width:90%;
-    height:80%;
+    height:100%;
     background-color:white;
     border-radius:10px;
 }
@@ -21,8 +24,6 @@
 .anotherPost {
     display:flex;
     flex-direction:column;
-    text-align:middle;
-    margin-left:100px;
 }
 
 .previousPost {
@@ -73,4 +74,20 @@
     border:none;
     background:transparent;
     margin-right:10%;
+}
+
+.fileInput {
+    width:85%;
+    display:block;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+}
+
+.files {
+    width:25%;
+    margin:2px 0px 2px 0px ;
+    cursor:pointer;
+    font-size:15px;
+    color: #3F51B5;
 }
