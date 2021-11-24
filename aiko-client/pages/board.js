@@ -83,10 +83,10 @@ return (
     <>
 
     <div className={styles.desc}>
-        <h2 className={styles.aikoBoard}>AIKO notice board</h2>
-            <div className={styles.forRows} style={{marginRight:'30px'}}>
+        <h3 className={styles.aikoBoard}><span style={{color:'#3f51b5', fontSize:'35px'}}>AIKO</span> notice board</h3>
+            <div className={styles.forRows}>
                 <h5 style={{color:'#3f51b5'}}>For rows :</h5>
-                <ButtonGroup variant="text" color="primary" aria-label="text primary button group">
+                <ButtonGroup variant="text" aria-label="text primary button group">
                     <Button onClick={() => {setPostsPerPage(10)}}>10</Button>
                     <Button onClick={() => {setPostsPerPage(20)}}>20</Button>
                     <Button onClick={() => {setPostsPerPage(30)}}>30</Button>
@@ -94,37 +94,39 @@ return (
             </div>
     </div>
     
-    <div>
-        <table className={styles.table}>
-            <thead className={styles.thead}>
-                <tr>
-                    <th className={styles.th} style={{width:'7%'}}>No.</th>
-                    <th className={styles.th} style={{width:'50%', textAlign:'left'}}>Title</th>
-                    <th className={styles.th} style={{width:'20%', textAlign:'left'}}>Posted by</th>
-                    <th className={styles.th} style={{width:'15%', textAlign:'left'}}>Date</th>
-                </tr>
-            </thead>
+    <div style={{width:'80%', height:'80%', display:'block', margin:'3% auto'}}>
+        <div>
+            <table className={styles.table}>
+                <thead className={styles.thead}>
+                    <tr>
+                        <th className={styles.th} style={{width:'7%'}}>No.</th>
+                        <th className={styles.th} style={{width:'50%', textAlign:'left'}}>Title</th>
+                        <th className={styles.th} style={{width:'20%', textAlign:'left'}}>Posted by</th>
+                        <th className={styles.th} style={{width:'15%', textAlign:'left'}}>Date</th>
+                    </tr>
+                </thead>
 
-            <tbody className={styles.tbody}>
-                <Posts posts={posts} loading={loading}/>
-            </tbody>
-        </table>
-    </div>
+                <tbody className={styles.tbody}>
+                    <Posts posts={posts} loading={loading}/>
+                </tbody>
+            </table>
+        </div>
 
-    <div className={styles.postButtonContainer}>
-        <Button variant="contained" color="primary" style={{
-        width:'100px', height:'50px', borderRadius:'15px'}}
-        onClick={()=>{router.push('/writePost')}}>
-            NEW POST
-        </Button>
-    </div>
+        <div className={styles.postButtonContainer}>
+            <Button variant="contained" color="primary" style={{
+            width:'100px', height:'50px', borderRadius:'15px'}}
+            onClick={()=>{router.push('/writePost')}}>
+                NEW POST
+            </Button>
+        </div>
 
-    <div className={styles.paginateDiv}>
-        {btnNumbers.map(btn => (
-            <a className={styles.aTag} onClick={()=>{setCurrentPage(btn)}}>
-                {btn}
-            </a>
-        ))}
+        <div className={styles.paginateDiv}>
+            {btnNumbers.map(btn => (
+                <a className={styles.aTag} onClick={()=>{setCurrentPage(btn)}}>
+                    {btn}
+                </a>
+            ))}
+        </div>
     </div>
 
     </>
