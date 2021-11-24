@@ -10,7 +10,6 @@ import {
     TextField,
     Typography,
     Table,
-    TableContainer,
     TableHead,
     TableRow,
     TableCell,
@@ -33,7 +32,7 @@ const useStyles = makeStyles({
 });
 
 export default function MeetingRoomTable(props) {
-    const { meetingRoom } = props;
+    const { meetingRoom, admin } = props;
     const classes = useStyles();
     const theme = unstable_createMuiStrictModeTheme();
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
@@ -54,9 +53,11 @@ export default function MeetingRoomTable(props) {
         if (meetingRoom.ROOM_PK) {
             loadSchedule();
         }
-    }, [meetingRoom, currentPage]);
+    }, [meetingRoom, currentPage, rowsPerPage]);
 
     const loadSchedule = () => {
+        setScheduleList([]);
+
         const url = '/api/meeting/meet-schedule';
         const params = {
             roomId: meetingRoom.ROOM_PK,
@@ -76,8 +77,8 @@ export default function MeetingRoomTable(props) {
         setInputMember(memberList);
     };
 
-    const addSchedule = () => {
-        const url = '/api/meeting/make-meeting';
+    const uploadSchedule = () => {
+        const url = modalStatus === 'update' ? '/api/meeting/update-meeting' : '/api/meeting/make-meeting';
 
         const newMemberList =
             inputMember.length > 0
@@ -96,6 +97,8 @@ export default function MeetingRoomTable(props) {
             DATE: newDate,
             DESCRIPTION: inputDescription,
         };
+
+        if (modalStatus === 'update') data.MEET_PK = selectedSchedule.MEET_PK;
 
         axiosInstance.post(url, data).then((result) => {
             setOpenScheduleModal(false);
@@ -144,8 +147,34 @@ export default function MeetingRoomTable(props) {
     };
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
+        setRowsPerPage(event.target.value);
         setCurrentPage(1);
+    };
+
+    const handleUpdate = () => {
+        setInputTitle(selectedSchedule.TITLE);
+        setInputMember(selectedSchedule.members);
+        setInputNumber(selectedSchedule.MAX_MEM_NUM);
+        setInputDescription(selectedSchedule.DESCRIPTION);
+        setInputDate(moment.unix(selectedSchedule.DATE).format('YYYY-MM-DD' + 'T' + 'hh:mm'));
+
+        setModalStatus('update');
+    };
+
+    const deleteSchedule = () => {
+        const url = '/api/meeting/delete-meeting';
+        const data = {
+            MEET_PK: selectedSchedule.MEET_PK,
+        };
+
+        axiosInstance.post(url, data).then(() => {
+            setOpenScheduleModal(false);
+            setTimeout(() => {
+                setModalStatus('');
+            }, 200);
+            resetInput();
+            loadSchedule();
+        });
     };
 
     return (
@@ -302,12 +331,12 @@ export default function MeetingRoomTable(props) {
                             </>
                         ) : (
                             <Typography>
-                                {selectedSchedule.userInfos.length > 0
-                                    ? selectedSchedule.userInfos.map((user, index) => {
-                                          if (index < selectedSchedule.userInfos.length - 1) {
-                                              return `${user.NICKNAME}, `;
+                                {selectedSchedule.members.length > 0
+                                    ? selectedSchedule.members.map((member, index) => {
+                                          if (index < selectedSchedule.members.length - 1) {
+                                              return `${member.user.NICKNAME}, `;
                                           } else {
-                                              return user.NICKNAME;
+                                              return member.user.NICKNAME;
                                           }
                                       })
                                     : ''}
@@ -364,11 +393,35 @@ export default function MeetingRoomTable(props) {
                             </div>
                         )}
                     </Grid>
-                    <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
-                        <Button variant='contained' color='primary' onClick={addSchedule}>
-                            완료
-                        </Button>
-                    </Grid>
+                    {modalStatus !== 'view' ? (
+                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                            <Button variant='contained' color='primary' onClick={uploadSchedule}>
+                                {modalStatus === 'update' ? '수정 완료' : '작성 완료'}
+                            </Button>
+                        </Grid>
+                    ) : admin ? (
+                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                            <Button
+                                variant='contained'
+                                color='inherit'
+                                style={{ marginRight: '10px' }}
+                                onClick={handleUpdate}
+                            >
+                                수정
+                            </Button>
+                            <Button
+                                variant='contained'
+                                color='inherit'
+                                style={{ marginRight: '10px' }}
+                                onClick={deleteSchedule}
+                            >
+                                삭제
+                            </Button>
+                            <Button variant='contained' color='primary' onClick={() => console.log('진행 완료')}>
+                                진행 완료
+                            </Button>
+                        </Grid>
+                    ) : null}
                 </Grid>
             </Modal>
             <SearchMemberModal
