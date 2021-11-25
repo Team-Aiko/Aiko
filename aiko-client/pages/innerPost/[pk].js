@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
 
 const innerPost = () => {
 
+
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -33,12 +34,41 @@ const innerPost = () => {
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState('');
 
-    const [normalColor, setNormalColor] = useState('black');
-    const [deleteColor, setDeleteColor] = useState('grey');
+    //타임스탬프 변환
+
+    const [next] = useState(1);
+    const [previous] = useState(-1);
+
+
+    //이전 게시글, 다음 게시글 제목
+    const [prevTitle, setPrevTitle] = useState('');
+    const [nextTitle, setNextTitle] = useState('');
 
 
     const router = useRouter();
     const {pk} = router.query;
+
+    const [presentPk, setPresentPk] = useState({pk})
+
+    useEffect(() => {
+        const getFileNames = async () => {
+            const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
+            .then((res) => {
+                const fileNumber = [];
+                for(let i=0; i<res.data.result[0].files.length; i++) {
+                    fileNumber.push(res.data.result[0].files[i].ORIGINAL_NAME)
+                }; if (res.data.result[0].files.length < 2) {
+                    console.log('파일이 2개보다 작습니다')
+                }
+            setFiles([...files, fileNumber]);
+            console.log(files)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        }
+        getFileNames()
+    },[])
 
     useEffect(() => {
         const getDetails = async () => {
@@ -50,11 +80,22 @@ const innerPost = () => {
             setName(res.data.result[0].USER_PK)
             setDate(res.data.result[0].CREATE_DATE);
             setPkNum(res.data.result[0].NOTICE_BOARD_PK);
-            setFiles(res.data.result[0].files[0].ORIGINAL_NAME);
-            setIsDel(res.data.result[0].files[0].IS_DELETE);
-            setFilePkNum(res.data.result[0].files[0].NBF_PK)
         }
         getDetails()
+    }, []);
+
+    useEffect(() => {
+        const getSpecifics = async () => {
+            const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
+            .then((res) => {
+                if(res.data.result[0].files.length == 0){
+                    setFilePkNum(0);
+                } if(res.data.result[0].files.length > 0) {
+                    setFilePkNum(res.data.result[0].files[0].NBF_PK)
+                }
+            })
+        }
+        getSpecifics()
     }, []);
 
 
@@ -68,13 +109,8 @@ const innerPost = () => {
 
     const deleteFile = () => {
         setDeletedFilePk(filePkNum);
-        setNormalColor(deleteColor);
+        console.log(deletedFilePk)
     };
-
-    const returnColor =() => {
-        setNormalColor('black')
-    }
-
 
     const updateArticle = () => {
         const url = '/api/notice-board/update-article';
@@ -120,6 +156,21 @@ const innerPost = () => {
         })
     };
 
+    const downloadFile1 = () => {
+        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`;
+        axios.get(url)
+    }
+
+    const downloadFile2 = () => {
+        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum+1}`;
+        axios.get(url)
+    }
+
+    const downloadFile3 = () => {
+        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum+2}`;
+        axios.get(url)
+    }
+
     const classes = useStyles();
 
     return (
@@ -137,30 +188,44 @@ const innerPost = () => {
             <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
         </div>
 
-        <label style={{fontSize:'50px', color:normalColor}}>
-            <input style={{display:'none'}}/>
-                {files}
-            <a onClick={deleteFile}>x</a>
-            <a onClick={returnColor}>O</a>
-        </label>
+        {
+        files.map(file => (
+            <>
+                <div className={styles.fileInput}>
+                    <div>
+                    <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                    </div>
+                    <div>
+                    <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                    </div>
+                    <div>
+                    <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
+                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                    </div>
+                </div>
+            </>
+            ))
+        }
 
 
         <div className={styles.reviseDelete}>
             <Button variant="contained" color="primary"style={{
-            width:'100px', height:'50px', borderRadius:'15px', marginLeft:'15%' , backgroundColor:'#969696'}}
+            width:'80px', height:'40px', borderRadius:'15px', backgroundColor:'#969696'}}
             onClick={()=>{router.push('/board')}}>
                 LIST
             </Button>
 
-            <div className={styles.align} style={{marginRight:'10%'}}>
+            <div className={styles.align}>
             <Button onClick={updateArticle} variant="contained" color="primary" style={{
-                width:'100px', height:'50px', borderRadius:'15px'}}
+                width:'80px', height:'40px', borderRadius:'15px'}}
             >
                 REVISE
             </Button>
 
             <Button onClick={deleteArticle} variant="contained" color="primary" style={{
-                width:'100px', height:'50px', borderRadius:'15px', marginLeft:'10px', backgroundColor:'#D93D3D'}}
+                width:'80px', height:'40px', borderRadius:'15px', marginLeft:'5px', backgroundColor:'#D93D3D'}}
             >
                 DELETE
             </Button>
@@ -183,7 +248,7 @@ const innerPost = () => {
                 </Button>
                 <p style={{fontSize:'12px', color:'#9a9a9a', cursor:'pointer'}} onClick={function(){
                 alert('아직 기능 구현 중입니다.')
-                }}>2021년도 Aiko 프로젝트 감사 결과</p>
+                }}>{nextTitle}</p>
             </div>
         </div>
 
