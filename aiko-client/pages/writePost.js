@@ -26,6 +26,11 @@ export default function writePost() {
 
     const handleFile = (e) => {
       setFiles([...files, e.target.files[0], e.target.files[1], e.target.files[2]])
+      if (e.target.files[1] == null) {
+        setFiles([...files, e.target.files[0]])
+      } if (e. target.files[2] == null) {
+        setFiles([...files, e.target.files[0]])
+      }
     };
 
     const nameChange = (e) => {
@@ -34,13 +39,13 @@ export default function writePost() {
 
     const maxFileAlert = (handleFile) => {
       if(files.length > 3) {
-        alert('파일은 최대 3개까지 업로드 가능합니다.')
+        alert('파일 전송은 최대 3개 까지 가능합니다.')
       }
     };
 
     useEffect(() => {
       maxFileAlert();
-      console.log(files[0]);
+      console.log(files[0], files[1], files[2]);
     }, [files]);
 
     const upload = () => {
@@ -98,16 +103,14 @@ export default function writePost() {
     <div style={{width:'70%'}}>
       <h4 style={{color:'#656565'}}>Content</h4>
       <textarea className={styles.contentInput} type="text" value={content} placeholder="내용을 입력해주세요" onChange={contentChange} />
-      
-      {
-        files.map(file => (
-          <div>
+          
+    <div style={{display:'flex', flexDirection:'column', width:'40%'}}>      
+      {files.map(file => (
             <label style={{fontSize:'10px'}}>
-              <input value={file} disabled style={{color:'#aaa', borderStyle:"none"}}/>
+              <input value={(JSON.stringify(file.name))} disabled style={{borderStyle:"none",color:'#3F51B5',width:'100%'}}/>
             </label>
-          </div>
-        ))
-      }
+        ))}
+    </div>
 
       <div className={styles.fileSubmit}>
         <label className={styles.fileLabel} onChange={handleFile}>
