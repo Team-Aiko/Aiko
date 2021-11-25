@@ -4,9 +4,10 @@ import Router from 'next/router';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { ListItemText, ListItemIcon, Drawer, Button, List, ListItem } from '@material-ui/core';
-import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment } from '@material-ui/icons';
+import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment} from '@material-ui/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { handleSideNav } from '../../_redux/popupReducer';
+import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes';
 
 // * CSS Styles
 const useStyles = makeStyles({
@@ -53,6 +54,10 @@ function PComp(props) {
         Router.push('/meeting-room');
     };
 
+    const goToBoard = () => {
+        Router.push('/board');
+    };
+
     return (
         <>
             <Drawer open={sideNavIsOpen} onClose={closeDrawer}>
@@ -82,6 +87,12 @@ function PComp(props) {
                             </ListItemIcon>
                             {/* Electronic approval */}
                             <ListItemText primary='전자결재' />
+                        </ListItem>
+                        <ListItem button onClick={goToBoard}>
+                            <ListItemIcon>
+                                <SpeakerNotesIcon />
+                            </ListItemIcon>
+                            <ListItemText primary='게시판' />
                         </ListItem>
                         <ListItem button>
                             <ListItemIcon>
