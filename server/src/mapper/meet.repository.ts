@@ -97,8 +97,16 @@ export default class MeetRepository extends Repository<Meet> {
         let flag = false;
 
         try {
-            const fracture = manager ? manager.createQueryBuilder(Meet, 'm') : this.createQueryBuilder();
-            await fracture.delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            if (manager) {
+                await manager
+                    .createQueryBuilder(Meet, 'm')
+                    .delete()
+                    .where('m.MEET_PK = :MEET_PK', { MEET_PK })
+                    .execute();
+            } else {
+                await this.createQueryBuilder().delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            }
+
             flag = true;
         } catch (err) {
             console.error(err);

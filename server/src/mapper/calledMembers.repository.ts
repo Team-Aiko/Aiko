@@ -169,8 +169,16 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         let flag = false;
 
         try {
-            const fracture = manager ? manager.createQueryBuilder(CalledMembers, 'c') : this.createQueryBuilder();
-            await fracture.delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            if (manager) {
+                await manager
+                    .createQueryBuilder(CalledMembers, 'c')
+                    .delete()
+                    .where('c.MEET_PK = :MEET_PK', { MEET_PK })
+                    .execute();
+            } else {
+                await this.createQueryBuilder().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
+            }
+
             flag = true;
         } catch (err) {
             console.error(err);
