@@ -170,7 +170,8 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
         try {
             if (manager) {
-                await manager.delete(CalledMembers, { MEET_PK });
+                const temp = await manager.delete(CalledMembers, { MEET_PK });
+                console.log('소소님 이거 어떻게 찍혀요1?: ', temp);
             } else {
                 await this.createQueryBuilder().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
             }
