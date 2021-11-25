@@ -34,7 +34,6 @@ const [currentPage, setCurrentPage] = useState(1);
 const [postsPerPage, setPostsPerPage] = useState(10);
 const [btnNumbers, setBtnNumbers] = useState([]);
 
-
 // Rows 갯수 관리
 const handleChange = (e) => {
     setPostsPerPage(e.target.value)

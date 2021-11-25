@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
 
 const innerPost = () => {
 
+
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -32,6 +33,8 @@ const innerPost = () => {
     const [isdel, setIsDel] = useState(0);
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState('');
+
+    //타임스탬프 변환
 
     const [next] = useState(1);
     const [previous] = useState(-1);

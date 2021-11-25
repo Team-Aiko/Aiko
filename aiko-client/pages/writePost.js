@@ -16,7 +16,6 @@ export default function writePost() {
     const [name, setName] = useState('');
     const [files, setFiles] = useState([]);
     
-
     const titleChange = (e) => {
       setTitle(e.target.value);
     };
@@ -60,9 +59,9 @@ export default function writePost() {
           "content-type" : "multipart/form-data"
         },
       };
-      if (title.length < 1) {
-        alert('제목을 입력해주세요');
-        preventDefault()
+      if(title.length < 1) {
+        alert('제목을 입력하세요')
+        return;
       };
       axios.post(url, formData, config)
         .then((response) => {
