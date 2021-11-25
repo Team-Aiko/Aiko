@@ -12,29 +12,23 @@ import { deleteFiles } from 'src/Helpers/functions';
 export default class NoticeBoardController {
     constructor(private noticeboardService: NoticeBoardService) {}
 
-    // fileWriter(@UploadedFile() file) {
-    //     const response = {
-    //         originalname: file.originalname,
-    //         filename: file.filename,
-    //     };
-    //     console.log(file);
-    //     return response;
-    // }
-
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         console.log('hello');
         try {
+            console.log(files); //merge  test
+            const obj = JSON.parse(req.body.obj);
             const userPayload = usrPayloadParser(req);
-            const title = req.body.title;
-            const content = req.body.content;
+            const title = obj.title;
+
+            const content = obj.content;
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
-            console.log(files);
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
             resExecutor(res, { result: true });
+            console.log(files[0]);
         } catch (err) {
             console.log(err);
             const uuid = files.map((file) => file.filename);
@@ -45,16 +39,22 @@ export default class NoticeBoardController {
 
     @Post('update-article')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
-    async updateArticle(@Req() req: Request, @Res() res: Response) {
+    async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
+            const obj = JSON.parse(req.body.obj);
+            console.log('obj' + obj);
             const userPayload = usrPayloadParser(req);
-            const title = req.body.title;
-            const content = req.body.content;
+            const title = obj.title;
+            const content = obj.content;
             const userPk = userPayload.USER_PK;
-            const num = req.body.num;
-            await this.noticeboardService.updateArtcle(title, content, userPk, num);
+            const comPk = userPayload.COMPANY_PK;
+            const num = obj.num;
+            const delFilePks = req.body.delFilePks;
+            await this.noticeboardService.updateArtcle(title, content, userPk, comPk, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
+            const uuid = files.map((file) => file.filename);
+            deleteFiles(files[0].destination, ...uuid);
             throw resExecutor(res, { err });
         }
     }
@@ -103,9 +103,9 @@ export default class NoticeBoardController {
     async getDetail(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
         const num = parseInt(req.query.num as string);
-        const userPk = userPayload.USER_PK;
+        const comPk = userPayload.COMPANY_PK;
         if (num !== undefined) {
-            const result = await this.noticeboardService.getDetail(num, userPk);
+            const result = await this.noticeboardService.getDetail(num, comPk);
             if (result === undefined) {
                 throw resExecutor(res, { err: new AikoError('ERROR: 해당 num 존재하지않음', 451, 400000) }); // 이거 에러처리 모르겠음
             } else {
