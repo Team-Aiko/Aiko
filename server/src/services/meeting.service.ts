@@ -161,8 +161,9 @@ export default class MeetingService {
             await getRepo(MeetRepository).updateMeeting(meeting, queryRunner.manager);
 
             // schedule member update process
+            const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
+
             if (bundle.calledMemberList.length > 0) {
-                const calledMembers = await getRepo(CalledMembersRepository).getMeetingMembers(bundle.MEET_PK);
                 const remainedMembers = bundle.calledMemberList.filter((userId) => {
                     return calledMembers.some((member) => member.USER_PK === userId);
                 });
@@ -209,15 +210,21 @@ export default class MeetingService {
                     bundle.MEET_PK,
                     queryRunner.manager,
                 );
+            } else if (bundle.calledMemberList.length === 0) {
+                await getRepo(CalledMembersRepository).removeMeetingMembers(
+                    calledMembers,
+                    bundle.MEET_PK,
+                    queryRunner.manager,
+                );
             }
 
-            queryRunner.commitTransaction();
+            await queryRunner.commitTransaction();
             return { flag: true, insertedIds, newMembers, removedMembers };
         } catch (err) {
-            queryRunner.rollbackTransaction();
+            await queryRunner.rollbackTransaction();
             throw err;
         } finally {
-            queryRunner.release();
+            await queryRunner.release();
         }
     }
     async deleteMeeting(meetPK: number, COMPANY_PK: number) {
@@ -236,13 +243,13 @@ export default class MeetingService {
 
                 flag = flag1 && flag2;
                 if (!flag) new AikoError('meetingService/deleteMeeting', 500, 839192);
-                queryRunner.commitTransaction();
+                await queryRunner.commitTransaction();
             } else throw new AikoError('meetingService/invalidEmployee', 500, 839193);
         } catch (err) {
-            queryRunner.rollbackTransaction();
+            await queryRunner.rollbackTransaction();
             throw err;
         } finally {
-            queryRunner.release();
+            await queryRunner.release();
         }
 
         return flag;
