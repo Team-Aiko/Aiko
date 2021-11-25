@@ -258,7 +258,11 @@ export default function MeetingRoomTable(props) {
                 }}
                 title='일정 추가'
             >
-                <Grid container spacing={2} style={{ padding: '20px', maxWidth: '600px' }}>
+                <Grid
+                    container
+                    spacing={2}
+                    style={{ padding: '20px', maxWidth: '600px', overflow: 'auto', width: '100%' }}
+                >
                     <Grid item xs={2}>
                         <Typography>회의 주제</Typography>
                     </Grid>
@@ -304,10 +308,10 @@ export default function MeetingRoomTable(props) {
                             <>
                                 {inputMember.length > 0 ? (
                                     <div className={styles['selected-user-list']}>
-                                        {inputMember.map((item, index) => {
+                                        {inputMember.map((member, index) => {
                                             return (
-                                                <div className={styles['user-wrapper']} key={item.USER_PK}>
-                                                    <Typography variant='body2'>{item.NICKNAME}</Typography>
+                                                <div className={styles['user-wrapper']} key={member.user.USER_PK}>
+                                                    <Typography variant='body2'>{member.user.NICKNAME}</Typography>
                                                     <IconButton
                                                         style={{ width: '20px', height: '20px', marginLeft: '8px' }}
                                                         onClick={() => removeMember(index)}
