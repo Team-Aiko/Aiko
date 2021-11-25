@@ -170,11 +170,7 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
         try {
             if (manager) {
-                await manager
-                    .createQueryBuilder(CalledMembers, 'c')
-                    .delete()
-                    .where('c.MEET_PK = :MEET_PK', { MEET_PK })
-                    .execute();
+                await manager.delete(CalledMembers, { MEET_PK });
             } else {
                 await this.createQueryBuilder().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
             }

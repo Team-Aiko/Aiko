@@ -98,11 +98,7 @@ export default class MeetRepository extends Repository<Meet> {
 
         try {
             if (manager) {
-                await manager
-                    .createQueryBuilder(Meet, 'm')
-                    .delete()
-                    .where('m.MEET_PK = :MEET_PK', { MEET_PK })
-                    .execute();
+                await manager.delete(Meet, { MEET_PK });
             } else {
                 await this.createQueryBuilder().delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
             }
