@@ -1,25 +1,28 @@
 import * as React from 'react';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import Button from '@material-ui/core/Button';
 import router from 'next/router';
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import {selectRow} from '../_redux/boardReducer';
 import styles from '../styles/Board.module.css';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
 import Posts from '../components/Posts.js';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
+import {MenuItem, 
+        ButtonGroup, 
+        InputLabel, 
+        Select, 
+        FormControl, 
+        Button} from '@material-ui/core'
 
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      marginTop: theme.spacing(2),
-    },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
   },
 }));
 
@@ -30,7 +33,11 @@ const [loading, setLoading] = useState(false);
 const [currentPage, setCurrentPage] = useState(1);
 const [postsPerPage, setPostsPerPage] = useState(10);
 const [btnNumbers, setBtnNumbers] = useState([]);
-const [row, setRow] = useState(10);
+
+// Rows 갯수 관리
+const handleChange = (e) => {
+    setPostsPerPage(e.target.value)
+};
 
 useEffect(() => {
     const fetchPosts = async () => {
@@ -72,11 +79,6 @@ useEffect(() => {
 //     })
 // },[postsPerPage])
 
-
-const handleChange = (e) => {
-        setRow(e.target.value)
-};
-
 const classes = useStyles();
 
 return (
@@ -85,16 +87,23 @@ return (
     <div className={styles.desc}>
         <h3 className={styles.aikoBoard}><span style={{color:'#3f51b5', fontSize:'35px'}}>AIKO</span> notice board</h3>
             <div className={styles.forRows}>
-                <h5 style={{color:'#3f51b5'}}>For rows :</h5>
-                <ButtonGroup variant="text" aria-label="text primary button group">
-                    <Button onClick={() => {setPostsPerPage(10)}}>10</Button>
-                    <Button onClick={() => {setPostsPerPage(20)}}>20</Button>
-                    <Button onClick={() => {setPostsPerPage(30)}}>30</Button>
-                </ButtonGroup>
+                <FormControl className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-label" style={{color:'#3f51b5'}}>For rows</InputLabel>
+                    <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={postsPerPage}
+                    onChange={handleChange}
+                    >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={30}>30</MenuItem>
+                    </Select>
+                </FormControl>
             </div>
     </div>
     
-    <div style={{width:'80%', height:'80%', display:'block', margin:'3% auto'}}>
+    <div style={{width:'80%', height:'90%', display:'block', margin:'3% auto'}}>
         <div>
             <table className={styles.table}>
                 <thead className={styles.thead}>
