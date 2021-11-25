@@ -310,8 +310,13 @@ export default function MeetingRoomTable(props) {
                                     <div className={styles['selected-user-list']}>
                                         {inputMember.map((member, index) => {
                                             return (
-                                                <div className={styles['user-wrapper']} key={member.user.USER_PK}>
-                                                    <Typography variant='body2'>{member.user.NICKNAME}</Typography>
+                                                <div
+                                                    className={styles['user-wrapper']}
+                                                    key={member.user ? member.user.USER_PK : member.USER_PK}
+                                                >
+                                                    <Typography variant='body2'>
+                                                        {member.user ? member.user.NICKNAME : member.NICKNAME}
+                                                    </Typography>
                                                     <IconButton
                                                         style={{ width: '20px', height: '20px', marginLeft: '8px' }}
                                                         onClick={() => removeMember(index)}
