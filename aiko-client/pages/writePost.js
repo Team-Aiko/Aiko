@@ -37,12 +37,12 @@ export default function writePost() {
       if(files.length > 3) {
         alert('파일은 최대 3개까지 업로드 가능합니다.')
       }
-    }
+    };
 
     useEffect(() => {
       maxFileAlert();
       console.log(files[0]);
-    }, [files])
+    }, [files]);
 
     const upload = () => {
       const formData = new FormData();
@@ -60,7 +60,10 @@ export default function writePost() {
           "content-type" : "multipart/form-data"
         },
       };
-      console.log(files);
+      if (title.length < 1) {
+        alert('제목을 입력해주세요');
+        preventDefault()
+      };
       axios.post(url, formData, config)
         .then((response) => {
           console.log(response);
@@ -84,7 +87,7 @@ export default function writePost() {
   <div className={styles.titleName} style={{marginBottom:'20px'}}>
     <div style={{width:'50%'}}>
         <h4 style={{color:'#656565'}}>Title</h4>
-        <input className={styles.titleInput} type="text" value={title} placeholder="제목을 입력해주세요" onChange={titleChange}/>
+        <input className={styles.titleInput} type="text" value={title} placeholder="제목을 입력해주세요" onChange={titleChange} onInvalid={'야'}/>
     </div>
     <div style={{width:'20%'}}>
         <h4 style={{color:'#656565'}}>Name</h4>
