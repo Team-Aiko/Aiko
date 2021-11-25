@@ -258,7 +258,11 @@ export default function MeetingRoomTable(props) {
                 }}
                 title='일정 추가'
             >
-                <Grid container spacing={2} style={{ padding: '20px', maxWidth: '600px' }}>
+                <Grid
+                    container
+                    spacing={2}
+                    style={{ padding: '20px', maxWidth: '600px', overflow: 'auto', width: '100%' }}
+                >
                     <Grid item xs={2}>
                         <Typography>회의 주제</Typography>
                     </Grid>
