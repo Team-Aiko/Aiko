@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/MemberInfo.module.css';
+import styles from '../../styles/MemberInfo.module.css';
 import { makeStyles } from '@material-ui/core/styles';
 import PersonIcon from '@material-ui/icons/Person';
 import ContactPhoneIcon from '@material-ui/icons/ContactPhone';
@@ -8,12 +8,14 @@ import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import SettingsIcon from '@material-ui/icons/Settings';
 import {useState, useEffect} from 'react';
 import {Paper, Tabs, Tab, Button, Avatar} from '@material-ui/core';
-import ActionItems from '../components/ActionItems.js';
+import ActionItems from '../../components/ActionItems.js';
 import axios from 'axios';
 import Icon from '@material-ui/core/Icon';
 import SaveIcon from '@material-ui/icons/Save';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import {get, post} from '../_axios'
+import {get, post} from '../../_axios'
+import {useRouter} from 'next/router'
+import CreatedActionItems from '../../components/CreatedActionItems.js'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,6 +30,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const MemberInfo = () => {
+
+    const router = useRouter();
+    const { userPK } = router.query;
+
     //모달창 열기
     const [openModalNum, setOpenModalNum] = useState(0);
 
@@ -39,49 +45,40 @@ const MemberInfo = () => {
         setOpenModalNum(0);
     };
 
-    const saveActionItems = () => {
-        setOpenModalNum(0);
-    }
+
+    //manage all data for transer to components
+    const [allData, setAllData] = useState([]);
 
     const [title, setTitle] = useState('');
     //priority = P_PK 
     const [priority, setPriority] = useState(0);
     const [status, setStatus] = useState('Assigned');
+
     const [startDate, setStartDate] = useState(undefined);
     const [dueDate, setDueDate] = useState(undefined);
+
     const [assigner, setAssigner] = useState('');
     const [owner, setOwner] = useState('');
     const [description, setDescription] = useState('');
     const [del, setDel] = useState(0);
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(1);
 
+    const [currentPage, setCurrentPage] = useState(1);
     const [ownerPk, setOwnerPK] = useState(0);
+    const [currentUserPK, setCurrentUserPK] = useState(undefined)
 
 
     const [buttonColor, setButtonColor] = useState('#68A8F4');
 
     const classes = useStyles();
 
+
+    //Tab Menu
     const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
-
-    const getUserInfo = () => {
-        const url = 'api/account/decoding-token'
-        get(url)
-        .then((res) => {
-            console.log(res);
-            setAssigner(res.FIRST_NAME + res.LAST_NAME)
-            console.log(assigner);
-        })
-    };
-
-    useEffect(() => {
-        getUserInfo()
-    },[])
-
 
     const titleChange = (e) => {
         setTitle(e.target.value);
@@ -94,12 +91,12 @@ const MemberInfo = () => {
     };
 
     const dueDateChange = (date) => {
-        setDueDate(date.timeStamp);
+        setDueDate(date);
         console.log(dueDate);
     };
 
     const startDateChange = (date) => {
-        setStartDate(date.timeStamp);
+        setStartDate(date);
         console.log(startDate);
     };
 
@@ -107,6 +104,48 @@ const MemberInfo = () => {
         setStep(e.target.value);
         console.log(step);
     };
+
+    const priorityChange = (e) => {
+        setPriority(e.target.value);
+        console.log(priority)
+    };
+
+    const createActionItems = () => {
+        const url = '/api/work/create-action-item';
+        const data = {
+            'OWNER_PK' : null,
+            'TITLE' : title,
+            'DESCRIPTION' : description,
+            'DUE_DATE' : dueDate,
+            'START_DATE' : startDate,
+            'P_PK' : priority,
+            'STEP_PK' : step
+        }
+        const config = {
+            headers : {
+                "content-type" : "application/json"
+            }
+        }
+        post(url, data, config)
+        .then((res) => {
+            setOpenModalNum(0);
+            console.log(res)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    };
+
+    const viewItems = async () => {
+        const res = await get(`/api/work/view-items?id=${userPK}&currentPage=${currentPage}`)
+        .then((res) => {
+            console.log(res)
+        })
+    }
+
+    useEffect(() => {
+        viewItems()
+    },[])
 
     return (
         <>
@@ -188,7 +227,7 @@ const MemberInfo = () => {
                     </thead>
 
                     <tbody style={{width:'90%', backgroundColor:'grey'}}>
-                        
+                        <CreatedActionItems />
                     </tbody>
                 </table>
             </div>
@@ -219,8 +258,9 @@ const MemberInfo = () => {
                                 <input placeholder='title' onChange={titleChange}/>
                                 <input placeholder='start-date' type='date' onChange={startDateChange}/>
                                 <input placeholder='due-date' type='date' onChange={dueDateChange}/>
-                                <input placeholder='description'/>
+                                <input placeholder='description' onChange={descriptionChange}/>
                                 <input placeholder='del'/>
+                                <input placeholder='priority' onChange={priorityChange}/>
                             </div>
 
                             <div>
@@ -230,7 +270,7 @@ const MemberInfo = () => {
                                 size="medium"
                                 className={classes.button}
                                 startIcon={<SaveIcon />}
-                                onClick={saveActionItems}
+                                onClick={createActionItems}
                                 >
                                 Save
                                 </Button>

@@ -45,6 +45,7 @@ useEffect(() => {
         const res = await axios.get(`/api/notice-board/list?option=${postsPerPage}&pageNum=${currentPage}`);
         setPosts(res.data.result);
         console.log(res.data.result);
+        console.log(res)
         setLoading(false);
     }
     fetchPosts()
