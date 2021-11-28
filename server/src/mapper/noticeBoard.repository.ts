@@ -54,6 +54,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         const artcileSize = await this.createQueryBuilder()
             .select()
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
+            .andWhere('IS_DELETE = 0')
             .getCount();
         const size = Math.ceil(artcileSize / option);
         return size;

@@ -72,6 +72,7 @@ const innerPost = () => {
         const getDetails = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`);
             console.log(res.data.result[0]);
+            console.log(res);
             setInnerPosts(res.data.result[0]);
             setTitle(res.data.result[0].TITLE);
             setContent(res.data.result[0].CONTENT);
@@ -109,29 +110,6 @@ const innerPost = () => {
         setDeletedFilePk(filePkNum);
         console.log(deletedFilePk)
     };
-
-    // const updateArticle = () => {
-    //     const url = '/api/notice-board/update-article';
-    //     const data = {
-    //         'num' : pkNum,
-    //         'title': title,
-    //         'content': content,
-    //         'delFilePks[]': deletedFilePk
-    //     }
-    //     const config = {
-    //     headers: {
-    //         "content-type" : 'application/json'
-    //         }
-    //     }
-    //     axios.post(url, data, config)
-    //     .then((response) => {
-    //         console.log(response)
-    //         router.push('/board')
-    //     })
-    //     .catch((error) => {
-    //         console.log(error)
-    //     })
-    // };
 
     const updateArticle = () => {
       const formData = new FormData();
