@@ -60,13 +60,26 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
         return size;
     }
     async getList(option: number, comPk: number, pageNum: number) {
-        return await this.createQueryBuilder('n')
-            .select(['n.NOTICE_BOARD_PK', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
-            .limit(option)
-            .offset(pageNum)
-            .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })
-            .andWhere('IS_DELETE = 0')
-            .getMany();
+        try {
+            const result = await this.createQueryBuilder('n')
+                .select(['n.NOTICE_BOARD_PK', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
+                .leftJoinAndSelect('n.user', 'user')
+                .limit(option)
+                .offset(pageNum)
+                .where('n.COMPANY_PK like :comPk', { comPk: `${comPk}` })
+                .andWhere('n.IS_DELETE = 0')
+                .getMany();
+            for (const num in result) {
+                const name = {
+                    USER_NAME: result[num].user.FIRST_NAME + ' ' + result[num].user.LAST_NAME,
+                };
+                result[num] = propsRemover(result[num], 'user');
+                result[num] = Object.assign(result[num], name);
+            }
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
     }
     async getDetail(num: number, comPk: number) {
         let result = await this.createQueryBuilder('nb')

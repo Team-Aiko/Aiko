@@ -30,8 +30,7 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
     }
     async deleteFiles(delFilePks: number[]) {
         try {
-            const parse = [1, 2, 3];
-            for (const pk of parse) {
+            for (const pk in delFilePks) {
                 console.log(pk);
                 return await this.createQueryBuilder()
                     .update(NoticeBoardFile)
@@ -43,6 +42,7 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
                     .execute();
             }
         } catch (err) {
+            console.log(err);
             return err;
         }
     }

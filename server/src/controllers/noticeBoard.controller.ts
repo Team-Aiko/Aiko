@@ -42,7 +42,6 @@ export default class NoticeBoardController {
     async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
             const obj = JSON.parse(req.body.obj);
-            console.log('obj' + obj);
             const userPayload = usrPayloadParser(req);
             const title = obj.title;
             const content = obj.content;
@@ -50,11 +49,13 @@ export default class NoticeBoardController {
             const comPk = userPayload.COMPANY_PK;
             const num = obj.num;
             const delFilePks = req.body.delFilePks;
+            console.log(delFilePks);
             await this.noticeboardService.updateArtcle(title, content, userPk, comPk, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
             const uuid = files.map((file) => file.filename);
             deleteFiles(files[0].destination, ...uuid);
+            console.log(err);
             throw resExecutor(res, { err });
         }
     }
