@@ -1,6 +1,6 @@
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { NoticeBoard } from '../entity';
-import { unixTimeStamp } from 'src/Helpers/functions';
+import { unixTimeStamp, propsRemover } from 'src/Helpers/functions';
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     async createArticle(title: string, content: string, userPk: number, comPk: number) {
@@ -69,12 +69,18 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             .getMany();
     }
     async getDetail(num: number, comPk: number) {
-        return await this.createQueryBuilder('nb')
+        let result = await this.createQueryBuilder('nb')
             .leftJoinAndSelect('nb.files', 'files')
             .leftJoinAndSelect('nb.user', 'user')
             .where('nb.COMPANY_PK = :comPk', { comPk: `${comPk}` })
             .andWhere('nb.NOTICE_BOARD_PK = :num', { num: `${num}` })
             .andWhere('nb.IS_DELETE = 0')
-            .getMany();
+            .getOne();
+        const name = {
+            USER_NAME: result.user.FIRST_NAME + ' ' + result.user.LAST_NAME,
+        };
+        result = propsRemover(result, 'user');
+        result = Object.assign(result, name);
+        return result;
     }
 }

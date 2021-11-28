@@ -34,8 +34,6 @@ const MemberInfo = () => {
     const router = useRouter();
     const { userPK } = router.query;
 
-
-
     //모달창 열기
     const [openModalNum, setOpenModalNum] = useState(0);
 
@@ -138,8 +136,8 @@ const MemberInfo = () => {
         })
     };
 
-    const viewItems = () => {
-        const res = get(`/api/work/view-items?id=${userPK}&currentPage=${currentPage}`)
+    const viewItems = async () => {
+        const res = await get(`/api/work/view-items?id=${userPK}&currentPage=${currentPage}`)
         .then((res) => {
             console.log(res)
         })

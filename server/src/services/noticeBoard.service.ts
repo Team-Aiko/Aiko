@@ -1,6 +1,6 @@
 import { NoticeBoardFile } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
-import { getRepo } from 'src/Helpers/functions';
+import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { NoticeBoardFileRepository } from 'src/mapper';
 import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
 
@@ -60,6 +60,7 @@ export default class NoticeBoardService {
     // 게시글 상세 내용
 
     async getDetail(num: number, userPk: number) {
-        return await getRepo(NoticeBoardRepository).getDetail(num, userPk);
+        const result = await getRepo(NoticeBoardRepository).getDetail(num, userPk);
+        return result;
     }
 }

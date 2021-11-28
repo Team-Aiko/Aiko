@@ -33,7 +33,7 @@ const innerPost = () => {
 
     const [isdel, setIsDel] = useState(0);
     const [filePkNum, setFilePkNum] = useState('');
-    const [deletedFilePk, setDeletedFilePk] = useState('');
+    const [deletedFilePk, setDeletedFilePk] = useState([]);
 
     //타임스탬프 변환
 
@@ -58,9 +58,9 @@ const innerPost = () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
             .then((res) => {
                 const fileNumber = [];
-                for(let i=0; i<res.data.result[0].files.length; i++) {
-                    fileNumber.push(res.data.result[0].files[i].ORIGINAL_NAME)
-                }; if (res.data.result[0].files.length < 2) {
+                for(let i=0; i<res.data.result.files.length; i++) {
+                    fileNumber.push(res.data.result.files[i].ORIGINAL_NAME)
+                }; if (res.data.result.files.length < 2) {
                     console.log('파일이 2개보다 작습니다')
                 }
             setFiles([...files, fileNumber]);
@@ -76,15 +76,14 @@ const innerPost = () => {
     useEffect(() => {
         const getDetails = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`);
-            console.log(res.data.result[0]);
             console.log(res);
-            setInnerPosts(res.data.result[0]);
-            setTitle(res.data.result[0].TITLE);
-            setContent(res.data.result[0].CONTENT);
-            setName(res.data.result[0].user.FIRST_NAME + res.data.result[0].user.LAST_NAME)
-            setDate(res.data.result[0].CREATE_DATE);
-            setPkNum(res.data.result[0].NOTICE_BOARD_PK);
-            setWriterPk(res.data.result[0].USER_PK)
+            setInnerPosts(res.data.result);
+            setTitle(res.data.result.TITLE);
+            setContent(res.data.result.CONTENT);
+            setName(res.data.result.USER_NAME);
+            setDate(res.data.result.CREATE_DATE);
+            setPkNum(res.data.result.NOTICE_BOARD_PK);
+            setWriterPk(res.data.result.USER_PK)
         }
         getDetails()
     }, []);
@@ -93,10 +92,10 @@ const innerPost = () => {
         const getSpecifics = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
             .then((res) => {
-                if(res.data.result[0].files.length == 0){
+                if(res.data.result.files.length == 0){
                     setFilePkNum(0);
-                } if(res.data.result[0].files.length > 0) {
-                    setFilePkNum(res.data.result[0].files[0].NBF_PK)
+                } if(res.data.result.files.length > 0) {
+                    setFilePkNum(res.data.result.files[0].NBF_PK)
                 }
             })
         }
@@ -112,8 +111,18 @@ const innerPost = () => {
         setContent(e.target.value);
     };
 
-    const deleteFile = () => {
-        setDeletedFilePk(filePkNum);
+    const deleteFile1 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum]);
+        console.log(deletedFilePk)
+    };
+
+    const deleteFile2 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum+1]);
+        console.log(deletedFilePk)
+    };
+
+        const deleteFile3 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum+2]);
         console.log(deletedFilePk)
     };
 
@@ -204,6 +213,17 @@ const innerPost = () => {
         getCurrentUserInfo()
     },[])
 
+    function getUnixTime(t) {
+        const date = new Date(t * 1000);
+        const year = date.getFullYear();
+        const month = "0" + (date.getMonth() + 1);
+        const day = "0" + date.getDate();
+        const hour = "0" + date.getHours();
+        const minute = "0" + date.getMinutes();
+        const second = "0" + date.getSeconds();
+        return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + second.substr(-2);
+    }
+
     return (
 
 <>
@@ -212,7 +232,7 @@ const innerPost = () => {
 
         <div className={styles.titleName}>
             <input className={styles.titleInput} value={title} disabled={writerPk !== currentUserPk} onChange={handleTitle}/>
-            <p style={{fontSize:'13px', color:'#6F6A6A'}}>Posted by {name}, {date}</p>
+            <p style={{fontSize:'13px', color:'#6F6A6A'}}>Posted by {name}, {getUnixTime(date)}</p>
         </div>
 
         <div className={styles.contentArea}>
@@ -230,7 +250,7 @@ const innerPost = () => {
                     return <div className={styles.fileInput}>
                                 <div>
                                 <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
                 }
@@ -238,11 +258,11 @@ const innerPost = () => {
                     return <div className={styles.fileInput}>
                                 <div>
                                 <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
                                 <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
                 }
@@ -250,15 +270,15 @@ const innerPost = () => {
                     return   <div className={styles.fileInput}>
                                 <div>
                                 <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
                                 <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
                                 <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
-                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                <Button size="small" onClick={deleteFile3} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
                 }
