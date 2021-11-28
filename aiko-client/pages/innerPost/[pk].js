@@ -30,14 +30,12 @@ const innerPost = () => {
     const [pkNum, setPkNum] = useState('');
     const [popup, setPopup] = useState(false);
     const [files, setFiles] = useState([])
+
     const [isdel, setIsDel] = useState(0);
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState('');
 
     //타임스탬프 변환
-
-    const [next] = useState(1);
-    const [previous] = useState(-1);
 
 
     //이전 게시글, 다음 게시글 제목
@@ -112,26 +110,59 @@ const innerPost = () => {
         console.log(deletedFilePk)
     };
 
+    // const updateArticle = () => {
+    //     const url = '/api/notice-board/update-article';
+    //     const data = {
+    //         'num' : pkNum,
+    //         'title': title,
+    //         'content': content,
+    //         'delFilePks[]': deletedFilePk
+    //     }
+    //     const config = {
+    //     headers: {
+    //         "content-type" : 'application/json'
+    //         }
+    //     }
+    //     axios.post(url, data, config)
+    //     .then((response) => {
+    //         console.log(response)
+    //         router.push('/board')
+    //     })
+    //     .catch((error) => {
+    //         console.log(error)
+    //     })
+    // };
+
     const updateArticle = () => {
-        const url = '/api/notice-board/update-article';
-        const data = {
-            'num' : pkNum,
-            'title': title,
-            'content': content,
-            'delFilePks[]': deletedFilePk
-        }
-        const config = {
+      const formData = new FormData();
+      const url = '/api/notice-board/update-article';
+      const obj = {
+        'num' : pkNum,
+        'title' : title,
+        'content' : content,
+        'delFilePks[]': deletedFilePk
+      }
+      formData.append('obj', JSON.stringify(obj));
+      formData.append('file', files[0]);
+      formData.append('file', files[1]);
+      formData.append('file', files[2]);
+      const config = {
         headers: {
-            "content-type" : 'application/json'
-            }
-        }
-        axios.post(url, data, config)
+          "content-type" : "multipart/form-data"
+        },
+      };
+      if(title.length < 1) {
+        alert('제목을 입력하세요')
+        return;
+      };
+      axios.post(url, formData, config)
         .then((response) => {
-            console.log(response)
-            router.push('/board')
+          console.log(response);
+          router.push('/board');
         })
         .catch((error) => {
-            console.log(error)
+          console.log('작성 실패 이유' + error);
+          alert('게시글 작성에 실패하셨습니다.')
         })
     };
 
@@ -189,26 +220,50 @@ const innerPost = () => {
         </div>
 
         {
-        files.map(file => (
-            <>
-                <div className={styles.fileInput}>
-                    <div>
-                    <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                    <div>
-                    <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                    <div>
-                    <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                </div>
-            </>
-            ))
+            files.map(file => {
+                if(file.length == 0){
+                    return <div className={styles.fileInput}>
+                                <h5 style={{color:'#3F51B5'}}>THERE IS NO FILE.</h5>
+                           </div>
+                }
+                if(file.length == 1) {
+                    return <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+                if(file.length == 2) {
+                    return <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+                if(file.length == 3) {
+                    return   <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
+                                <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+            })
         }
-
 
         <div className={styles.reviseDelete}>
             <Button variant="contained" color="primary"style={{
@@ -239,7 +294,7 @@ const innerPost = () => {
                 </Button>
                 <p style={{fontSize:'12px', color:'#9a9a9a', cursor:'pointer'}} onClick={function(){
                 alert('아직 기능 구현 중입니다.')
-                }}>사내식당 공지) 2021년 11월 건강한 식생활을 위한 채식주의 방침</p>
+                }}>기능 구현 필요</p>
             </div>
 
             <div className={styles.nextPost}>
@@ -248,7 +303,7 @@ const innerPost = () => {
                 </Button>
                 <p style={{fontSize:'12px', color:'#9a9a9a', cursor:'pointer'}} onClick={function(){
                 alert('아직 기능 구현 중입니다.')
-                }}>{nextTitle}</p>
+                }}>기능 구현 필요</p>
             </div>
         </div>
 
