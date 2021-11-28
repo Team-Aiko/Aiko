@@ -42,6 +42,11 @@ const innerPost = () => {
     const [prevTitle, setPrevTitle] = useState('');
     const [nextTitle, setNextTitle] = useState('');
 
+    //현재 유저 데이터 (from decoding token API)
+    const [currentUserPk, setCurrentUserPk] = useState(undefined);
+
+    //게시글 작성자 pkNum
+    const [writerPk, setWriterPk] = useState(undefined);
 
     const router = useRouter();
     const {pk} = router.query;
@@ -76,9 +81,10 @@ const innerPost = () => {
             setInnerPosts(res.data.result[0]);
             setTitle(res.data.result[0].TITLE);
             setContent(res.data.result[0].CONTENT);
-            setName(res.data.result[0].USER_PK)
+            setName(res.data.result[0].user.FIRST_NAME + res.data.result[0].user.LAST_NAME)
             setDate(res.data.result[0].CREATE_DATE);
             setPkNum(res.data.result[0].NOTICE_BOARD_PK);
+            setWriterPk(res.data.result[0].USER_PK)
         }
         getDetails()
     }, []);
@@ -182,6 +188,22 @@ const innerPost = () => {
 
     const classes = useStyles();
 
+    const getCurrentUserInfo = async () => {
+            const res = await axios.get('/api/account/decoding-token')
+            .then((res) => {
+                console.log(res);
+                setCurrentUserPk(res.data.result.USER_PK)
+                console.log(currentUserPk)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    };
+
+    useEffect(() => {
+        getCurrentUserInfo()
+    },[])
+
     return (
 
 <>
@@ -189,12 +211,12 @@ const innerPost = () => {
     <div className={styles.outerContainer}>
 
         <div className={styles.titleName}>
-            <input className={styles.titleInput} value={title} onChange={handleTitle}/>
-            <p style={{fontSize:'17px', color:'#6F6A6A'}}>Posted by {name}, {date}</p>
+            <input className={styles.titleInput} value={title} disabled={writerPk !== currentUserPk} onChange={handleTitle}/>
+            <p style={{fontSize:'13px', color:'#6F6A6A'}}>Posted by {name}, {date}</p>
         </div>
 
         <div className={styles.contentArea}>
-            <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
+            <textarea className={styles.contentInput} value={content} disabled={writerPk !== currentUserPk} onChange={handleContent}/>
         </div>
 
         {
