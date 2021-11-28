@@ -28,12 +28,10 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
             console.log(err);
         }
     }
-    async deleteFiles(delFilePks: number[]) {
+    async deleteFiles(delFilePks) {
         try {
-            const parse = [1, 2, 3];
-            for (const pk of parse) {
-                console.log(pk);
-                return await this.createQueryBuilder()
+            for (const pk of delFilePks) {
+                await this.createQueryBuilder()
                     .update(NoticeBoardFile)
                     .set({
                         IS_DELETE: 1,
@@ -43,6 +41,7 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
                     .execute();
             }
         } catch (err) {
+            console.log(err);
             return err;
         }
     }

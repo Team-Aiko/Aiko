@@ -9,12 +9,11 @@ import {
     ManyToMany,
     JoinTable,
 } from 'typeorm';
-import { Department, Company, Country, LoginAuth, ResetPw, Socket, PrivateChatRoom } from '.';
+import { Department, Company, Country, LoginAuth, ResetPw, Socket, PrivateChatRoom, NoticeBoard } from '.';
 import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
 import CalledMembers from './calledMembers.entity';
 import UserProfileFile from './userProfileFile.entity';
-
 @Entity({ name: 'USER_TABLE' })
 export default class User {
     @PrimaryGeneratedColumn()
@@ -98,4 +97,8 @@ export default class User {
     @OneToOne(() => UserProfileFile, (profile) => profile.user)
     @JoinColumn({ name: 'USER_PROFILE_PK' })
     profile: UserProfileFile;
+
+    @OneToMany(() => NoticeBoard, (nb) => nb.user)
+    @JoinColumn({ name: 'USER_PK' })
+    user: NoticeBoard;
 }

@@ -15,6 +15,8 @@ export default function writePost() {
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
     const [files, setFiles] = useState([]);
+
+    const [fileIndexKey] = useState([1,2,3])
     
     const titleChange = (e) => {
       setTitle(e.target.value);
@@ -26,22 +28,33 @@ export default function writePost() {
 
     const handleFile = (e) => {
       setFiles([...files, e.target.files[0], e.target.files[1], e.target.files[2]])
+      if (e.target.files[1] == null) {
+        setFiles([...files, e.target.files[0]])
+      } if (e.target.files[2] == null) {
+        setFiles([...files, e.target.files[0], e.target.files[1]])
+      } if (e.target.files[1] == null && e.target.files[2] == null) {
+        setFiles([...files, e.target.files[0]])
+      }
     };
 
     const nameChange = (e) => {
       setName(e.target.value);
     };
 
-    const maxFileAlert = (handleFile) => {
+    const maxFileAlert = () => {
       if(files.length > 3) {
-        alert('파일은 최대 3개까지 업로드 가능합니다.')
+        alert('파일 전송은 최대 3개 까지 가능합니다.')
       }
     };
 
     useEffect(() => {
       maxFileAlert();
-      console.log(files[0]);
+      console.log(files[0], files[1], files[2]);
     }, [files]);
+
+    const deleteSelectedFile = () => {
+      setFiles([])
+    }
 
     const upload = () => {
       const formData = new FormData();
@@ -98,15 +111,20 @@ export default function writePost() {
     <div style={{width:'70%'}}>
       <h4 style={{color:'#656565'}}>Content</h4>
       <textarea className={styles.contentInput} type="text" value={content} placeholder="내용을 입력해주세요" onChange={contentChange} />
-      
-      {
-        files.map(file => (
-          <div>
-            <label style={{fontSize:'10px'}}>
-              <input value={file} disabled style={{color:'#aaa', borderStyle:"none"}}/>
+          
+    <div style={{display:'flex', flexDirection:'column', width:'50%'}}>      
+      {files.map(file => (
+            <label style={{fontSize:'10px', display:'flex', flexDirection:'row'}} key={file.name}>
+              <input value={(JSON.stringify(file.name))} disabled style={{borderStyle:"none",color:'#3F51B5',width:'100%', backgroundColor:'white'}}/>
             </label>
-          </div>
-        ))
+        ))}
+    </div>
+      {
+        files.length > 0
+        ? <Button size="small" style={{width:'20%', color:"#656565"}} onClick={deleteSelectedFile}>
+          파일 일괄 삭제
+          </Button>
+        : <h5 style={{color:'#3F51B5'}}>파일이 존재하지 않습니다.</h5>
       }
 
       <div className={styles.fileSubmit}>

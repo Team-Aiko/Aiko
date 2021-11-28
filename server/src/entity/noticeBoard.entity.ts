@@ -1,5 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
-import { NoticeBoardFile } from '.';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, JoinColumn, ManyToMany, ManyToOne } from 'typeorm';
+import { NoticeBoardFile, User } from '.';
 @Entity({ name: 'NOTICE_BOARD_TABLE' })
 export default class NoticeBoard {
     @PrimaryGeneratedColumn()
@@ -29,4 +29,8 @@ export default class NoticeBoard {
     @OneToMany(() => NoticeBoardFile, (nbf) => nbf.nb)
     @JoinColumn({ name: 'NOTICE_BOARD_PK' })
     files: NoticeBoardFile[];
+
+    @ManyToOne(() => User, (nb) => nb.user)
+    @JoinColumn({ name: 'USER_PK' })
+    user: User;
 }

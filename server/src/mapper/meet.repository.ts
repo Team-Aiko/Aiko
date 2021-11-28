@@ -98,7 +98,8 @@ export default class MeetRepository extends Repository<Meet> {
 
         try {
             if (manager) {
-                await manager.delete(Meet, { MEET_PK });
+                const temp = await manager.delete(Meet, { MEET_PK });
+                console.log('소소님 이거 어떻게 찍혀요2?: ', temp);
             } else {
                 await this.createQueryBuilder().delete().where('MEET_PK = :MEET_PK', { MEET_PK }).execute();
             }

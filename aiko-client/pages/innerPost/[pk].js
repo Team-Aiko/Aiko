@@ -30,20 +30,23 @@ const innerPost = () => {
     const [pkNum, setPkNum] = useState('');
     const [popup, setPopup] = useState(false);
     const [files, setFiles] = useState([])
+
     const [isdel, setIsDel] = useState(0);
     const [filePkNum, setFilePkNum] = useState('');
-    const [deletedFilePk, setDeletedFilePk] = useState('');
+    const [deletedFilePk, setDeletedFilePk] = useState([]);
 
     //타임스탬프 변환
-
-    const [next] = useState(1);
-    const [previous] = useState(-1);
 
 
     //이전 게시글, 다음 게시글 제목
     const [prevTitle, setPrevTitle] = useState('');
     const [nextTitle, setNextTitle] = useState('');
 
+    //현재 유저 데이터 (from decoding token API)
+    const [currentUserPk, setCurrentUserPk] = useState(undefined);
+
+    //게시글 작성자 pkNum
+    const [writerPk, setWriterPk] = useState(undefined);
 
     const router = useRouter();
     const {pk} = router.query;
@@ -55,9 +58,9 @@ const innerPost = () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
             .then((res) => {
                 const fileNumber = [];
-                for(let i=0; i<res.data.result[0].files.length; i++) {
-                    fileNumber.push(res.data.result[0].files[i].ORIGINAL_NAME)
-                }; if (res.data.result[0].files.length < 2) {
+                for(let i=0; i<res.data.result.files.length; i++) {
+                    fileNumber.push(res.data.result.files[i].ORIGINAL_NAME)
+                }; if (res.data.result.files.length < 2) {
                     console.log('파일이 2개보다 작습니다')
                 }
             setFiles([...files, fileNumber]);
@@ -73,13 +76,14 @@ const innerPost = () => {
     useEffect(() => {
         const getDetails = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`);
-            console.log(res.data.result[0]);
-            setInnerPosts(res.data.result[0]);
-            setTitle(res.data.result[0].TITLE);
-            setContent(res.data.result[0].CONTENT);
-            setName(res.data.result[0].USER_PK)
-            setDate(res.data.result[0].CREATE_DATE);
-            setPkNum(res.data.result[0].NOTICE_BOARD_PK);
+            console.log(res);
+            setInnerPosts(res.data.result);
+            setTitle(res.data.result.TITLE);
+            setContent(res.data.result.CONTENT);
+            setName(res.data.result.USER_NAME);
+            setDate(res.data.result.CREATE_DATE);
+            setPkNum(res.data.result.NOTICE_BOARD_PK);
+            setWriterPk(res.data.result.USER_PK)
         }
         getDetails()
     }, []);
@@ -88,10 +92,10 @@ const innerPost = () => {
         const getSpecifics = async () => {
             const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
             .then((res) => {
-                if(res.data.result[0].files.length == 0){
+                if(res.data.result.files.length == 0){
                     setFilePkNum(0);
-                } if(res.data.result[0].files.length > 0) {
-                    setFilePkNum(res.data.result[0].files[0].NBF_PK)
+                } if(res.data.result.files.length > 0) {
+                    setFilePkNum(res.data.result.files[0].NBF_PK)
                 }
             })
         }
@@ -107,31 +111,51 @@ const innerPost = () => {
         setContent(e.target.value);
     };
 
-    const deleteFile = () => {
-        setDeletedFilePk(filePkNum);
+    const deleteFile1 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum]);
+        console.log(deletedFilePk)
+    };
+
+    const deleteFile2 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum+1]);
+        console.log(deletedFilePk)
+    };
+
+        const deleteFile3 = () => {
+        setDeletedFilePk([...deletedFilePk, filePkNum+2]);
         console.log(deletedFilePk)
     };
 
     const updateArticle = () => {
-        const url = '/api/notice-board/update-article';
-        const data = {
-            'num' : pkNum,
-            'title': title,
-            'content': content,
-            'delFilePks[]': deletedFilePk
-        }
-        const config = {
+      const formData = new FormData();
+      const url = '/api/notice-board/update-article';
+      const obj = {
+        'num' : pkNum,
+        'title' : title,
+        'content' : content,
+        'delFilePks[]': deletedFilePk
+      }
+      formData.append('obj', JSON.stringify(obj));
+      formData.append('file', files[0]);
+      formData.append('file', files[1]);
+      formData.append('file', files[2]);
+      const config = {
         headers: {
-            "content-type" : 'application/json'
-            }
-        }
-        axios.post(url, data, config)
+          "content-type" : "multipart/form-data"
+        },
+      };
+      if(title.length < 1) {
+        alert('제목을 입력하세요')
+        return;
+      };
+      axios.post(url, formData, config)
         .then((response) => {
-            console.log(response)
-            router.push('/board')
+          console.log(response);
+          router.push('/board');
         })
         .catch((error) => {
-            console.log(error)
+          console.log('작성 실패 이유' + error);
+          alert('게시글 작성에 실패하셨습니다.')
         })
     };
 
@@ -156,9 +180,12 @@ const innerPost = () => {
         })
     };
 
-    const downloadFile1 = () => {
-        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`;
-        axios.get(url)
+    const downloadFile1 = async () => {
+        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`
+        await axios.get(url)
+        .then((res) => {
+            console.log(res)
+        })
     }
 
     const downloadFile2 = () => {
@@ -173,6 +200,33 @@ const innerPost = () => {
 
     const classes = useStyles();
 
+    const getCurrentUserInfo = async () => {
+            const res = await axios.get('/api/account/decoding-token')
+            .then((res) => {
+                console.log(res);
+                setCurrentUserPk(res.data.result.USER_PK)
+                console.log(currentUserPk)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    };
+
+    useEffect(() => {
+        getCurrentUserInfo()
+    },[])
+
+    function getUnixTime(t) {
+        const date = new Date(t * 1000);
+        const year = date.getFullYear();
+        const month = "0" + (date.getMonth() + 1);
+        const day = "0" + date.getDate();
+        const hour = "0" + date.getHours();
+        const minute = "0" + date.getMinutes();
+        const second = "0" + date.getSeconds();
+        return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + second.substr(-2);
+    }
+
     return (
 
 <>
@@ -180,35 +234,59 @@ const innerPost = () => {
     <div className={styles.outerContainer}>
 
         <div className={styles.titleName}>
-            <input className={styles.titleInput} value={title} onChange={handleTitle}/>
-            <p style={{fontSize:'17px', color:'#6F6A6A'}}>Posted by {name}, {date}</p>
+            <input className={styles.titleInput} value={title} disabled={writerPk !== currentUserPk} onChange={handleTitle}/>
+            <p style={{fontSize:'13px', color:'#6F6A6A'}}>Posted by {name}, {getUnixTime(date)}</p>
         </div>
 
         <div className={styles.contentArea}>
-            <textarea className={styles.contentInput} value={content} onChange={handleContent}/>
+            <textarea className={styles.contentInput} value={content} disabled={writerPk !== currentUserPk} onChange={handleContent}/>
         </div>
 
         {
-        files.map(file => (
-            <>
-                <div className={styles.fileInput}>
-                    <div>
-                    <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                    <div>
-                    <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                    <div>
-                    <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
-                    <Button size="small" onClick={deleteFile} className={classes.margin} style={{color:'grey'}}>삭제</Button>
-                    </div>
-                </div>
-            </>
-            ))
+            files.map(file => {
+                if(file.length == 0){
+                    return <div className={styles.fileInput}>
+                                <h5 style={{color:'#3F51B5'}}>THERE IS NO FILE.</h5>
+                           </div>
+                }
+                if(file.length == 1) {
+                    return <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+                if(file.length == 2) {
+                    return <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+                if(file.length == 3) {
+                    return   <div className={styles.fileInput}>
+                                <div>
+                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                                <div>
+                                <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
+                                <Button size="small" onClick={deleteFile3} className={classes.margin} style={{color:'grey'}}>삭제</Button>
+                                </div>
+                            </div>
+                }
+            })
         }
-
 
         <div className={styles.reviseDelete}>
             <Button variant="contained" color="primary"style={{
@@ -239,7 +317,7 @@ const innerPost = () => {
                 </Button>
                 <p style={{fontSize:'12px', color:'#9a9a9a', cursor:'pointer'}} onClick={function(){
                 alert('아직 기능 구현 중입니다.')
-                }}>사내식당 공지) 2021년 11월 건강한 식생활을 위한 채식주의 방침</p>
+                }}>기능 구현 필요</p>
             </div>
 
             <div className={styles.nextPost}>
@@ -248,7 +326,7 @@ const innerPost = () => {
                 </Button>
                 <p style={{fontSize:'12px', color:'#9a9a9a', cursor:'pointer'}} onClick={function(){
                 alert('아직 기능 구현 중입니다.')
-                }}>{nextTitle}</p>
+                }}>기능 구현 필요</p>
             </div>
         </div>
 
