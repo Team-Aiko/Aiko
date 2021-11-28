@@ -48,8 +48,7 @@ export default class NoticeBoardController {
             const userPk = userPayload.USER_PK;
             const comPk = userPayload.COMPANY_PK;
             const num = obj.num;
-            const delFilePks = req.body.delFilePks;
-            console.log(delFilePks);
+            const delFilePks = obj.delFilePks;
             await this.noticeboardService.updateArtcle(title, content, userPk, comPk, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
