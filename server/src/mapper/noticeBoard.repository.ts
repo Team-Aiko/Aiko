@@ -71,6 +71,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
     async getDetail(num: number, comPk: number) {
         return await this.createQueryBuilder('nb')
             .leftJoinAndSelect('nb.files', 'files')
+            .leftJoinAndSelect('nb.user', 'user')
             .where('nb.COMPANY_PK = :comPk', { comPk: `${comPk}` })
             .andWhere('nb.NOTICE_BOARD_PK = :num', { num: `${num}` })
             .andWhere('nb.IS_DELETE = 0')
