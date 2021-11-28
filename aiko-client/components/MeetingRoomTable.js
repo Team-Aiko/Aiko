@@ -164,7 +164,7 @@ export default function MeetingRoomTable(props) {
     const deleteSchedule = () => {
         const url = '/api/meeting/delete-meeting';
         const data = {
-            MEET_PK: selectedSchedule.MEET_PK,
+            meetPK: selectedSchedule.MEET_PK,
         };
 
         axiosInstance.post(url, data).then(() => {
