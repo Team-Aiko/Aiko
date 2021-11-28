@@ -180,9 +180,12 @@ const innerPost = () => {
         })
     };
 
-    const downloadFile1 = () => {
-        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`;
-        axios.get(url)
+    const downloadFile1 = async () => {
+        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`
+        await axios.get(url)
+        .then((res) => {
+            console.log(res)
+        })
     }
 
     const downloadFile2 = () => {
