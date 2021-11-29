@@ -1,4 +1,4 @@
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
 import { NoticeBoard } from '../entity';
 import { unixTimeStamp, propsRemover } from 'src/Helpers/functions';
 @EntityRepository(NoticeBoard)
@@ -36,7 +36,13 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             return err;
         }
     }
-    async updateArticle(title: string, content: string, userPk: number, num: number) {
+    async updateArticle(
+        @TransactionManager() transactionManger: EntityManager,
+        title: string,
+        content: string,
+        userPk: number,
+        num: number,
+    ) {
         try {
             const time = unixTimeStamp();
             return await this.createQueryBuilder()

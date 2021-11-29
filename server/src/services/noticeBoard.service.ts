@@ -3,6 +3,7 @@ import { AikoError } from 'src/Helpers/classes';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { NoticeBoardFileRepository } from 'src/mapper';
 import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
+import { getConnection } from 'typeorm';
 
 export default class NoticeBoardService {
     //게시글 생성
@@ -27,8 +28,11 @@ export default class NoticeBoardService {
         files: Express.Multer.File[],
     ) {
         try {
-            await getRepo(NoticeBoardRepository).updateArticle(title, content, userPk, num);
-            await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk); //파일 생성
+            const queryRunner = getConnection().createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction(); //트랜젝션
+            await getRepo(NoticeBoardRepository).updateArticle(queryRunner.manager, title, content, userPk, num);
+            await getRepo(NoticeBoardFileRepository).createFiles(queryRunner.manager, files, num, userPk, comPk); //파일 생성
             await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks);
         } catch (err) {
             throw new AikoError('QUERY ERROR[update문 에러 발생]:' + err.name, 451, 500000);
