@@ -94,12 +94,12 @@ const MemberInfo = () => {
     };
 
     const dueDateChange = (date) => {
-        setDueDate(date.timeStamp);
+        setDueDate(date);
         console.log(dueDate);
     };
 
     const startDateChange = (date) => {
-        setStartDate(date.timeStamp);
+        setStartDate(date);
         console.log(startDate);
     };
 

@@ -252,7 +252,7 @@ const innerPost = () => {
                 if(file.length == 1) {
                     return <div className={styles.fileInput}>
                                 <div>
-                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`} className={styles.files}>{file[0]}</a>
                                 <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
@@ -260,11 +260,11 @@ const innerPost = () => {
                 if(file.length == 2) {
                     return <div className={styles.fileInput}>
                                 <div>
-                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`} className={styles.files}>{file[0]}</a>
                                 <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
-                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum+1}`} className={styles.files}>{file[1]}</a>
                                 <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
@@ -272,15 +272,15 @@ const innerPost = () => {
                 if(file.length == 3) {
                     return   <div className={styles.fileInput}>
                                 <div>
-                                <a onClick={downloadFile1} className={styles.files}>{file[0]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`} className={styles.files}>{file[0]}</a>
                                 <Button size="small" onClick={deleteFile1} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
-                                <a onClick={downloadFile2} className={styles.files}>{file[1]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum+1}`} className={styles.files}>{file[1]}</a>
                                 <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
-                                <a onClick={downloadFile3} className={styles.files}>{file[2]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum+2}`} className={styles.files}>{file[2]}</a>
                                 <Button size="small" onClick={deleteFile3} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>

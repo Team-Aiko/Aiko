@@ -37,10 +37,6 @@ export default function writePost() {
       }
     };
 
-    const nameChange = (e) => {
-      setName(e.target.value);
-    };
-
     const maxFileAlert = () => {
       if(files.length > 3) {
         alert('파일 전송은 최대 3개 까지 가능합니다.')
@@ -54,7 +50,22 @@ export default function writePost() {
 
     const deleteSelectedFile = () => {
       setFiles([])
-    }
+    };
+
+    const getCurrentUserName = async () => {
+            const res = await axios.get('/api/account/decoding-token')
+            .then((res) => {
+                console.log(res);
+                setName(res.data.result.FIRST_NAME + ' ' + res.data.result.LAST_NAME)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    };
+
+    useEffect(() => {
+      getCurrentUserName()
+    }, []);
 
     const upload = () => {
       const formData = new FormData();
@@ -103,7 +114,7 @@ export default function writePost() {
     </div>
     <div style={{width:'20%'}}>
         <h4 style={{color:'#656565'}}>Name</h4>
-        <input className={styles.nameInput} type="text" value={name} placeholder="이름을 입력해주세요" onChange={nameChange}/>
+        <input className={styles.nameInput} type="text" value={name} disabled/>
     </div>
   </div>
 
