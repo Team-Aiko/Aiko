@@ -88,7 +88,7 @@ export default function OrganizeMemberList(props) {
                                 key={row.USER_PK}
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => {
-                                    Router.push(`/member-info/${row.NICKNAME}`);
+                                    Router.push(`/member-info/${row.USER_PK}`);
                                 }}
                             >
                                 <TableCell align='center'>{row.department.DEPARTMENT_NAME}</TableCell>
