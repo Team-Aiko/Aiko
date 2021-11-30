@@ -65,24 +65,34 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
     async checkMeetSchedule(USER_PK: number, pag: Pagination) {
         try {
-            const schedules = await this.createQueryBuilder('c')
-                .leftJoinAndSelect('c.meet', 'meet')
-                .leftJoinAndSelect('meet.members', 'members')
-                .leftJoinAndSelect('members.user', 'user')
-                .leftJoinAndSelect('user.profile', 'profile')
-                .where('c.USER_PK = :USER_PK', { USER_PK })
-                .offset(pag.offset)
-                .limit(pag.feedPerPage)
-                .orderBy('c.CALL_PK', 'DESC')
-                .getMany();
+            const meetings = (
+                await this.createQueryBuilder('c')
+                    .leftJoinAndSelect('c.meet', 'meet')
+                    .leftJoinAndSelect('meet.members', 'members')
+                    .leftJoinAndSelect('members.user', 'user')
+                    .leftJoinAndSelect('user.profile', 'profile')
+                    .where('c.USER_PK = :USER_PK', { USER_PK })
+                    .offset(pag.offset)
+                    .limit(pag.feedPerPage)
+                    .orderBy('c.CALL_PK', 'DESC')
+                    .getMany()
+            ).map((calledMember) => calledMember.meet);
 
-            return schedules.map((schedule) => {
-                schedule.meet.members = schedule.meet.members.map((member) => {
-                    member.user = propsRemover(member.user, 'PASSWORD', 'SALT', 'COUNTRY_PK');
+            return meetings.map((meeting) => {
+                meeting.members = meeting.members.map((member) => {
+                    member.user = propsRemover(
+                        member.user,
+                        'PASSWORD',
+                        'SALT',
+                        'COUNTRY_PK',
+                        'CREATE_DATE',
+                        'IS_DELETED',
+                        'IS_VERIFIED',
+                    );
                     return member;
                 });
 
-                return schedule;
+                return meeting;
             });
         } catch (err) {
             console.error(err);
