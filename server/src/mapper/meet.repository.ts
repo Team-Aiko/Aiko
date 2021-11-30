@@ -163,7 +163,33 @@ export default class MeetRepository extends Repository<Meet> {
             });
         } catch (err) {
             console.error(err);
-            throw new AikoError('calledMembers/getMeetingSchedules', 500, 292913);
+            throw new AikoError('meet/getMeetingSchedules', 500, 292913);
         }
+    }
+
+    async finishMeeting(finishFlag: number, MEET_PK: number, COMPANY_PK: number) {
+        let flag = false;
+
+        try {
+            const meetingInfo = await this.createQueryBuilder('m')
+                .leftJoinAndSelect('m.room', 'room')
+                .where('room.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getOneOrFail();
+            const isValidExcess = meetingInfo.room.COMPANY_PK === COMPANY_PK;
+
+            if (isValidExcess) {
+                await this.createQueryBuilder()
+                    .update()
+                    .set({ IS_FINISHED: finishFlag })
+                    .where('MEET_PK = :MEET_PK', { MEET_PK })
+                    .execute();
+                flag = true;
+            }
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('meet/finishMeeting', 500, 292913);
+        }
+
+        return flag;
     }
 }
