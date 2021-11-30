@@ -23,7 +23,7 @@ export default function MyMeetingSchedule(props) {
     const loadSchedule = () => {
         const url = '/api/meeting/check-meet-schedule';
         const params = {
-            userId: userPK,
+            userId: Number(userPK),
             currentPage: currentPage,
             feedPerPage: rowsPerPage,
         };
