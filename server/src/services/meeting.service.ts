@@ -270,4 +270,12 @@ export default class MeetingService {
             throw err;
         }
     }
+
+    async finishMeeting(finishFlag: number, meetPK: number, companyPK: number) {
+        try {
+            return await getRepo(MeetRepository).finishMeeting(finishFlag, meetPK, companyPK);
+        } catch (err) {
+            throw err;
+        }
+    }
 }
