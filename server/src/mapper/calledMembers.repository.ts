@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
-import { getRepo, AikoError, unixTimeStamp, Pagination } from 'src/Helpers';
+import { getRepo, AikoError, unixTimeStamp, Pagination, propsRemover } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
 import { IMeetingPagination } from 'src/interfaces/MVC/meetingMVC';
 import {
@@ -65,23 +65,25 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
     async checkMeetSchedule(USER_PK: number, pag: Pagination) {
         try {
-            const currentTime = unixTimeStamp();
-
-            return await this.createQueryBuilder('c')
+            const schedules = await this.createQueryBuilder('c')
                 .leftJoinAndSelect('c.meet', 'meet')
-                .where('USER_PK = :USER_PK', { USER_PK })
-                .andWhere(
-                    new Brackets((qb) => {
-                        qb.where('meet.DATE <= :DATE1', { DATE1: currentTime + unixTimeEnum.ONE_MONTH }).andWhere(
-                            'meet.DATE > :DATE2',
-                            { DATE2: currentTime },
-                        );
-                    }),
-                )
+                .leftJoinAndSelect('meet.members', 'members')
+                .leftJoinAndSelect('members.user', 'user')
+                .leftJoinAndSelect('user.profile', 'profile')
+                .where('c.USER_PK = :USER_PK', { USER_PK })
                 .offset(pag.offset)
                 .limit(pag.feedPerPage)
                 .orderBy('c.CALL_PK', 'DESC')
                 .getMany();
+
+            return schedules.map((schedule) => {
+                schedule.meet.members = schedule.meet.members.map((member) => {
+                    member.user = propsRemover(member.user, 'PASSWORD', 'SALT', 'COUNTRY_PK');
+                    return member;
+                });
+
+                return schedule;
+            });
         } catch (err) {
             console.error(err);
             throw new AikoError('calledMembers/checkMeetSchedule', 500, 549231);
