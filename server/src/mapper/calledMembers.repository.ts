@@ -71,6 +71,7 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                     .leftJoinAndSelect('meet.members', 'members')
                     .leftJoinAndSelect('members.user', 'user')
                     .leftJoinAndSelect('user.profile', 'profile')
+                    .leftJoinAndSelect('user.department', 'department')
                     .where('c.USER_PK = :USER_PK', { USER_PK })
                     .offset(pag.offset)
                     .limit(pag.feedPerPage)
