@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../_axios';
+import { get, post } from '../_axios';
 import styles from '../styles/components/MeetingRoomTable.module.css';
 import moment from 'moment';
 import {
@@ -65,7 +65,7 @@ export default function MeetingRoomTable(props) {
             feedsPerPage: rowsPerPage,
         };
 
-        axiosInstance.get(url, { params: params }).then((result) => {
+        get(url, { params: params }).then((result) => {
             setPagination(result.pagination);
             setScheduleList(result.schedules);
         });
@@ -100,7 +100,7 @@ export default function MeetingRoomTable(props) {
 
         if (modalStatus === 'update') data.MEET_PK = selectedSchedule.MEET_PK;
 
-        axiosInstance.post(url, data).then((result) => {
+        post(url, data).then((result) => {
             setOpenScheduleModal(false);
             setTimeout(() => {
                 setModalStatus('');
@@ -167,7 +167,24 @@ export default function MeetingRoomTable(props) {
             meetPK: selectedSchedule.MEET_PK,
         };
 
-        axiosInstance.post(url, data).then(() => {
+        post(url, data).then(() => {
+            setOpenScheduleModal(false);
+            setTimeout(() => {
+                setModalStatus('');
+            }, 200);
+            resetInput();
+            loadSchedule();
+        });
+    };
+
+    const handleFinish = () => {
+        const url = '/api/meeting/finish-meeting';
+        const data = {
+            meetPK: selectedSchedule.MEET_PK,
+            finishFlag: 1,
+        };
+
+        post(url, data).then(() => {
             setOpenScheduleModal(false);
             setTimeout(() => {
                 setModalStatus('');
@@ -410,14 +427,18 @@ export default function MeetingRoomTable(props) {
                         </Grid>
                     ) : admin ? (
                         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                            <Button
-                                variant='contained'
-                                color='inherit'
-                                style={{ marginRight: '10px' }}
-                                onClick={handleUpdate}
-                            >
-                                수정
-                            </Button>
+                            {!selectedSchedule.IS_FINISHED ? (
+                                <Button
+                                    variant='contained'
+                                    color='inherit'
+                                    style={{ marginRight: '10px' }}
+                                    onClick={handleUpdate}
+                                >
+                                    수정
+                                </Button>
+                            ) : (
+                                <></>
+                            )}
                             <Button
                                 variant='contained'
                                 color='inherit'
@@ -426,9 +447,13 @@ export default function MeetingRoomTable(props) {
                             >
                                 삭제
                             </Button>
-                            <Button variant='contained' color='primary' onClick={() => console.log('진행 완료')}>
-                                진행 완료
-                            </Button>
+                            {!selectedSchedule.IS_FINISHED ? (
+                                <Button variant='contained' color='primary' onClick={handleFinish}>
+                                    진행 완료
+                                </Button>
+                            ) : (
+                                <></>
+                            )}
                         </Grid>
                     ) : null}
                 </Grid>
