@@ -16,6 +16,7 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { get, post } from '../../_axios';
 import { useRouter } from 'next/router';
 import CreatedActionItems from '../../components/CreatedActionItems.js';
+import MyMeetingSchedule from '../../components/MyMeetingSchedule';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -158,8 +159,8 @@ const MemberInfo = () => {
         };
         await get(url, { params: params }).then((res) => {
             console.log(res);
-            setActionItemArray(res)
-            console.log(actionItemArray)
+            setActionItemArray(res);
+            console.log(actionItemArray);
         });
     };
 
@@ -277,7 +278,7 @@ const MemberInfo = () => {
                                     </thead>
 
                                     <tbody style={{ width: '90%', backgroundColor: 'grey' }}>
-                                        <CreatedActionItems actionItemArray={actionItemArray}/>
+                                        <CreatedActionItems actionItemArray={actionItemArray} />
                                     </tbody>
                                 </table>
                             </div>
@@ -375,7 +376,7 @@ const MemberInfo = () => {
                     ) : (
                         <></>
                     )}
-                    {value == 1 ? <div>PAGE NUMBER 2</div> : <></>}
+                    {value == 1 ? <MyMeetingSchedule userPK={userPK} /> : <></>}
                     {value == 2 ? <div>PAGE NUMBER 3</div> : <></>}
                 </div>
             </div>
