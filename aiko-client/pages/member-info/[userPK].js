@@ -67,8 +67,6 @@ const MemberInfo = () => {
     //every action item (for props use)
     const [actionItemArray, setActionItemArray] = useState([]);
 
-    const [buttonColor, setButtonColor] = useState('#68A8F4');
-
     const classes = useStyles();
 
     //Tab Menu
