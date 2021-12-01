@@ -25,5 +25,6 @@ export default class Meet {
     room: MeetRoom;
 
     @OneToMany(() => CalledMembers, (members) => members.meet)
+    @JoinColumn({ name: 'MEET_PK' })
     members: CalledMembers[];
 }
