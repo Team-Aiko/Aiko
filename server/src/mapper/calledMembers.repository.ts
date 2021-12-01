@@ -68,6 +68,7 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
             const meetings = (
                 await this.createQueryBuilder('c')
                     .leftJoinAndSelect('c.meet', 'meet')
+                    .leftJoinAndSelect('meet.room', 'room')
                     .leftJoinAndSelect('meet.members', 'members')
                     .leftJoinAndSelect('members.user', 'user')
                     .leftJoinAndSelect('user.profile', 'profile')
