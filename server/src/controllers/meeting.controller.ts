@@ -9,6 +9,7 @@ import {
     IMeetingPagination,
     IMeetingSchedulePagination,
 } from 'src/interfaces/MVC/meetingMVC';
+import { O_DSYNC } from 'constants';
 
 @UseGuards(UserGuard)
 @Controller('meeting')
@@ -201,6 +202,18 @@ export default class MeetingController {
 
         try {
             const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+    @Post('finish-meeting')
+    async finishMeeting(@Req() req: Request, @Res() res: Response) {
+        const { meetPK, finishFlag } = req.body;
+        const { COMPANY_PK } = usrPayloadParser(req);
+
+        try {
+            const result = await this.meetingService.finishMeeting(finishFlag, meetPK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

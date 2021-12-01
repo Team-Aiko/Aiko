@@ -37,17 +37,6 @@ export default function writePost() {
       }
     };
 
-    const maxFileAlert = () => {
-      if(files.length > 3) {
-        alert('파일 전송은 최대 3개 까지 가능합니다.')
-      }
-    };
-
-    useEffect(() => {
-      maxFileAlert();
-      console.log(files[0], files[1], files[2]);
-    }, [files]);
-
     const deleteSelectedFile = () => {
       setFiles([])
     };
@@ -84,9 +73,13 @@ export default function writePost() {
         },
       };
       if(title.length < 1) {
-        alert('제목을 입력하세요')
+        alert('제목을 입력하세요.')
         return;
       };
+      if(content.length < 1) {
+        alert('내용을 입력하세요.')
+        return;
+      }
       axios.post(url, formData, config)
         .then((response) => {
           console.log(response);
@@ -135,7 +128,10 @@ export default function writePost() {
         ? <Button size="small" style={{width:'20%', color:"#656565"}} onClick={deleteSelectedFile}>
           파일 일괄 삭제
           </Button>
-        : <h5 style={{color:'#3F51B5'}}>파일이 존재하지 않습니다.</h5>
+        : <div>
+          <h5 style={{color:'#3F51B5'}}>파일이 존재하지 않습니다.</h5>
+          <p style={{fontSize:'7px', color:'#848482'}}>* 파일은 한 번에 세개까지 첨부 가능합니다.</p>
+          </div>
       }
 
       <div className={styles.fileSubmit}>

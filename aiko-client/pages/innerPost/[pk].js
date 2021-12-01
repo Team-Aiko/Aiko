@@ -144,10 +144,6 @@ const innerPost = () => {
           "content-type" : "multipart/form-data"
         },
       };
-      if(title.length < 1) {
-        alert('제목을 입력하세요')
-        return;
-      };
       axios.post(url, formData, config)
         .then((response) => {
           console.log(response);
@@ -280,7 +276,7 @@ const innerPost = () => {
                                 <Button size="small" onClick={deleteFile2} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                                 <div>
-                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum+2}`} className={styles.files}>{file[2]}</a>
+                                <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum+1}`}></a>
                                 <Button size="small" onClick={deleteFile3} className={classes.margin} style={{color:'grey'}}>삭제</Button>
                                 </div>
                             </div>
