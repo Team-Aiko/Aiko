@@ -51,20 +51,19 @@ const MemberInfo = () => {
 
     const [title, setTitle] = useState('');
     //priority = P_PK 
-    const [priority, setPriority] = useState(0);
+    const [priority, setPriority] = useState(1);
     const [status, setStatus] = useState('Assigned');
 
-    const [startDate, setStartDate] = useState(undefined);
-    const [dueDate, setDueDate] = useState(undefined);
+    const [startDate, setStartDate] = useState('');
+    const [dueDate, setDueDate] = useState('');
 
     const [assigner, setAssigner] = useState('');
     const [owner, setOwner] = useState('');
     const [description, setDescription] = useState('');
-    const [del, setDel] = useState(0);
     const [step, setStep] = useState(1);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [ownerPk, setOwnerPK] = useState(0);
+    const [ownerPk, setOwnerPK] = useState(undefined);
     const [currentUserPK, setCurrentUserPK] = useState(undefined)
 
 
@@ -85,19 +84,43 @@ const MemberInfo = () => {
         console.log(title);
     };
 
-    const descriptionChange = (e) => {
-        setDescription(e.target.value);
-        console.log(description);
+    const priorityChange = (e) => {
+        if(e.target.value == null) {
+            setPriority(1);
+        } else {
+            setPriority(e.target.value)
+        }
     };
 
-    const dueDateChange = (date) => {
-        setDueDate(date);
+    const statusChange = (e) => {
+        if(e.target.value == null) {
+            setStatus('Assigned');
+        } else {
+            setStatus(e.target.value)
+        }
+    };
+
+    const startDateChange = (e) => {
+        setStartDate(Math.floor((new Date()).getTime(e.target.value) / 1000));
+        console.log(startDate);
+    };
+
+    const dueDateChange = (e) => {
+        setDueDate(Math.floor((new Date()).getTime(e.target.value) / 1000));
         console.log(dueDate);
     };
 
-    const startDateChange = (date) => {
-        setStartDate(date);
-        console.log(startDate);
+    const assignerChange = (e) => {
+        setAssigner(e.target.value)
+    };
+
+    const ownerChange = (e) => {
+        setOwner(e.target.value)
+    };
+
+    const descriptionChange = (e) => {
+        setDescription(e.target.value);
+        console.log(description);
     };
 
     const stepChange = (e) => {
@@ -105,15 +128,12 @@ const MemberInfo = () => {
         console.log(step);
     };
 
-    const priorityChange = (e) => {
-        setPriority(e.target.value);
-        console.log(priority)
-    };
 
+    //액션 아이템 생성 API
     const createActionItems = () => {
         const url = '/api/work/create-action-item';
         const data = {
-            'OWNER_PK' : null,
+            'OWNER_PK' : ownerPk,
             'TITLE' : title,
             'DESCRIPTION' : description,
             'DUE_DATE' : dueDate,
@@ -136,15 +156,21 @@ const MemberInfo = () => {
         })
     };
 
-    const viewItems = async () => {
-        const res = await get(`/api/work/view-items?id=${userPK}&currentPage=${currentPage}`)
-        .then((res) => {
+
+    //생성된 액션 아이템 불러오기 API
+    const getActionItems = () => {
+        const url = `/api/work/view-items`;
+        const params = {
+            id : userPK,
+            currentPage : currentPage
+        }
+        axios.get(url, {params:params}).then((res) => {
             console.log(res)
         })
     }
 
     useEffect(() => {
-        viewItems()
+        getActionItems()
     },[])
 
     return (
@@ -207,11 +233,19 @@ const MemberInfo = () => {
                 value == 0
                 ? 
         <div className={styles.actionItemsOuterContainer}>
-            <div>
-                <button onClick={openModal}>ADD ACTION ITEMS</button>
+            <div style={{marginLeft:'10px'}}>
+                <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                onClick={openModal}
+                style={{marginTop:'10px'}}>
+                Add Action Item
+                </Button>
             </div>
-            <div style={{width:'90%', display:'block', margin:'0 auto', overflow:'hidden'}}>
-                <table>
+
+            <div className={styles.actionItemTable}>
+                <table style={{marginTop:'20px'}}>
                     <thead>
                         <tr>    
                             <td style={{width:'15%'}} className={styles.theadTd}>Title</td>
@@ -222,7 +256,7 @@ const MemberInfo = () => {
                             <td style={{width:'10%'}} className={styles.theadTd}>Assigner</td>
                             <td style={{width:'10%'}} className={styles.theadTd}>Owner</td>
                             <td style={{width:'15%'}} className={styles.theadTd}>Description</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Del</td>
+                            <td style={{width:'10%'}} className={styles.theadTd}>Step</td>
                         </tr>
                     </thead>
 
@@ -241,40 +275,41 @@ const MemberInfo = () => {
                 <div className={styles.modalOuterContainer}>
                     <div className={styles.modalInnerContainer}>
 
-                        <div className={styles.contentContainer}>
-                            <div>
-                                <Button
-                                variant="contained"
-                                color="primary"
-                                className={classes.button}
-                                endIcon={<ExitToAppIcon/>}
-                                onClick={closeModal}
-                                >
-                                EXIT
-                                </Button>
-                            </div>
+                        <div className={styles.modalTopBar}>
+                            <h3>Add action Item</h3>
+                        </div>
 
-                            <div>
-                                <input placeholder='title' onChange={titleChange}/>
-                                <input placeholder='start-date' type='date' onChange={startDateChange}/>
-                                <input placeholder='due-date' type='date' onChange={dueDateChange}/>
-                                <input placeholder='description' onChange={descriptionChange}/>
-                                <input placeholder='del'/>
-                                <input placeholder='priority' onChange={priorityChange}/>
-                            </div>
+                        Title:<input onChange={titleChange}/>
+                        priority<input onChange={priorityChange}/>
+                        status<input onChange={statusChange}/>
+                        start date<input onChange={startDateChange}/>
+                        due date<input onChange={dueDateChange}/>
+                        assigner<input onChange={assignerChange}/>
+                        owner<input onChange={ownerChange}/>
+                        description<input onChange={descriptionChange}/>
+                        step<input onChange={stepChange}/>
+                                
+                        <div className={styles.modalButtonDiv}>
+                            <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.button}
+                            endIcon={<ExitToAppIcon/>}
+                            onClick={closeModal}
+                            >
+                            EXIT
+                            </Button>
 
-                            <div>
-                                <Button
-                                variant="contained"
-                                color="primary"
-                                size="medium"
-                                className={classes.button}
-                                startIcon={<SaveIcon />}
-                                onClick={createActionItems}
-                                >
-                                Save
-                                </Button>
-                            </div>
+                            <Button
+                            variant="contained"
+                            color="primary"
+                            size="medium"
+                            className={classes.button}
+                            startIcon={<SaveIcon />}
+                            onClick={createActionItems}
+                            >
+                            Save
+                            </Button>
                         </div>
                     </div>
                 </div>
