@@ -37,24 +37,24 @@ export default function writePost() {
       }
     };
 
-    const nameChange = (e) => {
-      setName(e.target.value);
+    const deleteSelectedFile = () => {
+      setFiles([])
     };
 
-    const maxFileAlert = () => {
-      if(files.length > 3) {
-        alert('파일 전송은 최대 3개 까지 가능합니다.')
-      }
+    const getCurrentUserName = async () => {
+            const res = await axios.get('/api/account/decoding-token')
+            .then((res) => {
+                console.log(res);
+                setName(res.data.result.FIRST_NAME + ' ' + res.data.result.LAST_NAME)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     };
 
     useEffect(() => {
-      maxFileAlert();
-      console.log(files[0], files[1], files[2]);
-    }, [files]);
-
-    const deleteSelectedFile = () => {
-      setFiles([])
-    }
+      getCurrentUserName()
+    }, []);
 
     const upload = () => {
       const formData = new FormData();
@@ -73,9 +73,13 @@ export default function writePost() {
         },
       };
       if(title.length < 1) {
-        alert('제목을 입력하세요')
+        alert('제목을 입력하세요.')
         return;
       };
+      if(content.length < 1) {
+        alert('내용을 입력하세요.')
+        return;
+      }
       axios.post(url, formData, config)
         .then((response) => {
           console.log(response);
@@ -103,7 +107,7 @@ export default function writePost() {
     </div>
     <div style={{width:'20%'}}>
         <h4 style={{color:'#656565'}}>Name</h4>
-        <input className={styles.nameInput} type="text" value={name} placeholder="이름을 입력해주세요" onChange={nameChange}/>
+        <input className={styles.nameInput} type="text" value={name} disabled/>
     </div>
   </div>
 
@@ -124,7 +128,10 @@ export default function writePost() {
         ? <Button size="small" style={{width:'20%', color:"#656565"}} onClick={deleteSelectedFile}>
           파일 일괄 삭제
           </Button>
-        : <h5 style={{color:'#3F51B5'}}>파일이 존재하지 않습니다.</h5>
+        : <div>
+          <h5 style={{color:'#3F51B5'}}>파일이 존재하지 않습니다.</h5>
+          <p style={{fontSize:'7px', color:'#848482'}}>* 파일은 한 번에 세개까지 첨부 가능합니다.</p>
+          </div>
       }
 
       <div className={styles.fileSubmit}>
