@@ -26,6 +26,7 @@ import { get } from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo } from '../../_redux/accountReducer';
 import SideNav from './SideNav';
+import router from 'next/router';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -181,6 +182,26 @@ function PComp(props) {
         Router.push('/admin');
     };
 
+    const [currentUserPk, setCurrentUserPk] = useState(undefined)
+
+    const getCurrentUserPk = async () => {
+        const res = await get('/api/account/decoding-token')
+        .then((res) => {
+            console.log(res);
+            setCurrentUserPk(res.data.result.USER_PK)
+        })
+    };
+
+    useEffect(() => {
+        getCurrentUserPk()
+    },[]);
+
+    const goToMyMemberInfo = () => {
+        router.push(`/member-info/${currentUserPk}`);
+        setAnchorEl(null);
+        handleMobileMenuClose();
+    };
+
     const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu
@@ -192,7 +213,7 @@ function PComp(props) {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+            <MenuItem onClick={goToMyMemberInfo}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
