@@ -7,7 +7,7 @@ import ContactMailIcon from '@material-ui/icons/ContactMail';
 import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import SettingsIcon from '@material-ui/icons/Settings';
 import {useState, useEffect} from 'react';
-import {Paper, Tabs, Tab, Button, Avatar} from '@material-ui/core';
+import {Paper, Tabs, Tab, Button, Avatar, TextField} from '@material-ui/core';
 import ActionItems from '../../components/ActionItems.js';
 import axios from 'axios';
 import Icon from '@material-ui/core/Icon';
@@ -133,19 +133,19 @@ const MemberInfo = () => {
     const createActionItems = () => {
         const url = '/api/work/create-action-item';
         const data = {
-            'OWNER_PK' : ownerPk,
+            "OWNER_PK": undefined,
             'TITLE' : title,
             'DESCRIPTION' : description,
             'DUE_DATE' : dueDate,
             'START_DATE' : startDate,
             'P_PK' : priority,
             'STEP_PK' : step
-        }
+        };
         const config = {
             headers : {
                 "content-type" : "application/json"
             }
-        }
+        };
         post(url, data, config)
         .then((res) => {
             setOpenModalNum(0);
@@ -164,7 +164,7 @@ const MemberInfo = () => {
             id : userPK,
             currentPage : currentPage
         }
-        axios.get(url, {params:params}).then((res) => {
+        get(url, {params:params}).then((res) => {
             console.log(res)
         })
     }
@@ -244,19 +244,19 @@ const MemberInfo = () => {
                 </Button>
             </div>
 
-            <div className={styles.actionItemTable}>
-                <table style={{marginTop:'20px'}}>
+            <div className={styles.actionItemTableDiv}>
+                <table className={styles.actionItemTable} style={{marginTop:'20px'}}>
                     <thead>
-                        <tr>    
-                            <td style={{width:'15%'}} className={styles.theadTd}>Title</td>
+                        <tr className={styles.actionItemTr}>    
+                            <td style={{width:'28%'}} className={styles.theadTd}>Title</td>
                             <td style={{width:'5%'}} className={styles.theadTd}>Priority</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Status</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Start Date</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Due Date</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Assigner</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Owner</td>
-                            <td style={{width:'15%'}} className={styles.theadTd}>Description</td>
-                            <td style={{width:'10%'}} className={styles.theadTd}>Step</td>
+                            <td style={{width:'8%'}} className={styles.theadTd}>Status</td>
+                            <td style={{width:'8%'}} className={styles.theadTd}>Start Date</td>
+                            <td style={{width:'8%'}} className={styles.theadTd}>Due Date</td>
+                            <td style={{width:'8%'}} className={styles.theadTd}>Assigner</td>
+                            <td style={{width:'8%'}} className={styles.theadTd}>Detail</td>
+                            <td style={{width:'5%'}} className={styles.theadTd}>Revise</td>
+                            <td style={{width:'5%'}} className={styles.theadTd}>Delete</td>
                         </tr>
                     </thead>
 
@@ -276,30 +276,50 @@ const MemberInfo = () => {
                     <div className={styles.modalInnerContainer}>
 
                         <div className={styles.modalTopBar}>
-                            <h3>Add action Item</h3>
+                            <div className={styles.modalTopBarContentsDiv}>
+                                <div className={styles.modalTopBarDesc}>Add action Item</div>
+                                <Button
+                                variant="contained"
+                                color="primary"
+                                className={classes.button}
+                                endIcon={<ExitToAppIcon/>}
+                                onClick={closeModal}
+                                >
+                                EXIT
+                                </Button>
+                            </div>
                         </div>
 
-                        Title:<input onChange={titleChange}/>
-                        priority<input onChange={priorityChange}/>
-                        status<input onChange={statusChange}/>
-                        start date<input onChange={startDateChange}/>
-                        due date<input onChange={dueDateChange}/>
-                        assigner<input onChange={assignerChange}/>
-                        owner<input onChange={ownerChange}/>
-                        description<input onChange={descriptionChange}/>
-                        step<input onChange={stepChange}/>
-                                
-                        <div className={styles.modalButtonDiv}>
-                            <Button
-                            variant="contained"
-                            color="primary"
-                            className={classes.button}
-                            endIcon={<ExitToAppIcon/>}
-                            onClick={closeModal}
-                            >
-                            EXIT
-                            </Button>
+                        <div className={styles.modalInputDiv}>
+                            <TextField onChange={titleChange} label="Title" style={{margin:8, width:500}}/>
+                            <TextField onChange={priorityChange} label="Priority" placeholder="Number" style={{margin:8, width:80}}/>
+                            <TextField onChange={statusChange}label="Status" placeholder="Default : 'Assigned'" style={{margin:8}}/>
+                        </div>
 
+                        <div className={styles.modalInputDiv}>
+                            <TextField onChange={startDateChange} label="StartDate" placeholder="YYYY-MM-DD" style={{margin:8}}/>
+                            <TextField onChange={dueDateChange} label="DueDate"  placeholder="YYYY-MM-DD" style={{margin:8}}/>
+                            <TextField onChange={stepChange} label="Step" placeholder="Number" style={{margin:8, width:80}}/>
+                        </div>
+
+                        <div className={styles.modalInputDiv}>
+                            <TextField onChange={assignerChange} label="Assigner" style={{margin:8}} />
+                            <TextField onChange={ownerChange} label="Owner" style={{margin:8}}/>                      
+                        </div>
+
+                        <div className={styles.modalInputDiv}>
+                            <TextField
+                            onChange={descriptionChange}
+                            label="Description"
+                            multiline
+                            rows={6}
+                            value={description}
+                            onChange={descriptionChange}
+                            style={{marginTop:50, width:400}}
+                            />
+                        </div>
+
+                        <div className={styles.modalButtonDiv}>
                             <Button
                             variant="contained"
                             color="primary"
@@ -307,10 +327,11 @@ const MemberInfo = () => {
                             className={classes.button}
                             startIcon={<SaveIcon />}
                             onClick={createActionItems}
+                            style={{marginTop:100}}
                             >
                             Save
                             </Button>
-                        </div>
+                        </div>    
                     </div>
                 </div>
                 : <></>
