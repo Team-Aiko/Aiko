@@ -237,3 +237,11 @@
 .styledTable:hover {
     font-weight: bold;
 }
+
+.styledATag {
+    cursor:pointer;
+}
+
+.styledATag:active {
+    color:#009879;
+}

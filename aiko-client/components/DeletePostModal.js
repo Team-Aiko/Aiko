@@ -12,10 +12,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DeletePostModal = ({popup}) => {
+const DeletePostModal = () => {
 
-    if(popup === true) {
-        return 
+    const classes = useStyles();
+
+    return (
         <div className={styles.window}>
             <div className={styles.outerContainer}>
 
@@ -40,16 +41,6 @@ const DeletePostModal = ({popup}) => {
 
             </div>
         </div>
-    }
-
-    const classes = useStyles();
-
-    return (
-        <>
-        <div>
-        </div>
-        </>
     )
 }
-
 export default DeletePostModal;
