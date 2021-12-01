@@ -167,7 +167,7 @@ export default class MeetRepository extends Repository<Meet> {
         }
     }
 
-    async finishMeeting(finishFlag: number, MEET_PK: number, COMPANY_PK: number) {
+    async finishMeeting(finishFlag: boolean, MEET_PK: number, COMPANY_PK: number) {
         let flag = false;
 
         try {
@@ -180,7 +180,7 @@ export default class MeetRepository extends Repository<Meet> {
             if (isValidExcess) {
                 await this.createQueryBuilder()
                     .update()
-                    .set({ IS_FINISHED: finishFlag })
+                    .set({ IS_FINISHED: Number(finishFlag) })
                     .where('MEET_PK = :MEET_PK', { MEET_PK })
                     .execute();
                 flag = true;

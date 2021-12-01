@@ -271,7 +271,7 @@ export default class MeetingService {
         }
     }
 
-    async finishMeeting(finishFlag: number, meetPK: number, companyPK: number) {
+    async finishMeeting(finishFlag: boolean, meetPK: number, companyPK: number) {
         try {
             return await getRepo(MeetRepository).finishMeeting(finishFlag, meetPK, companyPK);
         } catch (err) {
