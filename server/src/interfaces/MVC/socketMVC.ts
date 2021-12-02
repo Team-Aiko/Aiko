@@ -19,6 +19,12 @@ export enum statusPath {
     CLIENT_LOGOUT_ALERT = 'client/status/logoutAlert',
 }
 
+export enum groupChatPath {
+    HANDLE_CONNECTION = 'handleConnection',
+    HANDLE_DISCONNECT = 'handleDisconnect',
+    CREATE_GROUP_CHAT_ROOM = 'create-group-chat-room',
+}
+
 export interface IMessagePayload {
     roomId: string;
     sender: number;

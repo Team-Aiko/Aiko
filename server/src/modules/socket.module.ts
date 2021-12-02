@@ -7,6 +7,7 @@ import SocketService from 'src/services/socket.service';
 import { PrivateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
 import { Status, StatusSchema } from 'src/schemas/status.schema';
 import PrivateChatGateway from 'src/gateway/privateChat.gateway';
+import GroupChatGateway from 'src/gateway/groupChat.gateway';
 
 @Module({
     imports: [
@@ -16,7 +17,7 @@ import PrivateChatGateway from 'src/gateway/privateChat.gateway';
         ]),
     ],
     controllers: [SocketController],
-    providers: [SocketService, StatusGateway, PrivateChatGateway],
-    exports: [SocketService, StatusGateway, PrivateChatGateway],
+    providers: [SocketService, StatusGateway, PrivateChatGateway, GroupChatGateway],
+    exports: [SocketService, StatusGateway, PrivateChatGateway, GroupChatGateway],
 })
 export default class SocketModule {}

@@ -8,9 +8,10 @@ export default class ChatController {
     constructor(private chatService: ChatService) {}
 
     // * group chat controller methods
-    @Post()
+    @Post('create-gc')
     async createGroupChatRoom(@Req() req: Request, @Res() res: Response) {
         try {
+            const { userList, admin, roomTitle, maxNum } = req.body;
             const result = await this.chatService.createGroupChatRoom();
             resExecutor(res, { result });
         } catch (err) {

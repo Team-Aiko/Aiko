@@ -10,8 +10,9 @@ import PrivateChatRoomRepository from './privateChatRoom.repository';
 import RefreshRepository from './refresh.repository';
 import GrantRepository from './grant.repository';
 import NoticeBoardFileRepository from './noticeBoardFile.repository';
-
+import GroupChatRoomRepository from './groupChatRoom.repository';
 export {
+    GroupChatRoomRepository,
     DepartmentRepository,
     CompanyRepository,
     LoginAuthRepository,
