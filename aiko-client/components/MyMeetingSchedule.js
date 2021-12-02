@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, Paper, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
+import {
+    makeStyles,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TablePagination,
+    TableRow,
+    ThemeProvider,
+    unstable_createMuiStrictModeTheme,
+} from '@material-ui/core';
 import { get, post } from '../_axios';
 import moment from 'moment';
 import MeetingScheduleModal from './MeetingScheduleModal';
@@ -12,9 +23,11 @@ const useStyles = makeStyles((theme) => ({
 
 export default function MyMeetingSchedule(props) {
     const { userPK } = props;
+    const theme = unstable_createMuiStrictModeTheme();
     const classes = useStyles();
     const [scheduleList, setScheduleList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState({});
@@ -23,7 +36,7 @@ export default function MyMeetingSchedule(props) {
         if (userPK) {
             loadSchedule();
         }
-    }, [userPK]);
+    }, [userPK, currentPage, rowsPerPage]);
 
     const loadSchedule = () => {
         setScheduleList([]);
@@ -36,7 +49,8 @@ export default function MyMeetingSchedule(props) {
         };
 
         get(url, { params: params }).then((result) => {
-            setScheduleList(result);
+            setPagination(result.pag);
+            setScheduleList(result.schedules);
         });
     };
 
@@ -70,52 +84,72 @@ export default function MyMeetingSchedule(props) {
         },
     ];
 
+    const handleChangePage = (event, newPage) => {
+        setCurrentPage(newPage + 1);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(event.target.value);
+        setCurrentPage(1);
+    };
+
     return (
         <Paper className={classes.paperRoot}>
-            <Table style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <TableHead>
-                    <TableRow style={{ display: 'flex' }}>
-                        {columns.map((column) => (
-                            <TableCell
-                                key={column.value}
-                                width={column.width}
-                                // style={column.style && column.style : null}
-                                align='center'
-                            >
-                                {column.view}
-                            </TableCell>
-                        ))}
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {scheduleList.map((row) => (
-                        <TableRow
-                            key={row.MEET_PK}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => {
-                                setSelectedSchedule(row);
-                                setOpenScheduleModal(true);
-                            }}
-                        >
-                            <TableCell width={200} align='center'>
-                                {row.room.ROOM_NAME}
-                            </TableCell>
-                            <TableCell width={1000} align='center'>
-                                {row.TITLE}
-                            </TableCell>
-                            <TableCell width={200} align='center'>
-                                {row.MAX_MEM_NUM}
-                            </TableCell>
-                            <TableCell width={500} align='center'>
-                                {moment.unix(row.DATE).format('YYYY-MM-DD LT')}
-                            </TableCell>
-                            <TableCell width={200} align='center'>
-                                {row.IS_FINISHED ? '완료' : '예정'}
-                            </TableCell>
+            <ThemeProvider theme={theme}>
+                <Table style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <TableHead>
+                        <TableRow style={{ display: 'flex' }}>
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={column.value}
+                                    width={column.width}
+                                    // style={column.style && column.style : null}
+                                    align='center'
+                                >
+                                    {column.view}
+                                </TableCell>
+                            ))}
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHead>
+                    <TableBody>
+                        {scheduleList.map((row) => (
+                            <TableRow
+                                key={row.MEET_PK}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                    setSelectedSchedule(row);
+                                    setOpenScheduleModal(true);
+                                }}
+                            >
+                                <TableCell width={200} align='center'>
+                                    {row.room.ROOM_NAME}
+                                </TableCell>
+                                <TableCell width={1000} align='center'>
+                                    {row.TITLE}
+                                </TableCell>
+                                <TableCell width={200} align='center'>
+                                    {row.MAX_MEM_NUM}
+                                </TableCell>
+                                <TableCell width={500} align='center'>
+                                    {moment.unix(row.DATE).format('YYYY-MM-DD LT')}
+                                </TableCell>
+                                <TableCell width={200} align='center'>
+                                    {row.IS_FINISHED ? '완료' : '예정'}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                <TablePagination
+                    component='div'
+                    rowsPerPageOptions={[10, 20, 30]}
+                    count={pagination._totalFeedCnt ? pagination._totalFeedCnt : 0}
+                    rowsPerPage={rowsPerPage}
+                    page={currentPage - 1}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+            </ThemeProvider>
             <MeetingScheduleModal
                 open={openScheduleModal}
                 onClose={() => {
