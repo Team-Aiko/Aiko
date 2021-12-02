@@ -19,8 +19,10 @@ import MeetRoom from './meetRoom.entity';
 import Meet from './meet.entity';
 import CalledMembers from './calledMembers.entity';
 import UserProfileFile from './userProfileFile.entity';
+import GroupChatRoom from './groupChatRoom.entity';
 
 export {
+    GroupChatRoom,
     UserProfileFile,
     CalledMembers,
     Meet,

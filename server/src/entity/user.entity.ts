@@ -14,6 +14,7 @@ import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
 import CalledMembers from './calledMembers.entity';
 import UserProfileFile from './userProfileFile.entity';
+import GroupChatRoom from './groupChatRoom.entity';
 @Entity({ name: 'USER_TABLE' })
 export default class User {
     @PrimaryGeneratedColumn()
@@ -101,4 +102,7 @@ export default class User {
     @OneToMany(() => NoticeBoard, (nb) => nb.user)
     @JoinColumn({ name: 'USER_PK' })
     user: NoticeBoard;
+
+    @OneToMany(() => GroupChatRoom, (groupChatRoom) => groupChatRoom.admin)
+    groupChatRooms: GroupChatRoom[];
 }
