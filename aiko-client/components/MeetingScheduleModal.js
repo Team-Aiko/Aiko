@@ -84,7 +84,7 @@ export default function MeetingScheduleModal(props) {
     };
 
     return (
-        <Modal open={open} onClose={onClose} title='일정 추가'>
+        <Modal open={open} onClose={onClose} title='회의 일정'>
             <Grid container spacing={2} style={{ padding: '20px', maxWidth: '600px', overflow: 'auto', width: '100%' }}>
                 <Grid item xs={2}>
                     <Typography>회의 주제</Typography>
@@ -123,6 +123,16 @@ export default function MeetingScheduleModal(props) {
                         <Typography>{schedule && moment.unix(schedule.DATE).format('YYYY-MM-DD LT')}</Typography>
                     )}
                 </Grid>
+                {schedule.room ? (
+                    <>
+                        <Grid item xs={2}>
+                            <Typography>회의실</Typography>
+                        </Grid>
+                        <Grid item xs={10}>
+                            <Typography>{schedule && schedule.room.ROOM_NAME}</Typography>
+                        </Grid>
+                    </>
+                ) : null}
                 <Grid item xs={2}>
                     <Typography>참석자</Typography>
                 </Grid>
