@@ -328,8 +328,6 @@ const innerPost = () => {
 
         </div>
 
-        <DeletePostModal popup={popup} />
-
 </>
     )
 }
