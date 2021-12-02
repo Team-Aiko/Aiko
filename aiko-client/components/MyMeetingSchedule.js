@@ -42,6 +42,11 @@ export default function MyMeetingSchedule(props) {
 
     const columns = [
         {
+            value: 'ROOM_NAME',
+            view: '회의실',
+            width: 200,
+        },
+        {
             value: 'TITLE',
             view: '회의 주제',
             width: 1000,
@@ -92,6 +97,9 @@ export default function MyMeetingSchedule(props) {
                                 setOpenScheduleModal(true);
                             }}
                         >
+                            <TableCell width={200} align='center'>
+                                {row.room.ROOM_NAME}
+                            </TableCell>
                             <TableCell width={1000} align='center'>
                                 {row.TITLE}
                             </TableCell>
