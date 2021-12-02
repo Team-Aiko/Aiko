@@ -16,6 +16,7 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { get, post } from '../../_axios';
 import { useRouter } from 'next/router';
 import CreatedActionItems from '../../components/CreatedActionItems.js';
+import MyMeetingSchedule from '../../components/MyMeetingSchedule';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -66,6 +67,9 @@ const MemberInfo = () => {
 
     //every action item (for props use)
     const [actionItemArray, setActionItemArray] = useState([]);
+
+    //For Detail Modal (for props use)
+    const [actionItemDesc, setActionItemDesc] = useState([])
 
     const classes = useStyles();
 
@@ -156,14 +160,15 @@ const MemberInfo = () => {
         };
         await get(url, { params: params }).then((res) => {
             console.log(res);
-            setActionItemArray(res)
-            console.log(actionItemArray)
+            setActionItemArray(res);
         });
     };
 
     useEffect(() => {
         getActionItems();
     }, []);
+
+
 
     return (
         <>
@@ -250,7 +255,7 @@ const MemberInfo = () => {
                                             <td style={{ width: '5%' }} className={styles.theadTd}>
                                                 Priority
                                             </td>
-                                            <td style={{ width: '8%' }} className={styles.theadTd}>
+                                            <td style={{ width: '10%' }} className={styles.theadTd}>
                                                 Status
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
@@ -260,7 +265,7 @@ const MemberInfo = () => {
                                                 Due Date
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
-                                                Assigner
+                                                Owner
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
                                                 Detail
@@ -373,7 +378,7 @@ const MemberInfo = () => {
                     ) : (
                         <></>
                     )}
-                    {value == 1 ? <div>PAGE NUMBER 2</div> : <></>}
+                    {value == 1 ? <MyMeetingSchedule userPK={userPK} /> : <></>}
                     {value == 2 ? <div>PAGE NUMBER 3</div> : <></>}
                 </div>
             </div>

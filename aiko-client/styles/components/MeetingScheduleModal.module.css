@@ -1,0 +1,14 @@
+.selected-user-list {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.user-wrapper {
+    display: flex;
+    border-radius: 4px;
+    border: 1px solid #bdbdbd;
+    padding: 4px;
+    align-items: center;
+}
