@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { SocketRepository, UserRepository } from 'src/mapper';
+import { GroupChatRoomRepository, SocketRepository, UserRepository } from 'src/mapper';
 import { getRepo } from 'src/Helpers/functions';
 import { PrivateChatRoom, User } from 'src/entity';
 import { AikoError } from 'src/Helpers';
-import { EntityManager, TransactionManager } from 'typeorm';
+import { EntityManager, getConnection, TransactionManager } from 'typeorm';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { Socket, Server } from 'socket.io';
 import { IMessagePayload, statusPath } from '../interfaces/MVC/socketMVC';
@@ -12,6 +12,7 @@ import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.sche
 import { Model } from 'mongoose';
 import { Status, statusDocument } from 'src/schemas/status.schema';
 import PrivateChatRoomRepository from 'src/mapper/privateChatRoom.repository';
+import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 
 @Injectable()
 export default class SocketService {
@@ -233,6 +234,30 @@ export default class SocketService {
         } catch (err) {
             console.error(err);
             throw new AikoError('socketService/getUserInfoStataus', 0, 4);
+        }
+    }
+
+    // * group chat methods
+    async createGroupChatRoom({
+        userList,
+        admin,
+        roomTitle,
+        maxNum,
+    }: {
+        userList: number[];
+        admin: number;
+        roomTitle: string;
+        maxNum: number;
+    }) {
+        try {
+            const queryRunner = getConnection().createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+
+            await getRepo(GroupChatRoomRepository).createGroupChatRoom(admin, roomTitle, maxNum, queryRunner.manager);
+            await getRepo(GroupChatUserListRepository);
+        } catch (err) {
+            throw err;
         }
     }
 
