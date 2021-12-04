@@ -87,8 +87,9 @@ export default class WorkService {
         try {
             const cnt = await getRepo(ActionRepository).getItemCnt(USER_PK, COMPANY_PK);
             const pag = new Pagination(currentPage, cnt, feedsPerPage, groupCnt);
+            const result = { pag, items: await getRepo(ActionRepository).viewItems(USER_PK, COMPANY_PK, pag) };
 
-            return await getRepo(ActionRepository).viewItems(USER_PK, COMPANY_PK, pag);
+            return result;
         } catch (err) {
             if (err instanceof AikoError) throw err;
         }
