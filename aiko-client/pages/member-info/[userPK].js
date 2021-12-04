@@ -65,7 +65,11 @@ const MemberInfo = () => {
     const [ownerPk, setOwnerPK] = useState(undefined);
     const [currentUserPK, setCurrentUserPK] = useState(undefined);
 
-    const [buttonColor, setButtonColor] = useState('#68A8F4');
+    //every action item (for props use)
+    const [actionItemArray, setActionItemArray] = useState([]);
+
+    //For Detail Modal (for props use)
+    const [actionItemDesc, setActionItemDesc] = useState([])
 
     const classes = useStyles();
 
@@ -137,11 +141,6 @@ const MemberInfo = () => {
             P_PK: priority,
             STEP_PK: step,
         };
-        // const config = {
-        //     headers: {
-        //         'content-type': 'application/json',
-        //     },
-        // };
         post(url, data)
             .then((res) => {
                 setOpenModalNum(0);
@@ -153,20 +152,23 @@ const MemberInfo = () => {
     };
 
     //생성된 액션 아이템 불러오기 API
-    const getActionItems = () => {
+    const getActionItems = async () => {
         const url = `/api/work/view-items`;
         const params = {
             id: userPK,
             currentPage: currentPage,
         };
-        get(url, { params: params }).then((res) => {
+        await get(url, { params: params }).then((res) => {
             console.log(res);
+            setActionItemArray(res);
         });
     };
 
     useEffect(() => {
         getActionItems();
     }, []);
+
+
 
     return (
         <>
@@ -253,7 +255,7 @@ const MemberInfo = () => {
                                             <td style={{ width: '5%' }} className={styles.theadTd}>
                                                 Priority
                                             </td>
-                                            <td style={{ width: '8%' }} className={styles.theadTd}>
+                                            <td style={{ width: '10%' }} className={styles.theadTd}>
                                                 Status
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
@@ -263,7 +265,7 @@ const MemberInfo = () => {
                                                 Due Date
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
-                                                Assigner
+                                                Owner
                                             </td>
                                             <td style={{ width: '8%' }} className={styles.theadTd}>
                                                 Detail
@@ -278,7 +280,7 @@ const MemberInfo = () => {
                                     </thead>
 
                                     <tbody style={{ width: '90%', backgroundColor: 'grey' }}>
-                                        <CreatedActionItems />
+                                        <CreatedActionItems actionItemArray={actionItemArray}/>
                                     </tbody>
                                 </table>
                             </div>
