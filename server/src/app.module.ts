@@ -32,12 +32,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
+import GroupChatUserList from './entity/groupChatUserList.entity';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        GroupChatUserList,
         GroupChatRoom,
         UserProfileFile,
         CalledMembers,

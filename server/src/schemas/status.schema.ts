@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type statusDocument = Status & Document;
-
 @Schema()
 export class Status {
     @Prop({ required: true })
@@ -17,4 +15,5 @@ export class Status {
     status: number;
 }
 
+export type statusDocument = Status & Document;
 export const StatusSchema = SchemaFactory.createForClass(Status);

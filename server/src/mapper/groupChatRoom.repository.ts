@@ -1,3 +1,4 @@
+import { ResultSetHeader } from 'mysql2';
 import { GroupChatRoom } from 'src/entity';
 import { AikoError } from 'src/Helpers';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
@@ -16,6 +17,8 @@ export default class GroupChatRoomRepository extends Repository<GroupChatRoom> {
                 .into(GroupChatRoom)
                 .values({ ROOM_ADMIN, ROOM_TITLE, MAX_NUM })
                 .execute();
+
+            return (result.raw as ResultSetHeader).insertId;
         } catch (err) {
             console.error(err);
             throw new AikoError('GroupChatRoomRepository/createGroupChatRoom', 500, 4562123);

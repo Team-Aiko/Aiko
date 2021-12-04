@@ -13,12 +13,14 @@ import { Model } from 'mongoose';
 import { Status, statusDocument } from 'src/schemas/status.schema';
 import PrivateChatRoomRepository from 'src/mapper/privateChatRoom.repository';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
+import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 
 @Injectable()
 export default class SocketService {
     constructor(
         @InjectModel(PrivateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>,
         @InjectModel(Status.name) private statusModel: Model<statusDocument>,
+        @InjectModel(GroupChatClientInfo.name) private groupChatClientModel: Model<GroupChatClientInfoDocument>,
     ) {}
     /**
      *
@@ -37,6 +39,7 @@ export default class SocketService {
      */
 
     /**
+     * ! finished
      * 회원가입 승인이 떨어질 시, 사원간 챗룸 생성.
      * @param userInfo
      * @returns
@@ -69,6 +72,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async generateUserStatus(userPK: number, companyPK: number) {
         try {
             const status = new Status();
@@ -86,7 +90,7 @@ export default class SocketService {
 
     /**
      *
-     *
+     * ! finished
      * private chat methods
      *
      *
@@ -111,6 +115,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async sendMessage(payload: IMessagePayload) {
         try {
             await this.updateChatlog(payload);
@@ -139,6 +144,7 @@ export default class SocketService {
      */
 
     /**
+     * ! finished
      * status connection 실시메소드
      * @param socketId
      * @param userPayload
@@ -176,6 +182,7 @@ export default class SocketService {
     }
 
     /**
+     * ! finished
      * status disconnect를 시행하는 메소드, 5분의 유예기간을 줌
      */
     async statusDisconnect(socketClient: Socket, wss: Server) {
@@ -213,6 +220,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async changeStatus(socketId: string, status: { userPK: number; userStatus: number }) {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
@@ -227,6 +235,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async getUserInfoStatus(socketId: string) {
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
@@ -238,6 +247,26 @@ export default class SocketService {
     }
 
     // * group chat methods
+    async addClientForGroupChat(clientId: string, userInfo: User) {
+        try {
+            const pack = {
+                clientId,
+                userPK: userInfo.USER_PK,
+                companyPK: userInfo.COMPANY_PK,
+            };
+            const dto = new this.groupChatClientModel(pack);
+            await this.statusModel.create(pack);
+            await dto.save();
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
+    /**
+     * ! finished
+     * 그룹챗룸을 만들고 유저를 초대하는 메소드
+     */
     async createGroupChatRoom({
         userList,
         admin,
@@ -249,14 +278,55 @@ export default class SocketService {
         roomTitle: string;
         maxNum: number;
     }) {
-        try {
-            const queryRunner = getConnection().createQueryRunner();
-            await queryRunner.connect();
-            await queryRunner.startTransaction();
+        const connection = getConnection();
+        const queryRunner = connection.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-            await getRepo(GroupChatRoomRepository).createGroupChatRoom(admin, roomTitle, maxNum, queryRunner.manager);
-            await getRepo(GroupChatUserListRepository);
+        try {
+            // admin의 유저정보 셀렉트(회사키를 이용)
+            const adminInfo = await getRepo(UserRepository).getUserInfoWithUserPK(admin);
+            // 해당 회사키로 초대유저 적합성 판단
+            const verifiedList = await connection
+                .createQueryBuilder(User, 'u')
+                .where('u.USER_PK IN (:...userList)', { userList: userList })
+                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: adminInfo.COMPANY_PK })
+                .getMany();
+            // 그룹챗 룸생성
+            const GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
+                admin,
+                roomTitle,
+                maxNum,
+                queryRunner.manager,
+            );
+            // 생성된 그룹챗룸에 적합한 유저를 초대
+            await getRepo(GroupChatUserListRepository).insertUserListInNewGroupChatRoom(
+                GC_PK,
+                verifiedList.map((user) => user.USER_PK),
+                queryRunner.manager,
+            );
+
+            await queryRunner.commitTransaction();
+            const memberList = (await this.groupChatClientModel
+                .find()
+                .where('userPK')
+                .in(userList)
+                .select('clientId userPK companyPK')) as GroupChatClientInfo[];
+
+            return { memberList, GC_PK, COMPANY_PK: adminInfo.COMPANY_PK };
         } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    // ! finished
+    async sendMessageToGroup(payload: { GC_PK: number; sender: number; file: number; message: string }, wss: Server) {
+        try {
+        } catch (err) {
+            console.error(err);
             throw err;
         }
     }
@@ -279,6 +349,7 @@ export default class SocketService {
      *
      *
      */
+    // ! finished
     async getUserStatus(companyPK: number, userPK: number) {
         try {
             return (await this.statusModel.findOne({ userPK, companyPK }).exec()) as Status;
@@ -288,6 +359,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async setUserStatus(container: Status) {
         console.log('🚀 ~ file: socket.service.ts ~ line 269 ~ SocketService ~ setUserStatus ~ container', container);
         try {
@@ -309,6 +381,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async updateStatus(userStatus: Status) {
         try {
             return await this.statusModel
@@ -327,6 +400,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async getUserStatusWithSocketId(socketId: string) {
         try {
             return (await this.statusModel.findOne({ socketId })) as Status;
@@ -355,6 +429,7 @@ export default class SocketService {
      *
      */
 
+    // ! finished
     async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
         try {
             const chatlog = await this.chatlogModel.findOne({ roomId });
@@ -371,6 +446,7 @@ export default class SocketService {
         }
     }
 
+    // ! finished
     async getChalog(roomId: string) {
         try {
             return (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
