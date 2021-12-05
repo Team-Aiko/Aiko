@@ -3,7 +3,7 @@ import styles from '../styles/ActionItems.module.css';
 import {useState, useEffect} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AddActionItem from './AddActionItem.js';
-import ActionItemDetail from './ActionItemDetail';
+import ActionItemDetail from './ActionItemDetail.js';
 import {get, post} from '../_axios';
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination,
         TableFooter} from '@material-ui/core';
@@ -18,7 +18,7 @@ const useStyles = makeStyles({
 
 const ActionItems = () => {
 
-    const [currentPage, setCurrentPage] = useState(2);
+    const [currentPage, setCurrentPage] = useState(1);
     const [ownerPK, setOwnerPK] = useState(undefined);
     const [currentUserPK, setCurrentUserPK] = useState(undefined);
 
@@ -27,13 +27,22 @@ const ActionItems = () => {
 
 
     // 액션 아이템 추가 모달, 액션 아이템 상세보기 모달 boolean 값.
-    const [actionItemDetailModal, setActionItemDetailModal] = useState(false);
     const [addActionItemModal, setAddActionItemModal] = useState(false);
+    const [actionItemDetailModal, setActionItemDetailModal] = useState(false);
+    const [modal, setModal] = useState(false);
 
     const openAddModal = () => {
         setAddActionItemModal(!addActionItemModal)
-        console.log(addActionItemModal)
+    };
+
+    const openDetailModal = () => {
+        setActionItemDetailModal(!actionItemDetailModal)
+    };
+
+    const openModal = () => {
+        setModal(!modal)
     }
+
 
     //Unix time 변환 함수
     function getUnixTime(t) {
@@ -65,8 +74,7 @@ const ActionItems = () => {
             currentPage: currentPage,
         };
         await get(url, { params: params }).then((res) => {
-            console.log(res);
-            setActionItemArray(res);
+            setActionItemArray(res.items);
             console.log(res);
         });
     };
@@ -76,7 +84,7 @@ const ActionItems = () => {
     }, []);
 
     //Pagination
-    const [page, setPage] = React.useState(1);
+    const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     const handleChangePage = (event, newPage) => {
@@ -96,6 +104,22 @@ const ActionItems = () => {
         {
             addActionItemModal == true
             ? <AddActionItem setAddActionItemModal={setAddActionItemModal}/>
+            : <></>
+        }
+
+        {
+            actionItemDetailModal == true
+            ? <ActionItemDetail actionItemArray={actionItemArray}/>
+            : <></>
+        }
+
+        {
+            modal == true
+            ? <div>{
+                actionItemArray.map((item, i) => (
+                    <div>{item.DESCRIPTION}</div>
+                ))
+            }</div>
             : <></>
         }
 
@@ -134,7 +158,7 @@ const ActionItems = () => {
                     <TableCell align="right">{getUnixTime(row.START_DATE)}</TableCell>
                     <TableCell align="right">{getUnixTime(row.DUE_DATE)}</TableCell>
                     <TableCell align="right">
-                    <Button>상세</Button>
+                    <Button onClick={openModal}>Detail</Button>
                     </TableCell>
                 </TableRow>
             ))}

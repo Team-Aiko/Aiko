@@ -1,9 +1,15 @@
-import React from 'react'
+import React from 'react';
+import styles from '../styles/ActionItems.module.css';
+import {useState, useEffect} from 'react';
 
-const ActionItemDetail = () => {
+const ActionItemDetail = ({actionItemArray}) => {
+
+
     return (
-        <div>
-            
+        <div className={styles.detailModalContainer}>
+            <div className={styles.detailModal}>
+                <button>???!!!</button>
+            </div>
         </div>
     )
 }

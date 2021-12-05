@@ -1,9 +1,10 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {Modal, TextField, Button} from '@material-ui/core';
+import {Modal, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem} from '@material-ui/core';
 import SaveIcon from '@material-ui/icons/Save';
 import {useState, useEffect} from 'react';
-import {get, post} from '../_axios'
+import {get, post} from '../_axios';
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,8 +34,18 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonDiv : {
       display:'flex',
-      justifyContent:'right',
-      marginTop: 10
+      justifyContent:'right'
+  },
+  formControl : {
+      margin: 3,
+      width: 100
+  },
+  closeIcon : {
+      cursor: 'pointer',
+      marginLeft: 340
+  },
+  titleIcon : {
+      display:'flex'
   }
 }));
 
@@ -46,13 +57,14 @@ const AddActionItem = ({setAddActionItemModal}) => {
 
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState(1);
-    const [status, setStatus] = useState('');
+    const [step, setStep] = useState(1);
     const [startDate, setStartDate] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [assigner, setAssigner] = useState('');
     const [owner, setOwner] = useState('');
     const [description, setDescription] = useState('');
-    const [step, setStep] = useState(1);
+
+
 
     //할당자 PK 값
     const [ownerPK, setOwnerPK] = useState(undefined);
@@ -76,19 +88,11 @@ const AddActionItem = ({setAddActionItemModal}) => {
     };
 
     const priorityChange = (e) => {
-        if (e.target.value == null) {
-            setPriority(1);
-        } else {
-            setPriority(e.target.value);
-        }
+        setPriority(e.target.value);
     };
 
-    const statusChange = (e) => {
-        if (e.target.value == null) {
-            setStatus('Assigned');
-        } else {
-            setStatus(e.target.value);
-        }
+    const stepChange = (e) => {
+        setStep(e.target.value)
     };
 
     const startDateChange = (e) => {
@@ -112,11 +116,6 @@ const AddActionItem = ({setAddActionItemModal}) => {
     const descriptionChange = (e) => {
         setDescription(e.target.value);
         console.log(description);
-    };
-
-    const stepChange = (e) => {
-        setStep(e.target.value);
-        console.log(step);
     };
 
     //액션 아이템 생성 API
@@ -155,16 +154,46 @@ const AddActionItem = ({setAddActionItemModal}) => {
             >
                 <div className={classes.paper}>
                 <h2 id="server-modal-title">Add Action Item</h2>
-
                 <div>
                 <TextField id="standard-basic" label="Title" style={{margin:3}} onChange={titleChange}/>
-                <TextField id="standard-basic" label="Priority" placeholder='Number' style={{margin:3, width:100}} onChange={priorityChange}/>
-                <TextField id="standard-basic" label="Status" placeholder='Default: Assigned' style={{margin:3, width:150}} onChange={statusChange}/>
+                <FormControl className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-label">Priority</InputLabel>
+                    <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={priority}
+                    onChange={priorityChange}
+                    >
+                    <MenuItem value={1}>High</MenuItem>
+                    <MenuItem value={2}>Normal</MenuItem>
+                    <MenuItem value={3}>Low</MenuItem>
+                    </Select>
+
+                </FormControl>
+                    <FormControl className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                    <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={step}
+                    onChange={stepChange}
+                    >
+                    <MenuItem value={1}>Assigned</MenuItem>
+                    <MenuItem value={2}>Ongoing</MenuItem>
+                    <MenuItem value={3}>Done</MenuItem>
+                    </Select>
+                </FormControl>
                 </div>
 
-                <div style={{marginTop:10}}>
-                <TextField id="standard-basic" label="Start Date" style={{margin:3}} onChange={startDateChange}/>
-                <TextField id="standard-basic" label="Due Date" style={{margin:3}} onChange={dueDateChange}/>
+                <div style={{marginTop:10, display:'flex'}}>
+                    <div>
+                    <Typography variant="overline" display="block" gutterBottom>Start Date</Typography>
+                    <TextField id="standard-basic" type='date' style={{margin:3}} onChange={startDateChange}/>
+                    </div>
+                    <div>
+                    <Typography variant="overline" display="block" gutterBottom>Due Date</Typography>
+                    <TextField id="standard-basic" type='date' style={{margin:3}} onChange={dueDateChange}/>
+                    </div>
                 </div>
 
                 <div style={{marginTop:10}}>
