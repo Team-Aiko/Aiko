@@ -56,7 +56,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             return err;
         }
     }
-    async createBtnSize(option: number, comPk: number) {
+    async createBtnSize(@TransactionManager() transactionManger: EntityManager, option: number, comPk: number) {
         const artcileSize = await this.createQueryBuilder()
             .select()
             .where('COMPANY_PK like :comPk', { comPk: `${comPk}` })

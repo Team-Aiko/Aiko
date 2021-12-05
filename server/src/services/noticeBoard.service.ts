@@ -32,7 +32,7 @@ export default class NoticeBoardService {
             await queryRunner.connect();
             await queryRunner.startTransaction(); //트랜젝션
             await getRepo(NoticeBoardRepository).updateArticle(queryRunner.manager, title, content, userPk, num);
-            await getRepo(NoticeBoardFileRepository).createFiles(queryRunner.manager, files, num, userPk, comPk); //파일 생성
+            await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk); //파일 생성
             await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks);
         } catch (err) {
             throw new AikoError('QUERY ERROR[update문 에러 발생]:' + err.name, 451, 500000);
