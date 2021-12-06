@@ -30,12 +30,15 @@ const ActionItems = () => {
     const [addActionItemModal, setAddActionItemModal] = useState(false);
     const [actionItemDetailModal, setActionItemDetailModal] = useState(false);
 
+    const [activeRow, setActiveRow] = useState(0);
+
     const openAddModal = () => {
         setAddActionItemModal(!addActionItemModal)
     };
 
-    const openDetailModal = () => {
-        setActionItemDetailModal(!actionItemDetailModal)
+    const openDetailModal = (id) => {
+        setActionItemDetailModal(!actionItemDetailModal);
+        setActiveRow(id);
     };
 
 
@@ -71,6 +74,7 @@ const ActionItems = () => {
         await get(url, { params: params }).then((res) => {
             setActionItemArray(res.items);
             console.log(res);
+            console.log(params)
         });
     };
 
@@ -104,7 +108,9 @@ const ActionItems = () => {
 
         {
             actionItemDetailModal
-            ? <ActionItemDetail actionItemArray={actionItemArray}/>
+            ? <ActionItemDetail actionItemArray={actionItemArray}
+                                activeRow={activeRow}
+                                openDetailModal={openDetailModal}/>
             : <></>
         }
 
@@ -135,15 +141,15 @@ const ActionItems = () => {
             </TableHead>
             
             <TableBody>
-            {actionItemArray.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <TableRow key={row.ACTION_PK}>
+            {actionItemArray.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, key) => (
+                <TableRow key={key}>
                     <TableCell align='left'>{row.ACTION_PK}</TableCell>
                     <TableCell component="th" scope="row" align='left'>{row.TITLE}</TableCell>
                     <TableCell align="right">{row.owner.FIRST_NAME + ' ' + row.owner.LAST_NAME}</TableCell>
                     <TableCell align="right">{getUnixTime(row.START_DATE)}</TableCell>
                     <TableCell align="right">{getUnixTime(row.DUE_DATE)}</TableCell>
                     <TableCell align="right">
-                    <Button onClick={openDetailModal}>Detail</Button>
+                    <Button onClick={() => openDetailModal(key)}>Detail</Button>
                     </TableCell>
                 </TableRow>
             ))}
