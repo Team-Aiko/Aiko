@@ -19,10 +19,30 @@ export enum statusPath {
     CLIENT_LOGOUT_ALERT = 'client/status/logoutAlert',
 }
 
+export enum groupChatPath {
+    HANDLE_CONNECTION = 'handleConnection',
+    HANDLE_DISCONNECT = 'handleDisconnect',
+    CREATE_GROUP_CHAT_ROOM = 'create-group-chat-room',
+    CLIENT_JOIN_ROOM_NOTICE = 'client/join-room-notice',
+    CLIENT_JOINED_GCR = 'client/joined_gcr',
+    CLIENT_SEND_MESSAGE = 'client/send-message',
+    SERVER_JOIN_GROUP_CHAT_ROOM = 'server/join-group-chat-room',
+    SERVER_SEND_MESSAGE = 'server/send-message',
+    TEST_ADD_NEW_CLIENT = 'test/add-new-client',
+}
+
 export interface IMessagePayload {
     roomId: string;
     sender: number;
     file?: number;
     message: string;
+    date: number;
+}
+
+export interface IGMessagePayload {
+    GC_PK: number;
+    sender: number;
+    message: string;
+    file?: number;
     date: number;
 }
