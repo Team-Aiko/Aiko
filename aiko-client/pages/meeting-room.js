@@ -24,7 +24,7 @@ export default function meetingRoom() {
                     setMeetingRoom(value);
                 }}
             />
-            <MeetingRoomTable admin={admin} meetingRoom={meetingRoom} />
+            <MeetingRoomTable meetingRoom={meetingRoom} />
         </div>
     );
 }
