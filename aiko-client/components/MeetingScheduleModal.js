@@ -3,8 +3,21 @@ import styles from '../styles/components/MeetingScheduleModal.module.css';
 import Modal from '../components/Modal';
 import SearchMemberModal from './SearchMemberModal';
 import moment from 'moment';
-import { Button, Grid, IconButton, makeStyles, TextField, Typography } from '@material-ui/core';
+import {
+    Avatar,
+    Button,
+    Grid,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    makeStyles,
+    TextField,
+    Typography,
+} from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+import Router from 'next/router';
 
 const useStyles = makeStyles({
     TextField: {
@@ -21,7 +34,7 @@ export default function MeetingScheduleModal(props) {
         onClose,
         roomPK,
         status,
-        admin,
+        editButton,
         schedule,
         handleUpdate,
         deleteSchedule,
@@ -172,17 +185,41 @@ export default function MeetingScheduleModal(props) {
                             </Button>
                         </>
                     ) : (
-                        <Typography>
+                        // <Typography>
+                        //     {schedule.members && schedule.members.length > 0
+                        //         ? schedule.members.map((member, index) => {
+                        //               if (index < schedule.members.length - 1) {
+                        //                   return `${member.user.NICKNAME}, `;
+                        //               } else {
+                        //                   return member.user.NICKNAME;
+                        //               }
+                        //           })
+                        //         : ''}
+                        // </Typography>
+                        <div className={styles['member-list']}>
                             {schedule.members && schedule.members.length > 0
                                 ? schedule.members.map((member, index) => {
-                                      if (index < schedule.members.length - 1) {
-                                          return `${member.user.NICKNAME}, `;
-                                      } else {
-                                          return member.user.NICKNAME;
-                                      }
+                                      return (
+                                          <div
+                                              className={styles['list-item']}
+                                              key={index}
+                                              onClick={() => {
+                                                  Router.push(`/member-info/${member.user.USER_PK}`);
+                                              }}
+                                          >
+                                              <Avatar
+                                                  style={{ height: '30px', width: '30px', marginRight: '4px' }}
+                                                  src={
+                                                      member.user.profile &&
+                                                      `/api/store/download-profile-file?fileId=${member.user.profile.USER_PROFILE_PK}`
+                                                  }
+                                              />
+                                              <Typography>{member.user.NICKNAME}</Typography>
+                                          </div>
+                                      );
                                   })
                                 : ''}
-                        </Typography>
+                        </div>
                     )}
                 </Grid>
                 <SearchMemberModal
@@ -254,7 +291,7 @@ export default function MeetingScheduleModal(props) {
                             {status === 'update' ? '수정 완료' : '작성 완료'}
                         </Button>
                     </Grid>
-                ) : admin ? (
+                ) : editButton ? (
                     <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                         {schedule && !schedule.IS_FINISHED ? (
                             <Button
