@@ -29,7 +29,6 @@ const ActionItems = () => {
     // 액션 아이템 추가 모달, 액션 아이템 상세보기 모달 boolean 값.
     const [addActionItemModal, setAddActionItemModal] = useState(false);
     const [actionItemDetailModal, setActionItemDetailModal] = useState(false);
-    const [modal, setModal] = useState(false);
 
     const openAddModal = () => {
         setAddActionItemModal(!addActionItemModal)
@@ -38,10 +37,6 @@ const ActionItems = () => {
     const openDetailModal = () => {
         setActionItemDetailModal(!actionItemDetailModal)
     };
-
-    const openModal = () => {
-        setModal(!modal)
-    }
 
 
     //Unix time 변환 함수
@@ -102,24 +97,14 @@ const ActionItems = () => {
     return (   
     <>
         {
-            addActionItemModal == true
+            addActionItemModal
             ? <AddActionItem setAddActionItemModal={setAddActionItemModal}/>
             : <></>
         }
 
         {
-            actionItemDetailModal == true
+            actionItemDetailModal
             ? <ActionItemDetail actionItemArray={actionItemArray}/>
-            : <></>
-        }
-
-        {
-            modal == true
-            ? <div>{
-                actionItemArray.map((item, i) => (
-                    <div>{item.DESCRIPTION}</div>
-                ))
-            }</div>
             : <></>
         }
 
@@ -151,14 +136,14 @@ const ActionItems = () => {
             
             <TableBody>
             {actionItemArray.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <TableRow key={row.TITLE}>
+                <TableRow key={row.ACTION_PK}>
                     <TableCell align='left'>{row.ACTION_PK}</TableCell>
                     <TableCell component="th" scope="row" align='left'>{row.TITLE}</TableCell>
                     <TableCell align="right">{row.owner.FIRST_NAME + ' ' + row.owner.LAST_NAME}</TableCell>
                     <TableCell align="right">{getUnixTime(row.START_DATE)}</TableCell>
                     <TableCell align="right">{getUnixTime(row.DUE_DATE)}</TableCell>
                     <TableCell align="right">
-                    <Button onClick={openModal}>Detail</Button>
+                    <Button onClick={openDetailModal}>Detail</Button>
                     </TableCell>
                 </TableRow>
             ))}

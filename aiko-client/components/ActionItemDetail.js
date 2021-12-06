@@ -4,11 +4,16 @@ import {useState, useEffect} from 'react';
 
 const ActionItemDetail = ({actionItemArray}) => {
 
+    console.log(actionItemArray)
 
     return (
         <div className={styles.detailModalContainer}>
             <div className={styles.detailModal}>
-                <button>???!!!</button>
+                {
+                    actionItemArray.map(() => (
+                        actionItemArray.DESCRIPTION
+                    ))
+                }
             </div>
         </div>
     )
