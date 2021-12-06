@@ -186,18 +186,26 @@ export default class SocketService {
                 setTimeout(async () => {
                     // delete process
                     console.log('logout process executed');
-                    if (userStatus.logoutPending) {
-                        userStatus.status = -1;
-                        userStatus.logoutPending = false;
+                    const user = await this.getUserStatusWithSocketId(socketClient.id);
 
-                        await this.updateStatus(userStatus);
-                        wss.to(`company:${userStatus.companyPK}`)
+                    console.log(
+                        '🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus',
+                        user,
+                    );
+
+                    if (user.logoutPending) {
+                        console.log('안됨???');
+                        user.status = -1;
+                        user.logoutPending = false;
+
+                        await this.updateStatus(user);
+                        wss.to(`company:${user.companyPK}`)
                             .except(socketClient.id)
-                            .emit(statusPath.CLIENT_LOGOUT_ALERT, userStatus);
+                            .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
                     }
-                }, 1000 * 60 * 5); // 5분간격
+                }, 1000); // 5분간격
 
-                await this.setUserStatus({
+                await this.updateStatus({
                     userPK: userStatus.userPK,
                     companyPK: userStatus.companyPK,
                     socketId: socketClient.id,
@@ -216,6 +224,11 @@ export default class SocketService {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
+            console.log('🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ socketId', socketId);
+            console.log(
+                '🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ userStatus',
+                userStatus,
+            );
             userStatus.status = status.userStatus;
             await this.updateStatus(userStatus);
 
@@ -285,6 +298,7 @@ export default class SocketService {
     }
 
     async updateStatus(userStatus: Status) {
+        console.log('🚀 ~ file: socket.service.ts ~ line 298 ~ SocketService ~ updateStatus ~ userStatus', userStatus);
         try {
             return await this.statusModel
                 .findOneAndUpdate(
