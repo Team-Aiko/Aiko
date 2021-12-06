@@ -12,3 +12,15 @@
     padding: 4px;
     align-items: center;
 }
+
+.member-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}

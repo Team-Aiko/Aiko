@@ -157,7 +157,7 @@ export default function MyMeetingSchedule(props) {
                 }}
                 schedule={selectedSchedule}
                 status='view'
-                admin={false}
+                editButton={false}
             />
         </Paper>
     );

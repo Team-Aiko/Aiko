@@ -17,7 +17,7 @@ import {
 import MeetingScheduleModal from './MeetingScheduleModal';
 
 export default function MeetingRoomTable(props) {
-    const { meetingRoom, admin } = props;
+    const { meetingRoom } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -131,7 +131,16 @@ export default function MeetingRoomTable(props) {
                 setModalStatus('');
             }, 200);
             callback();
-            loadSchedule();
+
+            const updateScheduleList = scheduleList.map((row) => {
+                return row.MEET_PK === selectedSchedule.MEET_PK
+                    ? {
+                          ...row,
+                          IS_FINISHED: 1,
+                      }
+                    : { ...row };
+            });
+            setScheduleList(updateScheduleList);
         });
     };
 
@@ -217,11 +226,11 @@ export default function MeetingRoomTable(props) {
                 roomPK={meetingRoom.ROOM_PK}
                 schedule={selectedSchedule}
                 status={modalStatus}
-                admin={admin}
                 deleteSchedule={deleteSchedule}
                 handleUpdate={handleUpdate}
                 handleFinish={handleFinish}
                 uploadSchedule={uploadSchedule}
+                editButton={true}
             />
         </div>
     );
