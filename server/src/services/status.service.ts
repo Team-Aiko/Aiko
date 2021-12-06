@@ -45,7 +45,7 @@ export default class StatusService {
             newUserContainer.companyPK = user.COMPANY_PK;
             newUserContainer.socketId = socketId;
             newUserContainer.logoutPending = false;
-            newUserContainer.status = !userContainer ? 1 : userContainer.status;
+            newUserContainer.status = !userContainer ? 1 : userContainer.status === -1 ? 1 : userContainer.status;
 
             await this.updateStatus(newUserContainer);
 
