@@ -182,19 +182,20 @@ function PComp(props) {
         Router.push('/admin');
     };
 
-    const [currentUserPk, setCurrentUserPk] = useState(undefined)
+    const [currentUserPk, setCurrentUserPk] = useState(undefined);
 
     const getCurrentUserPk = async () => {
         const res = await get('/api/account/decoding-token')
-        .then((res) => {
-            console.log(res);
-            setCurrentUserPk(res.data.result.USER_PK)
-        })
+            .then((res) => {
+                console.log(res);
+                setCurrentUserPk(res.data.result.USER_PK);
+            })
+            .catch((err) => console.log(err));
     };
 
     useEffect(() => {
-        getCurrentUserPk()
-    },[]);
+        getCurrentUserPk();
+    }, []);
 
     const goToMyMemberInfo = () => {
         router.push(`/member-info/${currentUserPk}`);

@@ -13,6 +13,7 @@ import { get } from '../_axios';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
+    console.log('🚀 ~ file: index.js ~ line 16 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
 
     return <PComp userInfo={userInfo} />;
@@ -56,41 +57,43 @@ function PComp(props) {
     }, []);
 
     const testStatusChanger = (num) => {
-        status.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+        status?.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
     };
 
     return (
         <>
-            <div>
-                <button
-                    onClick={() => {
-                        testStatusChanger(1);
-                    }}
-                >
-                    status1
-                </button>
-                <button
-                    onClick={() => {
-                        testStatusChanger(2);
-                    }}
-                >
-                    status2
-                </button>
-                <button
-                    onClick={() => {
-                        testStatusChanger(3);
-                    }}
-                >
-                    status3
-                </button>
-                <button
-                    onClick={() => {
-                        testStatusChanger(4);
-                    }}
-                >
-                    status4
-                </button>
-            </div>
+            {userInfo.USER_PK ? (
+                <div>
+                    <button
+                        onClick={() => {
+                            testStatusChanger(1);
+                        }}
+                    >
+                        status1
+                    </button>
+                    <button
+                        onClick={() => {
+                            testStatusChanger(2);
+                        }}
+                    >
+                        status2
+                    </button>
+                    <button
+                        onClick={() => {
+                            testStatusChanger(3);
+                        }}
+                    >
+                        status3
+                    </button>
+                    <button
+                        onClick={() => {
+                            testStatusChanger(4);
+                        }}
+                    >
+                        status4
+                    </button>
+                </div>
+            ) : null}
         </>
     );
 }
