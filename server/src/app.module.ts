@@ -2,7 +2,8 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import * as config from 'config';
-import { AccountModule,
+import {
+    AccountModule,
     FileModule,
     CompanyModule,
     MeetingModule,
