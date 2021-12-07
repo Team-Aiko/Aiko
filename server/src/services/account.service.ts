@@ -40,6 +40,8 @@ import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 import CalledMembersRepository from 'src/mapper/calledMembers.repository';
 import MeetingService from './meeting.service';
 import WorkService from './work.service';
+import PrivateChatService from './privateChat.service';
+import StatusService from './status.service';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -52,7 +54,8 @@ const hasher = pbkdf2();
 @Injectable()
 export default class AccountService {
     constructor(
-        private socketService: SocketService,
+        private privateChatService: PrivateChatService,
+        private statusService: StatusService,
         private meetingService: MeetingService,
         private workService: WorkService,
     ) {}
@@ -141,11 +144,11 @@ export default class AccountService {
                     salt,
                 );
                 userPK = (result.raw as ResultSetHeader).insertId as number;
-                await this.socketService.makePrivateChatRoomList(queryRunner.manager, data.companyPK, userPK);
+                await this.privateChatService.makePrivateChatRoomList(queryRunner.manager, data.companyPK, userPK);
             }
 
             // * generate status database (mongodb)
-            this.socketService.generateUserStatus(userPK, data.companyPK);
+            this.statusService.generateUserStatus(userPK, data.companyPK);
 
             // * email auth
             const uuid = v1();

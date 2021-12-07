@@ -8,14 +8,14 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import SocketService from 'src/services/socket.service';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { AikoError, unknownError } from 'src/Helpers';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
+import StatusService from 'src/services/status.service';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-    constructor(private socketService: SocketService) {}
+    constructor(private statusService: StatusService) {}
 
     @WebSocketServer()
     private readonly wss: Server;
@@ -43,7 +43,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             const { id } = client;
 
             // connection check and select user info
-            const connResult = await this.socketService.statusConnection(id, userPayload);
+            const connResult = await this.statusService.statusConnection(id, userPayload);
 
             // join company
             client.join(`company:${connResult.user.companyPK}`);
@@ -72,7 +72,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
-            this.socketService.statusDisconnect(client, this.wss);
+            this.statusService.statusDisconnect(client, this.wss);
         } catch (err) {
             this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
         }
@@ -91,9 +91,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             if (!userStatus) return;
 
             const socketId = client.id;
-            const container = await this.socketService.getUserInfoStatus(socketId);
+            const container = await this.statusService.getUserInfoStatus(socketId);
             console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
-            const result = await this.socketService.changeStatus(socketId, userStatus);
+            const result = await this.statusService.changeStatus(socketId, userStatus);
             this.wss
                 .to(`company:${container.companyPK}`)
                 .except(client.id)

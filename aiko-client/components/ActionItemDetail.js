@@ -9,7 +9,7 @@ import {CancelPresentation, Edit, Delete, Save, HighlightOff} from '@material-ui
 
 const useStyles = makeStyles((theme) => ({
     formControl : {
-        width:100
+        width:140
     },
     exitIcon : {
         display:'flex',
@@ -30,10 +30,20 @@ const useStyles = makeStyles((theme) => ({
         display:'block',
         fontSize:'10px'
     },
+    date : {
+        width:140
+    },
     assignTypo : {
         display:'block',
         textAlign:'right',
         color:'#404040'
+    },
+    dateStep :{
+        width:'80%',
+        display:'flex',
+        textAlign:'center',
+        margin:'0 auto',
+        marginTop:5
     },
     buttons : {
         fontSize: 30
@@ -43,13 +53,42 @@ const useStyles = makeStyles((theme) => ({
         justifyContent:'space-between',
         width:'80%',
         margin: '0 auto',
-        marginTop:30
+        marginTop:20
     }
 }));
 
 const ActionItemDetail = ({actionItemArray, activeRow, openDetailModal}) => {
 
     const classes = useStyles();
+
+    const [detailTitle, setDetailTitle] = useState(actionItemArray[activeRow].TITLE);
+    const [detailDesc, setDetailDesc] = useState(actionItemArray[activeRow].DESCRIPTION);
+
+    //Unix time 변환 함수
+    function getUnixTime(t) {
+        const date = new Date(t * 1000);
+        const year = date.getFullYear();
+        const month = "0" + (date.getMonth() + 1);
+        const day = "0" + date.getDate();
+        return year.toString().substr(-2) + "-" + month.substr(-2) + "-" + day.substr(-2)
+    }
+
+    const [detailStartDate, setDetailStartDate] = useState( getUnixTime(actionItemArray[activeRow].START_DATE) )
+    const [detailDueDate, setDetailDueDate] = useState( getUnixTime(actionItemArray[activeRow].DUE_DATE) )
+
+    const [detailPriority, setDetailPriority] = useState(actionItemArray[activeRow].P_PK)
+    const [detailStep, setDetailStep] = useState(actionItemArray[activeRow].STEP_PK)
+
+
+    const detailTitleChange = (e) => {
+        setDetailTitle(e.target.value)
+    };
+
+    const detailDescChange = (e) => {
+        setDetailDesc(e.target.value)
+    };
+
+    const [yaho, muyaho] = useState(10);
 
     return (
         <div className={styles.detailModalContainer}>
@@ -65,14 +104,15 @@ const ActionItemDetail = ({actionItemArray, activeRow, openDetailModal}) => {
 
                 <div className={classes.titleDescDiv}>
                 <TextField className={classes.titleInput} fullWidth variant="outlined" label='Title' placeholder=''
-                value={actionItemArray[activeRow].TITLE}/>
+                onChange={detailTitleChange} value={detailTitle}/>
 
                 <TextField
                 label="Description"
                 multiline
                 rows={4}
                 style={{marginTop:10}}
-                value={actionItemArray[activeRow].DESCRIPTION}
+                value={detailDesc}
+                onChange={detailDescChange}
                 variant="outlined"
                 fullWidth
                 />
@@ -84,12 +124,25 @@ const ActionItemDetail = ({actionItemArray, activeRow, openDetailModal}) => {
                 </div>
                 
 
+                <div className={classes.dateStep}>
                 <div>
+                <Typography variant="overline" display="block" gutterBottom>Start Date</Typography>
+                <TextField className={classes.date} type='date' style={{margin:3}}
+                defaultValue={detailStartDate}/>
+                </div>
+
+                <div>
+                <Typography variant="overline" display="block" gutterBottom>Due Date</Typography>
+                <TextField className={classes.date} type='date' style={{margin:3}}
+                defaultValue={detailDueDate}/>
+                </div>
+
                 <FormControl className={classes.formControl} style={{margin:3}}>
-                    <InputLabel id="demo-simple-select-label">Priority</InputLabel>
+                <Typography variant="overline" display="block" gutterBottom>Priority</Typography>
                     <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
+                    value={detailPriority}
                     >
                     <MenuItem value={1}>High</MenuItem>
                     <MenuItem value={2}>Normal</MenuItem>
@@ -98,10 +151,11 @@ const ActionItemDetail = ({actionItemArray, activeRow, openDetailModal}) => {
                 </FormControl>
 
                 <FormControl className={classes.formControl} style={{margin:3}}>
-                    <InputLabel id="demo-simple-select-label">Step</InputLabel>
+                    <Typography variant="overline" display="block" gutterBottom>Step</Typography>
                     <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
+                    value={detailStep}
                     >
                     <MenuItem value={1}>Assigned</MenuItem>
                     <MenuItem value={2}>Ongoing</MenuItem>

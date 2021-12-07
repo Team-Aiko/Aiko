@@ -8,13 +8,13 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import SocketService from 'src/services/socket.service';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import { AikoError } from 'src/Helpers';
+import PrivateChatService from 'src/services/privateChat.service';
 
 @WebSocketGateway({ cors: true, namespace: 'private-chat' })
 export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-    constructor(private socketService: SocketService) {}
+    constructor(private privateChatService: PrivateChatService) {}
 
     @WebSocketServer()
     private readonly wss: Server;
@@ -30,7 +30,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             // null data filter
             if (!userInfo) return;
 
-            const roomList = await this.socketService.connectPrivateChat(client.id, userInfo);
+            const roomList = await this.privateChatService.connectPrivateChat(client.id, userInfo);
 
             roomList.forEach((room) => client.join(room.CR_PK));
 
@@ -46,7 +46,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             // null data filter
             if (!payload) return;
 
-            await this.socketService.sendMessage(payload);
+            await this.privateChatService.sendMessage(payload);
             this.wss.to(payload.roomId).emit(privateChatPath.CLIENT_SEND, payload);
         } catch (err) {
             if (err instanceof AikoError) throw err;
@@ -59,7 +59,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             // null data filter
             if (!roomId) return;
 
-            const chatlog = await this.socketService.getChalog(roomId);
+            const chatlog = await this.privateChatService.getChalog(roomId);
             this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
         } catch (err) {
             if (err instanceof AikoError) throw err;

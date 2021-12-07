@@ -5,6 +5,7 @@ import * as config from 'config';
 import { AccountModule, FileModule, CompanyModule, MeetingModule, NoticeBoardModule, SocketModule } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    GroupChatRoom,
     UserProfileFile,
     Grant,
     AuthListTable,
@@ -31,12 +32,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
+import GroupChatUserList from './entity/groupChatUserList.entity';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        GroupChatUserList,
+        GroupChatRoom,
         UserProfileFile,
         CalledMembers,
         Meet,

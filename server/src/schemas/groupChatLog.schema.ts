@@ -2,17 +2,20 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
-export class PrivateChatlog {
+export class GroupChatLog {
     @Prop({ required: true })
-    roomId: string;
+    GC_PK: number;
+
     @Prop({ required: true })
-    messages: {
+    companyPK: number;
+
+    @Prop({ required: true })
+    chatLog: {
         sender: number;
         file: number;
         message: string;
-        date: number;
     }[];
 }
 
-export type PrivateChatlogDocument = PrivateChatlog & Document;
-export const PrivateChatlogSchema = SchemaFactory.createForClass(PrivateChatlog);
+export type GroupChatLogDocument = Document & GroupChatLog;
+export const groupChatLogSchema = SchemaFactory.createForClass(GroupChatLog);

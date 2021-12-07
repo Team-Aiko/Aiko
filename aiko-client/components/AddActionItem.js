@@ -87,14 +87,6 @@ const AddActionItem = ({setAddActionItemModal}) => {
         console.log(title);
     };
 
-    const priorityChange = (e) => {
-        setPriority(e.target.value);
-    };
-
-    const stepChange = (e) => {
-        setStep(e.target.value)
-    };
-
     const startDateChange = (e) => {
         setStartDate(Math.floor(new Date().getTime(e.target.value) / 1000));
         console.log(startDate);
@@ -133,6 +125,7 @@ const AddActionItem = ({setAddActionItemModal}) => {
         post(url, data)
             .then((res) => {
                 console.log(res);
+                console.log(data);
                 setAddActionItemModal(false);
             })
             .catch((error) => {
@@ -162,25 +155,23 @@ const AddActionItem = ({setAddActionItemModal}) => {
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={priority}
-                    onChange={priorityChange}
                     >
-                    <MenuItem value={1}>High</MenuItem>
-                    <MenuItem value={2}>Normal</MenuItem>
-                    <MenuItem value={3}>Low</MenuItem>
+                    <MenuItem value={1} onClick={() => {setPriority(1)}}>High</MenuItem>
+                    <MenuItem value={2} onClick={() => {setPriority(2)}}>Normal</MenuItem>
+                    <MenuItem value={3} onClick={() => {setPriority(3)}}>Low</MenuItem>
                     </Select>
 
                 </FormControl>
                     <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Step</InputLabel>
                     <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={step}
-                    onChange={stepChange}
                     >
-                    <MenuItem value={1}>Assigned</MenuItem>
-                    <MenuItem value={2}>Ongoing</MenuItem>
-                    <MenuItem value={3}>Done</MenuItem>
+                    <MenuItem value={1} onClick={() => {setStep(1)}}>Assigned</MenuItem>
+                    <MenuItem value={2} onClick={() => {setStep(2)}}>Ongoing</MenuItem>
+                    <MenuItem value={3} onClick={() => {setStep(3)}}>Done</MenuItem>
                     </Select>
                 </FormControl>
                 </div>

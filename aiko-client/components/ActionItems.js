@@ -6,7 +6,8 @@ import AddActionItem from './AddActionItem.js';
 import ActionItemDetail from './ActionItemDetail.js';
 import {get, post} from '../_axios';
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination,
-        TableFooter} from '@material-ui/core';
+        TableFooter, Tooltip, IconButton} from '@material-ui/core';
+import PageviewIcon from '@material-ui/icons/Pageview';
 
 
 const useStyles = makeStyles({
@@ -149,7 +150,13 @@ const ActionItems = () => {
                     <TableCell align="right">{getUnixTime(row.START_DATE)}</TableCell>
                     <TableCell align="right">{getUnixTime(row.DUE_DATE)}</TableCell>
                     <TableCell align="right">
-                    <Button onClick={() => openDetailModal(key)}>Detail</Button>
+
+                    <Tooltip title="View details">
+                        <IconButton>
+                            <PageviewIcon onClick={() => openDetailModal(key)}/>
+                        </IconButton>
+                    </Tooltip>
+
                     </TableCell>
                 </TableRow>
             ))}
