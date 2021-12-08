@@ -28,18 +28,33 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     afterInit(server: any) {
         this.logger.log('group-chat gateway initialized');
     }
+
+    /**
+     * 소켓을 연결하는 이벤트
+     * 자신이 속한 그룹챗방 리스트를 클라이언트로 보낸다.
+     * @param client
+     * @param userInfo
+     * @returns
+     */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, userInfo: User) {
         try {
             if (!client) return;
 
             console.log('groupChat connection clientId : ', client.id);
-            await this.groupChatService.addClientForGroupChat(client.id, userInfo);
+            const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userInfo);
+            const groupChatRooms = await this.groupChatService.findChatRooms(userInfo);
+
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_CONNECTED, groupChatRooms);
         } catch (err) {
             console.error(err);
         }
     }
 
+    /**
+     * 소켓 연결을 해제하는 이벤트
+     * @returns
+     */
     @SubscribeMessage(groupChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         try {
@@ -51,6 +66,9 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         }
     }
 
+    /**
+     * 그룹챗방을 생성하는 이벤트
+     */
     @SubscribeMessage(groupChatPath.CREATE_GROUP_CHAT_ROOM)
     async createGroupChatRoom(
         client: Socket,
@@ -85,9 +103,11 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         try {
             if (!client) return;
 
-            const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+            const { COMPANY_PK } = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
 
-            client.join(`company:${userInfo.COMPANY_PK}-${GC_PK}`);
+            // 해당 채팅룸에 조인하는 프로세스
+            client.join(`company:${COMPANY_PK}-${GC_PK}`);
+            // 조인이 완료됨을 보냄.
             this.wss.to(client.id).emit(groupChatPath.CLIENT_JOINED_GCR, true);
         } catch (err) {
             console.error(err);

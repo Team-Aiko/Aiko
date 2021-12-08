@@ -59,6 +59,8 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         }
     }
 
+    // TODO: 로그아웃된 유저의 정보도 필요하므로 전체 유저정보를 호출하는 이벤트가 필요할 것으로 보임.
+
     /**
      * 1. 소켓 커넥션을 종료하여 오프라인 상태로 변경한다.
      * 2. 5분간의 로그인 유예상태를 준다. 왜냐하면 페이지 변경시 소켓 연결이 끊기기 때문이다.

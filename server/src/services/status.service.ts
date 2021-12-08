@@ -49,7 +49,7 @@ export default class StatusService {
 
             await this.updateStatus(newUserContainer);
 
-            const isSendable = userContainer.logoutPending;
+            const isSendable = !userContainer.logoutPending;
 
             return { isSendable, user: newUserContainer };
         } catch (err) {
@@ -84,7 +84,7 @@ export default class StatusService {
                             .except(socketClient.id)
                             .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
                     }
-                }, 1000 * 60 * 5); // 5분간격
+                }, 1000 * 10); // 5분간격
 
                 await this.updateStatus({
                     userPK: userStatus.userPK,

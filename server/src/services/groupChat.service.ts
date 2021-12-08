@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/entity';
-import { getRepo } from 'src/Helpers';
+import { AikoError, getRepo } from 'src/Helpers';
 import { Server } from 'socket.io';
 import { GroupChatRoomRepository, UserRepository } from 'src/mapper';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 import { getConnection } from 'typeorm';
+import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 
 @Injectable()
 export default class GroupChatService {
@@ -15,16 +16,16 @@ export default class GroupChatService {
         @InjectModel(GroupChatClientInfo.name) private groupChatClientModel: Model<GroupChatClientInfoDocument>,
     ) {}
 
-    async addClientForGroupChat(clientId: string, userInfo: User) {
+    async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: User) {
         try {
-            const pack = {
-                clientId,
-                userPK: userInfo.USER_PK,
-                companyPK: userInfo.COMPANY_PK,
-            };
-            const dto = new this.groupChatClientModel(pack);
-            await this.groupChatClientModel.create(pack);
-            await dto.save();
+            let clientInfo = await this.findGroupChatClient(USER_PK);
+
+            if (clientInfo.userPK) {
+                await this.insertGroupChatClientInfo(USER_PK, COMPANY_PK, clientId);
+                clientInfo = await this.findGroupChatClient(USER_PK);
+            }
+
+            return clientInfo;
         } catch (err) {
             console.error(err);
             throw err;
@@ -89,6 +90,16 @@ export default class GroupChatService {
         }
     }
 
+    async findChatRooms({ USER_PK }: User) {
+        try {
+            const groupChatRooms = await getRepo(GroupChatUserListRepository).findChatRooms(USER_PK);
+            return groupChatRooms;
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
     async sendMessageToGroup(payload: { GC_PK: number; sender: number; file: number; message: string }, wss: Server) {
         try {
         } catch (err) {
@@ -102,6 +113,32 @@ export default class GroupChatService {
         } catch (err) {
             console.error(err);
             throw err;
+        }
+    }
+
+    // * util functions
+    async insertGroupChatClientInfo(userPK: number, companyPK: number, clientId: string) {
+        try {
+            const pack = {
+                clientId,
+                userPK,
+                companyPK,
+            };
+
+            const dto = new this.groupChatClientModel(pack);
+            await this.groupChatClientModel.create(pack);
+            await dto.save();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/insertGroupChatClientInfo', 0, 696022);
+        }
+    }
+    async findGroupChatClient(userPK: number) {
+        try {
+            return (await this.groupChatClientModel.findOne({ userPK }).exec()) as GroupChatClientInfo;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/findGroupChatClient', 0, 812293);
         }
     }
 }
