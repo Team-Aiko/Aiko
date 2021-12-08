@@ -26,9 +26,11 @@ export enum groupChatPath {
     CLIENT_CONNECTED = 'client/gc/connected',
     CLIENT_JOIN_ROOM_NOTICE = 'client/gc/join-room-notice',
     CLIENT_JOINED_GCR = 'client/gc/joined_gcr',
+    CLIENT_READ_CHAT_LOGS = 'client/gc/read-chat-logs',
     CLIENT_SEND_MESSAGE = 'client/gc/send-message',
     SERVER_JOIN_GROUP_CHAT_ROOM = 'server/gc/join-group-chat-room',
     SERVER_SEND_MESSAGE = 'server/gc/send-message',
+    SERVER_READ_CHAT_LOGS = 'server/gc/read-chat-logs',
     TEST_ADD_NEW_CLIENT = 'test/gc/add-new-client',
 }
 

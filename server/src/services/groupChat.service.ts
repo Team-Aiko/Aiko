@@ -9,11 +9,18 @@ import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 import { getConnection } from 'typeorm';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
+import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
 
+// mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
+
+/**
+ * 그룹채팅의 비즈니스 로직을 담당하는 서비스 클래스
+ */
 @Injectable()
 export default class GroupChatService {
     constructor(
         @InjectModel(GroupChatClientInfo.name) private groupChatClientModel: Model<GroupChatClientInfoDocument>,
+        @InjectModel(GroupChatLog.name) private groupChatLogModel: Model<GroupChatLogDocument>,
     ) {}
 
     async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: User) {
@@ -46,6 +53,7 @@ export default class GroupChatService {
         roomTitle: string;
         maxNum: number;
     }) {
+        let GC_PK = 0;
         const connection = getConnection();
         const queryRunner = connection.createQueryRunner();
         await queryRunner.connect();
@@ -60,14 +68,16 @@ export default class GroupChatService {
                 .where('u.USER_PK IN (:...userList)', { userList: userList })
                 .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: adminInfo.COMPANY_PK })
                 .getMany();
-            // 그룹챗 룸생성
-            const GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
+            // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
+            GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
                 admin,
                 roomTitle,
                 maxNum,
                 queryRunner.manager,
             );
-            // 생성된 그룹챗룸에 적합한 유저를 초대
+            await this.createChatRoom(GC_PK, adminInfo.COMPANY_PK);
+
+            // 생성된 그룹챗룸에 적합한 유저를 초대 (rdb에 추가)
             await getRepo(GroupChatUserListRepository).insertUserListInNewGroupChatRoom(
                 GC_PK,
                 verifiedList.map((user) => user.USER_PK),
@@ -83,6 +93,7 @@ export default class GroupChatService {
 
             return { memberList, GC_PK, COMPANY_PK: adminInfo.COMPANY_PK };
         } catch (err) {
+            await this.deleteChatRoom(GC_PK);
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
@@ -116,18 +127,24 @@ export default class GroupChatService {
         }
     }
 
+    async readChatLogs(GC_PK: number) {
+        try {
+            return await this.findGroupChatLogs(GC_PK);
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
     // * util functions
     async insertGroupChatClientInfo(userPK: number, companyPK: number, clientId: string) {
         try {
-            const pack = {
+            const dto = new this.groupChatClientModel({
                 clientId,
                 userPK,
                 companyPK,
-            };
-
-            const dto = new this.groupChatClientModel(pack);
-            await this.groupChatClientModel.create(pack);
-            await dto.save();
+            });
+            await this.groupChatClientModel.create(dto);
         } catch (err) {
             console.error(err);
             throw new AikoError('groupChatService/insertGroupChatClientInfo', 0, 696022);
@@ -139,6 +156,33 @@ export default class GroupChatService {
         } catch (err) {
             console.error(err);
             throw new AikoError('groupChatService/findGroupChatClient', 0, 812293);
+        }
+    }
+
+    async findGroupChatLogs(GC_PK: number) {
+        try {
+            return (await this.groupChatLogModel.findOne({ GC_PK }).exec()) as GroupChatLog;
+        } catch (err) {
+            throw new AikoError('groupChatService/findGroupChatLogs', 0, 812294);
+        }
+    }
+
+    async createChatRoom(GC_PK: number, companyPK: number) {
+        try {
+            const dto = new this.groupChatLogModel({ GC_PK, companyPK, chatLog: [] });
+            await this.groupChatLogModel.create(dto);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/createChatRoom', 0, 982819);
+        }
+    }
+
+    async deleteChatRoom(GC_PK: number) {
+        try {
+            await this.groupChatLogModel.findOneAndDelete({ GC_PK }).exec();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/createChatRoom', 0, 982820);
         }
     }
 }
