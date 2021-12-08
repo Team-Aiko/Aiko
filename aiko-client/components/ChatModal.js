@@ -10,9 +10,11 @@ import {
     TextField,
     ThemeProvider,
     unstable_createMuiStrictModeTheme,
+    Avatar,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { get, post } from '../_axios';
+import { useSelector, useDispatch } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
     dialogPaper: {
@@ -67,6 +69,7 @@ export default function ChatModal(props) {
     const classes = useStyles();
     const { open, onClose } = props;
     const theme = unstable_createMuiStrictModeTheme();
+    const memberList = useSelector((state) => state.memberReducer);
 
     return (
         <ThemeProvider theme={theme}>
@@ -75,6 +78,23 @@ export default function ChatModal(props) {
                     <Toolbar classes={{ root: classes.memberToolbar }}>
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
+                    <div className={styles['member-list']}>
+                        {memberList &&
+                            memberList.map((member) => {
+                                return (
+                                    <div className={styles['member-item']} key={member.USER_PK}>
+                                        <div className={styles['member-user-wrapper']}>
+                                            <Avatar style={{ width: '30px', height: '30px', marginRight: '4px' }} />
+                                            <Typography>{member.NICKNAME}</Typography>
+                                        </div>
+                                        <div
+                                            className={styles['member-status']}
+                                            style={member.status === 1 ? { backgroundColor: '#2196f3' } : null}
+                                        ></div>
+                                    </div>
+                                );
+                            })}
+                    </div>
                 </div>
                 <div className={styles['message-container']}>
                     <Toolbar classes={{ root: classes.toolbar }}>
