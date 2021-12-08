@@ -35,7 +35,7 @@ export function usrPayloadParser(request: Request) {
     return JSON.parse(unparsedUserPayload as string) as IUserPayload;
 }
 
-export function usrPayloadParser2(accessToken: string) {
+export function tokenParser(accessToken: string) {
     try {
         return jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
     } catch (err) {
