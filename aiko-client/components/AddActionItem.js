@@ -4,10 +4,10 @@ import {Modal, TextField, Button, Typography, FormControl, InputLabel, Select, M
 import SaveIcon from '@material-ui/icons/Save';
 import {useState, useEffect} from 'react';
 import {get, post} from '../_axios';
-import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+    
+root: {
     height: 530,
     flexGrow: 1,
     minWidth: 300,
@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     // The position fixed scoping doesn't work in IE 11.
     // Disable this demo to preserve the others.
     '@media all and (-ms-high-contrast: none)': {
-      display: 'none',
+    display: 'none',
     },
   },
   modal: {
@@ -88,12 +88,12 @@ const AddActionItem = ({setAddActionItemModal}) => {
     };
 
     const startDateChange = (e) => {
-        setStartDate(Math.floor(new Date().getTime(e.target.value) / 1000));
+        setStartDate(Math.floor(new Date(e.target.value).getTime() / 1000));
         console.log(startDate);
     };
 
     const dueDateChange = (e) => {
-        setDueDate(Math.floor(new Date().getTime(e.target.value) / 1000));
+        setDueDate(Math.floor(new Date(e.target.value).getTime() / 1000));
         console.log(dueDate);
     };
 
@@ -121,6 +121,14 @@ const AddActionItem = ({setAddActionItemModal}) => {
             START_DATE: startDate,
             P_PK: priority,
             STEP_PK: step,
+        };
+        if(title.length < 1) {
+            alert('제목을 입력해주세요.');
+            return;
+        };
+        if(description.length < 1) {
+            alert('상세 설명이 필요합니다.');
+            return;
         };
         post(url, data)
             .then((res) => {
