@@ -3,10 +3,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
-import PropTypes from 'prop-types';
-import ChatComp from './ChatComp';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
+import ChatModal from '../../ChatModal';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -29,9 +28,10 @@ function PComp(props) {
     const { userInfo } = props;
     const { USER_PK } = userInfo;
     const [visibility, setVisibility] = useState(false);
+    const [openChatModal, setOpenChatModal] = useState(false);
 
-    const handleChatBox = () => {
-        setVisibility(!visibility);
+    const handleChatModal = () => {
+        setOpenChatModal(true);
     };
 
     const handleSocket = useCallback(() => {
@@ -50,12 +50,17 @@ function PComp(props) {
         <>
             {userInfo.USER_PK ? (
                 <>
-                    {visibility ? <ChatComp /> : null}
-                    <Tooltip title='Add' aria-label='chat' onClick={handleChatBox}>
+                    <Tooltip title='Add' aria-label='chat' onClick={handleChatModal}>
                         <Fab color='secondary' className={classes.absolute}>
                             <AddIcon />
                         </Fab>
                     </Tooltip>
+                    <ChatModal
+                        open={openChatModal}
+                        onClose={() => {
+                            setOpenChatModal(false);
+                        }}
+                    />
                 </>
             ) : undefined}
         </>

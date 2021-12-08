@@ -95,12 +95,13 @@ export default class WorkController {
         if (numOrNaN && numOrNaN > 0) USER_PK = numOrNaN;
 
         const bundle: IPaginationBundle = {
-            USER_PK,
+            USER_PK: Number(id) || USER_PK,
             COMPANY_PK,
-            currentPage: Number(currentPage) | 1,
-            feedsPerPage: Number(feedsPerPage) | 10,
-            groupCnt: Number(groupCnt) | 5,
+            currentPage: Number(currentPage) || 1,
+            feedsPerPage: Number(feedsPerPage) || 10,
+            groupCnt: Number(groupCnt) || 5,
         };
+        console.log('🚀 ~ file: work.controller.ts ~ line 98 ~ WorkController ~ viewItems ~ bundle', bundle);
 
         try {
             const result = await this.workService.viewItems(bundle);
