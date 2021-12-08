@@ -63,37 +63,35 @@ export default class StatusService {
 
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketClient.id);
-            if (userStatus?.userPK) {
-                setTimeout(async () => {
-                    // delete process
-                    console.log('logout process executed');
-                    const user = await this.getUserStatusWithSocketId(socketClient.id);
+            // early case split
+            if (!userStatus) return;
 
-                    console.log(
-                        '🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus',
-                        user,
-                    );
+            setTimeout(async () => {
+                // delete process
+                console.log('logout process executed');
+                const user = await this.getUserStatusWithSocketId(socketClient.id);
 
-                    if (user.logoutPending) {
-                        console.log('안됨???');
-                        user.status = -1;
-                        user.logoutPending = false;
+                console.log('🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus', user);
 
-                        await this.updateStatus(user);
-                        wss.to(`company:${user.companyPK}`)
-                            .except(socketClient.id)
-                            .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
-                    }
-                }, 1000 * 10); // 5분간격
+                if (user?.logoutPending) {
+                    console.log('안됨???');
+                    user.status = -1;
+                    user.logoutPending = false;
 
-                await this.updateStatus({
-                    userPK: userStatus.userPK,
-                    companyPK: userStatus.companyPK,
-                    socketId: socketClient.id,
-                    logoutPending: true,
-                    status: userStatus.status,
-                });
-            }
+                    await this.updateStatus(user);
+                    wss.to(`company:${user.companyPK}`)
+                        .except(socketClient.id)
+                        .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
+                }
+            }, 1000 * 10); // 5분간격
+
+            await this.updateStatus({
+                userPK: userStatus.userPK,
+                companyPK: userStatus.companyPK,
+                socketId: socketClient.id,
+                logoutPending: true,
+                status: userStatus.status,
+            });
         } catch (err) {
             console.error(err);
             if (err instanceof AikoError) throw err;
