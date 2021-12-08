@@ -200,6 +200,8 @@ export default class CompanyController {
         }
     }
 
+    @UseGuards(UserGuard)
+    @Get('member-list')
     async getCompanyMemberList(@Req() req: Request, @Res() res: Response) {
         try {
             const { COMPANY_PK } = usrPayloadParser(req);
