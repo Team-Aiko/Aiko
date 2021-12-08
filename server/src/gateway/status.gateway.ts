@@ -13,6 +13,7 @@ import { AikoError, unknownError } from 'src/Helpers';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
 import { UserGuard } from 'src/guard/user.guard';
+import { getSocketErrorPacket } from 'src/Helpers/functions';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -59,8 +60,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                 this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
             }
         } catch (err) {
-            console.error('handleConnection error: ', err);
-            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+            this.wss
+                .to(client.id)
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, userPayload));
         }
     }
 
@@ -81,7 +83,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             console.log('client ID = ', client.id, 'status socket disconnection');
             this.statusService.statusDisconnect(client, this.wss);
         } catch (err) {
-            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+            this.wss
+                .to(client.id)
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_DISCONNECT, err, undefined));
         }
     }
 
@@ -106,7 +110,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                 .except(client.id)
                 .emit(statusPath.CLIENT_CHANGE_STATUS, result);
         } catch (err) {
-            this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
+            this.wss
+                .to(client.id)
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, userStatus));
         }
     }
 }

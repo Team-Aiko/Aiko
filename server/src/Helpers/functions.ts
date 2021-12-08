@@ -11,6 +11,7 @@ import { typeMismatchError } from './instance';
 import { type } from 'os';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
+import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
 
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
@@ -42,6 +43,16 @@ export function tokenParser(accessToken: string) {
         console.error(err);
         throw new AikoError('invalid access token', 0, 190241);
     }
+}
+
+export function getSocketErrorPacket<T>(path: string, err: Error, originalData: T) {
+    const errorPacket: IErrorPacket<T> = {
+        path,
+        err,
+        originalData,
+    };
+
+    return errorPacket;
 }
 
 export function getRepo<T>(customRepo: ObjectType<T>) {
