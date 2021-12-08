@@ -199,4 +199,14 @@ export default class CompanyController {
             throw resExecutor(res, { err });
         }
     }
+
+    async getCompanyMemberList(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.companyService.getCompanyMemberList(COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }
