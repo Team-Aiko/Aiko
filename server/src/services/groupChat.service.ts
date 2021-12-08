@@ -8,8 +8,11 @@ import { GroupChatRoomRepository, UserRepository } from 'src/mapper';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 import { getConnection } from 'typeorm';
+import * as jwt from 'jsonwebtoken';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
+import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 // mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
 
@@ -47,11 +50,13 @@ export default class GroupChatService {
         admin,
         roomTitle,
         maxNum,
+        accessToken,
     }: {
         userList: number[];
         admin: number;
         roomTitle: string;
         maxNum: number;
+        accessToken: string;
     }) {
         let GC_PK = 0;
         const connection = getConnection();
@@ -60,14 +65,16 @@ export default class GroupChatService {
         await queryRunner.startTransaction();
 
         try {
-            // admin의 유저정보 셀렉트(회사키를 이용)
-            const adminInfo = await getRepo(UserRepository).getUserInfoWithUserPK(admin);
+            // verify accessToken
+            const { COMPANY_PK } = jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
+
             // 해당 회사키로 초대유저 적합성 판단
             const verifiedList = await connection
                 .createQueryBuilder(User, 'u')
-                .where('u.USER_PK IN (:...userList)', { userList: userList })
-                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: adminInfo.COMPANY_PK })
+                .where('u.USER_PK IN (:...userList)', { userList })
+                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .getMany();
+
             // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
             GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
                 admin,
@@ -75,7 +82,7 @@ export default class GroupChatService {
                 maxNum,
                 queryRunner.manager,
             );
-            await this.createChatRoom(GC_PK, adminInfo.COMPANY_PK);
+            await this.createChatRoom(GC_PK, COMPANY_PK);
 
             // 생성된 그룹챗룸에 적합한 유저를 초대 (rdb에 추가)
             await getRepo(GroupChatUserListRepository).insertUserListInNewGroupChatRoom(
@@ -91,7 +98,7 @@ export default class GroupChatService {
                 .in(userList)
                 .select('clientId userPK companyPK')) as GroupChatClientInfo[];
 
-            return { memberList, GC_PK, COMPANY_PK: adminInfo.COMPANY_PK };
+            return { memberList, GC_PK, COMPANY_PK };
         } catch (err) {
             await this.deleteChatRoom(GC_PK);
             await queryRunner.rollbackTransaction();

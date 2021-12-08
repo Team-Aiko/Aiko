@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { User } from 'src/entity';
 import { UserGuard } from 'src/guard/user.guard';
-import { getRepo } from 'src/Helpers';
+import { AikoError, getRepo } from 'src/Helpers';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { UserRepository } from 'src/mapper';
 import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
@@ -80,7 +80,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             admin,
             roomTitle,
             maxNum,
-        }: { userList: number[]; admin: number; roomTitle: string; maxNum: number },
+            accessToken,
+        }: { userList: number[]; admin: number; roomTitle: string; maxNum: number; accessToken: string },
     ) {
         try {
             if (!client) return;
@@ -91,6 +92,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 admin,
                 roomTitle,
                 maxNum,
+                accessToken,
             });
 
             memberList.forEach((member) => {
@@ -98,6 +100,13 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             });
         } catch (err) {
             console.error(err);
+            let error: AikoError;
+
+            if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError')
+                error = new AikoError(err.name, 0, 120342);
+            else error = err;
+
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, error);
         }
     }
 
