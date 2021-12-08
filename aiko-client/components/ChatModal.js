@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../styles/components/ChatModal.module.css';
 import {
     Button,
@@ -12,6 +12,7 @@ import {
     unstable_createMuiStrictModeTheme,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+import { get, post } from '../_axios';
 
 const useStyles = makeStyles((theme) => ({
     dialogPaper: {

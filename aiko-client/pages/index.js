@@ -10,11 +10,27 @@ import ChatModal from '../components/ChatModal';
 import io from 'socket.io-client';
 import { useSelector, useDispatch } from 'react-redux';
 import { get } from '../_axios';
+import { setMember } from '../_redux/memberReducer';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
+    const memberList = useSelector((state) => state.memberReducer);
     console.log('🚀 ~ file: index.js ~ line 16 ~ CComp ~ userInfo', userInfo);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (userInfo.USER_PK) {
+            loadMemberList();
+        }
+    }, [userInfo]);
+
+    const loadMemberList = () => {
+        const url = '/api/company/member-list';
+
+        get(url).then((result) => {
+            dispatch(setMember(result));
+        });
+    };
 
     return <PComp userInfo={userInfo} />;
 }

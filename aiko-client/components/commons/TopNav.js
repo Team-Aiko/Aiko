@@ -25,6 +25,7 @@ import PropTypes from 'prop-types';
 import { get } from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo } from '../../_redux/accountReducer';
+import { setMember } from '../../_redux/memberReducer';
 import SideNav from './SideNav';
 import router from 'next/router';
 
@@ -97,6 +98,7 @@ const useStyles = makeStyles((theme) => ({
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
+    const memberList = useSelector((state) => state.memberReducer);
 
     const handleNav = (bools) => {
         dispatch(handleSideNav(bools));
@@ -114,13 +116,15 @@ export default function CComp() {
                 dispatch(
                     setUserInfo({
                         COMPANY_PK: undefined, // number
-                        DEPARTMENT_NAME: '',
                         DEPARTMENT_PK: undefined, // number
-                        EMAIL: '',
-                        NICKNAME: undefined, // string
+                        COUNTRY_PK: undefined, // number
                         USER_PK: undefined, // number
+                        NICKNAME: undefined, // string
+                        USER_PROFILE_PK: undefined, // number
+                        grants: [],
                     }),
                 );
+                dispatch(setMember([]));
 
                 Router.push('/');
             } catch (e) {

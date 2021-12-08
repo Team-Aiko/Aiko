@@ -8,6 +8,7 @@ const initialState = {
     COUNTRY_PK: undefined, // number
     USER_PK: undefined, // number
     NICKNAME: undefined, // string
+    USER_PROFILE_PK: undefined, //number
     grants: [], // Grant[] . /server/entity/grant.entity.ts 참조
 };
 
