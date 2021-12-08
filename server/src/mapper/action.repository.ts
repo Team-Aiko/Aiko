@@ -26,7 +26,7 @@ export default class ActionRepository extends Repository<Action> {
                     DEPARTMENT_PK: bundle.DEPARTMENT_PK,
                     USER_PK: bundle.USER_PK,
                     P_PK: bundle.P_PK,
-                    STEP_PK: 1,
+                    STEP_PK: bundle.STEP_PK,
                     TITLE: bundle.TITLE,
                     DESCRIPTION: bundle.DESCRIPTION,
                     START_DATE: bundle.START_DATE,
