@@ -167,4 +167,12 @@ export default class CompanyService {
             return false;
         }
     }
+
+    async getCompanyMemberList(companyPK: number) {
+        try {
+            return await getRepo(UserRepository).getCompanyMemberList(companyPK);
+        } catch (err) {
+            throw err;
+        }
+    }
 }

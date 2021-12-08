@@ -14,18 +14,7 @@ import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
-const criticalUserInfo = [
-    'PASSWORD',
-    'SALT',
-    'EMAIL',
-    'FIRST_NAME',
-    'LAST_NAME',
-    'TEL',
-    'IS_VERIFIED',
-    'IS_DELETED',
-    'CREATE_DATE',
-    'PROFILE_FILE_NAME',
-];
+const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -245,6 +234,21 @@ export default class UserRepository extends Repository<User> {
         } catch (err) {
             console.error(err);
             throw new AikoError('user/getUserInfoWithUserPKAndCompanyPK', 500, 100203);
+        }
+    }
+
+    async getCompanyMemberList(COMPANY_PK: number) {
+        try {
+            const memberList = await this.createQueryBuilder('u')
+                .leftJoinAndSelect('u.company', 'c')
+                .leftJoinAndSelect('u.department', 'd')
+                .where('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getMany();
+
+            return memberList.map((member) => propsRemover(member, ...criticalUserInfo));
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('user/getCompanyMemberList', 500, 1023894);
         }
     }
 }
