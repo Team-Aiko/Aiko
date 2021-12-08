@@ -16,7 +16,6 @@ import { UserRepository } from 'src/mapper';
 import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
 import GroupChatService from 'src/services/groupChat.service';
 
-@UseGuards(UserGuard)
 @WebSocketGateway({ cors: true, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
@@ -31,7 +30,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
 
     /**
      * 소켓을 연결하는 이벤트
-     * 자신이 속한 그룹챗방 리스트를 클라이언트로 보낸다.
+     * 자신이 속한 그룹챗방 리스트를 rdb로부터 받아오고 방에 조인시킨 뒤 그 리스트를 클라이언트로 보낸다.
      * @param client
      * @param userInfo
      * @returns
@@ -44,6 +43,10 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             console.log('groupChat connection clientId : ', client.id);
             const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userInfo);
             const groupChatRooms = await this.groupChatService.findChatRooms(userInfo);
+
+            groupChatRooms.forEach(({ GC_PK }) => {
+                client.join(`company:${userInfo.COMPANY_PK}-${GC_PK}`);
+            });
 
             this.wss.to(client.id).emit(groupChatPath.CLIENT_CONNECTED, groupChatRooms);
         } catch (err) {
@@ -98,6 +101,9 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         }
     }
 
+    /**
+     * 새로 생성된 방에 추가로 조인하는 이벤트
+     */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
     async joinGroupChatRoom(client: Socket, { GC_PK, userPK }: { GC_PK: number; userPK: number }) {
         try {
@@ -114,6 +120,9 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         }
     }
 
+    /**
+     * 특정 그룹챗방에 메세지를 보내는 이벤트
+     */
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
     async sendMessageToGroup(
         client: Socket,
@@ -123,6 +132,21 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!client) return;
 
             await this.groupChatService.sendMessageToGroup(payload, this.wss);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    /**
+     * 특정 그룹채팅방의 챗로그를 불러오는 이벤트
+     */
+    @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
+    async readChatLogs(client: Socket, payload: { GC_PK: number; companyPK: number }) {
+        try {
+            if (!payload) return;
+
+            const chatLogs = await this.groupChatService.readChatLogs(payload.GC_PK);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, chatLogs);
         } catch (err) {
             console.error(err);
         }

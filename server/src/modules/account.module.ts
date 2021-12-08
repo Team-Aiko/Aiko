@@ -13,6 +13,7 @@ import { GroupChatClientInfo, GroupChatClientInfoSchema } from 'src/schemas/grou
 import PrivateChatService from 'src/services/privateChat.service';
 import GroupChatService from 'src/services/groupChat.service';
 import StatusService from 'src/services/status.service';
+import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schema';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import StatusService from 'src/services/status.service';
             { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
             { name: Status.name, schema: StatusSchema },
             { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
+            { name: GroupChatLog.name, schema: groupChatLogSchema },
         ]),
     ],
     controllers: [AccountController],

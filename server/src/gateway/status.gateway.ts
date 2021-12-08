@@ -6,12 +6,13 @@ import {
     OnGatewayDisconnect,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { AikoError, unknownError } from 'src/Helpers';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
+import { UserGuard } from 'src/guard/user.guard';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
