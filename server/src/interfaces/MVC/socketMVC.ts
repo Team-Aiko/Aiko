@@ -51,3 +51,9 @@ export interface IGMessagePayload {
     file?: number;
     date: number;
 }
+
+export interface IErrorPacket<T> {
+    path: string;
+    err: Error;
+    originalData: T;
+}

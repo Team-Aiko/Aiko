@@ -13,6 +13,7 @@ import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { tokenParser } from 'src/Helpers/functions';
 
 // mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
 
@@ -26,7 +27,7 @@ export default class GroupChatService {
         @InjectModel(GroupChatLog.name) private groupChatLogModel: Model<GroupChatLogDocument>,
     ) {}
 
-    async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: User) {
+    async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: IUserPayload) {
         try {
             let clientInfo = await this.findGroupChatClient(USER_PK);
 
@@ -66,7 +67,7 @@ export default class GroupChatService {
 
         try {
             // verify accessToken
-            const { COMPANY_PK } = jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
+            const { COMPANY_PK } = tokenParser(accessToken);
 
             // 해당 회사키로 초대유저 적합성 판단
             const verifiedList = await connection
@@ -108,7 +109,7 @@ export default class GroupChatService {
         }
     }
 
-    async findChatRooms({ USER_PK }: User) {
+    async findChatRooms({ USER_PK }: IUserPayload) {
         try {
             const groupChatRooms = await getRepo(GroupChatUserListRepository).findChatRooms(USER_PK);
             return groupChatRooms;
@@ -118,7 +119,10 @@ export default class GroupChatService {
         }
     }
 
-    async sendMessageToGroup(payload: { GC_PK: number; sender: number; file: number; message: string }, wss: Server) {
+    async sendMessageToGroup(
+        payload: { GC_PK: number; accessToken: string; file: number; message: string },
+        wss: Server,
+    ) {
         try {
         } catch (err) {
             console.error(err);
@@ -134,9 +138,9 @@ export default class GroupChatService {
         }
     }
 
-    async readChatLogs(GC_PK: number) {
+    async readChatLogs(GC_PK: number, COMPANY_PK: number) {
         try {
-            return await this.findGroupChatLogs(GC_PK);
+            return await this.findGroupChatLogs(GC_PK, COMPANY_PK);
         } catch (err) {
             console.error(err);
             throw err;
@@ -166,9 +170,9 @@ export default class GroupChatService {
         }
     }
 
-    async findGroupChatLogs(GC_PK: number) {
+    async findGroupChatLogs(GC_PK: number, companyPK: number) {
         try {
-            return (await this.groupChatLogModel.findOne({ GC_PK }).exec()) as GroupChatLog;
+            return (await this.groupChatLogModel.findOne({ GC_PK, companyPK }).exec()) as GroupChatLog;
         } catch (err) {
             throw new AikoError('groupChatService/findGroupChatLogs', 0, 812294);
         }

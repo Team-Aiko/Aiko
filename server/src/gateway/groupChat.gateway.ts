@@ -11,7 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { User } from 'src/entity';
 import { UserGuard } from 'src/guard/user.guard';
 import { AikoError, getRepo } from 'src/Helpers';
-import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
+import { tokenParser } from 'src/Helpers/functions';
+import { groupChatPath, IErrorPacket } from 'src/interfaces/MVC/socketMVC';
 import { UserRepository } from 'src/mapper';
 import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
 import GroupChatService from 'src/services/groupChat.service';
@@ -36,21 +37,29 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * @returns
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, userInfo: User) {
+    async handleConnection(client: Socket, accessToken: string) {
         try {
-            if (!client) return;
+            if (!accessToken) return;
+
+            const userPayload = tokenParser(accessToken);
 
             console.log('groupChat connection clientId : ', client.id);
-            const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userInfo);
-            const groupChatRooms = await this.groupChatService.findChatRooms(userInfo);
+            const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            const groupChatRooms = await this.groupChatService.findChatRooms(userPayload);
 
             groupChatRooms.forEach(({ GC_PK }) => {
-                client.join(`company:${userInfo.COMPANY_PK}-${GC_PK}`);
+                client.join(`company:${userPayload.COMPANY_PK}-${GC_PK}`);
             });
 
             this.wss.to(client.id).emit(groupChatPath.CLIENT_CONNECTED, groupChatRooms);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<string> = {
+                path: groupChatPath.HANDLE_CONNECTION,
+                err,
+                originalData: accessToken,
+            };
+
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -61,11 +70,14 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     @SubscribeMessage(groupChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         try {
-            if (!client) return;
-
             console.log('groupChat disconnect clientId : ', client.id);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<undefined> = {
+                path: groupChatPath.HANDLE_DISCONNECT,
+                err,
+                originalData: undefined,
+            };
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -84,7 +96,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         }: { userList: number[]; admin: number; roomTitle: string; maxNum: number; accessToken: string },
     ) {
         try {
-            if (!client) return;
+            if (!admin) return;
 
             console.log('createGroupChatRoom clientId : ', client.id);
             const { GC_PK, memberList, COMPANY_PK } = await this.groupChatService.createGroupChatRoom({
@@ -96,17 +108,34 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             });
 
             memberList.forEach((member) => {
-                this.wss.to(member.clientId).emit(groupChatPath.CLIENT_JOIN_ROOM_NOTICE, { GC_PK, memberList });
+                this.wss.to(member.clientId).emit(groupChatPath.CLIENT_JOIN_ROOM_NOTICE, {
+                    GC_PK,
+                    memberList,
+                    admin,
+                    roomTitle,
+                    maxNum,
+                });
             });
         } catch (err) {
-            console.error(err);
-            let error: AikoError;
+            const errorPacket: IErrorPacket<{
+                userList: number[];
+                admin: number;
+                roomTitle: string;
+                maxNum: number;
+                accessToken: string;
+            }> = {
+                path: groupChatPath.CREATE_GROUP_CHAT_ROOM,
+                err,
+                originalData: {
+                    userList,
+                    admin,
+                    roomTitle,
+                    maxNum,
+                    accessToken,
+                },
+            };
 
-            if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError')
-                error = new AikoError(err.name, 0, 120342);
-            else error = err;
-
-            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, error);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -114,18 +143,22 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 새로 생성된 방에 추가로 조인하는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
-    async joinGroupChatRoom(client: Socket, { GC_PK, userPK }: { GC_PK: number; userPK: number }) {
+    async joinGroupChatRoom(client: Socket, { GC_PK, accessToken }: { GC_PK: number; accessToken: string }) {
         try {
-            if (!client) return;
-
-            const { COMPANY_PK } = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+            if (!GC_PK) return;
+            const { COMPANY_PK } = tokenParser(accessToken);
 
             // 해당 채팅룸에 조인하는 프로세스
             client.join(`company:${COMPANY_PK}-${GC_PK}`);
             // 조인이 완료됨을 보냄.
             this.wss.to(client.id).emit(groupChatPath.CLIENT_JOINED_GCR, true);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<{ GC_PK: number; accessToken: string }> = {
+                path: groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM,
+                err,
+                originalData: { GC_PK, accessToken },
+            };
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -135,14 +168,19 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
     async sendMessageToGroup(
         client: Socket,
-        payload: { GC_PK: number; sender: number; file: number; message: string },
+        payload: { GC_PK: number; accessToken: string; file: number; message: string },
     ) {
         try {
-            if (!client) return;
+            if (!payload) return;
 
             await this.groupChatService.sendMessageToGroup(payload, this.wss);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<{ GC_PK: number; accessToken: string; file: number; message: string }> = {
+                path: groupChatPath.SERVER_SEND_MESSAGE,
+                err,
+                originalData: payload,
+            };
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -150,14 +188,20 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 특정 그룹채팅방의 챗로그를 불러오는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
-    async readChatLogs(client: Socket, payload: { GC_PK: number; companyPK: number }) {
+    async readChatLogs(client: Socket, payload: { GC_PK: number; accessToken: string }) {
         try {
             if (!payload) return;
+            const { COMPANY_PK } = tokenParser(payload.accessToken);
 
-            const chatLogs = await this.groupChatService.readChatLogs(payload.GC_PK);
+            const chatLogs = await this.groupChatService.readChatLogs(payload.GC_PK, COMPANY_PK);
             this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, chatLogs);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<{ GC_PK: number; accessToken: string }> = {
+                path: groupChatPath.SERVER_READ_CHAT_LOGS,
+                err,
+                originalData: payload,
+            };
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 
@@ -165,11 +209,16 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     @SubscribeMessage(groupChatPath.TEST_ADD_NEW_CLIENT)
     async addNewClientForGroupChat(client: Socket, userPK: number) {
         try {
-            if (!client) return;
+            if (!userPK) return;
 
             this.groupChatService.addNewClientForGroupChat(userPK);
         } catch (err) {
-            console.error(err);
+            const errorPacket: IErrorPacket<number> = {
+                path: groupChatPath.TEST_ADD_NEW_CLIENT,
+                err,
+                originalData: userPK,
+            };
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_ERROR_ALERT, errorPacket);
         }
     }
 }
