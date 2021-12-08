@@ -16,7 +16,6 @@ import { UserRepository } from 'src/mapper';
 import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
 import GroupChatService from 'src/services/groupChat.service';
 
-@UseGuards(UserGuard)
 @WebSocketGateway({ cors: true, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
