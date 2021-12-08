@@ -49,11 +49,15 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             // join company
             client.join(`company:${connResult.user.companyPK}`);
 
-            if (connResult.isSendable)
+            if (connResult.isSendable) {
                 this.wss
                     .to(`company:${connResult.user.companyPK}`)
                     .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
                     .emit(statusPath.CLIENT_LOGIN_ALERT, connResult);
+
+                const statusList = await this.statusService.getStatusList(client.id);
+                this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
+            }
         } catch (err) {
             console.error('handleConnection error: ', err);
             this.wss.to(client.id).emit(statusPath.CLIENT_ERROR, err instanceof AikoError ? err : unknownError);
