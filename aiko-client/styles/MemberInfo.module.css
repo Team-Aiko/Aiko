@@ -135,10 +135,6 @@
     border-radius:5px;
 }
 
-.theadTd {
-    border: 1px solid black;
-}
-
 
 .modalOuterContainer {
     position:fixed;
@@ -149,17 +145,119 @@
 .modalInnerContainer {
     background-color: white;
     border-radius: 10px;
-    width: 90%;
-    height: 60%;
+    width: 80%;
+    height: 80%;
     overflow:hidden;
     display:block;
-    margin: 10% auto;
+    margin: 2% auto;
 }
 
-.contentContainer {
-    height:95%;
+.modalTopBar {
+    display:inline-block;
+    background-color:#3f51b5;
+    width:100%;
+    height:12%;
+}
+
+.modalTopBarDesc {
+    width:70%;
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+}
+
+.modalTopBarContentsDiv {
+    height:100%;
     display:flex;
-    flex-direction:column;
-    justify-content:space-between;
+    flex-direction:row;
+    justify-content:space-around;
     align-items:center;
+}
+
+.modalButtonDiv {
+    display:flex;
+    flex-direction:row;
+    justify-content:center;
+    margin:0 auto;
+}
+
+.actionItemTableDiv {
+    width:90%;
+    display:block;
+    margin:0 auto;
+    overflow:hidden;
+}
+
+.actionItemTable {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.actionItemTr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.theadTd {
+    padding: 20px 15px;
+}
+
+.modalInputDiv {
+    display:flex;
+    flex-direction:row;
+    height:15%;
+    align-items:center;
+    width:90%;
+    justify-content:center;
+    margin: 0 auto;
+}
+
+.styledTable {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styledTd {
+    padding: 10px 15px;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    background-color:#EAECEE;
+    color:#2E4053
+}
+
+.styledTable:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+.styledTable:hover {
+    font-weight: bold;
+}
+
+.styledATag {
+    cursor:pointer;
+}
+
+.styledATag:active {
+    color:#009879;
+}
+
+.detailModal {
+    position:fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(0,0,0,0.6);
+}
+
+.innerDetailModal {
+    background-color: white;
+    border-radius: 10px;
+    width: 80%;
+    height: 80%;
+    overflow:hidden;
+    display:block;
+    margin: 2% auto;
 }

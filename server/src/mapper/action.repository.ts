@@ -107,12 +107,13 @@ export default class ActionRepository extends Repository<Action> {
     async viewItems(USER_PK: number, COMPANY_PK: number, pg: Pagination) {
         try {
             let fracture = this.createQueryBuilder('a')
-                .innerJoin(Department, 'd', 'd.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .leftJoinAndSelect('a.department', 'department')
                 .leftJoinAndSelect('a.owner', 'owner')
                 .leftJoinAndSelect('a.assigner', 'assigner')
-                .where('a.DEPARTMENT_PK = d.DEPARTMENT_PK');
+                .leftJoinAndSelect('a.step', 'step')
+                .leftJoinAndSelect('a.priority', 'priority');
 
-            if (USER_PK !== -1 && USER_PK > 0) fracture = fracture.andWhere('a.USER_PK = :USER_PK', { USER_PK });
+            if (USER_PK !== -1 && USER_PK > 0) fracture = fracture.where('a.USER_PK = :USER_PK', { USER_PK });
 
             const itemList = await fracture
                 .orderBy('a.DUE_DATE', 'DESC')

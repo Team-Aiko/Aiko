@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
-import { getRepo, AikoError, unixTimeStamp, Pagination } from 'src/Helpers';
+import { getRepo, AikoError, unixTimeStamp, Pagination, propsRemover } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
 import { IMeetingPagination } from 'src/interfaces/MVC/meetingMVC';
 import {
@@ -65,23 +65,37 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
     async checkMeetSchedule(USER_PK: number, pag: Pagination) {
         try {
-            const currentTime = unixTimeStamp();
+            const meetings = (
+                await this.createQueryBuilder('c')
+                    .leftJoinAndSelect('c.meet', 'meet')
+                    .leftJoinAndSelect('meet.room', 'room')
+                    .leftJoinAndSelect('meet.members', 'members')
+                    .leftJoinAndSelect('members.user', 'user')
+                    .leftJoinAndSelect('user.profile', 'profile')
+                    .leftJoinAndSelect('user.department', 'department')
+                    .where('c.USER_PK = :USER_PK', { USER_PK })
+                    .offset(pag.offset)
+                    .limit(pag.feedPerPage)
+                    .orderBy('c.CALL_PK', 'DESC')
+                    .getMany()
+            ).map((calledMember) => calledMember.meet);
 
-            return await this.createQueryBuilder('c')
-                .leftJoinAndSelect('c.meet', 'meet')
-                .where('USER_PK = :USER_PK', { USER_PK })
-                .andWhere(
-                    new Brackets((qb) => {
-                        qb.where('meet.DATE <= :DATE1', { DATE1: currentTime + unixTimeEnum.ONE_MONTH }).andWhere(
-                            'meet.DATE > :DATE2',
-                            { DATE2: currentTime },
-                        );
-                    }),
-                )
-                .offset(pag.offset)
-                .limit(pag.feedPerPage)
-                .orderBy('c.CALL_PK', 'DESC')
-                .getMany();
+            return meetings.map((meeting) => {
+                meeting.members = meeting.members.map((member) => {
+                    member.user = propsRemover(
+                        member.user,
+                        'PASSWORD',
+                        'SALT',
+                        'COUNTRY_PK',
+                        'CREATE_DATE',
+                        'IS_DELETED',
+                        'IS_VERIFIED',
+                    );
+                    return member;
+                });
+
+                return meeting;
+            });
         } catch (err) {
             console.error(err);
             throw new AikoError('calledMembers/checkMeetSchedule', 500, 549231);

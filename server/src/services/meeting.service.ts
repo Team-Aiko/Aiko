@@ -139,7 +139,7 @@ export default class MeetingService {
             const cnt = await getRepo(CalledMembersRepository).getMeetingScheduleCnt(USER_PK);
             const pag = new Pagination(currentPage, cnt, feedsPerPage, groupCnt);
 
-            return await getRepo(CalledMembersRepository).checkMeetSchedule(USER_PK, pag);
+            return { pag, schedules: await getRepo(CalledMembersRepository).checkMeetSchedule(USER_PK, pag) };
         } catch (err) {
             throw err;
         }
@@ -266,6 +266,14 @@ export default class MeetingService {
             const pagination = new Pagination(currentPage, scheduleCnt, feedPerPage, pageGroupCnt);
 
             return await getRepo(CalledMembersRepository).checkMeetScheduleForUserInfo(userPK, pagination);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async finishMeeting(finishFlag: boolean, meetPK: number, companyPK: number) {
+        try {
+            return await getRepo(MeetRepository).finishMeeting(finishFlag, meetPK, companyPK);
         } catch (err) {
             throw err;
         }

@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../_axios';
+import { get, post } from '../_axios';
 import styles from '../styles/components/MeetingRoomTable.module.css';
 import moment from 'moment';
 import {
     Button,
-    Grid,
-    IconButton,
-    makeStyles,
-    TextField,
     Typography,
     Table,
     TableHead,
@@ -18,30 +14,12 @@ import {
     ThemeProvider,
     unstable_createMuiStrictModeTheme,
 } from '@material-ui/core';
-import Modal from '../components/Modal';
-import SearchMemberModal from './SearchMemberModal';
-import CloseIcon from '@material-ui/icons/Close';
-
-const useStyles = makeStyles({
-    TextField: {
-        height: '300px',
-    },
-    input: {
-        height: '100%',
-    },
-});
+import MeetingScheduleModal from './MeetingScheduleModal';
 
 export default function MeetingRoomTable(props) {
     const { meetingRoom, admin } = props;
-    const classes = useStyles();
     const theme = unstable_createMuiStrictModeTheme();
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
-    const [inputTitle, setInputTitle] = useState('');
-    const [inputMember, setInputMember] = useState([]);
-    const [inputNumber, setInputNumber] = useState(0);
-    const [inputDescription, setInputDescription] = useState('');
-    const [inputDate, setInputDate] = useState(moment().format('YYYY-MM-DD' + 'T' + 'hh:mm'));
-    const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [pagination, setPagination] = useState([]);
     const [scheduleList, setScheduleList] = useState([]);
@@ -65,56 +43,25 @@ export default function MeetingRoomTable(props) {
             feedsPerPage: rowsPerPage,
         };
 
-        axiosInstance.get(url, { params: params }).then((result) => {
+        get(url, { params: params }).then((result) => {
             setPagination(result.pagination);
             setScheduleList(result.schedules);
         });
     };
 
-    const removeMember = (index) => {
-        const memberList = [...inputMember];
-        memberList.splice(index, 1);
-        setInputMember(memberList);
-    };
-
-    const uploadSchedule = () => {
+    const uploadSchedule = (data, callback) => {
         const url = modalStatus === 'update' ? '/api/meeting/update-meeting' : '/api/meeting/make-meeting';
-
-        const newMemberList =
-            inputMember.length > 0
-                ? inputMember.map((item) => {
-                      return item.USER_PK;
-                  })
-                : [];
-
-        const newDate = Number(moment(inputDate).format('X'));
-
-        const data = {
-            calledMemberList: newMemberList,
-            MAX_MEM_NUM: Number(inputNumber),
-            ROOM_PK: meetingRoom.ROOM_PK,
-            TITLE: inputTitle,
-            DATE: newDate,
-            DESCRIPTION: inputDescription,
-        };
 
         if (modalStatus === 'update') data.MEET_PK = selectedSchedule.MEET_PK;
 
-        axiosInstance.post(url, data).then((result) => {
+        post(url, data).then((result) => {
             setOpenScheduleModal(false);
             setTimeout(() => {
                 setModalStatus('');
             }, 200);
-            resetInput();
+            callback();
             loadSchedule();
         });
-    };
-    const resetInput = () => {
-        setInputTitle('');
-        setInputMember([]);
-        setInputNumber(0);
-        setInputDescription('');
-        setInputDate(moment().format('YYYY-MM-DD' + 'T' + 'hh:mm'));
     };
 
     const columns = [
@@ -152,27 +99,38 @@ export default function MeetingRoomTable(props) {
     };
 
     const handleUpdate = () => {
-        setInputTitle(selectedSchedule.TITLE);
-        setInputMember(selectedSchedule.members);
-        setInputNumber(selectedSchedule.MAX_MEM_NUM);
-        setInputDescription(selectedSchedule.DESCRIPTION);
-        setInputDate(moment.unix(selectedSchedule.DATE).format('YYYY-MM-DD' + 'T' + 'hh:mm'));
-
         setModalStatus('update');
     };
 
-    const deleteSchedule = () => {
+    const deleteSchedule = (callback) => {
         const url = '/api/meeting/delete-meeting';
         const data = {
             meetPK: selectedSchedule.MEET_PK,
         };
 
-        axiosInstance.post(url, data).then(() => {
+        post(url, data).then(() => {
             setOpenScheduleModal(false);
             setTimeout(() => {
                 setModalStatus('');
             }, 200);
-            resetInput();
+            callback();
+            loadSchedule();
+        });
+    };
+
+    const handleFinish = (callback) => {
+        const url = '/api/meeting/finish-meeting';
+        const data = {
+            meetPK: selectedSchedule.MEET_PK,
+            finishFlag: 1,
+        };
+
+        post(url, data).then(() => {
+            setOpenScheduleModal(false);
+            setTimeout(() => {
+                setModalStatus('');
+            }, 200);
+            callback();
             loadSchedule();
         });
     };
@@ -248,7 +206,7 @@ export default function MeetingRoomTable(props) {
                 />
             </ThemeProvider>
 
-            <Modal
+            <MeetingScheduleModal
                 open={openScheduleModal}
                 onClose={() => {
                     setOpenScheduleModal(false);
@@ -256,194 +214,14 @@ export default function MeetingRoomTable(props) {
                         setModalStatus('');
                     }, 200);
                 }}
-                title='일정 추가'
-            >
-                <Grid
-                    container
-                    spacing={2}
-                    style={{ padding: '20px', maxWidth: '600px', overflow: 'auto', width: '100%' }}
-                >
-                    <Grid item xs={2}>
-                        <Typography>회의 주제</Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        {modalStatus !== 'view' ? (
-                            <TextField
-                                variant='outlined'
-                                fullWidth
-                                size='small'
-                                value={inputTitle}
-                                onChange={(e) => {
-                                    setInputTitle(e.target.value);
-                                }}
-                            />
-                        ) : (
-                            <Typography>{selectedSchedule.TITLE}</Typography>
-                        )}
-                    </Grid>
-                    <Grid item xs={2}>
-                        <Typography>일시</Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        {modalStatus !== 'view' ? (
-                            <TextField
-                                variant='outlined'
-                                fullWidth
-                                size='small'
-                                type='datetime-local'
-                                value={inputDate}
-                                onChange={(e) => {
-                                    setInputDate(e.target.value);
-                                }}
-                            />
-                        ) : (
-                            <Typography>{moment.unix(selectedSchedule.DATE).format('YYYY-MM-DD LT')}</Typography>
-                        )}
-                    </Grid>
-                    <Grid item xs={2}>
-                        <Typography>참석자</Typography>
-                    </Grid>
-                    <Grid item xs={10} style={{ display: 'flex', alignItems: 'center' }}>
-                        {modalStatus !== 'view' ? (
-                            <>
-                                {inputMember.length > 0 ? (
-                                    <div className={styles['selected-user-list']}>
-                                        {inputMember.map((member, index) => {
-                                            return (
-                                                <div
-                                                    className={styles['user-wrapper']}
-                                                    key={member.user ? member.user.USER_PK : member.USER_PK}
-                                                >
-                                                    <Typography variant='body2'>
-                                                        {member.user ? member.user.NICKNAME : member.NICKNAME}
-                                                    </Typography>
-                                                    <IconButton
-                                                        style={{ width: '20px', height: '20px', marginLeft: '8px' }}
-                                                        onClick={() => removeMember(index)}
-                                                    >
-                                                        <CloseIcon />
-                                                    </IconButton>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : null}
-                                <Button
-                                    variant='contained'
-                                    color='primary'
-                                    onClick={() => {
-                                        setOpenSearchMemberModal(true);
-                                    }}
-                                >
-                                    추가
-                                </Button>
-                            </>
-                        ) : (
-                            <Typography>
-                                {selectedSchedule.members.length > 0
-                                    ? selectedSchedule.members.map((member, index) => {
-                                          if (index < selectedSchedule.members.length - 1) {
-                                              return `${member.user.NICKNAME}, `;
-                                          } else {
-                                              return member.user.NICKNAME;
-                                          }
-                                      })
-                                    : ''}
-                            </Typography>
-                        )}
-                    </Grid>
-                    <Grid item xs={2}>
-                        <Typography>최대 인원</Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        {modalStatus !== 'view' ? (
-                            <TextField
-                                variant='outlined'
-                                fullWidth
-                                size='small'
-                                value={inputNumber}
-                                onChange={(e) => {
-                                    setInputNumber(e.target.value);
-                                }}
-                                type='number'
-                            />
-                        ) : (
-                            <Typography>{selectedSchedule.MAX_MEM_NUM}</Typography>
-                        )}
-                    </Grid>
-                    <Grid item xs={2}>
-                        <Typography>설명</Typography>
-                    </Grid>
-                    <Grid item xs={10}>
-                        {modalStatus !== 'view' ? (
-                            <TextField
-                                multiline
-                                variant='outlined'
-                                style={{ height: '300px' }}
-                                inputProps={{
-                                    style: {
-                                        flex: 1,
-                                        height: '100%',
-                                    },
-                                }}
-                                fullWidth
-                                InputProps={{ className: classes.input }}
-                                classes={{ root: classes.textField }}
-                                value={inputDescription}
-                                onChange={(e) => {
-                                    setInputDescription(e.target.value);
-                                }}
-                            />
-                        ) : (
-                            <div>
-                                {selectedSchedule.DESCRIPTION.split('\n').map((text, key) => {
-                                    return <Typography key={key}>{text}</Typography>;
-                                })}
-                            </div>
-                        )}
-                    </Grid>
-                    {modalStatus !== 'view' ? (
-                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
-                            <Button variant='contained' color='primary' onClick={uploadSchedule}>
-                                {modalStatus === 'update' ? '수정 완료' : '작성 완료'}
-                            </Button>
-                        </Grid>
-                    ) : admin ? (
-                        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                            <Button
-                                variant='contained'
-                                color='inherit'
-                                style={{ marginRight: '10px' }}
-                                onClick={handleUpdate}
-                            >
-                                수정
-                            </Button>
-                            <Button
-                                variant='contained'
-                                color='inherit'
-                                style={{ marginRight: '10px' }}
-                                onClick={deleteSchedule}
-                            >
-                                삭제
-                            </Button>
-                            <Button variant='contained' color='primary' onClick={() => console.log('진행 완료')}>
-                                진행 완료
-                            </Button>
-                        </Grid>
-                    ) : null}
-                </Grid>
-            </Modal>
-            <SearchMemberModal
-                open={openSearchMemberModal}
-                onClose={() => {
-                    setOpenSearchMemberModal(false);
-                }}
-                onClickSelectedUserList={(user) => {
-                    setInputMember((inputMember) => [...inputMember, ...user]);
-                    setOpenSearchMemberModal(false);
-                }}
-                title='참석자 선택'
-                multipleSelection={true}
+                roomPK={meetingRoom.ROOM_PK}
+                schedule={selectedSchedule}
+                status={modalStatus}
+                admin={admin}
+                deleteSchedule={deleteSchedule}
+                handleUpdate={handleUpdate}
+                handleFinish={handleFinish}
+                uploadSchedule={uploadSchedule}
             />
         </div>
     );
