@@ -39,6 +39,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
+import ApprovalFrame from './entity/approvalFrame';
+import ApprovalStep from './entity/approvalStep';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
@@ -66,6 +68,8 @@ const typeORMConfig: TypeOrmModuleOptions = {
         Refresh,
         NoticeBoard,
         NoticeBoardFile,
+        ApprovalFrame,
+        ApprovalStep,
     ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };

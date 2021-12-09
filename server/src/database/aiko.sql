@@ -222,12 +222,13 @@ INSERT INTO ACTION_PRIORITY_TABLE (PRIORITY_NAME) VALUES ('LOW');
 
 create table APPROVAL_FRAME_TABLE (
 AF_PK int auto_increment,
+USER_PK int not null,
 TITLE varchar(80) not NULL,
 CONTENT VARCHAR(6000) not NULL, 
 COMPANY_PK int not null,
 AC_PK int not null,	
 DEPARTMENT_PK int not null,
-CURRENT_STEP int not null,
+CURRENT_STEP_LEVEL int not null,
 AS_PK int not null,
 START_DATE int not null,
 END_DATE int,
@@ -237,6 +238,7 @@ primary key(AF_PK)
 create table APPROVAL_STEP_TABLE (
 AS_PK int auto_increment,
 USER_PK int not null,
+STEP_LEVEL int not null,
 DECISION int not null,
 SIGN_DATE int,
 primary key(AS_PK)
