@@ -28,11 +28,8 @@ export default class StatusService {
         }
     }
 
-    async statusConnection(
-        socketId: string,
-        userPayload: IUserPayload,
-    ): Promise<{ isSendable: boolean; user?: Status }> {
-        const { USER_PK, COMPANY_PK } = userPayload;
+    async statusConnection(socketId: string, accessToken: string): Promise<{ isSendable: boolean; user?: Status }> {
+        const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
 
         try {
             const userContainer = await this.getUserStatus(COMPANY_PK, USER_PK);
@@ -40,10 +37,9 @@ export default class StatusService {
                 '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ userContainer',
                 userContainer,
             );
-            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK);
             const newUserContainer = new Status();
-            newUserContainer.userPK = user.USER_PK;
-            newUserContainer.companyPK = user.COMPANY_PK;
+            newUserContainer.userPK = USER_PK;
+            newUserContainer.companyPK = COMPANY_PK;
             newUserContainer.socketId = socketId;
             newUserContainer.logoutPending = false;
             newUserContainer.status = !userContainer ? 1 : userContainer.status === -1 ? 1 : userContainer.status;
