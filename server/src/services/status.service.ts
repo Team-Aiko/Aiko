@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Socket, Server } from 'socket.io';
 import { AikoError, getRepo } from 'src/Helpers';
+import { tokenParser } from 'src/Helpers/functions';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import { UserRepository } from 'src/mapper';
@@ -109,7 +110,7 @@ export default class StatusService {
         }
     }
 
-    async changeStatus(socketId: string, status: { userPK: number; userStatus: number }) {
+    async changeStatus(socketId: string, stat: number) {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
@@ -118,7 +119,7 @@ export default class StatusService {
                 '🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ userStatus',
                 userStatus,
             );
-            userStatus.status = status.userStatus;
+            userStatus.status = stat;
             await this.updateStatus(userStatus);
 
             return userStatus;

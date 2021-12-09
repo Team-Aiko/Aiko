@@ -95,7 +95,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, userStatus: { userPK: number; userStatus: number }) {
+    async changeStatus(client: Socket, userStatus: number) {
         console.log('changeStatus method');
 
         try {
