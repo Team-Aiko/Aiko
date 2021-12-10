@@ -55,4 +55,13 @@ export default class DriveController {
             resExecutor(res, { err });
         }
     }
+
+    @Post('delete-files')
+    async deleteFiles(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { filePKs } = req.body;
+        } catch (err) {
+            resExecutor(res, { err });
+        }
+    }
 }
