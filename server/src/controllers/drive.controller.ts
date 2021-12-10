@@ -60,6 +60,7 @@ export default class DriveController {
     async deleteFiles(@Req() req: Request, @Res() res: Response) {
         try {
             const { filePKs } = req.body;
+            this.driveService.deleteFiles(filePKs);
         } catch (err) {
             resExecutor(res, { err });
         }
