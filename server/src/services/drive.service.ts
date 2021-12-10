@@ -64,4 +64,11 @@ export default class DriveService {
             throw err;
         }
     }
+
+    async deleteFiles(filePKs: number | number[]) {
+        try {
+        } catch (err) {
+            throw err;
+        }
+    }
 }
