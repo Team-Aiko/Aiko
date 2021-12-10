@@ -282,7 +282,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
 
         return flag;
