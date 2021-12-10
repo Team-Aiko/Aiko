@@ -170,6 +170,7 @@ export default class AccountService {
                 flag = await new Promise<boolean>((resolve, reject) => {
                     smtpTransporter.sendMail(mailOpt, async (err, response) => {
                         if (err) {
+                            console.log('### : ', err);
                             resolve(false);
                         }
 
