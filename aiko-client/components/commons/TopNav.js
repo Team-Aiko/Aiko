@@ -201,14 +201,16 @@ function PComp(props) {
             .catch((err) => console.log(err));
     };
 
+    useEffect(async () => {
+        await getCurrentUserPk();
+    }, []);
+
     useEffect(() => {
         console.log('memberList : ', memberList);
     }, [memberList]);
 
     useEffect(() => {
-        const getCurrentUserPk = async () => await getCurrentUserPk();
-
-        if (getCurrentUserPk) {
+        if (userInfo) {
             console.log('###################');
             const status = io('http://localhost:5000/status');
             setStatus(status);
@@ -243,6 +245,7 @@ function PComp(props) {
     }, [userInfo]);
 
     const goToMyMemberInfo = () => {
+        console.log('currentUserPk : ', currentUserPk);
         router.push(`/member-info/${currentUserPk}`);
         setAnchorEl(null);
         handleMobileMenuClose();
