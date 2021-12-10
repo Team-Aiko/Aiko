@@ -164,11 +164,8 @@ export default class AccountService {
 
                 flag = await new Promise<boolean>((resolve, reject) => {
                     smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                        if (err) {
-                            resolve(false);
-                        }
-
-                        resolve(true);
+                        if (err) resolve(false);
+                        else resolve(true);
                     });
                 });
 
