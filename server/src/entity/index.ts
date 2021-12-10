@@ -23,8 +23,10 @@ import GroupChatRoom from './groupChatRoom.entity';
 import FileKeys from './fileKeys.entity';
 import FileHistory from './fileHistory.entity';
 import FileFolder from './fileFolder.entity';
+import FileBin from './fileBin.entity';
 
 export {
+    FileBin,
     FileKeys,
     FileHistory,
     FileFolder,
