@@ -184,7 +184,7 @@ export default class AccountService {
         } catch (err) {
             await queryRunner.rollbackTransaction();
             await this.statusService.deleteUserStatus(userPK);
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         } finally {
             await queryRunner.release();
         }
