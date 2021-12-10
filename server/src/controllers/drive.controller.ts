@@ -12,7 +12,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
-import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { driveFileOption, filePath } from 'src/interfaces/MVC/fileMVC';
 import DriveService from 'src/services/drive.service';
 
@@ -37,10 +37,11 @@ export default class DriveController {
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
-            const { USER_PK } = usrPayloadParser(req);
-            const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, files);
+            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, COMPANY_PK, files);
             resExecutor(res, { result });
         } catch (err) {
+            console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
             resExecutor(res, { err });
         }
     }
@@ -49,10 +50,11 @@ export default class DriveController {
     async getFiles(@Req() req: Request, @Res() res: Response) {
         try {
             const { filePKs } = req.body;
-            const result = await this.driveService.getFiles(filePKs);
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.driveService.getFiles(filePKs, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
         }
     }
 
@@ -60,10 +62,12 @@ export default class DriveController {
     async deleteFiles(@Req() req: Request, @Res() res: Response) {
         try {
             const { filePKs } = req.body;
-            const result = await this.driveService.deleteFiles(filePKs);
+            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.driveService.deleteFiles(filePKs, USER_PK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
-            resExecutor(res, { err });
+            console.log('🚀 ~ file: drive.controller.ts ~ line 69 ~ DriveController ~ deleteFiles ~ err', err);
+            throw resExecutor(res, { err });
         }
     }
 }

@@ -11,7 +11,7 @@ export default class FileHistory {
     @Column()
     USER_PK: number;
     @Column()
-    ORIGINAL_NAME: string;
+    ORIGINAL_FILE_NAME: string;
     @Column()
     NAME: string;
     @Column()

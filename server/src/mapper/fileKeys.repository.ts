@@ -33,7 +33,7 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         }
     }
 
-    async getFiles(filePKs: number[] | number) {
+    async getFiles(filePKs: number[] | number, COMPANY_PK: number) {
         const isArray = Array.isArray(filePKs);
 
         try {
@@ -44,6 +44,7 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .leftJoinAndSelect('fileHistories.user', 'user')
                 .leftJoinAndSelect('user.department', 'department')
                 .where(whereCondition, { filePKs })
+                .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .andWhere('fk.IS_DELETED = 0');
 
             return isArray ? await fraction.getMany() : await fraction.getOneOrFail();
@@ -53,15 +54,17 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         }
     }
 
-    async deleteFiles(filePKs: number | number[]) {
+    async deleteFiles(filePKs: number | number[], COMPANY_PK: number, @TransactionManager() manager: EntityManager) {
         try {
             const isArray = Array.isArray(filePKs);
             const whereCondition = `FILE_KEY_PK ${isArray ? 'IN (:...filePKs)' : '= :filePKs'}`;
 
-            await this.createQueryBuilder()
+            await manager
+                .createQueryBuilder(FileKeys, 'fk')
                 .update()
                 .set({ IS_DELETED: 1 })
                 .where(whereCondition, { filePKs })
+                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .execute();
 
             return true;
