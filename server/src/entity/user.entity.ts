@@ -101,4 +101,8 @@ export default class User {
     @OneToMany(() => NoticeBoard, (nb) => nb.user)
     @JoinColumn({ name: 'USER_PK' })
     user: NoticeBoard;
+
+    @OneToMany(() => NoticeBoard, (nb) => nb.updateUser)
+    @JoinColumn({ name: 'USER_PK' })
+    updateUser: NoticeBoard;
 }

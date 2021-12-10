@@ -163,6 +163,7 @@ create table USER_PROFILE_FILE_TABLE (
 );
 
 -- 공지 게시판 테이블 생성 //수정
+drop table notice_board_table ;
 create table NOTICE_BOARD_TABLE (
 	NOTICE_BOARD_PK int auto_increment,
 	TITLE varchar(80),
@@ -171,9 +172,11 @@ create table NOTICE_BOARD_TABLE (
     COMPANY_PK int not null,
 	CREATE_DATE int,
 	UPDATE_DATE int,
+	UPDATE_USER_PK int,
 	IS_DELETE int,
 	primary key (NOTICE_BOARD_PK)
 );
+
 
 -- 공지 게시판 파일 테이블 생성 
 create table NOTICE_BOARD_FILE_TABLE (

@@ -28,10 +28,7 @@ export default class NoticeBoardService {
         files: Express.Multer.File[],
     ) {
         try {
-            const queryRunner = getConnection().createQueryRunner();
-            await queryRunner.connect();
-            await queryRunner.startTransaction(); //트랜젝션
-            await getRepo(NoticeBoardRepository).updateArticle(queryRunner.manager, title, content, userPk, num);
+            await getRepo(NoticeBoardRepository).updateArticle(title, content, userPk, num);
             await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk); //파일 생성
             await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks);
         } catch (err) {

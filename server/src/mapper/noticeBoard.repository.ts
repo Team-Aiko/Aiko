@@ -14,6 +14,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                     TITLE: title,
                     CONTENT: content,
                     USER_PK: userPk,
+                    UPDATE_USER_PK: userPk,
+                    UPDATE_DATE: time,
                     COMPANY_PK: comPk,
                     IS_DELETE: 0,
                     CREATE_DATE: time,
@@ -36,18 +38,12 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             return err;
         }
     }
-    async updateArticle(
-        @TransactionManager() transactionManger: EntityManager,
-        title: string,
-        content: string,
-        userPk: number,
-        num: number,
-    ) {
+    async updateArticle(title: string, content: string, userPk: number, num: number) {
         try {
             const time = unixTimeStamp();
             return await this.createQueryBuilder()
                 .update(NoticeBoard)
-                .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time })
+                .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time, UPDATE_USER_PK: userPk })
                 .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .andWhere('IS_DELETE = 0')
@@ -70,6 +66,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             const result = await this.createQueryBuilder('n')
                 .select(['n.NOTICE_BOARD_PK', 'n.TITLE', 'n.CREATE_DATE', 'n.IS_DELETE', 'n.CREATE_DATE'])
                 .leftJoinAndSelect('n.user', 'user')
+                .leftJoinAndSelect('n.updateUser', 'updateUser')
                 .limit(option)
                 .offset(pageNum)
                 .where('n.COMPANY_PK like :comPk', { comPk: `${comPk}` })
@@ -77,9 +74,11 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .getMany();
             for (const num in result) {
                 const name = {
-                    USER_NAME: result[num].user.FIRST_NAME + ' ' + result[num].user.LAST_NAME,
+                    USER_NAME: result[num].user?.FIRST_NAME + ' ' + result[num].user?.LAST_NAME,
+                    UPDATE_USER_NAME: result[num].updateUser?.FIRST_NAME + ' ' + result[num].updateUser?.LAST_NAME,
                 };
-                result[num] = propsRemover(result[num], 'user');
+                const props = ['user', 'updateUser'];
+                result[num] = propsRemover(result[num], ...props);
                 result[num] = Object.assign(result[num], name);
             }
             return result;
