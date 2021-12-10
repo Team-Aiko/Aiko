@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { getRepo, unixTimeStamp } from 'src/Helpers';
+import FileFolderRepository from 'src/mapper/fileFolder.repository';
 import FileHistoryRepository from 'src/mapper/fileHistory.repository';
 import FileKeysRepository from 'src/mapper/fileKeys.repository';
-import { getConnection } from 'typeorm';
+import { EntityManager, getConnection } from 'typeorm';
 
 @Injectable()
 export default class DriveService {
@@ -51,6 +52,14 @@ export default class DriveService {
     async getFiles(filePKs: number | number[]) {
         try {
             return await getRepo(FileKeysRepository).getFiles(filePKs);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async createFolder(companyPK: number, folderName: string, parentPK: number | undefined, manager?: EntityManager) {
+        try {
+            return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
         } catch (err) {
             throw err;
         }

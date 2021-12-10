@@ -21,6 +21,18 @@ import DriveService from 'src/services/drive.service';
 export default class DriveController {
     constructor(private driveService: DriveService) {}
 
+    @Post('create-folder')
+    async createFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const { folderName, parentPK } = req.body;
+            const result = await this.driveService.createFolder(COMPANY_PK, folderName, parentPK);
+            resExecutor(res, { result });
+        } catch (err) {
+            resExecutor(res, { err });
+        }
+    }
+
     @Post('save-files')
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {

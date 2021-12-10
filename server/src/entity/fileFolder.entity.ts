@@ -9,7 +9,7 @@ export default class FileFolder {
     @Column()
     COMPANY_PK: number;
     @Column()
-    FOLDER_NAME: number;
+    FOLDER_NAME: string;
     @Column()
     SIZE: number;
     @Column()

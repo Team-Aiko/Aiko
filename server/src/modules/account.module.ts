@@ -17,6 +17,7 @@ import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schem
 import MeetingModule from './meeting.module';
 import WorkModule from './work.module';
 import SocketModule from './socket.module';
+import DriveModule from './driver.module';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import SocketModule from './socket.module';
         SocketModule,
         MeetingModule,
         WorkModule,
+        DriveModule,
     ],
     controllers: [AccountController],
     providers: [AccountService],
