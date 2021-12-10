@@ -12,7 +12,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
-import { resExecutor } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { driveFileOption, filePath } from 'src/interfaces/MVC/fileMVC';
 import DriveService from 'src/services/drive.service';
 
@@ -25,7 +25,8 @@ export default class DriveController {
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
-            const result = await this.driveService.saveFiles(files);
+            const { USER_PK } = usrPayloadParser(req);
+            const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, files);
             resExecutor(res, { result });
         } catch (err) {
             resExecutor(res, { err });
