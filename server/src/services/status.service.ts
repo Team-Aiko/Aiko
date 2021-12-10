@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Socket, Server } from 'socket.io';
 import { AikoError, getRepo } from 'src/Helpers';
+import { tokenParser } from 'src/Helpers/functions';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import { UserRepository } from 'src/mapper';
@@ -27,11 +28,8 @@ export default class StatusService {
         }
     }
 
-    async statusConnection(
-        socketId: string,
-        userPayload: IUserPayload,
-    ): Promise<{ isSendable: boolean; user?: Status }> {
-        const { USER_PK, COMPANY_PK } = userPayload;
+    async statusConnection(socketId: string, accessToken: string): Promise<{ isSendable: boolean; user?: Status }> {
+        const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
 
         try {
             const userContainer = await this.getUserStatus(COMPANY_PK, USER_PK);
@@ -39,10 +37,9 @@ export default class StatusService {
                 '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ userContainer',
                 userContainer,
             );
-            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPayload.USER_PK);
             const newUserContainer = new Status();
-            newUserContainer.userPK = user.USER_PK;
-            newUserContainer.companyPK = user.COMPANY_PK;
+            newUserContainer.userPK = USER_PK;
+            newUserContainer.companyPK = COMPANY_PK;
             newUserContainer.socketId = socketId;
             newUserContainer.logoutPending = false;
             newUserContainer.status = !userContainer ? 1 : userContainer.status === -1 ? 1 : userContainer.status;
@@ -63,37 +60,35 @@ export default class StatusService {
 
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketClient.id);
-            if (userStatus?.userPK) {
-                setTimeout(async () => {
-                    // delete process
-                    console.log('logout process executed');
-                    const user = await this.getUserStatusWithSocketId(socketClient.id);
+            // early case split
+            if (!userStatus) return;
 
-                    console.log(
-                        '🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus',
-                        user,
-                    );
+            setTimeout(async () => {
+                // delete process
+                console.log('logout process executed');
+                const user = await this.getUserStatusWithSocketId(socketClient.id);
 
-                    if (user.logoutPending) {
-                        console.log('안됨???');
-                        user.status = -1;
-                        user.logoutPending = false;
+                console.log('🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus', user);
 
-                        await this.updateStatus(user);
-                        wss.to(`company:${user.companyPK}`)
-                            .except(socketClient.id)
-                            .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
-                    }
-                }, 1000 * 10); // 5분간격
+                if (user?.logoutPending) {
+                    console.log('안됨???');
+                    user.status = -1;
+                    user.logoutPending = false;
 
-                await this.updateStatus({
-                    userPK: userStatus.userPK,
-                    companyPK: userStatus.companyPK,
-                    socketId: socketClient.id,
-                    logoutPending: true,
-                    status: userStatus.status,
-                });
-            }
+                    await this.updateStatus(user);
+                    wss.to(`company:${user.companyPK}`)
+                        .except(socketClient.id)
+                        .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
+                }
+            }, 1000 * 10); // 5분간격
+
+            await this.updateStatus({
+                userPK: userStatus.userPK,
+                companyPK: userStatus.companyPK,
+                socketId: socketClient.id,
+                logoutPending: true,
+                status: userStatus.status,
+            });
         } catch (err) {
             console.error(err);
             if (err instanceof AikoError) throw err;
@@ -111,7 +106,7 @@ export default class StatusService {
         }
     }
 
-    async changeStatus(socketId: string, status: { userPK: number; userStatus: number }) {
+    async changeStatus(socketId: string, stat: number) {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
             const userStatus = await this.getUserStatusWithSocketId(socketId);
@@ -120,7 +115,7 @@ export default class StatusService {
                 '🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ userStatus',
                 userStatus,
             );
-            userStatus.status = status.userStatus;
+            userStatus.status = stat;
             await this.updateStatus(userStatus);
 
             return userStatus;

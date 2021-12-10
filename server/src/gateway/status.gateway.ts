@@ -6,13 +6,10 @@ import {
     OnGatewayDisconnect,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { AikoError, unknownError } from 'src/Helpers';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
-import { UserGuard } from 'src/guard/user.guard';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
@@ -35,17 +32,17 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * 5. 이를 통해 해당 유저의 접속 상태를 확인 가능하다.
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, userPayload: IUserPayload) {
-        console.log('handleConnection method', userPayload);
+    async handleConnection(client: Socket, accessToken: string) {
+        console.log('handleConnection method', accessToken);
 
         try {
-            if (!userPayload) return;
+            if (!accessToken) return;
 
-            console.log('client ID = ', client.id, ' user ID = ', userPayload.USER_PK);
+            console.log('client ID = ', client.id, ' accessToken = ', accessToken);
             const { id } = client;
 
             // connection check and select user info
-            const connResult = await this.statusService.statusConnection(id, userPayload);
+            const connResult = await this.statusService.statusConnection(id, accessToken);
 
             // join company
             client.join(`company:${connResult.user.companyPK}`);
@@ -62,7 +59,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, userPayload));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, accessToken));
         }
     }
 
@@ -95,7 +92,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, userStatus: { userPK: number; userStatus: number }) {
+    async changeStatus(client: Socket, userStatus: number) {
         console.log('changeStatus method');
 
         try {

@@ -13,27 +13,12 @@ import PrivateChatService from 'src/services/privateChat.service';
 import SocketService from 'src/services/socket.service';
 import StatusService from 'src/services/status.service';
 import WorkService from 'src/services/work.service';
+import { AccountModule } from '.';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
-            { name: Status.name, schema: StatusSchema },
-            { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
-            { name: GroupChatLog.name, schema: groupChatLogSchema },
-        ]),
-    ],
+    imports: [AccountModule],
     controllers: [CompanyController],
-    providers: [
-        CompanyService,
-        AccountService,
-        MeetingService,
-        // SocketService,
-        WorkService,
-        PrivateChatService,
-        GroupChatService,
-        StatusService,
-    ],
+    providers: [CompanyService],
     exports: [CompanyService],
 })
 export default class CompanyModule {}
