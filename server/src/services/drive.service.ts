@@ -67,6 +67,7 @@ export default class DriveService {
 
     async deleteFiles(filePKs: number | number[]) {
         try {
+            return await getRepo(FileKeysRepository).deleteFiles(filePKs);
         } catch (err) {
             throw err;
         }

@@ -37,18 +37,37 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         const isArray = Array.isArray(filePKs);
 
         try {
-            const whereCondition = isArray ? 'fk.FILE_KEY_PK IN :...filePKs' : 'fk.FILE_KEY_PK = :filePKs';
+            const whereCondition = isArray ? 'fk.FILE_KEY_PK IN (:...filePKs)' : 'fk.FILE_KEY_PK = :filePKs';
             const fraction = this.createQueryBuilder('fk')
                 .leftJoinAndSelect('fk.folder', 'folder')
                 .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
                 .leftJoinAndSelect('fileHistories.user', 'user')
                 .leftJoinAndSelect('user.department', 'department')
-                .where(whereCondition);
+                .where(whereCondition, { filePKs })
+                .andWhere('fk.IS_DELETED = 0');
 
             return isArray ? await fraction.getMany() : await fraction.getOneOrFail();
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/getFiles', 500, 928192);
+        }
+    }
+
+    async deleteFiles(filePKs: number | number[]) {
+        try {
+            const isArray = Array.isArray(filePKs);
+            const whereCondition = `FILE_KEY_PK ${isArray ? 'IN (:...filePKs)' : '= :filePKs'}`;
+
+            await this.createQueryBuilder()
+                .update()
+                .set({ IS_DELETED: 1 })
+                .where(whereCondition, { filePKs })
+                .execute();
+
+            return true;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/deleteFiles', 500, 910292);
         }
     }
 }
