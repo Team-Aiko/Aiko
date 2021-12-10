@@ -11,6 +11,8 @@ import {
     Transaction,
 } from 'typeorm';
 
+type FileOrFiles = Express.Multer.File | Express.Multer.File[];
+
 @EntityRepository(FileKeys)
 export default class FileKeysRepository extends Repository<FileKeys> {
     async createFileKeys(count: number, FOLDER_PK: number, @TransactionManager() manager: EntityManager) {
@@ -28,6 +30,25 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/createFileKeys', 500, 292102);
+        }
+    }
+
+    async getFiles(filePKs: number[] | number) {
+        const isArray = Array.isArray(filePKs);
+
+        try {
+            const whereCondition = isArray ? 'fk.FILE_KEY_PK IN :...filePKs' : 'fk.FILE_KEY_PK = :filePKs';
+            const fraction = this.createQueryBuilder('fk')
+                .leftJoinAndSelect('fk.folder', 'folder')
+                .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
+                .leftJoinAndSelect('fileHistories.user', 'user')
+                .leftJoinAndSelect('user.department', 'department')
+                .where(whereCondition);
+
+            return isArray ? await fraction.getMany() : await fraction.getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getFiles', 500, 928192);
         }
     }
 }

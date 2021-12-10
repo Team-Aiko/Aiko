@@ -14,7 +14,7 @@ import {
 @EntityRepository(FileHistory)
 export default class FileHistoryRepository extends Repository<FileHistory> {
     async createFileHistory(
-        files: Omit<FileHistory, 'FH_PK' | 'fileKey'>[],
+        files: Omit<FileHistory, 'FH_PK' | 'fileKey' | 'user'>[],
         @TransactionManager() manager: EntityManager,
     ) {
         try {

@@ -44,7 +44,15 @@ export default class DriveService {
             throw err;
         } finally {
             await queryRunner.release();
-            return { fileKeysList, historyKeyList };
+            return await getRepo(FileKeysRepository).getFiles(fileKeysList.map((fileKey) => fileKey.FILE_KEY_PK));
+        }
+    }
+
+    async getFiles(filePKs: number | number[]) {
+        try {
+            return await getRepo(FileKeysRepository).getFiles(filePKs);
+        } catch (err) {
+            throw err;
         }
     }
 }

@@ -32,4 +32,15 @@ export default class DriveController {
             resExecutor(res, { err });
         }
     }
+
+    @Get('get-files')
+    async getFiles(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { filePKs } = req.body;
+            const result = await this.driveService.getFiles(filePKs);
+            resExecutor(res, { result });
+        } catch (err) {
+            resExecutor(res, { err });
+        }
+    }
 }

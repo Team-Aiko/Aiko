@@ -1,4 +1,5 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { User } from '.';
 import FileKeys from './fileKeys.entity';
 
 @Entity({ name: 'FILE_HISTORY_TABLE' })
@@ -21,4 +22,8 @@ export default class FileHistory {
     @ManyToOne(() => FileKeys, (fileKey) => fileKey.fileHistories)
     @JoinColumn({ name: 'FILE_KEY_PK' })
     fileKey: FileKeys;
+
+    @ManyToOne(() => User)
+    @JoinColumn({ name: 'USER_PK' })
+    user: User;
 }
