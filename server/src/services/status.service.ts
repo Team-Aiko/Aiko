@@ -141,7 +141,6 @@ export default class StatusService {
         console.log('🚀 ~ file: socket.service.ts ~ line 269 ~ SocketService ~ setUserStatus ~ container', container);
         try {
             const dto = new this.statusModel(container);
-            this.statusModel.create(container);
             return await dto.save();
         } catch (err) {
             console.error(err);
@@ -183,6 +182,15 @@ export default class StatusService {
         } catch (err) {
             console.error(err);
             throw new AikoError('socketService/getSocketCont', 100, 5091282);
+        }
+    }
+
+    async deleteUserStatus(userPK: number) {
+        try {
+            return await this.statusModel.findOneAndRemove({ userPK }).exec();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('socketService', 100, 5028123);
         }
     }
 }
