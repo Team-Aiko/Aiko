@@ -74,7 +74,7 @@ function PComp(props) {
     // }, []);
 
     const testStatusChanger = (num) => {
-        status?.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
+        // status?.emit('server/status/changeStatus', { userPK: userInfo.USER_PK, userStatus: num });
     };
 
     return (

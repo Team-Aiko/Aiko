@@ -101,10 +101,9 @@ export default class AccountService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         let flag = false;
+        let userPK: number;
 
         try {
-            let userPK: number;
-
             // 이미지 테이블 로우 생성쿼리
             let profilePK: number;
             if (fileBundle && fileBundle.FILE_NAME && fileBundle.ORIGINAL_NAME) {
@@ -170,20 +169,19 @@ export default class AccountService {
 
                 flag = await new Promise<boolean>((resolve, reject) => {
                     smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                        if (err) {
-                            resolve(false);
-                            throw err;
-                        }
-
-                        resolve(true);
+                        if (err) resolve(false);
+                        else resolve(true);
                     });
                 });
+
+                if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
             }
 
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            await this.statusService.deleteUserStatus(userPK);
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -286,7 +284,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
 
         return flag;
