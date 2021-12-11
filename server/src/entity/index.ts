@@ -24,8 +24,10 @@ import FileKeys from './fileKeys.entity';
 import FileHistory from './fileHistory.entity';
 import FileFolder from './fileFolder.entity';
 import FileBin from './fileBin.entity';
+import FolderBin from './folderBin.entity';
 
 export {
+    FolderBin,
     FileBin,
     FileKeys,
     FileHistory,

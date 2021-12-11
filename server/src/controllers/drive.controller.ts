@@ -29,7 +29,18 @@ export default class DriveController {
             const result = await this.driveService.createFolder(COMPANY_PK, folderName, parentPK);
             resExecutor(res, { result });
         } catch (err) {
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Post('delete-folder')
+    async deleteFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK, USER_PK } = usrPayloadParser(req);
+            const { folderPK } = req.body;
+            this.driveService.deleteFolder(folderPK, COMPANY_PK, USER_PK);
+        } catch (err) {
+            throw resExecutor(res, { err });
         }
     }
 

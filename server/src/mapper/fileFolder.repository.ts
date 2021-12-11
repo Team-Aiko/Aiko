@@ -41,4 +41,26 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             throw new AikoError('FileFolderRepository/createFolder', 500, 590211);
         }
     }
+
+    async getFolderInfo(FOLDER_PK: number) {
+        try {
+            return await this.createQueryBuilder('f')
+                .leftJoinAndSelect('f.fileKeys', 'fileKeys')
+                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
+                .where('f.FOLDER_PK = :FOLDER_PK', { FOLDER_PK })
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/getFolderInfo', 500, 918921);
+        }
+    }
+
+    async deleteFolder(FOLDER_PK: number) {
+        try {
+            await this.update({ IS_DELETED: 1 }, { FOLDER_PK });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/deleteFolder', 500, 821882);
+        }
+    }
 }

@@ -14,6 +14,8 @@ export default class FileFolder {
     SIZE: number;
     @Column()
     PARENT_PK: number;
+    @Column()
+    IS_DELETED: number;
 
     @OneToMany(() => FileKeys, (fileKeys) => fileKeys.folder)
     @JoinColumn({ name: 'FOLDER_PK' })
