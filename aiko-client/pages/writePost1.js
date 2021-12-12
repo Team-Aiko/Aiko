@@ -1,36 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { EditorState } from 'draft-js';
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
 import dynamic from 'next/dynamic';
 const Editor = dynamic(() => import('react-draft-wysiwyg').then((mod) => mod.Editor), { ssr: false });
 import styled from 'styled-components';
 import createImagePlugin from '@draft-js-plugins/image';
 import styles from '../styles/WritePost.module.css';
 import { Button } from '@material-ui/core';
-import {get, post} from '../_axios'
+import { get, post } from '../_axios';
+import axios from 'axios';
+import router from 'next/router';
+import draftToHtml from 'draftjs-to-html';
+const htmlToDraft = dynamic(
+    () => {
+        return import('html-to-draftjs');
+    },
+    { ssr: false },
+);
+import { stateToHTML } from 'draft-js-export-html';
 
 const imagePlugin = createImagePlugin();
 
 const MyBlock = styled.div`
     .wrapper-class {
-        width: 40%;
+        width: 80%;
         margin: 0 auto;
         margin-bottom: 4rem;
     }
     .editor {
-        height: 500px !important;
+        height: 400px !important;
         border: 1px solid #f1f1f1 !important;
         padding: 5px !important;
         border-radius: 2px !important;
     }
 `;
 
+const IntroduceContent = styled.div`
+    position: relative;
+    border: 0.0625rem solid #d7e2eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    padding: 1.5rem;
+    width: 50%;
+    margin: 0 auto;
+    margin-bottom: 4rem;
+`;
+
 const writePost1 = () => {
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
+    const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+
     const onEditorStateChange = (editorState) => {
-        // editorState에 값 설정
         setEditorState(editorState);
+        console.log(stateToHTML(editorState.getCurrentContent()));
     };
 
     const [title, setTitle] = useState('');
@@ -59,7 +82,8 @@ const writePost1 = () => {
     };
 
     const getCurrentUserName = async () => {
-        const res = await get('/api/account/decoding-token')
+        const res = await axios
+            .get('/api/account/decoding-token')
             .then((res) => {
                 console.log(res);
                 setName(res.data.result.FIRST_NAME + ' ' + res.data.result.LAST_NAME);
@@ -78,7 +102,7 @@ const writePost1 = () => {
         const url = '/api/notice-board/write';
         const obj = {
             title: title,
-            content: editorState,
+            content: stateToHTML(editorState.getCurrentContent()),
         };
         formData.append('obj', JSON.stringify(obj));
         formData.append('file', files[0]);
@@ -153,8 +177,8 @@ const writePost1 = () => {
                     editorState={editorState}
                     // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
                     onEditorStateChange={onEditorStateChange}
-                    plugins={[imagePlugin]}
                 />
+                <IntroduceContent dangerouslySetInnerHTML={{ __html: editorToHtml }} />
             </MyBlock>
 
             <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>

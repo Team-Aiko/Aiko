@@ -2,10 +2,26 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import {get, post} from '../../_axios';
 import styles from '../../styles/innerPost.module.css';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import DeletePostModal from '../../components/DeletePostModal.js';
+import ReactHtmlParser from 'react-html-parser';
+import draftToHtml from 'draftjs-to-html';
+const htmlToDraft = dynamic(
+    () => {
+        return import('html-to-draftjs');
+    },
+    { ssr: false },
+);
+import { stateToHTML } from 'draft-js-export-html';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import { EditorState, convertToRaw, ContentState, convertFromRaw } from 'draft-js';
+import dynamic from 'next/dynamic';
+const Editor = dynamic(() => import('react-draft-wysiwyg').then((mod) => mod.Editor), { ssr: false });
+import styled from 'styled-components';
+import createImagePlugin from '@draft-js-plugins/image';
+import {stateFromHTML} from 'draft-js-import-html';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -18,25 +34,50 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+const imagePlugin = createImagePlugin();
+
+const MyBlock = styled.div`
+    .wrapper-class {
+        width: 80%;
+        margin: 0 auto;
+        margin-bottom: 4rem;
+    }
+    .editor {
+        height: 400px !important;
+        border: 1px solid #f1f1f1 !important;
+        padding: 5px !important;
+        border-radius: 2px !important;
+    }
+`;
+
+const IntroduceContent = styled.div`
+    position: relative;
+    border: 0.0625rem solid #d7e2eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    padding: 1.5rem;
+    width: 50%;
+    margin: 0 auto;
+    margin-bottom: 4rem;
+`;
+
 const innerPost = () => {
+
+    const onEditorStateChange = (editorState) => {
+        setEditorState(editorState);
+    };
+
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
     const [name, setName] = useState('');
     const [date, setDate] = useState('');
     const [pkNum, setPkNum] = useState('');
-    const [popup, setPopup] = useState(false);
     const [files, setFiles] = useState([]);
+    
+    const [editorState, setEditorState] = useState('Dude what the');
 
-    const [isdel, setIsDel] = useState(0);
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState([]);
-
-    //타임스탬프 변환
-
-    //이전 게시글, 다음 게시글 제목
-    const [prevTitle, setPrevTitle] = useState('');
-    const [nextTitle, setNextTitle] = useState('');
 
     //현재 유저 데이터 (from decoding token API)
     const [currentUserPk, setCurrentUserPk] = useState(undefined);
@@ -46,8 +87,6 @@ const innerPost = () => {
 
     const router = useRouter();
     const { pk } = router.query;
-
-    const [presentPk, setPresentPk] = useState({ pk });
 
     useEffect(() => {
         const getFileNames = async () => {
@@ -71,20 +110,23 @@ const innerPost = () => {
         getFileNames();
     }, []);
 
-    useEffect(() => {
-        const getDetails = async () => {
-            const res = await axios.get(`/api/notice-board/detail?num=${pk}`);
-            console.log(res);
+    const getDetails = async () => {
+        const url = (`/api/notice-board/detail?num=${pk}`)
+        await axios.get(url)
+        .then((res) => {
             setInnerPosts(res.data.result);
             setTitle(res.data.result.TITLE);
-            setContent(res.data.result.CONTENT);
+            setEditorState(res.data.result.DESCRIPTION);
             setName(res.data.result.USER_NAME);
             setDate(res.data.result.CREATE_DATE);
             setPkNum(res.data.result.NOTICE_BOARD_PK);
             setWriterPk(res.data.result.USER_PK);
-        };
-        getDetails();
-    }, []);
+        })
+    };
+
+    useEffect(() => {
+        getDetails()
+    },[])
 
     useEffect(() => {
         const getSpecifics = async () => {
@@ -102,10 +144,6 @@ const innerPost = () => {
 
     const handleTitle = (e) => {
         setTitle(e.target.value);
-    };
-
-    const handleContent = (e) => {
-        setContent(e.target.value);
     };
 
     const deleteFile1 = () => {
@@ -129,7 +167,7 @@ const innerPost = () => {
         const obj = {
             num: pkNum,
             title: title,
-            content: content,
+            content: stateToHTML(editorState.getCurrentContent()),
             'delFilePks[]': deletedFilePk,
         };
         formData.append('obj', JSON.stringify(obj));
@@ -173,23 +211,6 @@ const innerPost = () => {
             .catch((error) => {
                 console.log(error);
             });
-    };
-
-    const downloadFile1 = async () => {
-        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum}`;
-        await axios.get(url).then((res) => {
-            console.log(res);
-        });
-    };
-
-    const downloadFile2 = () => {
-        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum + 1}`;
-        axios.get(url);
-    };
-
-    const downloadFile3 = () => {
-        const url = `/api/store/download-noticeboard-file?fileId=${filePkNum + 2}`;
-        axios.get(url);
     };
 
     const classes = useStyles();
@@ -238,12 +259,33 @@ const innerPost = () => {
                 </div>
 
                 <div className={styles.contentArea}>
-                    <textarea
-                        className={styles.contentInput}
-                        value={content}
-                        disabled={writerPk !== currentUserPk}
-                        onChange={handleContent}
-                    />
+                    <MyBlock>
+                        <Editor
+                            // 에디터와 툴바 모두에 적용되는 클래스
+                            wrapperClassName='wrapper-class'
+                            // 에디터 주변에 적용된 클래스
+                            editorClassName='editor'
+                            // 툴바 주위에 적용된 클래스
+                            toolbarClassName='toolbar-class'
+                            // 툴바 설정
+                            toolbar={{
+                                // inDropdown: 해당 항목과 관련된 항목을 드롭다운으로 나타낼것인지
+                                list: { inDropdown: true },
+                                textAlign: { inDropdown: true },
+                                link: { inDropdown: true },
+                                history: { inDropdown: false },
+                            }}
+                            placeholder='내용을 작성해주세요.'
+                            // 한국어 설정
+                            localization={{
+                                locale: 'ko',
+                            }}
+                            // 초기값 설정
+                            editorState={editorState}
+                            // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
+                            onEditorStateChange={onEditorStateChange}
+                        />
+                    </MyBlock>
                 </div>
 
                 {files.map((file) => {

@@ -58,19 +58,6 @@ export default function board() {
         pageBtn();
     }, [postsPerPage]);
 
-    // useEffect(() => {
-    //     axios.get(`/api/notice-board/btn-size?option=${postsPerPage}`)
-    //     .then((res) => {
-    //         console.log(res.data.result);
-    //         for (let i=1; i <= res.data.result; i++){
-    //         setBtnNumbers([...btnNumbers, i]);
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.log(error)
-    //     })
-    // },[postsPerPage])
-
     const classes = useStyles();
 
     return (
