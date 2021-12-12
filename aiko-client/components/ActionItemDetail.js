@@ -2,22 +2,15 @@ import 'date-fns';
 import styles from '../styles/ActionItems.module.css';
 import react, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {
-    TextField,
-    Typography,
-    FormControl,
-    Select,
-    MenuItem,
-    IconButton,
-    Tooltip,
-} from '@material-ui/core';
+import { TextField, Typography, FormControl, Select, MenuItem, IconButton, Tooltip } from '@material-ui/core';
 import { Edit, Delete, Save, HighlightOff } from '@material-ui/icons';
 import { get, post } from '../_axios';
+import router from 'next/router';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
-        width: 160,
-        color: 'black'
+        width: 140,
+        color: 'black',
     },
     exitIcon: {
         display: 'flex',
@@ -39,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
         fontSize: '10px',
     },
     date: {
-        width: 160,
+        width: 140,
     },
     assignTypo: {
         display: 'block',
@@ -77,7 +70,7 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
         const year = date.getFullYear();
         const month = '0' + (date.getMonth() + 1);
         const day = '0' + date.getDate();
-        return year.toString().substr(-2) + '-' + month.substr(-2) + '-' + day.substr(-2);
+        return year.toString() + '-' + month.substr(-2) + '-' + day.substr(-2);
     }
 
     const [detailStartDate, setDetailStartDate] = useState(getUnixTime(actionItemArray[activeRow].START_DATE));
@@ -87,14 +80,15 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
     const [detailStep, setDetailStep] = useState(actionItemArray[activeRow].STEP_PK);
 
     const [disabled, setDisabled] = useState(true);
-    const [disableTag, setDisableTag] = useState(true);
 
     const checkProfile = () => {
-        if(actionItemArray[activeRow].assigner.USER_PK == actionItemArray[activeRow].owner.USER_PK
-            && actionItemArray[activeRow].assigner.DEPARTMENT_PK == actionItemArray[activeRow].owner.DEPARTMENT_PK){
-            setDisabled(!disabled)
+        if (
+            actionItemArray[activeRow].assigner.USER_PK == actionItemArray[activeRow].owner.USER_PK &&
+            actionItemArray[activeRow].assigner.DEPARTMENT_PK == actionItemArray[activeRow].owner.DEPARTMENT_PK
+        ) {
+            setDisabled(!disabled);
         } else {
-            alert('담당자만 수정 가능합니다.')
+            alert('담당자만 수정 가능합니다.');
         }
     };
 
@@ -107,7 +101,13 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
     };
 
     const detailStartDateChange = (e) => {
-        setDetailStartDate(e.target.value)
+        setDetailStartDate(e.target.value);
+        console.log(detailStartDate)
+    };
+
+    const detailDueDateChange = (e) => {
+        setDetailDueDate(e.target.value);
+        console.log(detailDueDate)
     };
 
     const deleteActionItem = () => {
@@ -115,9 +115,11 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
         const data = {
             ACTION_PK: actionItemArray[activeRow].ACTION_PK,
         };
-        if(actionItemArray[activeRow].assigner.DEPARTMENT_PK == actionItemArray[activeRow].owner.DEPARTMENT_PK
-            || actionItemArray[activeRow].assigner.USER_PK == actionItemArray[activeRow].owner.USER_PK){
-                post(url, data)
+        if (
+            actionItemArray[activeRow].assigner.DEPARTMENT_PK == actionItemArray[activeRow].owner.DEPARTMENT_PK ||
+            actionItemArray[activeRow].assigner.USER_PK == actionItemArray[activeRow].owner.USER_PK
+        ) {
+            post(url, data)
                 .then((res) => {
                     alert('삭제되었습니다');
                     openDetailModal();
@@ -126,40 +128,43 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                 .catch((error) => {
                     console.log(error);
                 });
-            }
+        }
     };
 
     const updateActionItem = () => {
         const url = '/api/work/update-action-item';
         const data = {
-            ACTION_PK : actionItemArray[activeRow].ACTION_PK,
-            OWNER_PK : actionItemArray[activeRow].owner.USER_PK,
-            TITLE : detailTitle,
+            ACTION_PK: actionItemArray[activeRow].ACTION_PK,
+            OWNER_PK: actionItemArray[activeRow].owner.USER_PK,
+            TITLE: detailTitle,
             DESCRIPTION: detailDesc,
-            START_DATE : detailStartDate,
-            DUE_DATE : detailDueDate,
-            P_PK : detailPriority,
-            STEP_PK : detailStep,
+            START_DATE: Math.floor(new Date(detailStartDate).getTime() / 1000),
+            DUE_DATE: Math.floor(new Date(detailDueDate).getTime() / 1000),
+            P_PK: detailPriority,
+            STEP_PK: detailStep,
+            updateCols: [],
         };
+        data.TITLE !== actionItemArray[activeRow].TITLE ? data.updateCols.push('TITLE') : undefined;
+        data.DESCRIPTION !== actionItemArray[activeRow].DESCRIPTION ? data.updateCols.push('DESCRIPTION') : undefined;
+        data.START_DATE !== detailStartDate ? data.updateCols.push('START_DATE') : undefined;
+        data.DUE_DATE !== detailDueDate ? data.updateCols.push('DUE_DATE') : undefined;
+        data.P_PK !== actionItemArray[activeRow].P_PK ? data.updateCols.push('P_PK') : undefined;
+        data.STEP_PK !== actionItemArray[activeRow].STEP_PK ? data.updateCols.push('STEP_PK') : undefined;
         post(url, data)
-        .then((res) => {
-            alert('수정되었습니다');
-            console.log(res);
-        })
-        .catch((error) => {
-            console.log(error)
-        });
+            .then((res) => {
+                alert('수정되었습니다');
+                openDetailModal();
+                console.log(res);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     };
 
     const fontColor = {
-        style : {
-            color: 'black'
-        }
-    }
-
-    const dateValues = {
-        startDate : detailStartDate,
-        dueDate : detailDueDate,
+        style: {
+            color: 'black',
+        },
     };
 
     return (
@@ -219,11 +224,12 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                         </Typography>
                         <TextField
                             className={classes.date}
-                            type='date'
                             style={{ margin: 3 }}
-                            value={detailDueDate}
+                            placeholder='YYYY-MM-DD'
+                            value={detailStartDate}
                             disabled={disabled}
                             inputProps={fontColor}
+                            onChange={detailStartDateChange}
                         />
                     </div>
 
@@ -233,11 +239,12 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                         </Typography>
                         <TextField
                             className={classes.date}
-                            type='date'
                             style={{ margin: 3 }}
+                            placeholder='YY-MM-DD'
                             value={detailDueDate}
                             disabled={disabled}
                             inputProps={fontColor}
+                            onChange={detailDueDateChange}
                         />
                     </div>
 
@@ -245,7 +252,7 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                         <Typography variant='overline' display='block' gutterBottom>
                             Priority
                         </Typography>
-                        <Select  value={detailPriority}>
+                        <Select value={detailPriority}>
                             <MenuItem
                                 value={1}
                                 onClick={() => {
@@ -277,7 +284,7 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                         <Typography variant='overline' display='block' gutterBottom>
                             Step
                         </Typography>
-                        <Select  value={detailStep}>
+                        <Select value={detailStep}>
                             <MenuItem
                                 value={1}
                                 onClick={() => {
@@ -310,20 +317,29 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                     <div style={{ display: 'flex' }}>
                         <Tooltip title='Delete this item' disabled={disabled}>
                             <IconButton>
-                                <Delete className={classes.buttons} color='secondary'  onClick={deleteActionItem} />
+                                <Delete className={classes.buttons} color='secondary' onClick={deleteActionItem} />
                             </IconButton>
                         </Tooltip>
 
                         <Tooltip title='Edit this item'>
                             <IconButton>
-                                <Edit className={classes.buttons} color='action' onClick={checkProfile}/>
+                                <Edit className={classes.buttons} color='action' onClick={checkProfile} />
                             </IconButton>
                         </Tooltip>
+                        {disabled == false ? (
+                            <Typography
+                                variant='overline'
+                                style={{ display: 'flex', alignItems: 'center', color: '#3f51b5', fontSize:'10px' }}
+                            >
+                                You can edit & delete now.
+                            </Typography>
+                        ) : (
+                            <></>
+                        )}
                     </div>
-
                     <Tooltip title='Save' disabled={disabled}>
                         <IconButton>
-                            <Save className={classes.buttons} color='primary' onClick={updateActionItem}/>
+                            <Save className={classes.buttons} color='primary' onClick={updateActionItem} />
                         </IconButton>
                     </Tooltip>
                 </div>
