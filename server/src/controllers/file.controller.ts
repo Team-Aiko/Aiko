@@ -18,7 +18,7 @@ import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 
 @UseGuards(UserGuard)
-@Controller('store')
+@Controller() // /store
 export default class FileController {
     constructor(private fileService: FileService) {}
 
@@ -86,6 +86,7 @@ export default class FileController {
      */
     @Get('download-profile-file')
     async downloadProfileFile(@Query('fileId') fileId: string, @Res() res: Response) {
+        console.log('🚀 ~ file: file.controller.ts ~ line 89 ~ FileController ~ downloadProfileFile ~ fileId', fileId);
         try {
             const { FILE_NAME, ORIGINAL_NAME } = await this.fileService.viewProfileFile(Number(fileId));
             res.download(`${filePath.PROFILE}${FILE_NAME}`, ORIGINAL_NAME);
