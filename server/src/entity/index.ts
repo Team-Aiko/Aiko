@@ -20,8 +20,14 @@ import Meet from './meet.entity';
 import CalledMembers from './calledMembers.entity';
 import UserProfileFile from './userProfileFile.entity';
 import GroupChatRoom from './groupChatRoom.entity';
+import FileKeys from './fileKeys.entity';
+import FileHistory from './fileHistory.entity';
+import FileFolder from './fileFolder.entity';
 
 export {
+    FileKeys,
+    FileHistory,
+    FileFolder,
     GroupChatRoom,
     UserProfileFile,
     CalledMembers,

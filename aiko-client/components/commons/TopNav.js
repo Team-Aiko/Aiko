@@ -25,7 +25,7 @@ import PropTypes from 'prop-types';
 import { get } from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo } from '../../_redux/accountReducer';
-import { setMember, setMemberStatus } from '../../_redux/memberReducer';
+import { setMember, setMemberStatus, setMemberListStatus } from '../../_redux/memberReducer';
 import SideNav from './SideNav';
 import router from 'next/router';
 import { io } from 'socket.io-client';
@@ -201,14 +201,16 @@ function PComp(props) {
             .catch((err) => console.log(err));
     };
 
+    useEffect(async () => {
+        await getCurrentUserPk();
+    }, []);
+
     useEffect(() => {
         console.log('memberList : ', memberList);
     }, [memberList]);
 
     useEffect(() => {
-        const getCurrentUserPk = async () => await getCurrentUserPk();
-
-        if (getCurrentUserPk) {
+        if (userInfo) {
             console.log('###################');
             const status = io('http://localhost:5000/status');
             setStatus(status);
@@ -223,13 +225,15 @@ function PComp(props) {
                 });
             status.on('client/status/getStatusList', (payload) => {
                 console.log('getStatusList : ', payload);
+                dispatch(setMemberListStatus(payload));
             });
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
-                // dispatch(setMemberStatus(payload.user));
+                dispatch(setMemberStatus(payload.user));
             });
             status.on('client/status/logoutAlert', (payload) => {
-                console.log('logout : ', payload);
+                console.log('logoutAlert : ', payload);
+                dispatch(setMemberStatus(payload));
             });
             status.on('client/status/error', (err) => {
                 console.error('status - error : ', err);
@@ -241,6 +245,7 @@ function PComp(props) {
     }, [userInfo]);
 
     const goToMyMemberInfo = () => {
+        console.log('currentUserPk : ', currentUserPk);
         router.push(`/member-info/${currentUserPk}`);
         setAnchorEl(null);
         handleMobileMenuClose();

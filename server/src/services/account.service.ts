@@ -42,6 +42,7 @@ import MeetingService from './meeting.service';
 import WorkService from './work.service';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
+import DriveService from './drive.service';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -56,6 +57,7 @@ export default class AccountService {
     constructor(
         private privateChatService: PrivateChatService,
         private statusService: StatusService,
+        private driveService: DriveService,
         private meetingService: MeetingService,
         private workService: WorkService,
     ) {}
@@ -133,6 +135,9 @@ export default class AccountService {
                 // admin 권한부여 쿼리
                 await getRepo(GrantRepository).grantPermission(1, userPK, queryRunner.manager);
                 console.log('step4');
+
+                // * generate drive root folder
+                await this.driveService.createFolder(data.companyPK, 'root', undefined, queryRunner.manager);
             } else if (data.position === 1) {
                 // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
