@@ -13,6 +13,11 @@ import { GroupChatClientInfo, GroupChatClientInfoSchema } from 'src/schemas/grou
 import PrivateChatService from 'src/services/privateChat.service';
 import GroupChatService from 'src/services/groupChat.service';
 import StatusService from 'src/services/status.service';
+import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schema';
+import MeetingModule from './meeting.module';
+import WorkModule from './work.module';
+import SocketModule from './socket.module';
+import DriveModule from './driver.module';
 
 @Module({
     imports: [
@@ -21,22 +26,13 @@ import StatusService from 'src/services/status.service';
             dest: filePath.PROFILE,
         }),
         // mongodb imports
-        MongooseModule.forFeature([
-            { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
-            { name: Status.name, schema: StatusSchema },
-            { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
-        ]),
+        SocketModule,
+        MeetingModule,
+        WorkModule,
+        DriveModule,
     ],
     controllers: [AccountController],
-    providers: [
-        AccountService,
-        StatusService,
-        GroupChatService,
-        PrivateChatService,
-        // SocketService,
-        MeetingService,
-        WorkService,
-    ],
+    providers: [AccountService],
     exports: [AccountService],
 })
 export default class AccountModule {}

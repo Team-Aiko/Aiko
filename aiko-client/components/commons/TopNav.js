@@ -25,8 +25,10 @@ import PropTypes from 'prop-types';
 import { get } from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo } from '../../_redux/accountReducer';
+import { setMember, setMemberStatus } from '../../_redux/memberReducer';
 import SideNav from './SideNav';
 import router from 'next/router';
+import { io } from 'socket.io-client';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -97,6 +99,7 @@ const useStyles = makeStyles((theme) => ({
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
+    const memberList = useSelector((state) => state.memberReducer);
 
     const handleNav = (bools) => {
         dispatch(handleSideNav(bools));
@@ -114,13 +117,15 @@ export default function CComp() {
                 dispatch(
                     setUserInfo({
                         COMPANY_PK: undefined, // number
-                        DEPARTMENT_NAME: '',
                         DEPARTMENT_PK: undefined, // number
-                        EMAIL: '',
-                        NICKNAME: undefined, // string
+                        COUNTRY_PK: undefined, // number
                         USER_PK: undefined, // number
+                        NICKNAME: undefined, // string
+                        USER_PROFILE_PK: undefined, // number
+                        grants: [],
                     }),
                 );
+                dispatch(setMember([]));
 
                 Router.push('/');
             } catch (e) {
@@ -183,19 +188,57 @@ function PComp(props) {
     };
 
     const [currentUserPk, setCurrentUserPk] = useState(undefined);
+    const [status, setStatus] = useState(undefined);
+    const memberList = useSelector((state) => state.memberReducer);
+    const dispatch = useDispatch();
 
     const getCurrentUserPk = async () => {
-        const res = await get('/api/account/decoding-token')
+        return await get('/api/account/decoding-token')
             .then((res) => {
-                console.log(res);
                 setCurrentUserPk(res.data.result.USER_PK);
+                return res.data.result.USER_PK;
             })
             .catch((err) => console.log(err));
     };
 
     useEffect(() => {
-        getCurrentUserPk();
-    }, []);
+        console.log('memberList : ', memberList);
+    }, [memberList]);
+
+    useEffect(() => {
+        const getCurrentUserPk = async () => await getCurrentUserPk();
+
+        if (getCurrentUserPk) {
+            console.log('###################');
+            const status = io('http://localhost:5000/status');
+            setStatus(status);
+
+            const uri = '/api/account/raw-token';
+            get(uri)
+                .then((response) => {
+                    status.emit('handleConnection', response.data.result);
+                })
+                .catch((err) => {
+                    console.error('handleConnection - error : ', err);
+                });
+            status.on('client/status/getStatusList', (payload) => {
+                console.log('getStatusList : ', payload);
+            });
+            status.on('client/status/loginAlert', (payload) => {
+                console.log('loginAlert : ', payload);
+                // dispatch(setMemberStatus(payload.user));
+            });
+            status.on('client/status/logoutAlert', (payload) => {
+                console.log('logout : ', payload);
+            });
+            status.on('client/status/error', (err) => {
+                console.error('status - error : ', err);
+            });
+            status.on('client/status/changeStatus', (payload) => {
+                console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
+            });
+        }
+    }, [userInfo]);
 
     const goToMyMemberInfo = () => {
         router.push(`/member-info/${currentUserPk}`);

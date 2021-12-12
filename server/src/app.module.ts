@@ -5,6 +5,10 @@ import * as config from 'config';
 import { AccountModule, FileModule, CompanyModule, MeetingModule, NoticeBoardModule, SocketModule } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    FileBin,
+    FileKeys,
+    FileHistory,
+    FileFolder,
     GroupChatRoom,
     UserProfileFile,
     Grant,
@@ -33,12 +37,18 @@ import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
 import GroupChatUserList from './entity/groupChatUserList.entity';
+import { RouterModule } from '@nestjs/core';
+import DriverModule from './modules/driver.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        FileBin,
+        FileKeys,
+        FileHistory,
+        FileFolder,
         GroupChatUserList,
         GroupChatRoom,
         UserProfileFile,
@@ -80,6 +90,11 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
         WorkModule,
         MeetingModule,
         TestModule,
+        DriverModule,
+        // nested routes
+        RouterModule.register([
+            { path: 'store', module: FileModule, children: [{ path: 'drive', module: DriverModule }] },
+        ]),
     ],
     providers: [],
 })

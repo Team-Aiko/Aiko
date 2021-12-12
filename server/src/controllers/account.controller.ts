@@ -207,4 +207,14 @@ export default class AccountController {
             throw resExecutor(res, { err });
         }
     }
+
+    @UseGuards(UserGuard)
+    @Get('raw-token')
+    async getRawToken(@Req() req: Request, @Res() res: Response) {
+        try {
+            resExecutor(res, { result: req.cookies.ACCESS_TOKEN });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }

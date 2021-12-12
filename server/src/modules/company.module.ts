@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import CompanyController from 'src/controllers/company.controller';
 import { PrivateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
 import { GroupChatClientInfo, GroupChatClientInfoSchema } from 'src/schemas/groupChatClientInfo.schema';
+import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schema';
 import { Status, StatusSchema } from 'src/schemas/status.schema';
 import AccountService from 'src/services/account.service';
 import CompanyService from 'src/services/company.service';
@@ -12,26 +13,12 @@ import PrivateChatService from 'src/services/privateChat.service';
 import SocketService from 'src/services/socket.service';
 import StatusService from 'src/services/status.service';
 import WorkService from 'src/services/work.service';
+import { AccountModule } from '.';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
-            { name: Status.name, schema: StatusSchema },
-            { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
-        ]),
-    ],
+    imports: [AccountModule],
     controllers: [CompanyController],
-    providers: [
-        CompanyService,
-        AccountService,
-        MeetingService,
-        // SocketService,
-        WorkService,
-        PrivateChatService,
-        GroupChatService,
-        StatusService,
-    ],
+    providers: [CompanyService],
     exports: [CompanyService],
 })
 export default class CompanyModule {}
