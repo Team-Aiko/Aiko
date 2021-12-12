@@ -13,6 +13,62 @@ import { EntityManager, getConnection, QueryRunner } from 'typeorm';
 
 @Injectable()
 export default class DriveService {
+    // * folder logics
+    async createFolder(companyPK: number, folderName: string, parentPK: number | undefined, manager?: EntityManager) {
+        try {
+            return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async deleteFolder(folderPK: number, companyPK: number, userPK: number) {
+        const queryRunner = getConnection().createQueryRunner();
+        let insertedResult1: Pick<FolderBin, 'FOLDER_BIN_PK'>[];
+        let insertedResult2: number[];
+
+        await queryRunner.startTransaction();
+        try {
+            // * 멤버의 회사와 폴더 소유회사가 일치하는지 확인
+            const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(folderPK);
+            if (folderInfo.COMPANY_PK !== companyPK)
+                throw new AikoError('DriveService/deleteFolder/invalid company member', 500, 918294);
+
+            // * 모든 자식 폴더를 서칭
+            const folderPKs = await getRepo(FileFolderRepository).getFolderPKsInTree(folderPK);
+
+            // * 삭제 프로세스 진행
+            insertedResult1 = await getRepo(FolderBinRepository).deleteFolder(
+                folderPK,
+                companyPK,
+                userPK,
+                queryRunner.manager,
+            );
+
+            await getRepo(FileFolderRepository).deleteFolder(folderPK);
+            const filePKs = folderInfo.fileKeys.map((key) => key.FILE_KEY_PK);
+            insertedResult2 = await this.deleteFiles(filePKs, userPK, companyPK, queryRunner);
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+
+        return { folderBinPK: insertedResult1[0].FOLDER_BIN_PK, fileBinPKs: insertedResult2 };
+    }
+
+    async viewFolder(companyPK: number, folderPK: number) {
+        try {
+            return await getRepo(FileFolderRepository).viewFolder(companyPK, folderPK);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    // * file logics
+    // TODO: 수정 필요할 것으로 보임
     async saveFiles(folderPK: number, USER_PK: number, companyPK: number, files: Express.Multer.File[]) {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
@@ -54,51 +110,9 @@ export default class DriveService {
         }
     }
 
-    async deleteFolder(folderPK: number, companyPK: number, userPK: number) {
-        const queryRunner = getConnection().createQueryRunner();
-        let insertedResult1: Pick<FolderBin, 'FOLDER_BIN_PK'>[];
-        let insertedResult2: number[];
-
-        await queryRunner.startTransaction();
-        try {
-            // * 멤버의 회사와 폴더 소유회사가 일치하는지 확인
-            const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(folderPK);
-            if (folderInfo.COMPANY_PK !== companyPK)
-                throw new AikoError('DriveService/deleteFolder/invalid company member', 500, 918294);
-
-            // * 삭제 프로세스 진행
-            insertedResult1 = await getRepo(FolderBinRepository).deleteFolder(
-                folderPK,
-                companyPK,
-                userPK,
-                queryRunner.manager,
-            );
-
-            await getRepo(FileFolderRepository).deleteFolder(folderPK);
-            const filePKs = folderInfo.fileKeys.map((key) => key.FILE_KEY_PK);
-            insertedResult2 = await this.deleteFiles(filePKs, userPK, companyPK, queryRunner);
-            await queryRunner.commitTransaction();
-        } catch (err) {
-            await queryRunner.rollbackTransaction();
-            throw err;
-        } finally {
-            await queryRunner.release();
-        }
-
-        return { folderBinPK: insertedResult1[0].FOLDER_BIN_PK, fileBinPKs: insertedResult2 };
-    }
-
     async getFiles(filePKs: number | number[], companyPK: number) {
         try {
             return await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    async createFolder(companyPK: number, folderName: string, parentPK: number | undefined, manager?: EntityManager) {
-        try {
-            return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
         } catch (err) {
             throw err;
         }

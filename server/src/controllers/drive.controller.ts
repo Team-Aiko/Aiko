@@ -44,6 +44,19 @@ export default class DriveController {
         }
     }
 
+    @Post('view-folder')
+    async viewFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const { folderPK } = req.body;
+            const result = await this.driveService.viewFolder(COMPANY_PK, folderPK);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
     @Post('save-files')
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {

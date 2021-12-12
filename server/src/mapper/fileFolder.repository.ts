@@ -63,4 +63,39 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             throw new AikoError('FileFolderRepository/deleteFolder', 500, 821882);
         }
     }
+
+    async viewFolder(COMPANY_PK: number, FOLDER_PK: number) {
+        try {
+            const targetFolderInfo = await this.createQueryBuilder('ff')
+                .leftJoinAndSelect('ff.fileKeys', 'fileKeys')
+                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
+                .where('ff.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getOneOrFail();
+            const files = targetFolderInfo.fileKeys;
+            const childrenFolders = await this.getChildrenFolder(FOLDER_PK);
+
+            return { files, childrenFolders };
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/viewFolder', 500, 9271827);
+        }
+    }
+
+    async getChildrenFolder(PARENT_PK: number) {
+        try {
+            return await this.createQueryBuilder().where('PARENT_PK = :PARENT_PK', { PARENT_PK }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/getChildrenFolder', 500, 928192);
+        }
+    }
+
+    async getFolderPKsInTree(FOLDER_PK: number) {
+        try {
+            const sql = `with recursive getFolderPKsInTree `;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/getFolderPKsInTree', 500, 192849);
+        }
+    }
 }
