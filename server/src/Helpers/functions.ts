@@ -61,9 +61,10 @@ export function getRepo<T>(customRepo: ObjectType<T>) {
 }
 
 export function propsRemover<T>(obj: T, ...props: string[]) {
-    props.forEach((prop) => delete (obj as any)[prop]);
+    const replica = { ...obj };
+    props.forEach((prop) => delete (replica as any)[prop]);
 
-    return obj;
+    return replica;
 }
 
 export function isChiefAdmin(grants: Grant[]) {
