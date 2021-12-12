@@ -15,7 +15,7 @@ import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
-const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
+const criticalUserInfo: string[] = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -30,9 +30,10 @@ export default class UserRepository extends Repository<User> {
     async getUserInfoWithNickname(nickname: string, companyPK?: number): Promise<User> {
         let userInfo: User;
         let fraction: SelectQueryBuilder<User>;
+        const removeCols = companyPK ? criticalUserInfo : criticalUserInfo.slice(2);
 
         try {
-            fraction = await this.createQueryBuilder('U')
+            fraction = this.createQueryBuilder('U')
                 .leftJoinAndSelect('U.company', 'company')
                 .leftJoinAndSelect('U.department', 'department')
                 .where('U.IS_VERIFIED = 1')
@@ -40,7 +41,7 @@ export default class UserRepository extends Repository<User> {
 
             if (companyPK) fraction = fraction.andWhere(`U.COMPANY_PK = ${companyPK}`);
 
-            userInfo = propsRemover(await fraction.getOneOrFail(), ...criticalUserInfo);
+            userInfo = propsRemover(await fraction.getOneOrFail(), ...removeCols);
         } catch (err) {
             console.error(err);
             throw new AikoError('select error(search user with nickname)', 500, 500121);
