@@ -438,11 +438,9 @@ export default class AccountService {
         }
     }
 
-    async getUserInfo(targetUserId: number, companyPK?: number) {
+    async getUserInfo(nickname: string, companyPK?: number) {
         try {
-            if (companyPK)
-                return await getRepo(UserRepository).getUserInfoWithUserPKAndCompanyPK(targetUserId, companyPK);
-            else return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
+            return await getRepo(UserRepository).getUserInfoWithNickname(nickname, companyPK);
         } catch (err) {
             throw err;
         }
