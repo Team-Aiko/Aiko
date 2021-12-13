@@ -103,7 +103,7 @@ const MemberInfo = () => {
 
     useEffect(() => {
         getUserInfo()
-    },[])
+    },[nickname])
 
     const [value, setValue] = useState(0);
 
