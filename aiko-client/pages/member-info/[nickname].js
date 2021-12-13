@@ -113,8 +113,7 @@ const MemberInfo = () => {
 
                 <div className={classes.wrapper}>
                     <div className={classes.avatar}>
-                        <Avatar className={classes.large} src='/api/store/download-profile-file?fileId=2'/>
-                        <img src='/api/store/download-profile-file?fileId=2'/>
+                        <Avatar className={classes.large}/>
                         <h4>{name}</h4>
                         <p style={{fontSize:'12px'}}>{company}</p>
                     </div>
