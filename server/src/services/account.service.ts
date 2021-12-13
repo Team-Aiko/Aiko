@@ -42,6 +42,7 @@ import MeetingService from './meeting.service';
 import WorkService from './work.service';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
+import DriveService from './drive.service';
 
 // * mailer
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
@@ -56,6 +57,7 @@ export default class AccountService {
     constructor(
         private privateChatService: PrivateChatService,
         private statusService: StatusService,
+        private driveService: DriveService,
         private meetingService: MeetingService,
         private workService: WorkService,
     ) {}
@@ -99,10 +101,9 @@ export default class AccountService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         let flag = false;
+        let userPK: number;
 
         try {
-            let userPK: number;
-
             // 이미지 테이블 로우 생성쿼리
             let profilePK: number;
             if (fileBundle && fileBundle.FILE_NAME && fileBundle.ORIGINAL_NAME) {
@@ -134,6 +135,9 @@ export default class AccountService {
                 // admin 권한부여 쿼리
                 await getRepo(GrantRepository).grantPermission(1, userPK, queryRunner.manager);
                 console.log('step4');
+
+                // * generate drive root folder
+                await this.driveService.createFolder(data.companyPK, 'root', undefined, queryRunner.manager);
             } else if (data.position === 1) {
                 // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
@@ -165,20 +169,19 @@ export default class AccountService {
 
                 flag = await new Promise<boolean>((resolve, reject) => {
                     smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                        if (err) {
-                            resolve(false);
-                            throw err;
-                        }
-
-                        resolve(true);
+                        if (err) resolve(false);
+                        else resolve(true);
                     });
                 });
+
+                if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
             }
 
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            await this.statusService.deleteUserStatus(userPK);
+            throw err;
         } finally {
             await queryRunner.release();
         }
@@ -210,7 +213,7 @@ export default class AccountService {
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
-            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
                     try {
@@ -228,6 +231,10 @@ export default class AccountService {
                             result.grants = grantList;
                             // remove security informations
                             result = propsRemover(result, 'PASSWORD', 'SALT');
+                            console.log(
+                                '🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result',
+                                result,
+                            );
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
@@ -235,7 +242,7 @@ export default class AccountService {
 
                             const bundle: SuccessPacket = {
                                 header: flag,
-                                userInfo: { ...result },
+                                userInfo: result,
                                 accessToken: token.access,
                                 refreshToken: token.refresh,
                             };
@@ -281,7 +288,7 @@ export default class AccountService {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw err;
         }
 
         return flag;
@@ -435,11 +442,9 @@ export default class AccountService {
         }
     }
 
-    async getUserInfo(targetUserId: number, companyPK?: number) {
+    async getUserInfo(nickname: string, companyPK?: number) {
         try {
-            if (companyPK)
-                return await getRepo(UserRepository).getUserInfoWithUserPKAndCompanyPK(targetUserId, companyPK);
-            else return await getRepo(UserRepository).getUserInfoWithUserPK(targetUserId);
+            return await getRepo(UserRepository).getUserInfoWithNickname(nickname, true, true, companyPK);
         } catch (err) {
             throw err;
         }

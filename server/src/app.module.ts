@@ -13,6 +13,10 @@ import {
 } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    FileBin,
+    FileKeys,
+    FileHistory,
+    FileFolder,
     GroupChatRoom,
     UserProfileFile,
     Grant,
@@ -43,12 +47,18 @@ import TestModule from './modules/test.module';
 import GroupChatUserList from './entity/groupChatUserList.entity';
 import ApprovalFrame from './entity/approvalFrame';
 import ApprovalStep from './entity/approvalStep';
+import { RouterModule } from '@nestjs/core';
+import DriverModule from './modules/driver.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        FileBin,
+        FileKeys,
+        FileHistory,
+        FileFolder,
         GroupChatUserList,
         GroupChatRoom,
         UserProfileFile,
@@ -93,6 +103,11 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
         MeetingModule,
         TestModule,
         ApprovalModule,
+        DriverModule,
+        // nested routes
+        RouterModule.register([
+            { path: 'store', module: FileModule, children: [{ path: 'drive', module: DriverModule }] },
+        ]),
     ],
     providers: [],
 })

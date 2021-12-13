@@ -213,24 +213,26 @@ function PComp(props) {
             const status = io('http://localhost:5000/status');
             setStatus(status);
 
-            const uri = '/api/account/decoding-token';
+            const uri = '/api/account/raw-token';
             get(uri)
                 .then((response) => {
                     status.emit('handleConnection', response.data.result);
-                    console.log('handleConnection : ', response.data.result);
                 })
                 .catch((err) => {
-                    console.error(err);
+                    console.error('handleConnection - error : ', err);
                 });
+            status.on('client/status/getStatusList', (payload) => {
+                console.log('getStatusList : ', payload);
+            });
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
-                dispatch(setMemberStatus(payload.user));
+                // dispatch(setMemberStatus(payload.user));
             });
             status.on('client/status/logoutAlert', (payload) => {
                 console.log('logout : ', payload);
             });
             status.on('client/status/error', (err) => {
-                console.error('error : ', err);
+                console.error('status - error : ', err);
             });
             status.on('client/status/changeStatus', (payload) => {
                 console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
