@@ -1,6 +1,9 @@
-import { EntityRepository } from 'typeorm';
 import ApprovalStep from 'src/entity/approvalStep';
-import { Repository } from 'typeorm';
+import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
 
 @EntityRepository(ApprovalStep)
-export default class ApprovalStepRepository extends Repository<ApprovalStep> {}
+export default class ApprovalStepRepository extends Repository<ApprovalStep> {
+    async createApprovalStep() {
+
+    }
+}
