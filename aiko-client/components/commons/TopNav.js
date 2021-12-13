@@ -187,19 +187,9 @@ function PComp(props) {
         Router.push('/admin');
     };
 
-    const [currentUserPk, setCurrentUserPk] = useState(undefined);
     const [status, setStatus] = useState(undefined);
     const memberList = useSelector((state) => state.memberReducer);
     const dispatch = useDispatch();
-
-    const getCurrentUserPk = async () => {
-        return await get('/api/account/decoding-token')
-            .then((res) => {
-                setCurrentUserPk(res.data.result.USER_PK);
-                return res.data.result.USER_PK;
-            })
-            .catch((err) => console.log(err));
-    };
 
     useEffect(() => {
         console.log('memberList : ', memberList);
@@ -257,7 +247,7 @@ function PComp(props) {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={goToMyMemberInfo}>Profile</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
