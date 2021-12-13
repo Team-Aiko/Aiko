@@ -105,4 +105,8 @@ export default class User {
 
     @OneToMany(() => GroupChatRoom, (groupChatRoom) => groupChatRoom.admin)
     groupChatRooms: GroupChatRoom[];
+
+    @OneToMany(() => NoticeBoard, (nb) => nb.updateUser)
+    @JoinColumn({ name: 'USER_PK' })
+    updateUser: NoticeBoard;
 }

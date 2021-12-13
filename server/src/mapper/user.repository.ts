@@ -27,21 +27,27 @@ export default class UserRepository extends Repository<User> {
         }
     }
 
-    async getUserInfoWithNickname(nickname: string, companyPK?: number): Promise<User> {
+    async getUserInfoWithNickname(
+        nickname: string,
+        removePW: boolean,
+        joinTable: boolean,
+        companyPK?: number,
+    ): Promise<User> {
         let userInfo: User;
         let fraction: SelectQueryBuilder<User>;
-        const removeCols = companyPK ? criticalUserInfo : criticalUserInfo.slice(2);
+        const removeCols = removePW ? criticalUserInfo : criticalUserInfo.slice(2);
 
         try {
-            fraction = this.createQueryBuilder('U')
-                .leftJoinAndSelect('U.company', 'company')
-                .leftJoinAndSelect('U.department', 'department')
-                .where('U.IS_VERIFIED = 1')
-                .andWhere(`U.NICKNAME = '${nickname}'`);
+            fraction = this.createQueryBuilder('U');
+            fraction = joinTable
+                ? fraction.leftJoinAndSelect('U.company', 'company').leftJoinAndSelect('U.department', 'department')
+                : fraction;
+            fraction = fraction.where('U.IS_VERIFIED = 1').andWhere(`U.NICKNAME = '${nickname}'`);
 
             if (companyPK) fraction = fraction.andWhere(`U.COMPANY_PK = ${companyPK}`);
 
             userInfo = propsRemover(await fraction.getOneOrFail(), ...removeCols);
+            console.log('🚀 ~ file: user.repository.ts ~ line 50 ~ UserRepository ~ userInfo', userInfo);
         } catch (err) {
             console.error(err);
             throw new AikoError('select error(search user with nickname)', 500, 500121);

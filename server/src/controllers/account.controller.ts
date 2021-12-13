@@ -104,8 +104,7 @@ export default class AccountController {
                 res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
                 result = propsRemover(result, 'accessToken', 'refreshToken');
                 resExecutor(res, { result });
-            } else {
-            }
+            } else throw new Error('unknown error');
         } catch (err) {
             throw resExecutor(res, { err });
         }

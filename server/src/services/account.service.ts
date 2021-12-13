@@ -213,7 +213,7 @@ export default class AccountService {
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
-            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME);
+            let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
             const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
                 (resolve, reject) => {
                     try {
@@ -231,6 +231,10 @@ export default class AccountService {
                             result.grants = grantList;
                             // remove security informations
                             result = propsRemover(result, 'PASSWORD', 'SALT');
+                            console.log(
+                                '🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result',
+                                result,
+                            );
                             // make token
                             const token = this.generateLoginToken(result);
                             // refresh token update to database
@@ -238,7 +242,7 @@ export default class AccountService {
 
                             const bundle: SuccessPacket = {
                                 header: flag,
-                                userInfo: { ...result },
+                                userInfo: result,
                                 accessToken: token.access,
                                 refreshToken: token.refresh,
                             };
@@ -440,7 +444,7 @@ export default class AccountService {
 
     async getUserInfo(nickname: string, companyPK?: number) {
         try {
-            return await getRepo(UserRepository).getUserInfoWithNickname(nickname, companyPK);
+            return await getRepo(UserRepository).getUserInfoWithNickname(nickname, true, true, companyPK);
         } catch (err) {
             throw err;
         }
