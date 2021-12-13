@@ -2,26 +2,34 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import {get, post} from '../../_axios';
 import styles from '../../styles/innerPost.module.css';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import ReactHtmlParser from 'react-html-parser';
-import draftToHtml from 'draftjs-to-html';
-const htmlToDraft = dynamic(
-    () => {
-        return import('html-to-draftjs');
-    },
-    { ssr: false },
-);
-import { stateToHTML } from 'draft-js-export-html';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { EditorState, convertToRaw, ContentState, convertFromRaw } from 'draft-js';
+import DeletePostModal from '../../components/DeletePostModal.js';
+
+//TEXT EDITOR imports!
 import dynamic from 'next/dynamic';
 const Editor = dynamic(() => import('react-draft-wysiwyg').then((mod) => mod.Editor), { ssr: false });
+import { stateToHTML } from 'draft-js-export-html';
+import draftToHtml from 'draftjs-to-html';
 import styled from 'styled-components';
-import createImagePlugin from '@draft-js-plugins/image';
-import {stateFromHTML} from 'draft-js-import-html';
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import htmlToDraft from 'html-to-draftjs';
+
+const MyBlock = styled.div`
+    .wrapper-class {
+        width: 100%;
+        margin: 0 auto;
+        margin-bottom: 4rem;
+    }
+    .editor {
+        height: 400px !important;
+        border: 1px solid #f1f1f1 !important;
+        padding: 5px !important;
+        border-radius: 2px !important;
+    }
+`;
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -34,53 +42,30 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const imagePlugin = createImagePlugin();
-
-const MyBlock = styled.div`
-    .wrapper-class {
-        width: 80%;
-        margin: 0 auto;
-        margin-bottom: 4rem;
-    }
-    .editor {
-        height: 400px !important;
-        border: 1px solid #f1f1f1 !important;
-        padding: 5px !important;
-        border-radius: 2px !important;
-    }
-`;
-
-const IntroduceContent = styled.div`
-    position: relative;
-    border: 0.0625rem solid #d7e2eb;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    padding: 1.5rem;
-    width: 50%;
-    margin: 0 auto;
-    margin-bottom: 4rem;
-`;
-
 const innerPost = () => {
-
-    const onEditorStateChange = (editorState) => {
-        setEditorState(editorState);
-    };
-
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
     const [name, setName] = useState('');
     const [date, setDate] = useState('');
     const [pkNum, setPkNum] = useState('');
     const [files, setFiles] = useState([]);
-    
-    const [editorState, setEditorState] = useState('Dude what the');
-
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState([]);
 
     //현재 유저 데이터 (from decoding token API)
     const [currentUserPk, setCurrentUserPk] = useState(undefined);
+
+    const [editorState, setEditorState] = useState(EditorState.createEmpty());
+
+    const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+
+    const onEditorStateChange = (editorState) => {
+        setEditorState(editorState);
+        console.log(stateToHTML(editorState.getCurrentContent()));
+    };
+
+    const [disabled, setDisabled] = useState(true);
 
     //게시글 작성자 pkNum
     const [writerPk, setWriterPk] = useState(undefined);
@@ -110,23 +95,23 @@ const innerPost = () => {
         getFileNames();
     }, []);
 
-    const getDetails = async () => {
-        const url = (`/api/notice-board/detail?num=${pk}`)
-        await axios.get(url)
-        .then((res) => {
-            setInnerPosts(res.data.result);
-            setTitle(res.data.result.TITLE);
-            setEditorState(res.data.result.DESCRIPTION);
-            setName(res.data.result.USER_NAME);
-            setDate(res.data.result.CREATE_DATE);
-            setPkNum(res.data.result.NOTICE_BOARD_PK);
-            setWriterPk(res.data.result.USER_PK);
-        })
-    };
+        const getDetails = async () => {
+            const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
+            .then((res) => {
+                console.log(res);
+                setInnerPosts(res.data.result);
+                setTitle(res.data.result.TITLE);
+                setContent(res.data.result.CONTENT);
+                setName(res.data.result.USER_NAME);
+                setDate(res.data.result.CREATE_DATE);
+                setPkNum(res.data.result.NOTICE_BOARD_PK);
+                setWriterPk(res.data.result.USER_PK);
+            })
+        };
 
-    useEffect(() => {
-        getDetails()
-    },[])
+        useEffect(() => {
+            getDetails()
+        }, [])
 
     useEffect(() => {
         const getSpecifics = async () => {
@@ -167,7 +152,7 @@ const innerPost = () => {
         const obj = {
             num: pkNum,
             title: title,
-            content: stateToHTML(editorState.getCurrentContent()),
+            content: editorToHtml,
             'delFilePks[]': deletedFilePk,
         };
         formData.append('obj', JSON.stringify(obj));
@@ -243,6 +228,20 @@ const innerPost = () => {
         return year + '-' + month.substr(-2) + '-' + day.substr(-2) + ' ' + hour.substr(-2) + ':' + second.substr(-2);
     }
 
+    //rendering editor states
+
+    const htmlToEditor = content
+
+    useEffect(() => {
+        const blocksFromHtml = htmlToDraft(htmlToEditor);
+        if (blocksFromHtml) {
+            const { contentBlocks, entityMap } = blocksFromHtml;
+            const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
+            const editorState = EditorState.createWithContent(contentState);
+            setEditorState(editorState);
+        }
+    },[content]);
+
     return (
         <>
             <div className={styles.outerContainer}>
@@ -252,14 +251,14 @@ const innerPost = () => {
                         value={title}
                         disabled={writerPk !== currentUserPk}
                         onChange={handleTitle}
+                        disabled={disabled}
                     />
                     <p style={{ fontSize: '13px', color: '#6F6A6A' }}>
                         Posted by {name}, {getUnixTime(date)}
                     </p>
                 </div>
 
-                <div className={styles.contentArea}>
-                    <MyBlock>
+                <MyBlock>
                         <Editor
                             // 에디터와 툴바 모두에 적용되는 클래스
                             wrapperClassName='wrapper-class'
@@ -284,9 +283,9 @@ const innerPost = () => {
                             editorState={editorState}
                             // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
                             onEditorStateChange={onEditorStateChange}
+                            readOnly={disabled}
                         />
                     </MyBlock>
-                </div>
 
                 {files.map((file) => {
                     if (file.length == 0) {
