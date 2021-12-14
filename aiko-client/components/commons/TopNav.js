@@ -188,7 +188,7 @@ function PComp(props) {
         {
             status: 1,
             onClick: () => {
-                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 1 });
+                status.emit('server/status/changeStatus', 1);
                 dispatch(setUserInfo({ status: 1 }));
                 setStatusMenuOpen(false);
             },
@@ -198,7 +198,7 @@ function PComp(props) {
         {
             status: 2,
             onClick: () => {
-                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 2 });
+                status.emit('server/status/changeStatus', 2);
                 dispatch(setUserInfo({ status: 2 }));
                 setStatusMenuOpen(false);
             },
@@ -208,7 +208,7 @@ function PComp(props) {
         {
             status: 3,
             onClick: () => {
-                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 3 });
+                status.emit('server/status/changeStatus', 3);
                 dispatch(setUserInfo({ status: 3 }));
                 setStatusMenuOpen(false);
             },
@@ -218,7 +218,7 @@ function PComp(props) {
         {
             status: 4,
             onClick: () => {
-                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 4 });
+                status.emit('server/status/changeStatus', 4);
                 dispatch(setUserInfo({ status: 4 }));
                 setStatusMenuOpen(false);
             },
