@@ -62,36 +62,57 @@ export default class DriveService {
 
     async createFolder(companyPK: number, folderName: string, parentPK: number | undefined, manager?: EntityManager) {
         try {
+            // invalid user filter
+            const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(parentPK);
+
+            if (!Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
+                throw new AikoError('DriveService/createFolder/invalidMember', 500, 239182);
+
             return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
         } catch (err) {
             throw err;
         }
     }
 
-    async deleteFiles(filePKs: number | number[], userPK: number, companyPK: number) {
+    async deleteFiles(
+        { filePKs, folderPKs }: { filePKs: number | number[]; folderPKs: number | number[] },
+        userPK: number,
+        companyPK: number,
+    ) {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
         let insertedResults: Pick<FileBin, 'FB_PK'>[] = [];
+        let folderPKList: number[] = [];
 
         try {
-            // * check valid deletes
-            const selectedFiles = await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
-            const isArray = Array.isArray(selectedFiles);
-            if (isArray) filePKs = selectedFiles.map((file) => file.FILE_KEY_PK);
-            else filePKs = [selectedFiles.FILE_KEY_PK];
+            if (filePKs !== -1) {
+                // * check valid deletes
+                const selectedFiles = await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
+                const isArray = Array.isArray(selectedFiles);
+                if (isArray) filePKs = selectedFiles.map((file) => file.FILE_KEY_PK);
+                else filePKs = [selectedFiles.FILE_KEY_PK];
 
-            // * delete process
-            await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
-            insertedResults = await getRepo(FileBinRepository).deleteFiles(
-                filePKs,
-                userPK,
-                companyPK,
-                queryRunner.manager,
-            );
-            console.log(
-                '🚀 ~ file: drive.service.ts ~ line 76 ~ DriveService ~ deleteFiles ~ insertedResults',
-                insertedResults,
-            );
+                // * delete process
+                await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
+                insertedResults = await getRepo(FileBinRepository).deleteFiles(
+                    filePKs,
+                    userPK,
+                    companyPK,
+                    queryRunner.manager,
+                );
+
+                console.log(
+                    '🚀 ~ file: drive.service.ts ~ line 76 ~ DriveService ~ deleteFiles ~ insertedResults',
+                    insertedResults,
+                );
+            }
+
+            if (folderPKs !== -1) {
+                const folders = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                if (Array.isArray(folders)) folderPKList = folders.map((folder) => folder.FOLDER_PK);
+                else folderPKList.push(folders.FOLDER_PK);
+                await getRepo(FileFolderRepository).deleteFolderAndFiles(folderPKList, companyPK, queryRunner.manager);
+            }
 
             await queryRunner.commitTransaction();
         } catch (err) {
