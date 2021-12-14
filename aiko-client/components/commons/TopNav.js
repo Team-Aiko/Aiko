@@ -147,6 +147,44 @@ function PComp(props) {
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { userInfo } = props;
     const { USER_PK } = userInfo;
+    const [status, setStatus] = useState(undefined);
+    const memberList = useSelector((state) => state.memberReducer);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        console.log('memberList : ', memberList);
+    }, [memberList]);
+
+    useEffect(() => {
+        if (userInfo) {
+            const status = io('http://localhost:5000/status');
+            setStatus(status);
+
+            const uri = '/api/account/raw-token';
+            get(uri)
+                .then((response) => {
+                    status.emit('handleConnection', response.data.result);
+                })
+                .catch((err) => {
+                    console.error('handleConnection - error : ', err);
+                });
+            status.on('client/status/getStatusList', (payload) => {
+                dispatch(setMemberListStatus(payload));
+            });
+            status.on('client/status/loginAlert', (payload) => {
+                dispatch(setMemberStatus(payload.user));
+            });
+            status.on('client/status/logoutAlert', (payload) => {
+                dispatch(setMemberStatus(payload));
+            });
+            status.on('client/status/error', (err) => {
+                console.error('status - error : ', err);
+            });
+            status.on('client/status/changeStatus', (payload) => {
+                console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
+            });
+        }
+    }, [userInfo]);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -164,6 +202,9 @@ function PComp(props) {
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
+        if (status) {
+            status.disconnect();
+        }
         props.handleLogout();
     };
 
@@ -186,49 +227,6 @@ function PComp(props) {
     const goToAdmin = () => {
         Router.push('/admin');
     };
-
-    const [status, setStatus] = useState(undefined);
-    const memberList = useSelector((state) => state.memberReducer);
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        console.log('memberList : ', memberList);
-    }, [memberList]);
-
-    useEffect(() => {
-        if (userInfo) {
-            console.log('###################');
-            const status = io('http://localhost:5000/status');
-            setStatus(status);
-
-            const uri = '/api/account/raw-token';
-            get(uri)
-                .then((response) => {
-                    status.emit('handleConnection', response.data.result);
-                })
-                .catch((err) => {
-                    console.error('handleConnection - error : ', err);
-                });
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('getStatusList : ', payload);
-                dispatch(setMemberListStatus(payload));
-            });
-            status.on('client/status/loginAlert', (payload) => {
-                console.log('loginAlert : ', payload);
-                dispatch(setMemberStatus(payload.user));
-            });
-            status.on('client/status/logoutAlert', (payload) => {
-                console.log('logoutAlert : ', payload);
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/error', (err) => {
-                console.error('status - error : ', err);
-            });
-            status.on('client/status/changeStatus', (payload) => {
-                console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
-            });
-        }
-    }, [userInfo]);
 
     const goToMyMemberInfo = () => {
         router.push(`/member-info/${userInfo.NICKNAME}`);
