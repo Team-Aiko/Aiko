@@ -13,12 +13,14 @@ import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schem
 import PrivateChatService from 'src/services/privateChat.service';
 import GroupChatService from 'src/services/groupChat.service';
 import StatusService from 'src/services/status.service';
+import { StatusClientStorage, statusClientStorageSchema } from 'src/schemas/statusClientStorage.shcema';
 
 const mongoModule = MongooseModule.forFeature([
     { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
     { name: Status.name, schema: StatusSchema },
     { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
     { name: GroupChatLog.name, schema: groupChatLogSchema },
+    { name: StatusClientStorage.name, schema: statusClientStorageSchema },
 ]);
 
 @Module({

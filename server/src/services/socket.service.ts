@@ -10,7 +10,7 @@ import { IMessagePayload, statusPath } from '../interfaces/MVC/socketMVC';
 import { InjectModel } from '@nestjs/mongoose';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
 import { Model } from 'mongoose';
-import { Status, statusDocument } from 'src/schemas/status.schema';
+import { Status, StatusDocument } from 'src/schemas/status.schema';
 import PrivateChatRoomRepository from 'src/mapper/privateChatRoom.repository';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
@@ -19,7 +19,7 @@ import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/gr
 export default class SocketService {
     constructor(
         @InjectModel(PrivateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>,
-        @InjectModel(Status.name) private statusModel: Model<statusDocument>,
+        @InjectModel(Status.name) private statusModel: Model<StatusDocument>,
         @InjectModel(GroupChatClientInfo.name) private groupChatClientModel: Model<GroupChatClientInfoDocument>,
     ) {}
     /**
@@ -78,7 +78,6 @@ export default class SocketService {
             const status = new Status();
             status.companyPK = companyPK;
             status.userPK = userPK;
-            status.socketId = 'initialized';
             status.logoutPending = false;
             status.status = -1;
             await this.setUserStatus(status);
@@ -166,7 +165,6 @@ export default class SocketService {
             const newUserContainer = new Status();
             newUserContainer.userPK = user.USER_PK;
             newUserContainer.companyPK = user.COMPANY_PK;
-            newUserContainer.socketId = socketId;
             newUserContainer.logoutPending = false;
             newUserContainer.status = !userContainer ? 1 : userContainer.status;
 
@@ -216,7 +214,6 @@ export default class SocketService {
                 await this.updateStatus({
                     userPK: userStatus.userPK,
                     companyPK: userStatus.companyPK,
-                    socketId: socketClient.id,
                     logoutPending: true,
                     status: userStatus.status,
                 });
@@ -403,7 +400,6 @@ export default class SocketService {
                     { userPK: userStatus.userPK, companyPK: userStatus.companyPK },
                     {
                         status: userStatus.status,
-                        socketId: userStatus.socketId,
                         logoutPending: userStatus.logoutPending,
                     },
                 )

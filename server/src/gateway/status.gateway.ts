@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
-import { getSocketErrorPacket } from 'src/Helpers/functions';
+import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
 
 @WebSocketGateway({ cors: true, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -38,22 +38,21 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         try {
             if (!accessToken) return;
 
-            console.log('client ID = ', client.id, ' accessToken = ', accessToken);
-            const { id } = client;
+            const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
 
             // connection check and select user info
-            const connResult = await this.statusService.statusConnection(id, accessToken);
+            const connResult = await this.statusService.statusConnection(accessToken, client.id);
 
             // join company
-            client.join(`company:${connResult.user.companyPK}`);
+            client.join(`company:${COMPANY_PK}`);
 
             if (connResult.isSendable) {
                 this.wss
-                    .to(`company:${connResult.user.companyPK}`)
-                    .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
+                    .to(`company:${COMPANY_PK}`)
+                    .except(connResult.myClients.map((client) => client.clientId))
                     .emit(statusPath.CLIENT_LOGIN_ALERT, connResult);
 
-                const statusList = await this.statusService.getStatusList(client.id);
+                const statusList = await this.statusService.getStatusList(USER_PK);
                 this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
             }
         } catch (err) {
@@ -78,7 +77,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
-            this.statusService.statusDisconnect(client, this.wss);
+            this.statusService.statusDisconnect(client.id, this.wss);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -92,16 +91,17 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, userStatus: number) {
+    async changeStatus(client: Socket, payload: { userStatus: number; accessToken: string }) {
         console.log('changeStatus method');
 
         try {
-            if (!userStatus) return;
+            if (!payload) return;
 
-            const socketId = client.id;
-            const container = await this.statusService.getUserInfoStatus(socketId);
+            const { USER_PK, COMPANY_PK } = tokenParser(payload.accessToken);
+
+            const container = await this.statusService.getUserInfoStatus(USER_PK);
             console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
-            const result = await this.statusService.changeStatus(socketId, userStatus);
+            const result = await this.statusService.changeStatus(USER_PK, payload.userStatus);
             this.wss
                 .to(`company:${container.companyPK}`)
                 .except(client.id)
@@ -109,7 +109,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, userStatus));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, payload));
         }
     }
 }
