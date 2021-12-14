@@ -106,10 +106,7 @@ export default class DriveService {
             if (filePKs !== -1) {
                 // * check valid deletes
                 const selectedFiles = await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
-                const filesInFolder = await getRepo(FileKeysRepository).getFilesInFolder(
-                    Array.isArray(folders) ? folders.map((folder) => folder.FOLDER_PK) : folders.FOLDER_PK,
-                    companyPK,
-                );
+                const filesInFolder = await getRepo(FileKeysRepository).getFilesInFolder(folderPKList, companyPK);
                 const isArray = Array.isArray(selectedFiles);
                 if (isArray) filePKs = selectedFiles.map((file) => file.FILE_KEY_PK);
                 else filePKs = [selectedFiles.FILE_KEY_PK];
