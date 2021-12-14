@@ -2,9 +2,18 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import * as config from 'config';
-import { AccountModule, FileModule, CompanyModule, MeetingModule, NoticeBoardModule, SocketModule } from './modules';
+import {
+    AccountModule,
+    FileModule,
+    CompanyModule,
+    MeetingModule,
+    NoticeBoardModule,
+    SocketModule,
+    ApprovalModule,
+} from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    FileBin,
     FileKeys,
     FileHistory,
     FileFolder,
@@ -36,6 +45,8 @@ import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
 import GroupChatUserList from './entity/groupChatUserList.entity';
+import ApprovalFrame from './entity/approvalFrame';
+import ApprovalStep from './entity/approvalStep';
 import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
 
@@ -44,6 +55,7 @@ console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        FileBin,
         FileKeys,
         FileHistory,
         FileFolder,
@@ -70,6 +82,8 @@ const typeORMConfig: TypeOrmModuleOptions = {
         Refresh,
         NoticeBoard,
         NoticeBoardFile,
+        ApprovalFrame,
+        ApprovalStep,
     ],
     //User, LoginAuth, Company, Country, Department, ResetPw, Socket, ChatFile
 };
@@ -88,6 +102,7 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
         WorkModule,
         MeetingModule,
         TestModule,
+        ApprovalModule,
         DriverModule,
         // nested routes
         RouterModule.register([

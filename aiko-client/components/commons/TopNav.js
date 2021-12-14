@@ -187,23 +187,9 @@ function PComp(props) {
         Router.push('/admin');
     };
 
-    const [currentUserPk, setCurrentUserPk] = useState(undefined);
     const [status, setStatus] = useState(undefined);
     const memberList = useSelector((state) => state.memberReducer);
     const dispatch = useDispatch();
-
-    const getCurrentUserPk = async () => {
-        return await get('/api/account/decoding-token')
-            .then((res) => {
-                setCurrentUserPk(res.data.result.USER_PK);
-                return res.data.result.USER_PK;
-            })
-            .catch((err) => console.log(err));
-    };
-
-    useEffect(async () => {
-        await getCurrentUserPk();
-    }, []);
 
     useEffect(() => {
         console.log('memberList : ', memberList);
@@ -245,8 +231,7 @@ function PComp(props) {
     }, [userInfo]);
 
     const goToMyMemberInfo = () => {
-        console.log('currentUserPk : ', currentUserPk);
-        router.push(`/member-info/${currentUserPk}`);
+        router.push(`/member-info/${userInfo.NICKNAME}`);
         setAnchorEl(null);
         handleMobileMenuClose();
     };

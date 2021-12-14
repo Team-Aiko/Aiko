@@ -8,6 +8,10 @@ export default class FileKeys {
     FILE_KEY_PK: number;
     @Column()
     FOLDER_PK: number;
+    @Column()
+    IS_DELETED: number;
+    @Column()
+    COMPANY_PK: number;
 
     @ManyToOne(() => FileFolder, (fileFolder) => fileFolder.fileKeys)
     @JoinColumn({ name: 'FOLDER_PK' })

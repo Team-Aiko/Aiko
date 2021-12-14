@@ -26,6 +26,9 @@ export default class NoticeBoard {
     @Column()
     COMPANY_PK: number;
 
+    @Column()
+    UPDATE_USER_PK: number;
+
     @OneToMany(() => NoticeBoardFile, (nbf) => nbf.nb)
     @JoinColumn({ name: 'NOTICE_BOARD_PK' })
     files: NoticeBoardFile[];
@@ -33,4 +36,8 @@ export default class NoticeBoard {
     @ManyToOne(() => User, (nb) => nb.user)
     @JoinColumn({ name: 'USER_PK' })
     user: User;
+
+    @ManyToOne(() => User, (nb) => nb.updateUser)
+    @JoinColumn({ name: 'UPDATE_USER_PK' })
+    updateUser: User;
 }

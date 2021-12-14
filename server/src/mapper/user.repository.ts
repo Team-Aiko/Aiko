@@ -8,13 +8,14 @@ import {
     TransactionManager,
     Transaction,
     Brackets,
+    SelectQueryBuilder,
 } from 'typeorm';
 import { Department, User, Company, Grant } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
-const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
+const criticalUserInfo: string[] = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -26,17 +27,29 @@ export default class UserRepository extends Repository<User> {
         }
     }
 
-    async getUserInfoWithNickname(nickname: string): Promise<User> {
+    async getUserInfoWithNickname(
+        nickname: string,
+        removePW: boolean,
+        joinTable: boolean,
+        companyPK?: number,
+    ): Promise<User> {
         let userInfo: User;
+        let fraction: SelectQueryBuilder<User>;
+        const removeCols = removePW ? criticalUserInfo : criticalUserInfo.slice(2);
 
         try {
-            userInfo = await this.createQueryBuilder('U')
-                .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
-                .andWhere('U.IS_VERIFIED = :IS_VERIFIED', { IS_VERIFIED: 1 })
-                .getOneOrFail();
+            fraction = this.createQueryBuilder('U');
+            fraction = joinTable
+                ? fraction.leftJoinAndSelect('U.company', 'company').leftJoinAndSelect('U.department', 'department')
+                : fraction;
+            fraction = fraction.where('U.IS_VERIFIED = 1').andWhere(`U.NICKNAME = '${nickname}'`);
 
-            userInfo = propsRemover(userInfo, ...criticalUserInfo.slice(2));
+            if (companyPK) fraction = fraction.andWhere(`U.COMPANY_PK = ${companyPK}`);
+
+            userInfo = propsRemover(await fraction.getOneOrFail(), ...removeCols);
+            console.log('🚀 ~ file: user.repository.ts ~ line 50 ~ UserRepository ~ userInfo', userInfo);
         } catch (err) {
+            console.error(err);
             throw new AikoError('select error(search user with nickname)', 500, 500121);
         }
 

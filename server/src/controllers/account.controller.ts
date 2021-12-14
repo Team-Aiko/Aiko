@@ -104,8 +104,7 @@ export default class AccountController {
                 res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
                 result = propsRemover(result, 'accessToken', 'refreshToken');
                 resExecutor(res, { result });
-            } else {
-            }
+            } else throw new Error('unknown error');
         } catch (err) {
             throw resExecutor(res, { err });
         }
@@ -162,11 +161,11 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { targetUserId, currentPage, feedPerPage, pageGroupCnt } = req.body;
+        const { nickname } = req.body;
         const { COMPANY_PK } = usrPayloadParser(req);
 
         try {
-            const result = await this.accountService.getUserInfo(targetUserId, COMPANY_PK);
+            const result = await this.accountService.getUserInfo(nickname, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });
