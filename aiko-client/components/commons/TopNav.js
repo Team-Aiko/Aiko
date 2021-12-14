@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Router from 'next/router';
+import styles from '../../styles/components/TopNav.module.css';
 import { alpha, makeStyles } from '@material-ui/core/styles';
 import {
     Menu,
@@ -13,6 +14,8 @@ import {
     Button,
     ThemeProvider,
     unstable_createMuiStrictModeTheme,
+    Collapse,
+    Avatar,
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
@@ -24,11 +27,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { get } from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
-import { setUserInfo } from '../../_redux/accountReducer';
+import { setUserInfo, resetUserInfo } from '../../_redux/accountReducer';
 import { setMember, setMemberStatus, setMemberListStatus } from '../../_redux/memberReducer';
 import SideNav from './SideNav';
 import router from 'next/router';
 import { io } from 'socket.io-client';
+import { ExpandLess, ExpandMore, StarBorder } from '@material-ui/icons';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -114,17 +118,7 @@ export default function CComp() {
 
                 if (!flag) throw new Error('NO_SERVER_RESPONSE');
 
-                dispatch(
-                    setUserInfo({
-                        COMPANY_PK: undefined, // number
-                        DEPARTMENT_PK: undefined, // number
-                        COUNTRY_PK: undefined, // number
-                        USER_PK: undefined, // number
-                        NICKNAME: undefined, // string
-                        USER_PROFILE_PK: undefined, // number
-                        grants: [],
-                    }),
-                );
+                dispatch(resetUserInfo());
                 dispatch(setMember([]));
 
                 Router.push('/');
@@ -150,12 +144,10 @@ function PComp(props) {
     const [status, setStatus] = useState(undefined);
     const memberList = useSelector((state) => state.memberReducer);
     const dispatch = useDispatch();
+    const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        console.log('memberList : ', memberList);
-    }, [memberList]);
-
-    useEffect(() => {
+        console.log('###### render ######');
         if (userInfo) {
             const status = io('http://localhost:5000/status');
             setStatus(status);
@@ -169,7 +161,13 @@ function PComp(props) {
                     console.error('handleConnection - error : ', err);
                 });
             status.on('client/status/getStatusList', (payload) => {
+                console.log('### getStatusList ### : ', payload);
                 dispatch(setMemberListStatus(payload));
+                for (const row of payload) {
+                    if (row.userPK === userInfo.USER_PK) {
+                        dispatch(setUserInfo({ status: row.status }));
+                    }
+                }
             });
             status.on('client/status/loginAlert', (payload) => {
                 dispatch(setMemberStatus(payload.user));
@@ -181,10 +179,53 @@ function PComp(props) {
                 console.error('status - error : ', err);
             });
             status.on('client/status/changeStatus', (payload) => {
-                console.log('🚀 ~ file: index.js ~ line 53 ~ useEffect ~ payload', payload);
+                console.log('### changeStatus : ', payload);
             });
         }
-    }, [userInfo]);
+    }, [userInfo.USER_PK]);
+
+    const statusList = [
+        {
+            status: 1,
+            onClick: () => {
+                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 1 });
+                dispatch(setUserInfo({ status: 1 }));
+                setStatusMenuOpen(false);
+            },
+            view: '온라인',
+            color: '#2196f3',
+        },
+        {
+            status: 2,
+            onClick: () => {
+                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 2 });
+                dispatch(setUserInfo({ status: 2 }));
+                setStatusMenuOpen(false);
+            },
+            view: '부재중',
+            color: '#ffe082',
+        },
+        {
+            status: 3,
+            onClick: () => {
+                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 3 });
+                dispatch(setUserInfo({ status: 3 }));
+                setStatusMenuOpen(false);
+            },
+            view: '바쁨',
+            color: '#e91e63',
+        },
+        {
+            status: 4,
+            onClick: () => {
+                status.emit('server/changeStatus', { userPK: userInfo.USER_PK, userStatus: 4 });
+                dispatch(setUserInfo({ status: 4 }));
+                setStatusMenuOpen(false);
+            },
+            view: '회의중',
+            color: '#26a69a',
+        },
+    ];
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -245,6 +286,31 @@ function PComp(props) {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
+            <MenuItem
+                onClick={() => {
+                    setStatusMenuOpen(!statusMenuOpen);
+                }}
+            >
+                {statusList.map((row) => {
+                    return row.status === userInfo.status ? (
+                        <>
+                            <div className={styles.status} style={{ backgroundColor: row.color }}></div>
+                            {row.view}
+                            {statusMenuOpen ? <ExpandLess /> : <ExpandMore />}
+                        </>
+                    ) : null;
+                })}
+            </MenuItem>
+            <Collapse in={statusMenuOpen} timeout='auto' unmountOnExit>
+                {statusList.map((row) => {
+                    return row.status !== userInfo.status ? (
+                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick}>
+                            <div className={styles.status} style={{ backgroundColor: row.color }}></div>
+                            {row.view}
+                        </MenuItem>
+                    ) : null;
+                })}
+            </Collapse>
             <MenuItem onClick={goToMyMemberInfo}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
@@ -357,7 +423,22 @@ function PComp(props) {
                                         onClick={handleProfileMenuOpen}
                                         color='inherit'
                                     >
-                                        <AccountCircle />
+                                        <Avatar
+                                            src={
+                                                userInfo.USER_PROFILE_PK
+                                                    ? `/api/store/download-profile-file?fileId=${userInfo.USER_PROFILE_PK}`
+                                                    : null
+                                            }
+                                            style={{ width: '24px', height: '24px' }}
+                                        />
+                                        {statusList.map((row) =>
+                                            row.status === userInfo.status ? (
+                                                <div
+                                                    className={styles['status-badge']}
+                                                    style={{ backgroundColor: row.color }}
+                                                ></div>
+                                            ) : null,
+                                        )}
                                     </IconButton>
                                 </div>
                                 <div className={classes.sectionMobile}>

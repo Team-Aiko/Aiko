@@ -84,7 +84,14 @@ export default function ChatModal(props) {
                                 return (
                                     <div className={styles['member-item']} key={member.USER_PK}>
                                         <div className={styles['member-user-wrapper']}>
-                                            <Avatar style={{ width: '30px', height: '30px', marginRight: '4px' }} />
+                                            <Avatar
+                                                src={
+                                                    member.USER_PROFILE_PK
+                                                        ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                        : null
+                                                }
+                                                style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                            />
                                             <Typography>{member.NICKNAME}</Typography>
                                         </div>
                                         <div
