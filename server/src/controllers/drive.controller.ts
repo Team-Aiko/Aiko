@@ -33,25 +33,13 @@ export default class DriveController {
         }
     }
 
-    @Post('delete-folder')
-    async deleteFolder(@Req() req: Request, @Res() res: Response) {
-        try {
-            const { COMPANY_PK, USER_PK } = usrPayloadParser(req);
-            const { folderPK } = req.body;
-            this.driveService.deleteFolder(folderPK, COMPANY_PK, USER_PK);
-        } catch (err) {
-            throw resExecutor(res, { err });
-        }
-    }
-
     @Post('view-folder')
     async viewFolder(@Req() req: Request, @Res() res: Response) {
         try {
             const { COMPANY_PK } = usrPayloadParser(req);
             const { folderPK } = req.body;
-            const result = await this.driveService.viewFolder(COMPANY_PK, folderPK);
 
-            resExecutor(res, { result });
+            resExecutor(res, { result: true });
         } catch (err) {
             throw resExecutor(res, { err });
         }
