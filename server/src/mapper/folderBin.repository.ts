@@ -21,13 +21,13 @@ export default class FolderBinRepository extends Repository<FolderBin> {
     ) {
         try {
             const DATE = unixTimeStamp();
-            let DTOs: { USER_PK: number; COMPANY_PK: number; FOLDER_PK: number }[] = [];
+            let DTOs: { USER_PK: number; COMPANY_PK: number; FOLDER_PK: number; DATE: number }[] = [];
             const isArray = Array.isArray(folderPKs);
 
-            if (isArray) DTOs = folderPKs.map((folderPK) => ({ USER_PK, COMPANY_PK, FOLDER_PK: folderPK }));
-            else DTOs.push({ USER_PK, COMPANY_PK, FOLDER_PK: folderPKs });
+            if (isArray) DTOs = folderPKs.map((folderPK) => ({ USER_PK, COMPANY_PK, FOLDER_PK: folderPK, DATE }));
+            else DTOs.push({ USER_PK, COMPANY_PK, FOLDER_PK: folderPKs, DATE });
 
-            return (await manager.insert(FolderBin, DTOs)).identifiers as Pick<FolderBin, 'FOLDER_BIN_PK'>[];
+            await manager.save(FolderBin, DTOs);
         } catch (err) {
             console.error(err);
             throw new AikoError('FolderBinRepository/deleteFolder', 500, 819284);

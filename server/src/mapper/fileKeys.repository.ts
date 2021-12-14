@@ -75,7 +75,7 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .update()
                 .set({ IS_DELETED: 1 })
                 .where(whereCondition, { filePKs })
-                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .execute();
 
             return true;

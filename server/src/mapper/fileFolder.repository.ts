@@ -45,6 +45,10 @@ export default class FileFolderRepository extends Repository<FileFolder> {
     }
 
     async getFolderInfo(folderPKs: number | number[]) {
+        console.log(
+            '🚀 ~ file: fileFolder.repository.ts ~ line 48 ~ FileFolderRepository ~ getFolderInfo ~ folderPKs',
+            folderPKs,
+        );
         try {
             const isArray = Array.isArray(folderPKs);
             const whereCondition = `FOLDER_PK ${isArray ? 'IN (...:folderPKs)' : '= :folderPKs'}`;
@@ -52,7 +56,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs });
             if (isArray) result = await fraction.getMany();
-            else result = await fraction.getOne();
+            else result = await fraction.getOneOrFail();
 
             return result;
         } catch (err) {
@@ -61,24 +65,40 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getAllChildren(folderPK: number, companyPK: number) {
+    async getAllChildren(folderPKs: number | number[], companyPK: number) {
         try {
-            const sql = `with recursive GET_ALL_CHILDREN as (
-                select 
-                    *
-                from FILE_FOLDER_TABLE
-                where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK}
-                union all
-                select
-                    FF1.*
-                from
-                    FILE_FOLDER_TABLE FF1, FILE_FOLDER_TABLE FF2
-                where
-                    FF1.PARENT_PK = FF2.FOLDER_PK
-             ) select * from GET_ALL_CHILDREN`;
+            const isArray = Array.isArray(folderPKs);
+            let result: FileFolder[] = [];
 
-            const result = (await getManager().query(sql)) as FileFolder[];
+            if (isArray) {
+                await Promise.all(
+                    folderPKs.map(async (folderPK) => {
+                        result = result.concat((await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]);
+                    }),
+                );
+            } else {
+                result = (await getManager().query(getSQL(folderPKs, companyPK))) as FileFolder[];
+            }
+
             return result;
+
+            function getSQL(folderPK: number, companyPK: number) {
+                const sql = `with recursive GET_ALL_CHILDREN as (
+                    select 
+                        *
+                    from FILE_FOLDER_TABLE
+                    where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
+                    union all
+                    select
+                        FF1.*
+                    from
+                        FILE_FOLDER_TABLE as FF1, FILE_FOLDER_TABLE as FF2
+                    where
+                        FF1.PARENT_PK = FF2.FOLDER_PK
+                 ) select * from GET_ALL_CHILDREN`;
+
+                return sql;
+            }
         } catch (err) {
             console.error(err);
             throw new AikoError('FileFolderRepository/getAllChildren', 500, 192924);
@@ -93,24 +113,23 @@ export default class FileFolderRepository extends Repository<FileFolder> {
     ) {
         try {
             // get folder PK list
-            let folders: number[] = [];
+            const folders: number[] = [];
             const isArray = Array.isArray(folderPKs);
             if (isArray) {
                 folderPKs.forEach(async (folderPK) => {
                     const children = await this.getAllChildren(folderPK, companyPK);
                     children.forEach((child) => folders.push(child.FOLDER_PK));
                 });
-
-                folders = folders.concat(folderPKs);
             } else {
                 const children = await this.getAllChildren(folderPKs, companyPK);
                 children.forEach((child) => folders.push(child.FOLDER_PK));
-                folders.push(folderPKs);
             }
 
             // delete folders
-            await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
-            await this.updateDeleteFlag(folders, manager);
+            if (folders.length > 0) {
+                await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
+                await this.updateDeleteFlag(folders, manager);
+            }
         } catch (err) {
             console.error(err);
             throw new AikoError('FileFolderRepository/deleteFolderAndFiles', 500, 192921);

@@ -63,11 +63,13 @@ export default class DriveService {
 
     async createFolder(companyPK: number, folderName: string, parentPK: number | undefined, manager?: EntityManager) {
         try {
+            if (!parentPK) throw new AikoError('DriveService/createFolder/no-parent-pk', 500, 239181);
+
             // invalid user filter
             const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(parentPK);
             console.log('🚀 ~ file: drive.service.ts ~ line 68 ~ DriveService ~ createFolder ~ folderInfo', folderInfo);
 
-            if (parentPK && !Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
+            if (!Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
                 throw new AikoError('DriveService/createFolder/invalidMember', 500, 239182);
 
             return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
@@ -83,19 +85,19 @@ export default class DriveService {
     ) {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
-        let insertedResults: Pick<FileBin, 'FB_PK'>[] = [];
+        let flag = false;
 
         try {
             // * folder delete process
             let folderPKList: number[] = [];
-            let folders: FileFolder | FileFolder[];
 
             if (folderPKs !== -1) {
-                folders = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                const folders = await getRepo(FileFolderRepository).getAllChildren(folderPKs, companyPK);
 
-                if (Array.isArray(folders)) folderPKList = folders.map((folder) => folder.FOLDER_PK);
-                else folderPKList.push(folders.FOLDER_PK);
-                getRepo(FileFolderRepository).deleteFolderAndFiles(
+                folderPKList = folders?.map((folder) => folder.FOLDER_PK);
+                console.log('🚀 ~ file: drive.service.ts ~ line 98 ~ DriveService ~ folderPKList', folderPKList);
+
+                await getRepo(FileFolderRepository).deleteFolderAndFiles(
                     folderPKList,
                     companyPK,
                     userPK,
@@ -115,27 +117,16 @@ export default class DriveService {
 
                 // * delete process
                 await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
-                insertedResults = await getRepo(FileBinRepository).deleteFiles(
-                    filePKs,
-                    userPK,
-                    companyPK,
-                    queryRunner.manager,
-                );
-
-                console.log(
-                    '🚀 ~ file: drive.service.ts ~ line 76 ~ DriveService ~ deleteFiles ~ insertedResults',
-                    insertedResults,
-                );
             }
 
             await queryRunner.commitTransaction();
+            flag = true;
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
             await queryRunner.release();
+            if (flag) return flag;
         }
-
-        return insertedResults?.map((insertedResult) => insertedResult.FB_PK);
     }
 }
