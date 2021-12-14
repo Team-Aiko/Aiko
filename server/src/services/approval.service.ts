@@ -21,7 +21,7 @@ export default class ApprovalService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
-            await getRepo(ApprovalFrameRepository).createApproval(
+            const insertId = await getRepo(ApprovalFrameRepository).createApproval(
                 queryRunner.manager,
                 title,
                 content,
@@ -29,11 +29,30 @@ export default class ApprovalService {
                 departmentPk,
                 userPk,
             );
-            await getRepo(ApprovalStepRepository).createApprovalStep()
-            await queryRunner.commitTransaction();
+            let stepStatus = 1;
+            for (const agreerPk of agreerPks) {
+                await getRepo(ApprovalStepRepository).createApprovalStepOfAgreer(
+                    queryRunner.manager,
+                    insertId.AF_PK,
+                    agreerPk,
+                    stepStatus,
+                );
+            }
+            for (const approverPk of approverPks) {
+                stepStatus++;
+                await getRepo(ApprovalStepRepository).createApprovalStepOfApprover(
+                    queryRunner.manager,
+                    insertId.AF_PK,
+                    approverPk,
+                    stepStatus,
+                );
+            }
+
+            await queryRunner.commitTransaction(); //커밋 트랜젝션
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            console.log('apporval.service 파일의 createApproval 에서 에러발생 : ' + err);
+            console.log(err);
+            throw new AikoError(err.message, 451, 500000);
         } finally {
             queryRunner.release();
         }

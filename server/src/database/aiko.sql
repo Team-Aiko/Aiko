@@ -267,10 +267,12 @@ primary key(AF_PK)
 
 create table APPROVAL_STEP_TABLE (
 AS_PK int auto_increment,
+AF_PK int not null,
 USER_PK int not null,
 STEP_LEVEL int not null,
 DECISION int not null,
 SIGN_DATE int,
+STEP_STATUS VARCHAR(1),
 primary key(AS_PK)
 );
 

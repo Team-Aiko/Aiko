@@ -6,6 +6,9 @@ export default class ApprovalStep {
     AS_PK: number;
 
     @Column()
+    AF_PK: number;
+
+    @Column()
     USER_PK: number;
 
     @Column()
@@ -16,4 +19,7 @@ export default class ApprovalStep {
 
     @Column()
     SIGN_DATE: number;
+
+    @Column()
+    STEP_STATUS: string;
 }

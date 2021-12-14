@@ -10,12 +10,25 @@ export default class ApprovalController {
     constructor(private approvalService: ApprovalService) {}
 
     @Post('write')
-    createApproval(@Req() req: Request, @Res() res: Response) {
-        const { title, content, approverPks, agreerPks } = req.body;
-        const userPayload = usrPayloadParser(req);
-        const departmentPk = userPayload.DEPARTMENT_PK;
-        const comPk = userPayload.COMPANY_PK;
-        const userPk = userPayload.USER_PK;
-        this.approvalService.createApproval(title, content, approverPks, agreerPks, departmentPk, comPk, userPk);
+    async createApproval(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { title, content, approverPks, agreerPks } = req.body;
+            const userPayload = usrPayloadParser(req);
+            const departmentPk = userPayload.DEPARTMENT_PK;
+            const comPk = userPayload.COMPANY_PK;
+            const userPk = userPayload.USER_PK;
+            await this.approvalService.createApproval(
+                title,
+                content,
+                approverPks,
+                agreerPks,
+                departmentPk,
+                comPk,
+                userPk,
+            );
+            resExecutor(res, { result: true });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
     }
 }
