@@ -20,4 +20,6 @@ export default class FileFolder {
     @OneToMany(() => FileKeys, (fileKeys) => fileKeys.folder)
     @JoinColumn({ name: 'FOLDER_PK' })
     fileKeys: FileKeys[];
+
+    children: FileFolder[];
 }

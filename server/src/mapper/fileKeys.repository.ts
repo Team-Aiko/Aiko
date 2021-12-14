@@ -47,10 +47,21 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .andWhere('fk.IS_DELETED = 0');
 
-            return isArray ? await fraction.getMany() : await fraction.getOneOrFail();
+            return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/getFiles', 500, 928192);
+        }
+    }
+
+    async getFilesInFolder(folderPKs: number | number[], companyPK: number) {
+        try {
+            const isArray = Array.isArray(folderPKs);
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
+            return await this.createQueryBuilder().where(whereCondition, { folderPKs }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getFilesInFolder', 500, 912030);
         }
     }
 

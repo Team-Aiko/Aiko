@@ -149,10 +149,11 @@ function Signup() {
         if (isValid) {
             const url = `/api/account/checkDuplicateEmail?email=${typedEmail}`;
             get(url).then((res) => {
-                const { result } = res;
+                const { result } = res.data;
                 console.log('🚀 ~ file: signup.js ~ line 168 ~ get ~ data', result);
                 const flag = Boolean(result);
-                setErrEmail(result);
+                console.log('🚀 ~ file: signup.js ~ line 155 ~ get ~ flag', flag);
+                setErrEmail(flag);
             });
         }
 

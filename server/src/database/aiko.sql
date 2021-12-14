@@ -55,13 +55,6 @@ create table RESET_PW_TABLE (
     UUID VARCHAR(512) NOT NULL
 );
 
--- SOCKET TABLE
-create table SOCKET_TABLE (
-    SOCKET_PK INT PRIMARY KEY AUTO_INCREMENT,
-    SOCKET_ID VARCHAR(512) NOT NULL,
-    USER_PK INT NOT NULL
-);
-
 -- CHAT FILE TABLE
 create table CHAT_FILE_TABLE (
     CF_PK INT PRIMARY KEY AUTO_INCREMENT,
@@ -206,6 +199,7 @@ CREATE TABLE FILE_BIN_TABLE (
 );
 
 -- 공지 게시판 테이블 생성 //수정
+drop table notice_board_table ;
 create table NOTICE_BOARD_TABLE (
 	NOTICE_BOARD_PK int auto_increment,
 	TITLE varchar(80),
@@ -214,9 +208,11 @@ create table NOTICE_BOARD_TABLE (
     COMPANY_PK int not null,
 	CREATE_DATE int,
 	UPDATE_DATE int,
+	UPDATE_USER_PK int,
 	IS_DELETE int,
 	primary key (NOTICE_BOARD_PK)
-);
+); // 수정자 추가
+
 
 -- 공지 게시판 파일 테이블 생성 
 create table NOTICE_BOARD_FILE_TABLE (
@@ -265,12 +261,13 @@ INSERT INTO ACTION_PRIORITY_TABLE (PRIORITY_NAME) VALUES ('LOW');
 
 create table APPROVAL_FRAME_TABLE (
 AF_PK int auto_increment,
+USER_PK int not null,
 TITLE varchar(80) not NULL,
 CONTENT VARCHAR(6000) not NULL, 
 COMPANY_PK int not null,
 AC_PK int not null,	
 DEPARTMENT_PK int not null,
-CURRENT_STEP int not null,
+CURRENT_STEP_LEVEL int not null,
 AS_PK int not null,
 START_DATE int not null,
 END_DATE int,
@@ -280,6 +277,7 @@ primary key(AF_PK)
 create table APPROVAL_STEP_TABLE (
 AS_PK int auto_increment,
 USER_PK int not null,
+STEP_LEVEL int not null,
 DECISION int not null,
 SIGN_DATE int,
 primary key(AS_PK)

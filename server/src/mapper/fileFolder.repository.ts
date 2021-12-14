@@ -1,5 +1,5 @@
 import { FileFolder } from 'src/entity';
-import { AikoError } from 'src/Helpers';
+import { AikoError, getRepo } from 'src/Helpers';
 import {
     EntityRepository,
     getConnection,
@@ -10,6 +10,8 @@ import {
     EntityManager,
     Transaction,
 } from 'typeorm';
+import FileHistoryRepository from './fileHistory.repository';
+import FolderBinRepository from './folderBin.repository';
 
 @EntityRepository(FileFolder)
 export default class FileFolderRepository extends Repository<FileFolder> {
@@ -42,60 +44,91 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getFolderInfo(FOLDER_PK: number) {
+    async getFolderInfo(folderPKs: number | number[]) {
         try {
-            return await this.createQueryBuilder('f')
-                .leftJoinAndSelect('f.fileKeys', 'fileKeys')
-                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
-                .where('f.FOLDER_PK = :FOLDER_PK', { FOLDER_PK })
-                .getOneOrFail();
+            const isArray = Array.isArray(folderPKs);
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN (...:folderPKs)' : '= :folderPKs'}`;
+            let result: FileFolder[] | FileFolder;
+
+            const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs });
+            if (isArray) result = await fraction.getMany();
+            else result = await fraction.getOneOrFail();
+
+            return result;
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileFolderRepository/getFolderInfo', 500, 918921);
+            throw new AikoError('FileFolderRepository/createFolder', 500, 192894);
         }
     }
 
-    async deleteFolder(FOLDER_PK: number) {
+    async getAllChildren(folderPK: number, companyPK: number) {
         try {
-            await this.update({ IS_DELETED: 1 }, { FOLDER_PK });
+            const sql = `with recursive GET_ALL_CHILDREN as (
+                select 
+                    *
+                from FILE_FOLDER_TABLE
+                where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK}
+                union all
+                select
+                    FF1.*
+                from
+                    FILE_FOLDER_TABLE FF1, FILE_FOLDER_TABLE FF2
+                where
+                    FF1.PARENT_PK = FF2.FOLDER_PK
+             ) select * from GET_ALL_CHILDREN`;
+
+            const result = (await getManager().query(sql)) as FileFolder[];
+            return result;
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileFolderRepository/deleteFolder', 500, 821882);
+            throw new AikoError('FileFolderRepository/getAllChildren', 500, 192924);
         }
     }
 
-    async viewFolder(COMPANY_PK: number, FOLDER_PK: number) {
+    async deleteFolderAndFiles(
+        folderPKs: number | number[],
+        companyPK: number,
+        userPK: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         try {
-            const targetFolderInfo = await this.createQueryBuilder('ff')
-                .leftJoinAndSelect('ff.fileKeys', 'fileKeys')
-                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
-                .where('ff.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
-                .getOneOrFail();
-            const files = targetFolderInfo.fileKeys;
-            const childrenFolders = await this.getChildrenFolder(FOLDER_PK);
+            // get folder PK list
+            let folders: number[] = [];
+            const isArray = Array.isArray(folderPKs);
+            if (isArray) {
+                folderPKs.forEach(async (folderPK) => {
+                    const children = await this.getAllChildren(folderPK, companyPK);
+                    children.forEach((child) => folders.push(child.FOLDER_PK));
+                });
 
-            return { files, childrenFolders };
+                folders = folders.concat(folderPKs);
+            } else {
+                const children = await this.getAllChildren(folderPKs, companyPK);
+                children.forEach((child) => folders.push(child.FOLDER_PK));
+                folders.push(folderPKs);
+            }
+
+            // delete folders
+            await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
+            await this.updateDeleteFlag(folders, manager);
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileFolderRepository/viewFolder', 500, 9271827);
+            throw new AikoError('FileFolderRepository/deleteFolderAndFiles', 500, 192921);
         }
     }
 
-    async getChildrenFolder(PARENT_PK: number) {
+    async updateDeleteFlag(folders: number | number[], @TransactionManager() manager: EntityManager) {
         try {
-            return await this.createQueryBuilder().where('PARENT_PK = :PARENT_PK', { PARENT_PK }).getMany();
+            const isArray = Array.isArray(folders);
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN (:...folders)' : '= :folders'}`;
+            await manager
+                .createQueryBuilder()
+                .update(FileFolder)
+                .set({ IS_DELETED: 1 })
+                .where(whereCondition, { folders })
+                .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileFolderRepository/getChildrenFolder', 500, 928192);
-        }
-    }
-
-    async getFolderPKsInTree(FOLDER_PK: number) {
-        try {
-            const sql = `with recursive getFolderPKsInTree `;
-        } catch (err) {
-            console.error(err);
-            throw new AikoError('FileFolderRepository/getFolderPKsInTree', 500, 192849);
+            throw err;
         }
     }
 }
