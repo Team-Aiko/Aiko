@@ -52,7 +52,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs });
             if (isArray) result = await fraction.getMany();
-            else result = await fraction.getOneOrFail();
+            else result = await fraction.getOne();
 
             return result;
         } catch (err) {

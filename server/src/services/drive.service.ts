@@ -65,8 +65,9 @@ export default class DriveService {
         try {
             // invalid user filter
             const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(parentPK);
+            console.log('🚀 ~ file: drive.service.ts ~ line 68 ~ DriveService ~ createFolder ~ folderInfo', folderInfo);
 
-            if (!Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
+            if (parentPK && !Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
                 throw new AikoError('DriveService/createFolder/invalidMember', 500, 239182);
 
             return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
