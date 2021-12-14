@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import { AikoError } from 'src/Helpers';
 import PrivateChatService from 'src/services/privateChat.service';
+import { getSocketErrorPacket } from 'src/Helpers/functions';
 
 @WebSocketGateway({ cors: true, namespace: 'private-chat' })
 export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -25,18 +26,23 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     }
 
     @SubscribeMessage(privateChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, userInfo: { userPK: number; companyPK: number }) {
+    async handleConnection(client: Socket, accessToken: string) {
         try {
             // null data filter
-            if (!userInfo) return;
+            if (!accessToken) return;
 
-            const roomList = await this.privateChatService.connectPrivateChat(client.id, userInfo);
+            const roomList = await this.privateChatService.connectPrivateChat(client.id, accessToken);
 
             roomList.forEach((room) => client.join(room.CR_PK));
 
             this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, roomList);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            this.wss
+                .to(client.id)
+                .emit(
+                    privateChatPath.CLIENT_ERROR,
+                    getSocketErrorPacket(privateChatPath.HANDLE_CONNECTION, err, accessToken),
+                );
         }
     }
 
@@ -49,7 +55,9 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             await this.privateChatService.sendMessage(payload);
             this.wss.to(payload.roomId).emit(privateChatPath.CLIENT_SEND, payload);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            this.wss
+                .to(client.id)
+                .emit(privateChatPath.CLIENT_ERROR, getSocketErrorPacket(privateChatPath.SERVER_SEND, err, payload));
         }
     }
 
@@ -62,7 +70,12 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             const chatlog = await this.privateChatService.getChalog(roomId);
             this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            this.wss
+                .to(client.id)
+                .emit(
+                    privateChatPath.CLIENT_ERROR,
+                    getSocketErrorPacket(privateChatPath.SERVER_CALL_CHAT_LOG, err, roomId),
+                );
         }
     }
 

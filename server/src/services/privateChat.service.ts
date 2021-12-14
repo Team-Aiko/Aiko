@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AikoError, getRepo } from 'src/Helpers';
+import { tokenParser } from 'src/Helpers/functions';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { PrivateChatRoomRepository, UserRepository } from 'src/mapper';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
@@ -39,21 +40,14 @@ export default class PrivateChatService {
         }
     }
 
-    async connectPrivateChat(socketId: string, { userPK, companyPK }: { userPK: number; companyPK: number }) {
+    async connectPrivateChat(socketId: string, accessToken: string) {
         try {
-            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+            const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
 
-            if (user.COMPANY_PK !== companyPK || user.USER_PK !== userPK)
-                throw new AikoError('socketService/invalid user information', 100, 49921);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
-                user.USER_PK,
-                user.COMPANY_PK,
-            );
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(USER_PK, COMPANY_PK);
 
             return roomList;
         } catch (err) {
-            console.error(err);
             throw err;
         }
     }
