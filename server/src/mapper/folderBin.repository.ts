@@ -24,6 +24,7 @@ export default class FolderBinRepository extends Repository<FolderBin> {
             const DATE = unixTimeStamp();
             const DTOs = await getRepo(FileFolderRepository).checkValidDeleteFolder(folderPKs);
             const isArray = Array.isArray(DTOs);
+            const returnVal = isArray ? DTOs.map((dto) => dto.FOLDER_PK) : [DTOs.FOLDER_PK];
 
             if (isArray)
                 await manager.save(
@@ -34,13 +35,8 @@ export default class FolderBinRepository extends Repository<FolderBin> {
                 if (!DTOs) return;
                 await manager.save(FolderBin, { FOLDER_PK: DTOs.FOLDER_PK, DATE, USER_PK, COMPANY_PK });
             }
-            // let DTOs: { USER_PK: number; COMPANY_PK: number; FOLDER_PK: number; DATE: number }[] = [];
-            // const isArray = Array.isArray(folderPKs);
 
-            // if (isArray) DTOs = folderPKs.map((folderPK) => ({ USER_PK, COMPANY_PK, FOLDER_PK: folderPK, DATE }));
-            // else DTOs.push({ USER_PK, COMPANY_PK, FOLDER_PK: folderPKs, DATE });
-
-            // await manager.save(FolderBin, DTOs);
+            return returnVal;
         } catch (err) {
             console.error(err);
             throw new AikoError('FolderBinRepository/deleteFolder', 500, 819284);

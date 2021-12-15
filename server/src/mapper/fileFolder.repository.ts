@@ -11,6 +11,7 @@ import {
     Transaction,
 } from 'typeorm';
 import FileHistoryRepository from './fileHistory.repository';
+import FileKeysRepository from './fileKeys.repository';
 import FolderBinRepository from './folderBin.repository';
 
 @EntityRepository(FileFolder)
@@ -120,8 +121,23 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             async function deleteProcess(folders: number[], obj: FileFolderRepository) {
                 // delete folders
                 if (folders.length > 0) {
-                    await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
-                    await obj.updateDeleteFlag(folders, manager);
+                    const validFolders = await getRepo(FolderBinRepository).deleteFolder(
+                        folders,
+                        companyPK,
+                        userPK,
+                        manager,
+                    );
+                    await obj.updateDeleteFlag(validFolders, manager);
+                    let filePKs: number[] = [];
+
+                    Promise.all(
+                        validFolders.map(async (folderPK) => {
+                            const result = await getRepo(FileKeysRepository).selectFilesInFolder(folderPK);
+                            filePKs = filePKs.concat(result.map((file) => file.FILE_KEY_PK));
+                        }),
+                    );
+
+                    await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
                 }
             }
         } catch (err) {

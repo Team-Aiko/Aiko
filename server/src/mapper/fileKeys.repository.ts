@@ -84,4 +84,13 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             throw new AikoError('FileKeysRepository/deleteFiles', 500, 910292);
         }
     }
+
+    async selectFilesInFolder(FOLDER_PK: number) {
+        try {
+            return await this.find({ FOLDER_PK });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/selectFilesInFolder', 500, 190284);
+        }
+    }
 }
