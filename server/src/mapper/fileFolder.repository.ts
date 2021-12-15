@@ -170,7 +170,16 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FolderBinRepository/checkValidDeleteFolder', 500, 129281);
+            throw new AikoError('FileFolderRepository/checkValidDeleteFolder', 500, 129281);
+        }
+    }
+
+    async getDirectChildren(FOLDER_PK: number, COMPANY_PK: number) {
+        try {
+            return await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/getDirectChildren', 500, 198283);
         }
     }
 }

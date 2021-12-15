@@ -39,7 +39,9 @@ export default class DriveController {
             const { COMPANY_PK } = usrPayloadParser(req);
             const { folderPK } = req.body;
 
-            resExecutor(res, { result: true });
+            const result = this.driveService.viewFolder(COMPANY_PK, folderPK);
+
+            resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });
         }

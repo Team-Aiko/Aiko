@@ -132,4 +132,15 @@ export default class DriveService {
 
         if (flag) return flag;
     }
+
+    async viewFolder(companyPK: number, folderPK: number) {
+        try {
+            const directChildrenFolders = await getRepo(FileFolderRepository).getDirectChildren(folderPK, companyPK);
+            const filesInFolder = await getRepo(FileKeysRepository).getFilesInfoInFolder(folderPK, companyPK);
+
+            return { directChildrenFolders, filesInFolder };
+        } catch (err) {
+            throw err;
+        }
+    }
 }

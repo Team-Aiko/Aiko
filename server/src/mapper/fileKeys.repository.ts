@@ -93,4 +93,18 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             throw new AikoError('FileKeysRepository/selectFilesInFolder', 500, 190284);
         }
     }
+
+    async getFilesInfoInFolder(FOLDER_PK: number, COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('fk')
+                .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
+                .leftJoinAndSelect('fileHistories.user', 'user')
+                .where(`fk.FOLDER_PK = ${FOLDER_PK}`)
+                .andWhere(`fk.COMPANY_PK = ${COMPANY_PK}`)
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getFilesInfoInFolder', 500, 182934);
+        }
+    }
 }
