@@ -98,6 +98,8 @@ export default class StatusService {
                     logoutPending: true,
                     status: statusInfo.status,
                 });
+
+                await this.deleteOneClientInfo(clientId);
             } else {
                 await this.deleteOneClientInfo(clientId);
             }
