@@ -181,6 +181,9 @@ function PComp(props) {
             status.on('client/status/changeStatus', (payload) => {
                 console.log('### changeStatus : ', payload);
             });
+            status.on('client/status/logoutEventExecuted', () => {
+                status.emit('handleDisconnect');
+            });
         }
     }, [userInfo.USER_PK]);
 
@@ -244,7 +247,7 @@ function PComp(props) {
         setAnchorEl(null);
         handleMobileMenuClose();
         if (status) {
-            status.emit('handleDisconnect');
+            status.emit('server/status/logoutEvent');
         }
         props.handleLogout();
     };

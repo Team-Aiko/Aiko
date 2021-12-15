@@ -13,6 +13,8 @@ export enum statusPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
     SERVER_CHANGE_STATUS = 'server/status/changeStatus',
+    SERVER_LOGOUT_EVENT = 'server/status/logoutEvent',
+    CLIENT_LOGOUT_EVENT_EXECUTED = 'client/status/logoutEventExecuted',
     CLIENT_GET_STATUS_LIST = 'client/status/getStatusList',
     CLIENT_CHANGE_STATUS = 'client/status/changeStatus',
     CLIENT_ERROR = 'client/status/error',

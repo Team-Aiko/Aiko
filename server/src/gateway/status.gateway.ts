@@ -110,4 +110,16 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                 .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, stat));
         }
     }
+
+    @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
+    async logoutEvent(client: Socket) {
+        try {
+            await this.statusService.logoutEvent(client.id);
+            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+        } catch (err) {
+            this.wss
+                .to(client.id)
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, undefined));
+        }
+    }
 }

@@ -121,6 +121,16 @@ export default class StatusService {
         }
     }
 
+    async logoutEvent(id: string) {
+        try {
+            const { userPK, companyPK } = await this.getClientInfo(id);
+            await this.allDeleteClientInfo(userPK);
+            await this.insertClientInfo(userPK, companyPK, id);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async getStatusList(userPK: number) {
         try {
             const { companyPK } = await this.getUserInfoStatus(userPK);
