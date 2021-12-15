@@ -98,7 +98,11 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             if (!stat) return;
 
             const status = await this.statusService.changeStatus(client.id, stat);
-            this.wss.to(`company:${status.companyPK}`).except(client.id).emit(statusPath.CLIENT_CHANGE_STATUS, status);
+            const clientInfos = await this.statusService.selectClientInfos(status.userPK);
+            this.wss
+                .to(`company:${status.companyPK}`)
+                .except(clientInfos.map((info) => info.clientId))
+                .emit(statusPath.CLIENT_CHANGE_STATUS, status);
         } catch (err) {
             this.wss
                 .to(client.id)
