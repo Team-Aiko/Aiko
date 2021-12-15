@@ -98,7 +98,7 @@ export default class DriveService {
             let folderPKList: number[] = [];
 
             if (folderPKs !== -1) {
-                const folders = await getRepo(FileFolderRepository).getAllChildren(folderPKs, companyPK);
+                const folders = await getRepo(FileFolderRepository).getAllChildrenWithMyself(folderPKs, companyPK);
 
                 folderPKList = folders?.map((folder) => folder.FOLDER_PK);
                 console.log('🚀 ~ file: drive.service.ts ~ line 98 ~ DriveService ~ folderPKList', folderPKList);
