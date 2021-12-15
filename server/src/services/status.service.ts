@@ -67,8 +67,19 @@ export default class StatusService {
 
         try {
             const clientInfo = await this.getClientInfo(clientId);
+            if (!clientInfo) return;
 
-            if (clientInfo) {
+            console.log(
+                '🚀 ~ file: status.service.ts ~ line 70 ~ StatusService ~ statusDisconnect ~ clientInfo',
+                clientInfo,
+            );
+            const clientInfos = await this.selectClientInfos(clientInfo.userPK);
+            console.log(
+                '🚀 ~ file: status.service.ts ~ line 75 ~ StatusService ~ statusDisconnect ~ clientInfos',
+                clientInfos,
+            );
+
+            if (clientInfos.length === 1) {
                 const { userPK } = clientInfo;
                 const statusInfo = await this.getUserStatus(userPK);
 
@@ -90,6 +101,8 @@ export default class StatusService {
                         await this.updateStatus(user);
                         wss.to(`company:${user.companyPK}`).emit(statusPath.CLIENT_LOGOUT_ALERT, user);
                     }
+
+                    await this.allDeleteClientInfo(user.userPK);
                 }, 1000 * 10); // 5분간격
 
                 await this.updateStatus({
@@ -235,6 +248,8 @@ export default class StatusService {
     }
 
     async allDeleteClientInfo(userPK: number) {
+        console.log('🚀 ~ file: status.service.ts ~ line 251 ~ StatusService ~ allDeleteClientInfo ~ userPK', userPK);
+
         try {
             await this.statusClientStorageModel.deleteMany({ userPK }).exec();
         } catch (err) {
