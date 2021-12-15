@@ -50,6 +50,7 @@ import ApprovalFrame from './entity/approvalFrame';
 import ApprovalStep from './entity/approvalStep';
 import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
+import ChatModule from './modules/chat.module';
 import SchedulerModule from './modules/scheduler.module';
 
 // orm
@@ -95,6 +96,7 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
 
 @Module({
     imports: [
+        ChatModule,
         SchedulerModule,
         AccountModule,
         CompanyModule,
