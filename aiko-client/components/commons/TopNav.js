@@ -331,6 +331,51 @@ function PComp(props) {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
+            <MenuItem
+                onClick={() => {
+                    setStatusMenuOpen(!statusMenuOpen);
+                }}
+            >
+                <IconButton
+                    edge='end'
+                    aria-label='account of current user'
+                    aria-controls={menuId}
+                    aria-haspopup='true'
+                    color='inherit'
+                >
+                    <Avatar
+                        src={
+                            userInfo.USER_PROFILE_PK
+                                ? `/api/store/download-profile-file?fileId=${userInfo.USER_PROFILE_PK}`
+                                : null
+                        }
+                        style={{ width: '24px', height: '24px' }}
+                    />
+                    {statusList.map((row) =>
+                        row.status === userInfo.status ? (
+                            <div className={styles['status-badge']} style={{ backgroundColor: row.color }}></div>
+                        ) : null,
+                    )}
+                </IconButton>
+                {statusList.map((row) => {
+                    return row.status === userInfo.status ? (
+                        <div className={styles['mobile-status']}>
+                            {row.view}
+                            {statusMenuOpen ? <ExpandLess /> : <ExpandMore />}
+                        </div>
+                    ) : null;
+                })}
+            </MenuItem>
+            <Collapse in={statusMenuOpen} timeout='auto' unmountOnExit>
+                {statusList.map((row) => {
+                    return row.status !== userInfo.status ? (
+                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick}>
+                            <div className={styles.status} style={{ backgroundColor: row.color }}></div>
+                            {row.view}
+                        </MenuItem>
+                    ) : null;
+                })}
+            </Collapse>
             <MenuItem>
                 <IconButton aria-label='show 4 new mails' color='inherit'>
                     <Badge badgeContent={4} color='secondary'>
