@@ -244,7 +244,7 @@ function PComp(props) {
         setAnchorEl(null);
         handleMobileMenuClose();
         if (status) {
-            status.disconnect();
+            status.emit('handleDisconnect');
         }
         props.handleLogout();
     };
