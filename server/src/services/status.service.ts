@@ -68,10 +68,8 @@ export default class StatusService {
         try {
             const clientInfo = await this.getClientInfo(clientId);
 
-            const length = clientInfo.length;
-
-            if (length === 1) {
-                const { userPK } = clientInfo[0];
+            if (clientInfo) {
+                const { userPK } = clientInfo;
                 const statusInfo = await this.getUserStatus(userPK);
 
                 setTimeout(async () => {
@@ -118,14 +116,12 @@ export default class StatusService {
         }
     }
 
-    async changeStatus(userPK: number, stat: number) {
+    async changeStatus(clientId: string, stat: number) {
         console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
+            const { userPK } = await this.getClientInfo(clientId);
             const userStatus = await this.getUserStatus(userPK);
-            console.log(
-                '🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ userStatus',
-                userStatus,
-            );
+
             userStatus.status = stat;
             await this.updateStatus(userStatus);
 
@@ -230,7 +226,7 @@ export default class StatusService {
 
     async getClientInfo(clientId: string) {
         try {
-            return (await this.statusClientStorageModel.find({ clientId })) as StatusClientStorage[];
+            return (await this.statusClientStorageModel.findOne({ clientId })) as StatusClientStorage;
         } catch (err) {
             console.error(err);
             throw new AikoError('statusService/getClientInfo', 100, 12939021);

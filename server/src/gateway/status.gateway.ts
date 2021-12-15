@@ -91,25 +91,18 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, payload: { userStatus: number; accessToken: string }) {
+    async changeStatus(client: Socket, stat: number) {
         console.log('changeStatus method');
 
         try {
-            if (!payload) return;
+            if (!stat) return;
 
-            const { USER_PK, COMPANY_PK } = tokenParser(payload.accessToken);
-
-            const container = await this.statusService.getUserInfoStatus(USER_PK);
-            console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
-            const result = await this.statusService.changeStatus(USER_PK, payload.userStatus);
-            this.wss
-                .to(`company:${container.companyPK}`)
-                .except(client.id)
-                .emit(statusPath.CLIENT_CHANGE_STATUS, result);
+            const status = await this.statusService.changeStatus(client.id, stat);
+            this.wss.to(`company:${status.companyPK}`).except(client.id).emit(statusPath.CLIENT_CHANGE_STATUS, status);
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, payload));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, stat));
         }
     }
 }
