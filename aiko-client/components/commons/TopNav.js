@@ -149,43 +149,57 @@ function PComp(props) {
     useEffect(() => {
         console.log('###### render ######');
         if (userInfo) {
-            const status = io('http://localhost:5000/status');
-            setStatus(status);
+            const loadMemberList = async () => await loadMemberList();
 
-            const uri = '/api/account/raw-token';
-            get(uri)
-                .then((response) => {
-                    status.emit('handleConnection', response.data.result);
-                })
-                .catch((err) => {
-                    console.error('handleConnection - error : ', err);
-                });
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('### getStatusList ### : ', payload);
-                dispatch(setMemberListStatus(payload));
-                for (const row of payload) {
-                    if (row.userPK === userInfo.USER_PK) {
-                        dispatch(setUserInfo({ status: row.status }));
+            if (loadMemberList) {
+                console.log('loadMemberList : ', loadMemberList);
+                const status = io('http://localhost:5000/status');
+                setStatus(status);
+
+                const uri = '/api/account/raw-token';
+                get(uri)
+                    .then((response) => {
+                        status.emit('handleConnection', response.data.result);
+                    })
+                    .catch((err) => {
+                        console.error('handleConnection - error : ', err);
+                    });
+                status.on('client/status/getStatusList', (payload) => {
+                    console.log('### getStatusList ### : ', payload);
+                    dispatch(setMemberListStatus(payload));
+                    for (const row of payload) {
+                        if (row.userPK === userInfo.USER_PK) {
+                            dispatch(setUserInfo({ status: row.status }));
+                        }
                     }
-                }
-            });
-            status.on('client/status/loginAlert', (payload) => {
-                dispatch(setMemberStatus(payload.user));
-            });
-            status.on('client/status/logoutAlert', (payload) => {
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/error', (err) => {
-                console.error('status - error : ', err);
-            });
-            status.on('client/status/changeStatus', (payload) => {
-                console.log('### changeStatus : ', payload);
-            });
-            status.on('client/status/logoutEventExecuted', () => {
-                status.emit('handleDisconnect');
-            });
+                });
+                status.on('client/status/loginAlert', (payload) => {
+                    dispatch(setMemberStatus(payload.user));
+                });
+                status.on('client/status/logoutAlert', (payload) => {
+                    dispatch(setMemberStatus(payload));
+                });
+                status.on('client/status/error', (err) => {
+                    console.error('status - error : ', err);
+                });
+                status.on('client/status/changeStatus', (payload) => {
+                    dispatch(setMemberStatus(payload));
+                });
+                status.on('client/status/logoutEventExecuted', () => {
+                    status.emit('handleDisconnect');
+                });
+            }
         }
     }, [userInfo.USER_PK]);
+
+    const loadMemberList = async () => {
+        const url = '/api/company/member-list';
+
+        return await get(url).then((result) => {
+            const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
+            dispatch(setMember(excludeMe));
+        });
+    };
 
     const statusList = [
         {
@@ -331,6 +345,51 @@ function PComp(props) {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
+            <MenuItem
+                onClick={() => {
+                    setStatusMenuOpen(!statusMenuOpen);
+                }}
+            >
+                <IconButton
+                    edge='end'
+                    aria-label='account of current user'
+                    aria-controls={menuId}
+                    aria-haspopup='true'
+                    color='inherit'
+                >
+                    <Avatar
+                        src={
+                            userInfo.USER_PROFILE_PK
+                                ? `/api/store/download-profile-file?fileId=${userInfo.USER_PROFILE_PK}`
+                                : null
+                        }
+                        style={{ width: '24px', height: '24px' }}
+                    />
+                    {statusList.map((row) =>
+                        row.status === userInfo.status ? (
+                            <div className={styles['status-badge']} style={{ backgroundColor: row.color }}></div>
+                        ) : null,
+                    )}
+                </IconButton>
+                {statusList.map((row) => {
+                    return row.status === userInfo.status ? (
+                        <div className={styles['mobile-status']}>
+                            {row.view}
+                            {statusMenuOpen ? <ExpandLess /> : <ExpandMore />}
+                        </div>
+                    ) : null;
+                })}
+            </MenuItem>
+            <Collapse in={statusMenuOpen} timeout='auto' unmountOnExit>
+                {statusList.map((row) => {
+                    return row.status !== userInfo.status ? (
+                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick}>
+                            <div className={styles.status} style={{ backgroundColor: row.color }}></div>
+                            {row.view}
+                        </MenuItem>
+                    ) : null;
+                })}
+            </Collapse>
             <MenuItem>
                 <IconButton aria-label='show 4 new mails' color='inherit'>
                     <Badge badgeContent={4} color='secondary'>

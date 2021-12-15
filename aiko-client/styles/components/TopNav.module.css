@@ -19,3 +19,9 @@
     right: 0;
     top: 10px;
 }
+
+.mobile-status {
+    margin-left: 12px;
+    align-items: center;
+    display: flex;
+}

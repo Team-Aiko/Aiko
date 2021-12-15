@@ -71,6 +71,46 @@ export default function ChatModal(props) {
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
 
+    const statusList = [
+        {
+            status: -1,
+            onClick: () => {
+                console.log('오프라인');
+            },
+            color: '#ededed',
+        },
+        {
+            status: 1,
+            onClick: () => {
+                console.log('온라인');
+            },
+            color: '#2196f3',
+        },
+        {
+            status: 2,
+            onClick: () => {
+                console.log('부재중');
+            },
+            color: '#ffe082',
+        },
+        {
+            status: 3,
+            onClick: () => {
+                console.log('바쁨');
+            },
+            view: '바쁨',
+            color: '#e91e63',
+        },
+        {
+            status: 4,
+            onClick: () => {
+                console.log('회의중');
+            },
+            view: '회의중',
+            color: '#26a69a',
+        },
+    ];
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
@@ -94,10 +134,15 @@ export default function ChatModal(props) {
                                             />
                                             <Typography>{member.NICKNAME}</Typography>
                                         </div>
-                                        <div
-                                            className={styles['member-status']}
-                                            style={member.status === 1 ? { backgroundColor: '#2196f3' } : null}
-                                        ></div>
+                                        {statusList.map((row) => {
+                                            return member.status === row.status ? (
+                                                <div
+                                                    key={row.status}
+                                                    className={styles['member-status']}
+                                                    style={{ backgroundColor: row.color }}
+                                                ></div>
+                                            ) : null;
+                                        })}
                                     </div>
                                 );
                             })}
