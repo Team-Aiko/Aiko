@@ -105,6 +105,7 @@ export default class DriveService {
                 );
             }
 
+            console.log('folder delete is completed');
             // * file delete process
             if (filePKs !== -1) {
                 // * check valid deletes
@@ -119,14 +120,16 @@ export default class DriveService {
                 await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
             }
 
-            await queryRunner.commitTransaction();
+            console.log('file delete is completed');
             flag = true;
+            await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
             await queryRunner.release();
-            if (flag) return flag;
         }
+
+        if (flag) return flag;
     }
 }

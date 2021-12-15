@@ -88,7 +88,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                         *
                     from FILE_FOLDER_TABLE
                     where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
-                    union all
+                    union
                     select
                         FF1.*
                     from
@@ -113,22 +113,16 @@ export default class FileFolderRepository extends Repository<FileFolder> {
     ) {
         try {
             // get folder PK list
-            const folders: number[] = [];
             const isArray = Array.isArray(folderPKs);
-            if (isArray) {
-                folderPKs.forEach(async (folderPK) => {
-                    const children = await this.getAllChildren(folderPK, companyPK);
-                    children.forEach((child) => folders.push(child.FOLDER_PK));
-                });
-            } else {
-                const children = await this.getAllChildren(folderPKs, companyPK);
-                children.forEach((child) => folders.push(child.FOLDER_PK));
-            }
+            if (isArray) await deleteProcess(folderPKs, this);
+            else await deleteProcess([folderPKs], this);
 
-            // delete folders
-            if (folders.length > 0) {
-                await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
-                await this.updateDeleteFlag(folders, manager);
+            async function deleteProcess(folders: number[], obj: FileFolderRepository) {
+                // delete folders
+                if (folders.length > 0) {
+                    await getRepo(FolderBinRepository).deleteFolder(folders, companyPK, userPK, manager);
+                    await obj.updateDeleteFlag(folders, manager);
+                }
             }
         } catch (err) {
             console.error(err);
@@ -148,6 +142,19 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 .execute();
         } catch (err) {
             throw err;
+        }
+    }
+
+    async checkValidDeleteFolder(folderPKs: number | number[]) {
+        try {
+            const isArray = Array.isArray(folderPKs);
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
+            const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs }).andWhere('IS_DELETED = 0');
+
+            return isArray ? await fraction.getMany() : await fraction.getOne();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FolderBinRepository/checkValidDeleteFolder', 500, 129281);
         }
     }
 }

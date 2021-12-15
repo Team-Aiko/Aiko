@@ -1,5 +1,5 @@
-import { FolderBin } from 'src/entity';
-import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { FileBin, FolderBin } from 'src/entity';
+import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
 import {
     EntityRepository,
     getConnection,
@@ -10,6 +10,7 @@ import {
     EntityManager,
     Transaction,
 } from 'typeorm';
+import FileFolderRepository from './fileFolder.repository';
 
 @EntityRepository(FolderBin)
 export default class FolderBinRepository extends Repository<FolderBin> {
@@ -21,13 +22,25 @@ export default class FolderBinRepository extends Repository<FolderBin> {
     ) {
         try {
             const DATE = unixTimeStamp();
-            let DTOs: { USER_PK: number; COMPANY_PK: number; FOLDER_PK: number; DATE: number }[] = [];
-            const isArray = Array.isArray(folderPKs);
+            const DTOs = await getRepo(FileFolderRepository).checkValidDeleteFolder(folderPKs);
+            const isArray = Array.isArray(DTOs);
 
-            if (isArray) DTOs = folderPKs.map((folderPK) => ({ USER_PK, COMPANY_PK, FOLDER_PK: folderPK, DATE }));
-            else DTOs.push({ USER_PK, COMPANY_PK, FOLDER_PK: folderPKs, DATE });
+            if (isArray)
+                await manager.save(
+                    FolderBin,
+                    DTOs.map((dto) => ({ FOLDER_PK: dto.FOLDER_PK, DATE, USER_PK, COMPANY_PK })),
+                );
+            else {
+                if (!DTOs) return;
+                await manager.save(FolderBin, { FOLDER_PK: DTOs.FOLDER_PK, DATE, USER_PK, COMPANY_PK });
+            }
+            // let DTOs: { USER_PK: number; COMPANY_PK: number; FOLDER_PK: number; DATE: number }[] = [];
+            // const isArray = Array.isArray(folderPKs);
 
-            await manager.save(FolderBin, DTOs);
+            // if (isArray) DTOs = folderPKs.map((folderPK) => ({ USER_PK, COMPANY_PK, FOLDER_PK: folderPK, DATE }));
+            // else DTOs.push({ USER_PK, COMPANY_PK, FOLDER_PK: folderPKs, DATE });
+
+            // await manager.save(FolderBin, DTOs);
         } catch (err) {
             console.error(err);
             throw new AikoError('FolderBinRepository/deleteFolder', 500, 819284);
