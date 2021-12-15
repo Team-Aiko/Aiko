@@ -174,6 +174,10 @@ export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
 }
 
+export function getUnixTime(date: Date) {
+    return Math.floor(date.getTime() / 1000);
+}
+
 // 파일삭제
 export function deleteFiles(destination: string, ...uuid: string[]) {
     for (const _uuid of uuid) {

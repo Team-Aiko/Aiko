@@ -25,8 +25,10 @@ import FileHistory from './fileHistory.entity';
 import FileFolder from './fileFolder.entity';
 import FileBin from './fileBin.entity';
 import FolderBin from './folderBin.entity';
+import ChatLogStorage from './chatLogStorage.entity';
 
 export {
+    ChatLogStorage,
     FolderBin,
     FileBin,
     FileKeys,

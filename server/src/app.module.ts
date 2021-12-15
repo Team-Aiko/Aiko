@@ -40,6 +40,7 @@ import {
     Meet,
     MeetRoom,
     PrivateChatRoom,
+    ChatLogStorage,
 } from './entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
@@ -96,6 +97,7 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
 
 @Module({
     imports: [
+        ChatLogStorage,
         ChatModule,
         SchedulerModule,
         AccountModule,

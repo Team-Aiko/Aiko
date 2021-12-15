@@ -16,4 +16,7 @@ export default class ChatLogStorage {
 
     @Column()
     MESSAGE: string;
+
+    @Column()
+    DATE: number;
 }
