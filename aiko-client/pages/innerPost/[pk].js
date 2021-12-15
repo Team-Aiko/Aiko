@@ -6,6 +6,7 @@ import styles from '../../styles/innerPost.module.css';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import DeletePostModal from '../../components/DeletePostModal.js';
+import {Delete, Save, List, Edit} from '@material-ui/icons'
 
 //TEXT EDITOR imports!
 import dynamic from 'next/dynamic';
@@ -48,7 +49,7 @@ const innerPost = () => {
     const [content, setContent] = useState('');
     const [name, setName] = useState('');
     const [date, setDate] = useState('');
-    const [pkNum, setPkNum] = useState('');
+    const [pkNum, setPkNum] = useState(undefined);
     const [files, setFiles] = useState([]);
     const [filePkNum, setFilePkNum] = useState('');
     const [deletedFilePk, setDeletedFilePk] = useState([]);
@@ -244,6 +245,10 @@ const innerPost = () => {
 
     return (
         <>
+        <h2 style={{ color: '#3F51B5', paddingTop: '20px', paddingLeft: '15%' }}>Post no.{pkNum}</h2>
+
+        <hr className={styles.writeHr} />
+
             <div className={styles.outerContainer}>
                 <div className={styles.titleName}>
                     <input
@@ -407,6 +412,7 @@ const innerPost = () => {
                 })}
 
                 <div className={styles.reviseDelete}>
+                    <div>
                     <Button
                         variant='contained'
                         color='primary'
@@ -420,8 +426,26 @@ const innerPost = () => {
                             router.push('/board');
                         }}
                     >
-                        LIST
+                    <List/>
                     </Button>
+
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        style={{
+                            width: '80px',
+                            height: '40px',
+                            borderRadius: '15px',
+                            backgroundColor: '#969696',
+                            marginLeft:'5px',
+                        }}
+                        onClick={() => {
+                            router.push('/board');
+                        }}
+                    >
+                    <Edit/>
+                    </Button>
+                    </div>
 
                     <div className={styles.align}>
                         <Button
@@ -434,7 +458,7 @@ const innerPost = () => {
                                 borderRadius: '15px',
                             }}
                         >
-                            REVISE
+                        <Save/>
                         </Button>
 
                         <Button
@@ -449,7 +473,7 @@ const innerPost = () => {
                                 backgroundColor: '#D93D3D',
                             }}
                         >
-                            DELETE
+                        <Delete/>
                         </Button>
                     </div>
                 </div>

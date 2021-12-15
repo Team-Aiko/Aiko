@@ -47,10 +47,21 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .andWhere('fk.IS_DELETED = 0');
 
-            return isArray ? await fraction.getMany() : await fraction.getOneOrFail();
+            return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/getFiles', 500, 928192);
+        }
+    }
+
+    async getFilesInFolder(folderPKs: number | number[], companyPK: number) {
+        try {
+            const isArray = Array.isArray(folderPKs);
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
+            return await this.createQueryBuilder().where(whereCondition, { folderPKs }).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getFilesInFolder', 500, 912030);
         }
     }
 
@@ -64,13 +75,36 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .update()
                 .set({ IS_DELETED: 1 })
                 .where(whereCondition, { filePKs })
-                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .execute();
 
             return true;
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/deleteFiles', 500, 910292);
+        }
+    }
+
+    async selectFilesInFolder(FOLDER_PK: number) {
+        try {
+            return await this.find({ FOLDER_PK });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/selectFilesInFolder', 500, 190284);
+        }
+    }
+
+    async getFilesInfoInFolder(FOLDER_PK: number, COMPANY_PK: number) {
+        try {
+            return await this.createQueryBuilder('fk')
+                .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
+                .leftJoinAndSelect('fileHistories.user', 'user')
+                .where(`fk.FOLDER_PK = ${FOLDER_PK}`)
+                .andWhere(`fk.COMPANY_PK = ${COMPANY_PK}`)
+                .getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getFilesInfoInFolder', 500, 182934);
         }
     }
 }

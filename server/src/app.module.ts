@@ -13,6 +13,7 @@ import {
 } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    FolderBin,
     FileBin,
     FileKeys,
     FileHistory,
@@ -55,6 +56,7 @@ console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        FolderBin,
         FileBin,
         FileKeys,
         FileHistory,

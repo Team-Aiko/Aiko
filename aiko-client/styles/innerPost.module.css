@@ -2,7 +2,7 @@
 .reviseDelete {
     display:flex;
     justify-content:space-between;
-    width:70%;
+    width:100%;
     margin:auto;
     margin-top:2%;
     margin-bottom: 5%;
@@ -15,7 +15,7 @@
 .outerContainer {
     display:block;
     margin:30px auto;
-    width:90%;
+    width:70%;
     height:100%;
     background-color:white;
     border-radius:10px;
@@ -90,4 +90,14 @@
     cursor:pointer;
     font-size:15px;
     color: #3F51B5;
+}
+
+.writeHr {
+    width:70%;
+    height:3px;
+    background-color:#3F51B5;
+    margin-top:1%;
+    margin-bottom:2%;
+    border-style:none;
+    border-radius:10px;
 }
