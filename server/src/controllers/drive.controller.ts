@@ -29,7 +29,21 @@ export default class DriveController {
             const result = await this.driveService.createFolder(COMPANY_PK, folderName, parentPK);
             resExecutor(res, { result });
         } catch (err) {
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Post('view-folder')
+    async viewFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const { folderPK } = req.body;
+
+            const result = this.driveService.viewFolder(COMPANY_PK, folderPK);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
         }
     }
 
@@ -61,9 +75,13 @@ export default class DriveController {
     @Post('delete-files')
     async deleteFiles(@Req() req: Request, @Res() res: Response) {
         try {
-            const { filePKs } = req.body;
+            const { filePKs, folderPKs } = req.body;
+            const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
+                filePKs: filePKs || -1,
+                folderPKs: folderPKs || -1,
+            };
             const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
-            const result = await this.driveService.deleteFiles(filePKs, USER_PK, COMPANY_PK);
+            const result = await this.driveService.deleteFiles(primaryKeys, USER_PK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
             console.log('🚀 ~ file: drive.controller.ts ~ line 69 ~ DriveController ~ deleteFiles ~ err', err);

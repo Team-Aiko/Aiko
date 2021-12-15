@@ -31,7 +31,7 @@ export default class FileBinRepository extends Repository<FileBin> {
                 fileBinList,
             );
 
-            return (await manager.insert(FileBin, fileBinList)).identifiers as Pick<FileBin, 'FB_PK'>[];
+            await manager.save(FileBin, fileBinList);
         } catch (err) {
             console.error(err);
             throw new AikoError('FileBinRepository/deleteFiles', 500, 9192384);

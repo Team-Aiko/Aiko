@@ -13,6 +13,7 @@ import {
 } from './modules';
 import VerifyJwt from './middlewares/verifyJwt';
 import {
+    FolderBin,
     FileBin,
     FileKeys,
     FileHistory,
@@ -49,12 +50,14 @@ import ApprovalFrame from './entity/approvalFrame';
 import ApprovalStep from './entity/approvalStep';
 import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
+import SchedulerModule from './modules/scheduler.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        FolderBin,
         FileBin,
         FileKeys,
         FileHistory,
@@ -92,6 +95,7 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
 
 @Module({
     imports: [
+        SchedulerModule,
         AccountModule,
         CompanyModule,
         ORMModule,
