@@ -117,7 +117,6 @@ export default class StatusService {
     }
 
     async changeStatus(clientId: string, stat: number) {
-        console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
         try {
             const { userPK } = await this.getClientInfo(clientId);
             const userStatus = await this.getUserStatus(userPK);
