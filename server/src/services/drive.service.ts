@@ -21,12 +21,18 @@ export default class DriveService {
         let historyKeyList: Pick<FileHistory, 'FH_PK'>[] = [];
 
         try {
+            // * update total folder size
+            const totFileSize = files.reduce((prev, curr) => curr.size + prev, 0);
+            await getRepo(FileFolderRepository).updateFileSize(folderPK, companyPK, totFileSize, queryRunner.manager);
+
+            // * create folder keys
             fileKeysList = await getRepo(FileKeysRepository).createFileKeys(
                 files.length,
                 folderPK,
                 queryRunner.manager,
             );
 
+            // * create folder histories
             const fileHistoryList = files.map((file, idx) => ({
                 DATE,
                 FILE_KEY_PK: fileKeysList[idx].FILE_KEY_PK,
