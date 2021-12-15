@@ -11,7 +11,8 @@ export default class ChatController {
     async getPrivateChatLog(@Req() req: Request, @Res() res: Response) {
         try {
             const { roomId, startTime, endTime } = req.body;
-            this.chatService.getPrivateChatLog(roomId as string, startTime, endTime);
+            const result = await this.chatService.getPrivateChatLog(roomId as string, startTime, endTime);
+            resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });
         }
