@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { sendGet, sendPost } from '../_axios';
 import axios from 'axios';
+import { downloadFile } from '../_axios';
 import { compressFiles } from '../_fileCompressor';
 import { saveAs } from 'file-saver';
 
 export default function DownloadDemo() {
     useEffect(() => {
         const url = '/api/store/download-drive-file?fileId=5';
-
-        axios({
-            url: url, //your url
-            method: 'GET',
-            responseType: 'blob', // important
-        }).then((response) => {
-            let disposition = decodeURIComponent(response.headers['content-disposition']);
-            let strList = disposition.split(';');
-            let fileName = strList[strList.length - 1];
-            fileName = fileName.split(`filename\*\=UTF-8\'\'`)[1];
-            saveAs(new Blob([response.data]), fileName);
-        });
+        downloadFile(url);
+        // axios({
+        //     url: url, //your url
+        //     method: 'GET',
+        //     responseType: 'blob', // important
+        // }).then((response) => {
+        //     let disposition = decodeURIComponent(response.headers['content-disposition']);
+        //     let strList = disposition.split(';');
+        //     let fileName = strList[strList.length - 1];
+        //     fileName = fileName.split(`filename\*\=UTF-8\'\'`)[1];
+        //     saveAs(new Blob([response.data]), fileName);
+        // });
 
         // const urls = [
         //     'http://localhost:5000/store/download-drive-file?fileId=4',
