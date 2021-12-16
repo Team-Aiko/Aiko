@@ -7,13 +7,11 @@ export class Status {
     userPK: number;
     @Prop({ required: true })
     companyPK: number;
-    @Prop({ required: true })
-    socketId: string;
     @Prop()
     logoutPending: boolean;
     @Prop()
     status: number;
 }
 
-export type statusDocument = Status & Document;
+export type StatusDocument = Status & Document;
 export const StatusSchema = SchemaFactory.createForClass(Status);

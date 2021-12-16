@@ -1,0 +1,27 @@
+.status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ededed;
+    box-shadow: 0 0 6px #a5a4a4;
+    margin-right: 8px;
+}
+
+.status-badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ededed;
+    box-shadow: 0 0 6px #a5a4a4;
+    margin-right: 8px;
+    z-index: 10;
+    position: absolute;
+    right: 0;
+    top: 10px;
+}
+
+.mobile-status {
+    margin-left: 12px;
+    align-items: center;
+    display: flex;
+}

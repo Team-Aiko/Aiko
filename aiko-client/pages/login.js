@@ -12,6 +12,7 @@ import loginPic from '../public/images/image.png';
 export default function CComp() {
     const dispatch = useDispatch();
     const setInfo = (userInfo) => {
+        console.log('### setInfo : ', userInfo);
         dispatch(setUserInfo(userInfo));
     };
     return <Login setUserInfo={setInfo} />;
@@ -50,8 +51,6 @@ function Login(props) {
                 console.log('🚀 ~ file: login.js ~ line 49 ~ data', data);
                 if (result.header /* login result : boolean */) {
                     props.setUserInfo(result.userInfo);
-                    console.log(result.userInfo);
-
                     Router.push('/');
                 } else {
                     alert('not valid user');

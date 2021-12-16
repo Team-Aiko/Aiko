@@ -1,4 +1,5 @@
-import axiosInterceptor, { get, post } from './interceptor';
-
+import axiosInterceptor from './interceptor';
 export default axiosInterceptor;
-export { get, post };
+
+export { sendGet, sendPost } from './util';
+export { get, post } from './interceptor';

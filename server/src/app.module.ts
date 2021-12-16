@@ -40,6 +40,7 @@ import {
     Meet,
     MeetRoom,
     PrivateChatRoom,
+    ChatLogStorage,
 } from './entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
@@ -50,6 +51,8 @@ import ApprovalFrame from './entity/approvalFrame';
 import ApprovalStep from './entity/approvalStep';
 import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
+import ChatModule from './modules/chat.module';
+import SchedulerModule from './modules/scheduler.module';
 
 // orm
 console.log(__dirname + '/entity/*.entity.(js,ts)');
@@ -94,6 +97,9 @@ const MongoDBModule = MongooseModule.forRoot('mongodb://localhost/nest');
 
 @Module({
     imports: [
+        ChatLogStorage,
+        ChatModule,
+        SchedulerModule,
         AccountModule,
         CompanyModule,
         ORMModule,

@@ -64,14 +64,21 @@ create table CHAT_FILE_TABLE (
     CR_PK VARCHAR(256) NOT NULL
 );
 
-drop table CHAT_FILE_TABLE;
-
 -- PRIVATE CHAT ROOM TABLE
 create table PRIVATE_CHAT_ROOM_TABLE(
     CR_PK VARCHAR(256) PRIMARY KEY,
     USER_1 INT NOT NULL,
     USER_2 INT NOT NULL,
     COMPANY_PK INT NOT NULL
+);
+
+create table CHATLOG_STORAGE_TABLE (
+    CS_PK int primary key auto_increment,
+    CR_PK VARCHAR(256) NOT NULL,
+    SENDER INT NOT NULL,
+    CF_PK INT NOT NULL DEFAULT 0,
+    MESSAGE VARCHAR(512) DEFAULT NULL,
+    DATE INT NOT NULL
 );
 
 -- AUTH LIST TABLE
@@ -211,7 +218,7 @@ create table NOTICE_BOARD_TABLE (
 	UPDATE_USER_PK int,
 	IS_DELETE int,
 	primary key (NOTICE_BOARD_PK)
-); // 수정자 추가
+); -- 수정자 추가
 
 
 -- 공지 게시판 파일 테이블 생성 

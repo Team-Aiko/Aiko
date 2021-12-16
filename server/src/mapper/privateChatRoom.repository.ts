@@ -80,7 +80,14 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             console.error(err);
             throw new AikoError('otoChat/getOneToOneChatRoomList', 500, 500360);
         }
+    }
 
-        return list;
+    async getPrivateChatRoomListForScheduler(COMPANY_PK: number) {
+        try {
+            return await this.find({ COMPANY_PK });
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('PrivateChatRoomRepository/getPrivateChatRoomListForScheduler', 500, 1892894);
+        }
     }
 }
