@@ -88,4 +88,16 @@ export default class DriveController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Post('move-folder')
+    async moveFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            resExecutor(res, { err });
+        }
+    }
 }

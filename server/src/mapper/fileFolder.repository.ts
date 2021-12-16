@@ -227,4 +227,18 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             throw new AikoError('FileFolderRepository/getAllParentWithMyself', 500, 1982789);
         }
     }
+
+    async moveFolder(toFolderPK: number, fromFolderPKs: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .update(FileFolder)
+                .set({ FOLDER_PK: toFolderPK })
+                .where('FOLDER_PK IN(...:fromFolderPKs)', { fromFolderPKs })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/moveFolder', 500, 1924899);
+        }
+    }
 }
