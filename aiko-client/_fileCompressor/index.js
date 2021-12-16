@@ -1,0 +1,1 @@
+export { compressFiles } from './compressor';

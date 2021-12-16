@@ -66,7 +66,11 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getAllChildren(folderPKs: number | number[], companyPK: number) {
+    /**
+     * folderPKs가 array로 들어갈 시 모든 본인 자식 폴더 리스트를 다 합쳐서 반환
+     *
+     */
+    async getAllChildrenWithMyself(folderPKs: number | number[], companyPK: number) {
         try {
             const isArray = Array.isArray(folderPKs);
             let result: FileFolder[] = [];
@@ -85,15 +89,15 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             function getSQL(folderPK: number, companyPK: number) {
                 const sql = `with recursive GET_ALL_CHILDREN as (
-                    select 
+                    select
                         *
                     from FILE_FOLDER_TABLE
                     where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
-                    union
+                    union all
                     select
                         FF1.*
                     from
-                        FILE_FOLDER_TABLE as FF1, FILE_FOLDER_TABLE as FF2
+                        FILE_FOLDER_TABLE as FF1, GET_ALL_CHILDREN as FF2
                     where
                         FF1.PARENT_PK = FF2.FOLDER_PK
                  ) select * from GET_ALL_CHILDREN`;
@@ -102,7 +106,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             }
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileFolderRepository/getAllChildren', 500, 192924);
+            throw new AikoError('FileFolderRepository/getAllChildrenWithMyself', 500, 192924);
         }
     }
 
@@ -180,6 +184,75 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         } catch (err) {
             console.error(err);
             throw new AikoError('FileFolderRepository/getDirectChildren', 500, 198283);
+        }
+    }
+
+    async updateFileSize(
+        FOLDER_PK: number,
+        COMPANY_PK: number,
+        fileSize: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
+        try {
+            const folderList = await this.getAllParentWithMyself(FOLDER_PK, COMPANY_PK);
+            await Promise.all(
+                folderList.map(async (folder) => {
+                    folder.SIZE += fileSize;
+                    await manager.update(FileFolder, { FOLDER_PK: folder.FOLDER_PK }, { SIZE: folder.SIZE });
+                }),
+            );
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/updateFileSize', 500, 198280);
+        }
+    }
+
+    async getAllParentWithMyself(FOLDER_PK: number, COMPANY_PK: number) {
+        try {
+            return (await getManager().query(`with recursive GET_ALL_PARENT as (
+                select
+                    *
+                from FILE_FOLDER_TABLE
+                where FOLDER_PK = ${FOLDER_PK} and COMPANY_PK = ${COMPANY_PK} and IS_DELETED = 0
+                union
+                select
+                    FF1.*
+                from
+                    FILE_FOLDER_TABLE as FF1, GET_ALL_PARENT as FF2
+                where
+                    FF1.FOLDER_PK = FF2.PARENT_PK
+             ) select * from GET_ALL_PARENT`)) as FileFolder[];
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/getAllParentWithMyself', 500, 1982789);
+        }
+    }
+
+    async moveFolder(toFolderPK: number, fromFolderPKs: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .update(FileFolder)
+                .set({ FOLDER_PK: toFolderPK })
+                .where('FOLDER_PK IN(...:fromFolderPKs)', { fromFolderPKs })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/moveFolder', 500, 1924899);
+        }
+    }
+
+    async deleteFolderForScheduler(folders: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileFolder)
+                .where('FOLDER_PK IN(:...folders)', { folders })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/deleteFolderForScheduler', 500, 1924899);
         }
     }
 }

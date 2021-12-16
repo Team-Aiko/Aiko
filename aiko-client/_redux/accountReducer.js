@@ -10,6 +10,7 @@ const initialState = {
     NICKNAME: undefined, // string
     USER_PROFILE_PK: undefined, //number
     grants: [], // Grant[] . /server/entity/grant.entity.ts 참조
+    status: undefined, // number
 };
 
 // * slice
@@ -23,8 +24,22 @@ const accountSlice = createSlice({
                 state[curr] = action.payload[curr];
             });
         },
+        resetUserInfo() {
+            return {
+                COMPANY_PK: undefined, // number
+                DEPARTMENT_PK: undefined, // number
+                COUNTRY_PK: undefined, // number
+                USER_PK: undefined, // number
+                NICKNAME: undefined, // string
+                USER_PROFILE_PK: undefined, // number
+                grants: [],
+                status: undefined, // number
+                TEL: undefined, // string
+                EMAIL: undefined, // string
+            };
+        },
     },
 });
 
-export const { setUserInfo } = accountSlice.actions;
+export const { setUserInfo, resetUserInfo } = accountSlice.actions;
 export default accountSlice.reducer;

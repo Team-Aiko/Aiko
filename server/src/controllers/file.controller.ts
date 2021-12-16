@@ -16,12 +16,14 @@ import FileService from 'src/services/file.service';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
+import fs from 'fs';
 
 @UseGuards(UserGuard)
 @Controller() // /store
 export default class FileController {
     constructor(private fileService: FileService) {}
 
+    // ! api doc
     /**
      * 챗에 파일을 전송할 때는 rdb에 저장한다. 그리고 pk를 반환하고 그것을 소켓에 전송한다.
      * 수신자는 file이라는 property가 존재할 경우 파일을 rdb로부터 조회하여 화면에 뿌려준다.
@@ -29,7 +31,7 @@ export default class FileController {
      * @param file
      * @param s
      */
-    @Post('files-on-chat-msg')
+    @Post('save-private-chat-file')
     @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         try {
@@ -48,6 +50,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 파일 아이디를 이용해 채팅에 업로드 된 파일의 정보를 불러오는 메소드
      * @param req
@@ -63,6 +66,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 채팅에서 공유된 파일을 실제로 다운로드하는 api
      * @param fileId
@@ -78,6 +82,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 유저의 프로필 이미지를 불러오기위해 사용하는 api
      * 용례: <img src='/api/store/download-profile-file?fileId=1' />
@@ -94,6 +99,8 @@ export default class FileController {
             throw resExecutor(res, { err });
         }
     }
+
+    // ! api doc
     // 파일 다운로드 s
     @Get('download-noticeboard-file')
     async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
@@ -106,5 +113,21 @@ export default class FileController {
         } catch (err) {
             throw resExecutor(res, { err });
         } //push
+    }
+
+    // ! api doc
+    @Get('download-drive-file')
+    async downloadDriveFiles(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
+
+            res.download(`${filePath.DRIVE}${NAME}`, ORIGINAL_FILE_NAME, (err) => {
+                if (err) console.log(err);
+            });
+        } catch (err) {
+            console.error(err);
+            throw resExecutor(res, { err });
+        }
     }
 }

@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styles from '../../styles/innerPost.module.css';
-import Button from '@material-ui/core/Button';
+import { Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import DeletePostModal from '../../components/DeletePostModal.js';
-import {Delete, Save, List, Edit} from '@material-ui/icons'
+import { Delete, Save, List, Edit } from '@material-ui/icons';
 
 //TEXT EDITOR imports!
 import dynamic from 'next/dynamic';
@@ -14,7 +14,7 @@ const Editor = dynamic(() => import('react-draft-wysiwyg').then((mod) => mod.Edi
 import { stateToHTML } from 'draft-js-export-html';
 import draftToHtml from 'draftjs-to-html';
 import styled from 'styled-components';
-import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import { EditorState, convertToRaw, ContentState, KeyBindingUtil } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import htmlToDraft from 'html-to-draftjs';
 
@@ -23,12 +23,14 @@ const MyBlock = styled.div`
         width: 100%;
         margin: 0 auto;
         margin-bottom: 4rem;
+        z-index: 10 !important;
     }
     .editor {
         height: 400px !important;
         border: 1px solid #f1f1f1 !important;
         padding: 5px !important;
         border-radius: 2px !important;
+        z-index: 10 !important;
     }
 `;
 
@@ -40,6 +42,9 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(2),
         textAlign: 'center',
         color: theme.palette.text.secondary,
+    },
+    editor: {
+        zIndex: '10 !important',
     },
 }));
 
@@ -71,8 +76,17 @@ const innerPost = () => {
     //게시글 작성자 pkNum
     const [writerPk, setWriterPk] = useState(undefined);
 
+    //warning modal open
+    const [openModal, setOpenModal] = useState(false);
+
     const router = useRouter();
     const { pk } = router.query;
+
+    const editCheck = () => {
+        if (writerPk == currentUserPk) {
+            setDisabled(!disabled);
+        }
+    };
 
     useEffect(() => {
         const getFileNames = async () => {
@@ -82,9 +96,6 @@ const innerPost = () => {
                     const fileNumber = [];
                     for (let i = 0; i < res.data.result.files.length; i++) {
                         fileNumber.push(res.data.result.files[i].ORIGINAL_NAME);
-                    }
-                    if (res.data.result.files.length < 2) {
-                        console.log('파일이 2개보다 작습니다');
                     }
                     setFiles([...files, fileNumber]);
                     console.log(files);
@@ -96,23 +107,22 @@ const innerPost = () => {
         getFileNames();
     }, []);
 
-        const getDetails = async () => {
-            const res = await axios.get(`/api/notice-board/detail?num=${pk}`)
-            .then((res) => {
-                console.log(res);
-                setInnerPosts(res.data.result);
-                setTitle(res.data.result.TITLE);
-                setContent(res.data.result.CONTENT);
-                setName(res.data.result.USER_NAME);
-                setDate(res.data.result.CREATE_DATE);
-                setPkNum(res.data.result.NOTICE_BOARD_PK);
-                setWriterPk(res.data.result.USER_PK);
-            })
-        };
+    const getDetails = async () => {
+        const res = await axios.get(`/api/notice-board/detail?num=${pk}`).then((res) => {
+            console.log(res);
+            setInnerPosts(res.data.result);
+            setTitle(res.data.result.TITLE);
+            setContent(res.data.result.CONTENT);
+            setName(res.data.result.USER_NAME);
+            setDate(res.data.result.CREATE_DATE);
+            setPkNum(res.data.result.NOTICE_BOARD_PK);
+            setWriterPk(res.data.result.USER_PK);
+        });
+    };
 
-        useEffect(() => {
-            getDetails()
-        }, [])
+    useEffect(() => {
+        getDetails();
+    }, []);
 
     useEffect(() => {
         const getSpecifics = async () => {
@@ -138,12 +148,12 @@ const innerPost = () => {
     };
 
     const deleteFile2 = () => {
-        setDeletedFilePk([...deletedFilePk, filePkNum + 1]);
+        setDeletedFilePk([...deletedFilePk, filePkNum+1]);
         console.log(deletedFilePk);
     };
 
     const deleteFile3 = () => {
-        setDeletedFilePk([...deletedFilePk, filePkNum + 2]);
+        setDeletedFilePk([...deletedFilePk, filePkNum+2]);
         console.log(deletedFilePk);
     };
 
@@ -154,7 +164,7 @@ const innerPost = () => {
             num: pkNum,
             title: title,
             content: editorToHtml,
-            'delFilePks[]': deletedFilePk,
+            delFilePks: [filePkNum],
         };
         formData.append('obj', JSON.stringify(obj));
         formData.append('file', files[0]);
@@ -231,7 +241,7 @@ const innerPost = () => {
 
     //rendering editor states
 
-    const htmlToEditor = content
+    const htmlToEditor = content;
 
     useEffect(() => {
         const blocksFromHtml = htmlToDraft(htmlToEditor);
@@ -241,13 +251,13 @@ const innerPost = () => {
             const editorState = EditorState.createWithContent(contentState);
             setEditorState(editorState);
         }
-    },[content]);
+    }, [content]);
 
     return (
         <>
-        <h2 style={{ color: '#3F51B5', paddingTop: '20px', paddingLeft: '15%' }}>Post no.{pkNum}</h2>
+            <h2 style={{ color: '#3F51B5', paddingTop: '20px', paddingLeft: '15%' }}>Post no.{pkNum}</h2>
 
-        <hr className={styles.writeHr} />
+            <hr className={styles.writeHr} />
 
             <div className={styles.outerContainer}>
                 <div className={styles.titleName}>
@@ -264,33 +274,34 @@ const innerPost = () => {
                 </div>
 
                 <MyBlock>
-                        <Editor
-                            // 에디터와 툴바 모두에 적용되는 클래스
-                            wrapperClassName='wrapper-class'
-                            // 에디터 주변에 적용된 클래스
-                            editorClassName='editor'
-                            // 툴바 주위에 적용된 클래스
-                            toolbarClassName='toolbar-class'
-                            // 툴바 설정
-                            toolbar={{
-                                // inDropdown: 해당 항목과 관련된 항목을 드롭다운으로 나타낼것인지
-                                list: { inDropdown: true },
-                                textAlign: { inDropdown: true },
-                                link: { inDropdown: true },
-                                history: { inDropdown: false },
-                            }}
-                            placeholder='내용을 작성해주세요.'
-                            // 한국어 설정
-                            localization={{
-                                locale: 'ko',
-                            }}
-                            // 초기값 설정
-                            editorState={editorState}
-                            // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
-                            onEditorStateChange={onEditorStateChange}
-                            readOnly={disabled}
-                        />
-                    </MyBlock>
+                    <Editor
+                        className={classes.editor}
+                        // 에디터와 툴바 모두에 적용되는 클래스
+                        wrapperClassName='wrapper-class'
+                        // 에디터 주변에 적용된 클래스
+                        editorClassName='editor'
+                        // 툴바 주위에 적용된 클래스
+                        toolbarClassName='toolbar-class'
+                        // 툴바 설정
+                        toolbar={{
+                            // inDropdown: 해당 항목과 관련된 항목을 드롭다운으로 나타낼것인지
+                            list: { inDropdown: true },
+                            textAlign: { inDropdown: true },
+                            link: { inDropdown: true },
+                            history: { inDropdown: false },
+                        }}
+                        placeholder='내용을 작성해주세요.'
+                        // 한국어 설정
+                        localization={{
+                            locale: 'ko',
+                        }}
+                        // 초기값 설정
+                        editorState={editorState}
+                        // 에디터의 값이 변경될 때마다 onEditorStateChange 호출
+                        onEditorStateChange={onEditorStateChange}
+                        readOnly={disabled}
+                    />
+                </MyBlock>
 
                 {files.map((file) => {
                     if (file.length == 0) {
@@ -396,7 +407,7 @@ const innerPost = () => {
                                     </Button>
                                 </div>
                                 <div>
-                                    <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum + 1}`}></a>
+                                    <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum + 2}`}></a>
                                     <Button
                                         size='small'
                                         onClick={deleteFile3}
@@ -413,38 +424,36 @@ const innerPost = () => {
 
                 <div className={styles.reviseDelete}>
                     <div>
-                    <Button
-                        variant='contained'
-                        color='primary'
-                        style={{
-                            width: '80px',
-                            height: '40px',
-                            borderRadius: '15px',
-                            backgroundColor: '#969696',
-                        }}
-                        onClick={() => {
-                            router.push('/board');
-                        }}
-                    >
-                    <List/>
-                    </Button>
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            style={{
+                                width: '80px',
+                                height: '40px',
+                                borderRadius: '15px',
+                                backgroundColor: '#969696',
+                            }}
+                            onClick={() => {
+                                router.push('/board');
+                            }}
+                        >
+                            <List />
+                        </Button>
 
-                    <Button
-                        variant='contained'
-                        color='primary'
-                        style={{
-                            width: '80px',
-                            height: '40px',
-                            borderRadius: '15px',
-                            backgroundColor: '#969696',
-                            marginLeft:'5px',
-                        }}
-                        onClick={() => {
-                            router.push('/board');
-                        }}
-                    >
-                    <Edit/>
-                    </Button>
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            style={{
+                                width: '80px',
+                                height: '40px',
+                                borderRadius: '15px',
+                                backgroundColor: '#969696',
+                                marginLeft: '5px',
+                            }}
+                            onClick={editCheck}
+                        >
+                            <Edit />
+                        </Button>
                     </div>
 
                     <div className={styles.align}>
@@ -458,11 +467,13 @@ const innerPost = () => {
                                 borderRadius: '15px',
                             }}
                         >
-                        <Save/>
+                            <Save />
                         </Button>
 
                         <Button
-                            onClick={deleteArticle}
+                            onClick={() => {
+                                setOpenModal(!openModal);
+                            }}
                             variant='contained'
                             color='primary'
                             style={{
@@ -473,10 +484,12 @@ const innerPost = () => {
                                 backgroundColor: '#D93D3D',
                             }}
                         >
-                        <Delete/>
+                            <Delete />
                         </Button>
                     </div>
                 </div>
+
+                {openModal == true ? <DeletePostModal deleteArticle={deleteArticle} setOpenModal={setOpenModal}/> : <></>}
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
                     <div className={styles.previousPost}>

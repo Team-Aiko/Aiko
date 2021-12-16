@@ -16,6 +16,7 @@ import { O_DSYNC } from 'constants';
 export default class MeetingController {
     constructor(private meetingService: MeetingService) {}
 
+    // ! api doc
     @Post('creation-meeting-room')
     async makeMeetingRoom(@Req() req: Request, @Res() res: Response) {
         const { IS_ONLINE, ROOM_NAME, LOCATE } = req.body;
@@ -35,6 +36,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Post('delete-meeting-room')
     async deleteMeetingRoom(@Req() req: Request, @Res() res: Response) {
         const { ROOM_PK } = req.body;
@@ -48,6 +50,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Post('update-meeting-room')
     async updateMeetingRoom(@Req() req: Request, @Res() res: Response) {
         const { IS_ONLINE, LOCATE, ROOM_NAME, ROOM_PK }: Partial<IMeetingRoomBundle> = req.body;
@@ -69,6 +72,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Get('view-meeting-room')
     async viewMeetingRoom(@Req() req: Request, @Res() res: Response) {
         const { roomId } = req.query;
@@ -81,6 +85,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Get('meeting-room-list')
     async getMeetingRoomList(@Req() req: Request, @Res() res: Response) {
         const { COMPANY_PK } = usrPayloadParser(req);
@@ -93,6 +98,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Post('make-meeting')
     async makeMeeting(@Req() req: Request, @Res() res: Response) {
         const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION } = req.body;
@@ -116,6 +122,7 @@ export default class MeetingController {
         }
     }
 
+    // TODO: no api doc
     /**
      * 미팅 룸 인포페이지에서 스케쥴의 정보를 받아오기 위한 api
      */
@@ -142,6 +149,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     /**
      *
      */
@@ -165,6 +173,8 @@ export default class MeetingController {
             throw resExecutor(res, { err });
         }
     }
+
+    // ! api doc
     /**
      * meeting schedule을 업데이트하는 api
      * 인원의 변동이 없을 경우 빈배열 []을 넣는다.
@@ -195,6 +205,7 @@ export default class MeetingController {
         }
     }
 
+    // ! api doc
     @Post('delete-meeting')
     async deleteMeeting(@Req() req: Request, @Res() res: Response) {
         const { meetPK } = req.body;
@@ -207,6 +218,8 @@ export default class MeetingController {
             throw resExecutor(res, { err });
         }
     }
+
+    // ! api doc
     @Post('finish-meeting')
     async finishMeeting(@Req() req: Request, @Res() res: Response) {
         const { meetPK, finishFlag } = req.body;

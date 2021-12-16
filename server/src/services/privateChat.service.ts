@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { getServerTime, tokenParser } from 'src/Helpers/functions';
 import { AikoError, getRepo } from 'src/Helpers';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
-import { PrivateChatRoomRepository, UserRepository } from 'src/mapper';
+import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
+import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
 import { EntityManager, TransactionManager } from 'typeorm';
 
@@ -39,21 +41,14 @@ export default class PrivateChatService {
         }
     }
 
-    async connectPrivateChat(socketId: string, { userPK, companyPK }: { userPK: number; companyPK: number }) {
+    async connectPrivateChat(socketId: string, accessToken: string) {
         try {
-            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
+            const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
 
-            if (user.COMPANY_PK !== companyPK || user.USER_PK !== userPK)
-                throw new AikoError('socketService/invalid user information', 100, 49921);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
-                user.USER_PK,
-                user.COMPANY_PK,
-            );
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(USER_PK, COMPANY_PK);
 
             return roomList;
         } catch (err) {
-            console.error(err);
             throw err;
         }
     }
@@ -89,6 +84,50 @@ export default class PrivateChatService {
             await this.chatlogModel.findOneAndUpdate({ roomId }, chatlog).exec();
         } catch (err) {
             console.error(err);
+        }
+    }
+
+    /**
+     * 로그 저장 스케줄링 함수
+     */
+    async storePrivateChatLogsToRDB(serverHour: number) {
+        try {
+            const allCompanies = await getRepo(CompanyRepository).getAllCompanies();
+
+            let totalRooms: string[] = [];
+            const roomsRooms = await Promise.all(
+                allCompanies.map(async (company) => {
+                    const companyId = company.COMPANY_PK;
+                    const rooms = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomListForScheduler(
+                        companyId,
+                    );
+                    return rooms;
+                }),
+            );
+
+            roomsRooms.forEach((rooms) => {
+                const oneCompanyRoomIds = rooms.map((room) => room.CR_PK);
+                totalRooms = totalRooms.concat(oneCompanyRoomIds);
+            });
+
+            const serverTime = getServerTime(serverHour);
+
+            Promise.all(
+                totalRooms.map(async (roomId) => {
+                    const limitTime = serverTime - 604800;
+
+                    const chatLog = (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
+                    const moveLog = chatLog.messages.filter((message) => message.date <= limitTime);
+                    const notYetLog = chatLog.messages.filter((message) => message.date > limitTime);
+                    chatLog.messages = notYetLog;
+
+                    await getRepo(ChatLogStorageRepository).saveChatLogs(moveLog, roomId);
+                    await this.chatlogModel.findOneAndUpdate({ roomId: roomId }, chatLog);
+                }),
+            );
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     }
 }

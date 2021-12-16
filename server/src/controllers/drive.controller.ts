@@ -21,6 +21,7 @@ import DriveService from 'src/services/drive.service';
 export default class DriveController {
     constructor(private driveService: DriveService) {}
 
+    // ! api doc
     @Post('create-folder')
     async createFolder(@Req() req: Request, @Res() res: Response) {
         try {
@@ -33,13 +34,14 @@ export default class DriveController {
         }
     }
 
-    @Post('view-folder')
+    // ! api doc
+    @Get('view-folder')
     async viewFolder(@Req() req: Request, @Res() res: Response) {
         try {
             const { COMPANY_PK } = usrPayloadParser(req);
-            const { folderPK } = req.body;
+            const { folderId } = req.query;
 
-            const result = this.driveService.viewFolder(COMPANY_PK, folderPK);
+            const result = this.driveService.viewFolder(COMPANY_PK, Number(folderId));
 
             resExecutor(res, { result });
         } catch (err) {
@@ -47,19 +49,22 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Post('save-files')
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
+            console.log('실행???');
             const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
             const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, COMPANY_PK, files);
             resExecutor(res, { result });
         } catch (err) {
             console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
         }
     }
 
+    // ! api doc
     @Get('get-files')
     async getFiles(@Req() req: Request, @Res() res: Response) {
         try {
@@ -72,6 +77,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Post('delete-files')
     async deleteFiles(@Req() req: Request, @Res() res: Response) {
         try {
@@ -85,6 +91,19 @@ export default class DriveController {
             resExecutor(res, { result });
         } catch (err) {
             console.log('🚀 ~ file: drive.controller.ts ~ line 69 ~ DriveController ~ deleteFiles ~ err', err);
+            throw resExecutor(res, { err });
+        }
+    }
+
+    // ! api doc
+    @Post('move-folder')
+    async moveFolder(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
             throw resExecutor(res, { err });
         }
     }

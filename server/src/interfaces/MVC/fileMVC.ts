@@ -10,7 +10,7 @@ export enum filePath {
     PROFILE = './files/profile/',
     CHAT = './files/chatFiles/',
     NOTICE_BOARD = './files/noticeboard',
-    DRIVE = './files/drive',
+    DRIVE = './files/drive/',
 }
 
 export const NoticeBoardFileOption: MulterOptions = {

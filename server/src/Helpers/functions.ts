@@ -174,6 +174,21 @@ export function unixTimeStamp(): number {
     return Math.floor(new Date().getTime() / 1000);
 }
 
+export function getUnixTime(date: Date) {
+    return Math.floor(date.getTime() / 1000);
+}
+
+export function getServerTime(serverHour: number) {
+    const today = new Date();
+    const hour = serverHour > 10 ? `0${serverHour}` : serverHour.toString();
+
+    const serverTime = Math.floor(
+        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} 00:${hour}:00`).getTime() / 1000,
+    );
+
+    return serverTime;
+}
+
 // 파일삭제
 export function deleteFiles(destination: string, ...uuid: string[]) {
     for (const _uuid of uuid) {

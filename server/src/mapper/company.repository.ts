@@ -43,4 +43,13 @@ export default class CompanyRepository extends Repository<Company> {
 
         return insertResult;
     }
+
+    async getAllCompanies() {
+        try {
+            return await this.createQueryBuilder().getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('CompanyRepository/getAllCompanies', 500, 1924891);
+        }
+    }
 }
