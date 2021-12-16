@@ -24,4 +24,19 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
             throw new AikoError('FileHistoryRepository/createFileHistory', 500, 192845);
         }
     }
+
+    async downloadDriveFiles(fileId: number, companyPK: number) {
+        try {
+            const result = await this.createQueryBuilder()
+                .where(`FILE_KEYS_PK = ${fileId}`)
+                .andWhere(`COMPANY_PK = ${companyPK}`)
+                .orderBy('FH_PK', 'DESC')
+                .getMany();
+
+            return result.length ? result[0] : undefined;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileHistoryRepository/downloadDriveFiles', 500, 829182);
+        }
+    }
 }

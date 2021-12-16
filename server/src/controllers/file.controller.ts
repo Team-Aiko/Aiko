@@ -107,4 +107,15 @@ export default class FileController {
             throw resExecutor(res, { err });
         } //push
     }
+
+    @Get('download-drive-file')
+    async downloadDriveFiles(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+        try {
+            const { COMPANY_PK } = usrPayloadParser(req);
+            const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
+            res.download(`${filePath.DRIVE}${NAME}`, ORIGINAL_FILE_NAME);
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }
