@@ -37,7 +37,7 @@ export default class DriveController {
     async viewFolder(@Req() req: Request, @Res() res: Response) {
         try {
             const { COMPANY_PK } = usrPayloadParser(req);
-            const { folderId } = req.body;
+            const { folderId } = req.query;
 
             const result = this.driveService.viewFolder(COMPANY_PK, Number(folderId));
 
