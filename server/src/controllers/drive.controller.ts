@@ -98,7 +98,7 @@ export default class DriveController {
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
         }
     }
 }
