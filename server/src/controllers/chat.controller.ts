@@ -7,6 +7,7 @@ import ChatService from 'src/services/chat.service';
 export default class ChatController {
     constructor(private readonly chatService: ChatService) {}
 
+    // ! api doc
     @Post('private-chat-log')
     async getPrivateChatLog(@Req() req: Request, @Res() res: Response) {
         try {

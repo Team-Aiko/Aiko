@@ -9,6 +9,7 @@ import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC
 export default class CompanyController {
     constructor(private companyService: CompanyService) {}
 
+    // ! api doc
     // 회사 리스트 출력
     @Get('list')
     async list(@Req() req: Request, @Res() res: Response) {
@@ -17,6 +18,7 @@ export default class CompanyController {
         resExecutor(res, { result });
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 해당부서와 하속부서의 직원정보를 조회하는 api
@@ -34,6 +36,8 @@ export default class CompanyController {
             throw resExecutor(res, { err });
         }
     }
+
+    // ! api doc
     /**
      * 작성자: Aivyss
      * body에 담기는 내용: departmentName, parentPK, parentDepth
@@ -60,6 +64,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 유저에게 특정 권한을 부여하는 api
@@ -68,14 +73,14 @@ export default class CompanyController {
     @UseGuards(UserGuard)
     @Post('permission')
     async givePermission(@Req() req: Request, @Res() res: Response) {
-        const { authListPK, targetUserPK, companyPK } = req.body;
-        const { USER_PK, grants } = usrPayloadParser(req);
+        const { authListPK, targetUserPK } = req.body;
+        const { USER_PK, COMPANY_PK, grants } = usrPayloadParser(req);
         const bundle: IPermissionBundle = {
             authListPK,
             targetUserPK,
             grants,
             USER_PK,
-            companyPK,
+            companyPK: COMPANY_PK,
         };
         try {
             const isSuccess = await this.companyService.givePermission(bundle);
@@ -86,6 +91,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자 : Aivyss
      * 지정한 부서를 지우는 api
@@ -105,6 +111,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 지정한 부서의 이름을 바꾸는 api
@@ -129,6 +136,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 사원 통합검색 api  (닉네임, 성, 이름, 이메일, 전화번호, 부서명 와일드카드 검색)
@@ -147,6 +155,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 부서의 풀트리를 만드는 api
@@ -168,6 +177,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * 유저에게 부서를 부여하는 api
@@ -188,6 +198,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     @UseGuards(UserGuard)
     @Get('check-admin')
     async checkAdmin(@Req() req: Request, @Res() res: Response) {
@@ -200,6 +211,7 @@ export default class CompanyController {
         }
     }
 
+    // ! api doc
     @UseGuards(UserGuard)
     @Get('member-list')
     async getCompanyMemberList(@Req() req: Request, @Res() res: Response) {

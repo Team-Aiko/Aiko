@@ -12,6 +12,7 @@ import { deleteFiles } from 'src/Helpers/functions';
 export default class NoticeBoardController {
     constructor(private noticeboardService: NoticeBoardService) {}
 
+    // ! api doc
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
@@ -37,6 +38,7 @@ export default class NoticeBoardController {
         }
     }
 
+    // ! api doc
     @Post('update-article')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
@@ -59,6 +61,7 @@ export default class NoticeBoardController {
         }
     }
 
+    // ! api doc
     @Post('delete-article')
     async deleteArticle(@Req() req: Request, @Res() res: Response) {
         try {
@@ -72,6 +75,7 @@ export default class NoticeBoardController {
         }
     }
 
+    // ! api doc
     @Get('btn-size')
     async createBtnSize(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
@@ -85,6 +89,7 @@ export default class NoticeBoardController {
         }
     }
 
+    // ! api doc
     @Get('list')
     async getList(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);
@@ -99,6 +104,7 @@ export default class NoticeBoardController {
         }
     }
 
+    // ! api doc
     @Get('detail')
     async getDetail(@Req() req: Request, @Res() res: Response) {
         const userPayload = usrPayloadParser(req);

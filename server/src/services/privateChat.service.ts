@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { tokenParser } from 'src/Helpers/functions';
+import { getServerTime, tokenParser } from 'src/Helpers/functions';
 import { AikoError, getRepo } from 'src/Helpers';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
@@ -90,7 +90,7 @@ export default class PrivateChatService {
     /**
      * 로그 저장 스케줄링 함수
      */
-    async storePrivateChatLogsToRDB() {
+    async storePrivateChatLogsToRDB(serverHour: number) {
         try {
             const allCompanies = await getRepo(CompanyRepository).getAllCompanies();
 
@@ -110,11 +110,7 @@ export default class PrivateChatService {
                 totalRooms = totalRooms.concat(oneCompanyRoomIds);
             });
 
-            const dateObj = new Date();
-            const serverTime = Math.floor(
-                new Date(`${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()} 00:00:00`).getTime() /
-                    1000,
-            );
+            const serverTime = getServerTime(serverHour);
 
             Promise.all(
                 totalRooms.map(async (roomId) => {

@@ -24,4 +24,37 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
             throw new AikoError('FileHistoryRepository/createFileHistory', 500, 192845);
         }
     }
+
+    async downloadDriveFiles(fileId: number) {
+        try {
+            console.log('여기오는거지??? 와라 제발 시발럼아');
+            const result = await this.createQueryBuilder()
+                .where(`FILE_KEY_PK = ${fileId}`)
+                .orderBy('FH_PK', 'DESC')
+                .getMany();
+
+            console.log(
+                '🚀 ~ file: fileHistory.repository.ts ~ line 31 ~ FileHistoryRepository ~ downloadDriveFiles ~ result',
+                result,
+            );
+            return result.length ? result[0] : undefined;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileHistoryRepository/downloadDriveFiles', 500, 829182);
+        }
+    }
+
+    async deletedFlagFiles(files: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileHistory)
+                .where('FILE_KEY_PK IN(:...files)', { files })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileHistoryRepository/deletedFlagFiles', 500, 829184);
+        }
+    }
 }

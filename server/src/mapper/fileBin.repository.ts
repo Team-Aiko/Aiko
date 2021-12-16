@@ -37,4 +37,27 @@ export default class FileBinRepository extends Repository<FileBin> {
             throw new AikoError('FileBinRepository/deleteFiles', 500, 9192384);
         }
     }
+
+    async getDeleteFlagFiles(limitTime: number) {
+        try {
+            return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileBinRepository/getDeleteFlagFiles', 500, 9192384);
+        }
+    }
+
+    async deleteFilesForScheduler(files: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileBin)
+                .where('FILE_KEY_PK IN(:...files)', { files })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileBinRepository/deleteFilesForScheduler', 500, 9192384);
+        }
+    }
 }

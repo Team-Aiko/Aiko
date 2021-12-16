@@ -10,6 +10,7 @@ import { IItemBundle, IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 export default class WorkController {
     constructor(private workService: WorkService) {}
 
+    // ! api doc
     /**
      * 작성자: Aivyss
      * action item 생성 api
@@ -40,6 +41,7 @@ export default class WorkController {
         }
     }
 
+    // ! api doc
     @Post('delete-action-item')
     async deleteActionItem(@Req() req: Request, @Res() res: Response) {
         const { ACTION_PK } = req.body;
@@ -54,6 +56,7 @@ export default class WorkController {
         }
     }
 
+    // ! api doc
     @Post('update-action-item')
     async updateActionItem(@Req() req: Request, @Res() res: Response) {
         const { ACTION_PK, OWNER_PK, TITLE, DESCRIPTION, START_DATE, DUE_DATE, P_PK, STEP_PK, updateCols } = req.body;
@@ -85,6 +88,7 @@ export default class WorkController {
         }
     }
 
+    // ! api doc
     @Get('view-items')
     async viewItems(@Req() req: Request, @Res() res: Response) {
         const { id, currentPage, feedsPerPage, groupCnt } = req.query;

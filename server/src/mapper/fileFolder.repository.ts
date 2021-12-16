@@ -241,4 +241,18 @@ export default class FileFolderRepository extends Repository<FileFolder> {
             throw new AikoError('FileFolderRepository/moveFolder', 500, 1924899);
         }
     }
+
+    async deleteFolderForScheduler(folders: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileFolder)
+                .where('FOLDER_PK IN(:...folders)', { folders })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileFolderRepository/deleteFolderForScheduler', 500, 1924899);
+        }
+    }
 }
