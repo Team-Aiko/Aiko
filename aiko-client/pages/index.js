@@ -10,14 +10,6 @@ export default function CComp() {
         if (userInfo.USER_PK) {
             console.log('🚀 ~ file: index.js ~ line 16 ~ CComp ~ userInfo', userInfo);
         }
-
-        const url = '/test';
-        const aa = {
-            q1: 123,
-            q2: 'str',
-        };
-
-        sendGet(url, aa);
     }, [userInfo.USER_PK]);
 
     return <PComp userInfo={userInfo} />;
