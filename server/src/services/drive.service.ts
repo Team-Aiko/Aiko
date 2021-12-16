@@ -156,15 +156,25 @@ export default class DriveService {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
         try {
-            const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo([
-                ...fromFolderPKs,
-                toFolderPK,
-            ])) as FileFolder[];
+            if (fromFilePKs.length > 0) {
+                const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo([
+                    ...fromFolderPKs,
+                    toFolderPK,
+                ])) as FileFolder[];
 
-            // * company validation check
-            const isInValidAccess = folderInfos.some((info) => info.COMPANY_PK !== companyPK);
-            if (isInValidAccess) throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
-            await getRepo(FileFolderRepository).moveFolder(toFolderPK, fromFolderPKs, queryRunner.manager);
+                // * company validation check
+                const isInValidAccess = folderInfos.some((info) => info.COMPANY_PK !== companyPK);
+                if (isInValidAccess) throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
+
+                await getRepo(FileFolderRepository).moveFolder(toFolderPK, fromFolderPKs, queryRunner.manager);
+            } else {
+                const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo(toFolderPK)) as FileFolder;
+
+                // * company validation check
+                if (folderInfos.COMPANY_PK !== companyPK)
+                    throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
+            }
+
             await getRepo(FileKeysRepository).moveFile(toFolderPK, fromFilePKs, queryRunner.manager);
 
             await queryRunner.commitTransaction();
