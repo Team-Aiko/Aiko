@@ -149,4 +149,29 @@ export default class DriveService {
             throw err;
         }
     }
+
+    async moveFolder(fromFilePKs: number[], fromFolderPKs: number[], toFolderPK: number, companyPK: number) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+        try {
+            const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo([
+                ...fromFolderPKs,
+                toFolderPK,
+            ])) as FileFolder[];
+
+            // * company validation check
+            const isInValidAccess = folderInfos.some((info) => info.COMPANY_PK !== companyPK);
+            if (isInValidAccess) throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
+            await getRepo(FileFolderRepository).moveFolder(toFolderPK, fromFolderPKs, queryRunner.manager);
+            await getRepo(FileKeysRepository).moveFile(toFolderPK, fromFilePKs, queryRunner.manager);
+
+            await queryRunner.commitTransaction();
+            return true;
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+    }
 }

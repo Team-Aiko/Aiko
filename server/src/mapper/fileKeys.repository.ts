@@ -107,4 +107,18 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             throw new AikoError('FileKeysRepository/getFilesInfoInFolder', 500, 182934);
         }
     }
+
+    async moveFile(toFolderPK: number, fromFilePKs: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .update(FileKeys)
+                .set({ FOLDER_PK: toFolderPK })
+                .where('FILE_KEY_PK IN (...:fromFilePKs)', { fromFilePKs })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/moveFile', 500, 8918277);
+        }
+    }
 }
