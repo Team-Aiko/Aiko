@@ -15,14 +15,19 @@ type FileOrFiles = Express.Multer.File | Express.Multer.File[];
 
 @EntityRepository(FileKeys)
 export default class FileKeysRepository extends Repository<FileKeys> {
-    async createFileKeys(count: number, FOLDER_PK: number, @TransactionManager() manager: EntityManager) {
+    async createFileKeys(
+        count: number,
+        FOLDER_PK: number,
+        COMPANY_PK: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         console.log('🚀 ~ file: fileKeys.repository.ts ~ line 17 ~ FileKeysRepository ~ createFileKeys ~ count', count);
 
         try {
-            const list: Pick<FileKeys, 'FOLDER_PK'>[] = [];
+            const list: Pick<FileKeys, 'FOLDER_PK' | 'COMPANY_PK'>[] = [];
 
             for (let i = 0; i < count; i++) {
-                list.push({ FOLDER_PK });
+                list.push({ FOLDER_PK, COMPANY_PK });
             }
             const insertedResult = await manager.insert(FileKeys, list);
 

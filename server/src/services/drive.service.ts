@@ -29,6 +29,7 @@ export default class DriveService {
             fileKeysList = await getRepo(FileKeysRepository).createFileKeys(
                 files.length,
                 folderPK,
+                companyPK,
                 queryRunner.manager,
             );
 
@@ -48,14 +49,15 @@ export default class DriveService {
             );
 
             await queryRunner.commitTransaction();
+
+            const filePKs = fileKeysList.map((fileKey) => fileKey.FILE_KEY_PK);
+            return await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
         } catch (err) {
             console.log('🚀 ~ file: drive.service.ts ~ line 33 ~ DriveService ~ saveFiles ~ err', err);
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
             await queryRunner.release();
-            const filePKs = fileKeysList.map((fileKey) => fileKey.FILE_KEY_PK);
-            return await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
         }
     }
 

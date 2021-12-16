@@ -51,12 +51,13 @@ export default class DriveController {
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
+            console.log('실행???');
             const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
             const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, COMPANY_PK, files);
             resExecutor(res, { result });
         } catch (err) {
             console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
-            resExecutor(res, { err });
+            throw resExecutor(res, { err });
         }
     }
 
