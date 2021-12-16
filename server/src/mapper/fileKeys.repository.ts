@@ -38,19 +38,21 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         }
     }
 
-    async getFiles(filePKs: number[] | number, COMPANY_PK: number) {
+    async getFiles(filePKs: number[] | number, COMPANY_PK?: number) {
         const isArray = Array.isArray(filePKs);
 
         try {
+            const optional = Boolean(COMPANY_PK);
             const whereCondition = isArray ? 'fk.FILE_KEY_PK IN (:...filePKs)' : 'fk.FILE_KEY_PK = :filePKs';
-            const fraction = this.createQueryBuilder('fk')
+            let fraction = this.createQueryBuilder('fk')
                 .leftJoinAndSelect('fk.folder', 'folder')
                 .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
                 .leftJoinAndSelect('fileHistories.user', 'user')
                 .leftJoinAndSelect('user.department', 'department')
                 .where(whereCondition, { filePKs })
-                .andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .andWhere('fk.IS_DELETED = 0');
+
+            if (optional) fraction = fraction.andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK });
 
             return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
@@ -136,6 +138,33 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         } catch (err) {
             console.error(err);
             throw new AikoError('FileKeysRepository/moveFile', 500, 8918277);
+        }
+    }
+
+    // async getDeleteFlagFiles(companyPKs: number[]) {
+    //     try {
+    //         return await this.createQueryBuilder()
+    //             .where('COMPANY_PK IN(:...companyPKs)', { companyPKs })
+    //             .andWhere('IS_DELETED = 1')
+    //             .getMany();
+    //     } catch (err) {
+    //         console.error(err);
+    //         throw new AikoError('FileKeysRepository/getDeleteFlagFiles', 500, 3911912);
+    //     }
+    // }
+
+    async deleteFlagFiles(files: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileKeys)
+                .where('FILE_KEY_PK IN(:...files)', { files })
+                .andWhere('IS_DELETED = 1')
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/deleteFlagFiles', 500, 3918912);
         }
     }
 }

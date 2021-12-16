@@ -4,10 +4,14 @@ import FileBin from 'src/entity/fileBin.entity';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
+import { deleteFiles, getServerTime } from 'src/Helpers/functions';
+import { filePath } from 'src/interfaces/MVC/fileMVC';
+import { CompanyRepository } from 'src/mapper';
 import FileBinRepository from 'src/mapper/fileBin.repository';
 import FileFolderRepository from 'src/mapper/fileFolder.repository';
 import FileHistoryRepository from 'src/mapper/fileHistory.repository';
 import FileKeysRepository from 'src/mapper/fileKeys.repository';
+import FolderBinRepository from 'src/mapper/folderBin.repository';
 import { EntityManager, getConnection } from 'typeorm';
 
 @Injectable()
@@ -179,6 +183,47 @@ export default class DriveService {
 
             await queryRunner.commitTransaction();
             return true;
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async deleteBinFiles(serverHour: number) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+
+        try {
+            const serverTime = getServerTime(serverHour);
+            const limitTime = serverTime - 1000 * 60 * 60 * 24 * 30;
+
+            const fileBinList = await getRepo(FileBinRepository).getDeleteFlagFiles(limitTime);
+            const flaggedFileList = fileBinList.map((bin) => bin.FILE_KEY_PK);
+            const flaggedFileInfoList = (await getRepo(FileKeysRepository).getFiles(flaggedFileList)) as FileKeys[];
+
+            const folderBinList = await getRepo(FolderBinRepository).getDeleteFlagFolder(limitTime);
+            const flaggedFolderList = folderBinList.map((bin) => bin.FOLDER_PK);
+
+            // * folder delete (RDB)
+            await getRepo(FolderBinRepository).deleteFolderForScheduler(flaggedFolderList, queryRunner.manager);
+            await getRepo(FileFolderRepository).deleteFolderForScheduler(flaggedFolderList, queryRunner.manager);
+
+            // * file delete (RDB)
+            await getRepo(FileBinRepository).deleteFilesForScheduler(flaggedFileList, queryRunner.manager);
+            await getRepo(FileKeysRepository).deleteFlagFiles(flaggedFileList, queryRunner.manager);
+            await getRepo(FileHistoryRepository).deletedFlagFiles(flaggedFileList, queryRunner.manager);
+
+            const fileNames: string[] = [];
+            flaggedFileInfoList.forEach((file) =>
+                file.fileHistories.forEach((history) => fileNames.push(history.NAME)),
+            );
+
+            await queryRunner.commitTransaction();
+
+            // * files delete (physical)
+            deleteFiles(filePath.DRIVE, ...fileNames);
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;

@@ -43,4 +43,18 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
             throw new AikoError('FileHistoryRepository/downloadDriveFiles', 500, 829182);
         }
     }
+
+    async deletedFlagFiles(files: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FileHistory)
+                .where('FILE_KEY_PK IN(:...files)', { files })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileHistoryRepository/deletedFlagFiles', 500, 829184);
+        }
+    }
 }

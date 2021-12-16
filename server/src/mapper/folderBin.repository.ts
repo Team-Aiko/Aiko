@@ -42,4 +42,27 @@ export default class FolderBinRepository extends Repository<FolderBin> {
             throw new AikoError('FolderBinRepository/deleteFolder', 500, 819284);
         }
     }
+
+    async deleteFolderForScheduler(folders: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .delete()
+                .from(FolderBin)
+                .where('FOLDER_PK IN(:...folders)', { folders })
+                .execute();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FolderBinRepository/deleteFolderForScheduler', 500, 819284);
+        }
+    }
+
+    async getDeleteFlagFolder(limitTime: number) {
+        try {
+            return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FolderBinRepository/getDeleteFlagFolder', 500, 819284);
+        }
+    }
 }
