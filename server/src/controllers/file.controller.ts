@@ -16,6 +16,8 @@ import FileService from 'src/services/file.service';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
+import admZip from 'adm-zip';
+import fs from 'fs';
 
 @UseGuards(UserGuard)
 @Controller() // /store
@@ -113,8 +115,12 @@ export default class FileController {
         try {
             const { COMPANY_PK } = usrPayloadParser(req);
             const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
-            res.download(`${filePath.DRIVE}${NAME}`, ORIGINAL_FILE_NAME);
+
+            res.download(`${filePath.DRIVE}${NAME}`, encodeURIComponent(ORIGINAL_FILE_NAME), (err) => {
+                if (err) console.log(err);
+            });
         } catch (err) {
+            console.error(err);
             throw resExecutor(res, { err });
         }
     }

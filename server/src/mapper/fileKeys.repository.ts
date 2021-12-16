@@ -59,6 +59,18 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         }
     }
 
+    async getAFileInfo(fileId: number, companyPK: number) {
+        try {
+            return await this.createQueryBuilder()
+                .where(`FILE_KEY_PK = ${fileId}`)
+                .andWhere(`COMPANY_PK = ${companyPK}`)
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('FileKeysRepository/getAFileInfo', 500, 9281923);
+        }
+    }
+
     async getFilesInFolder(folderPKs: number | number[], companyPK: number) {
         try {
             const isArray = Array.isArray(folderPKs);

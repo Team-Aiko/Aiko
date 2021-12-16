@@ -25,14 +25,18 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
         }
     }
 
-    async downloadDriveFiles(fileId: number, companyPK: number) {
+    async downloadDriveFiles(fileId: number) {
         try {
+            console.log('여기오는거지??? 와라 제발 시발럼아');
             const result = await this.createQueryBuilder()
-                .where(`FILE_KEYS_PK = ${fileId}`)
-                .andWhere(`COMPANY_PK = ${companyPK}`)
+                .where(`FILE_KEY_PK = ${fileId}`)
                 .orderBy('FH_PK', 'DESC')
                 .getMany();
 
+            console.log(
+                '🚀 ~ file: fileHistory.repository.ts ~ line 31 ~ FileHistoryRepository ~ downloadDriveFiles ~ result',
+                result,
+            );
             return result.length ? result[0] : undefined;
         } catch (err) {
             console.error(err);

@@ -6,6 +6,7 @@ import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 import { NoticeBoardFileRepository } from 'src/mapper';
 import FileHistoryRepository from 'src/mapper/fileHistory.repository';
+import FileKeysRepository from 'src/mapper/fileKeys.repository';
 @Injectable()
 export default class FileService {
     async uploadFilesOnChatMsg(bundle: IFileBundle, chatRoomId: string): Promise<number> {
@@ -37,13 +38,15 @@ export default class FileService {
 
     async downloadDriveFiles(fileId: number, companyPK: number) {
         try {
-            const { NAME, ORIGINAL_FILE_NAME } = await getRepo(FileHistoryRepository).downloadDriveFiles(
-                fileId,
-                companyPK,
-            );
+            const fileInfo = await getRepo(FileKeysRepository).getAFileInfo(fileId, companyPK);
+            if (fileInfo.COMPANY_PK !== companyPK)
+                throw new AikoError('FileService/downloadDriveFiles/invalid access', 500, 19278492);
+
+            const { NAME, ORIGINAL_FILE_NAME } = await getRepo(FileHistoryRepository).downloadDriveFiles(fileId);
 
             return { NAME, ORIGINAL_FILE_NAME };
         } catch (err) {
+            console.error(err);
             throw err;
         }
     }
