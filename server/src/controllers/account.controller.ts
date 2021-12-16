@@ -172,8 +172,8 @@ export default class AccountController {
         }
     }
 
+    // ! api doc
     // 어세스 토큰 재발급
-
     @Post('access-token')
     async getAccessToken(@Req() req: Request, @Res() res: Response) {
         const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
@@ -193,6 +193,7 @@ export default class AccountController {
         }
     }
 
+    // ! api doc
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
@@ -207,6 +208,7 @@ export default class AccountController {
         }
     }
 
+    // ! api doc
     @UseGuards(UserGuard)
     @Get('raw-token')
     async getRawToken(@Req() req: Request, @Res() res: Response) {

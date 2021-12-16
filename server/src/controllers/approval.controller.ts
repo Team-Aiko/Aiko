@@ -9,6 +9,7 @@ import ApprovalService from 'src/services/approval.service';
 export default class ApprovalController {
     constructor(private approvalService: ApprovalService) {}
 
+    // ! api doc
     @Post('write')
     createApproval(@Req() req: Request, @Res() res: Response) {
         const { title, content, approverPks, agreerPks } = req.body;

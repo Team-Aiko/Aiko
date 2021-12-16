@@ -21,6 +21,7 @@ import DriveService from 'src/services/drive.service';
 export default class DriveController {
     constructor(private driveService: DriveService) {}
 
+    // ! api doc
     @Post('create-folder')
     async createFolder(@Req() req: Request, @Res() res: Response) {
         try {
@@ -33,6 +34,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Get('view-folder')
     async viewFolder(@Req() req: Request, @Res() res: Response) {
         try {
@@ -47,6 +49,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Post('save-files')
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
@@ -61,6 +64,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Get('get-files')
     async getFiles(@Req() req: Request, @Res() res: Response) {
         try {
@@ -73,6 +77,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Post('delete-files')
     async deleteFiles(@Req() req: Request, @Res() res: Response) {
         try {
@@ -90,6 +95,7 @@ export default class DriveController {
         }
     }
 
+    // ! api doc
     @Post('move-folder')
     async moveFolder(@Req() req: Request, @Res() res: Response) {
         try {
