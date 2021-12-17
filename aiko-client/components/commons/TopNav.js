@@ -157,7 +157,7 @@ function PComp(props) {
 
     useEffect(() => {
         console.log('###### render ######');
-        if (userInfo) {
+        if (userInfo.USER_PK) {
             loadMemberList();
 
             const status = io('http://localhost:5000/status');

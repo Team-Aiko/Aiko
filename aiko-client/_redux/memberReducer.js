@@ -1,6 +1,7 @@
 export const SET_MEMBER = 'SET_MEMBER';
 export const SET_MEMBER_STATUS = 'SET_MEMBER_STATUS';
 export const SET_MEMBER_LIST_STATUS = 'SET_MEMBER_LIST_STATUS';
+export const SET_MEMBER_CHAT_ROOM_PK = 'SET_MEMBER_CHAT_ROOM_PK';
 
 export const setMember = (member) => ({
     type: SET_MEMBER,
@@ -15,6 +16,11 @@ export const setMemberStatus = (user) => ({
 export const setMemberListStatus = (memberList) => ({
     type: SET_MEMBER_LIST_STATUS,
     memberList,
+});
+
+export const setMemberChatRoomPK = (roomList) => ({
+    type: SET_MEMBER_CHAT_ROOM_PK,
+    roomList,
 });
 
 const memberReducer = (state = [], action) => {
@@ -46,6 +52,23 @@ const memberReducer = (state = [], action) => {
                             updateMember.push({
                                 ...member,
                                 status: row.status,
+                            });
+                        }
+                    }
+                }
+                return updateMember;
+            }
+        case SET_MEMBER_CHAT_ROOM_PK:
+            if (state) {
+                // console.log('state : ', state);
+                // console.log(action.roomList);
+                const updateMember = [];
+                for (const member of state) {
+                    for (const room of action.roomList) {
+                        if (member.USER_PK === room[room.member]) {
+                            updateMember.push({
+                                ...member,
+                                CR_PK: room.CR_PK,
                             });
                         }
                     }

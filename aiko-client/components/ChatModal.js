@@ -18,6 +18,8 @@ import CloseIcon from '@material-ui/icons/Close';
 import { get, post } from '../_axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
+import { setMemberChatRoomPK } from '../_redux/memberReducer';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme) => ({
     dialogPaper: {
@@ -70,31 +72,57 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ChatModal(props) {
     const classes = useStyles();
+    const dispatch = useDispatch();
     const { open, onClose } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
     const [status, setStatus] = useState(undefined);
     const [chatMember, setChatMember] = useState(null);
+    const [selectedMember, setSelectedMember] = useState('');
+    const [message, setMessage] = useState('');
+    const userInfo = useSelector((state) => state.accountReducer);
 
     useEffect(() => {
-        const status = io('http://localhost:5000/private-chat');
-        setStatus(status);
+        if (open) {
+            const status = io('http://localhost:5000/private-chat');
+            setStatus(status);
 
-        const uri = '/api/account/raw-token';
-        get(uri)
-            .then((result) => {
-                status.emit('handleConnection', result);
-            })
-            .catch((err) => {
-                console.error('chat-handleConnection-error : ', err);
+            const uri = '/api/account/raw-token';
+            get(uri)
+                .then((result) => {
+                    status.emit('handleConnection', result);
+                })
+                .catch((err) => {
+                    console.error('chat-handleConnection-error : ', err);
+                });
+
+            status.on('client/private-chat/connected', (payload) => {
+                let newPayload = [];
+                if (payload.evenCase.length > 0) {
+                    const evenCase = payload.evenCase.map((row) => {
+                        return {
+                            ...row,
+                            member: 'USER_1',
+                        };
+                    });
+                    newPayload.push(...evenCase);
+                }
+                if (payload.oddCase.length > 0) {
+                    const oddCase = payload.oddCase.map((row) => {
+                        return {
+                            ...row,
+                            member: 'USER_2',
+                        };
+                    });
+                    newPayload.push(...oddCase);
+                }
+                dispatch(setMemberChatRoomPK(newPayload));
             });
-
-        status.on('client/private-chat/connected', (payload) => {
-            // dispatch(setMemberStatus(payload.user));
-            console.log('client/private-chat/connected : ', payload);
-        });
-    }, []);
+        } else {
+            status && status.emit('handleDisconnect');
+        }
+    }, [open]);
 
     const statusList = [
         {
@@ -119,8 +147,19 @@ export default function ChatModal(props) {
         },
     ];
 
-    const selectedMember = (member) => {
-        console.log('member : ', member);
+    const send = () => {
+        if (message) {
+            const data = {
+                roomId: selectedMember.CR_PK,
+                sender: userInfo.USER_PK,
+                message: message,
+                date: Number(moment().format('X')),
+            };
+            console.log('data : ', data);
+
+            status.emit('server/private-chat/send', data);
+            setMessage('');
+        }
     };
 
     return (
@@ -138,7 +177,7 @@ export default function ChatModal(props) {
                                         button
                                         key={member.USER_PK}
                                         style={{ justifyContent: 'space-between' }}
-                                        onClick={() => selectedMember(member)}
+                                        onClick={() => setSelectedMember(member)}
                                     >
                                         <div className={styles['member-user-wrapper']}>
                                             <Avatar
@@ -166,6 +205,7 @@ export default function ChatModal(props) {
                             })}
                     </List>
                 </div>
+
                 <div className={styles['message-container']}>
                     <Toolbar classes={{ root: classes.toolbar }}>
                         <div className={styles['member-info']}>
@@ -176,33 +216,43 @@ export default function ChatModal(props) {
                             <CloseIcon className={classes.closeIcon} />
                         </IconButton>
                     </Toolbar>
-                    <div className={styles['messages-wrapper']}>
-                        <div className={styles['message-wrapper']}>
-                            <Typography variant='body2'>Username</Typography>
-                            <Typography variant='body2' className={classes.message}>
-                                UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                            </Typography>
-                            <Typography variant='caption' className={classes.time}>
-                                00:00
-                            </Typography>
-                        </div>
+                    {selectedMember ? (
+                        <>
+                            <div className={styles['messages-wrapper']}>
+                                <div className={styles['message-wrapper']}>
+                                    <Typography variant='body2'>Username</Typography>
+                                    <Typography variant='body2' className={classes.message}>
+                                        UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
+                                    </Typography>
+                                    <Typography variant='caption' className={classes.time}>
+                                        00:00
+                                    </Typography>
+                                </div>
 
-                        <div className={styles['message-wrapper-right']}>
-                            <Typography variant='body2'>Username</Typography>
-                            <Typography variant='body2' className={classes['message-right']}>
-                                UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                            </Typography>
-                            <Typography variant='caption' className={classes['time-right']}>
-                                00:00
-                            </Typography>
-                        </div>
-                    </div>
-                    <div className={styles['input-message-wrapper']}>
-                        <TextField className={classes['inputMessage']} />
-                        <Button variant='contained' color='primary'>
-                            보내기
-                        </Button>
-                    </div>
+                                <div className={styles['message-wrapper-right']}>
+                                    <Typography variant='body2'>Username</Typography>
+                                    <Typography variant='body2' className={classes['message-right']}>
+                                        UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
+                                    </Typography>
+                                    <Typography variant='caption' className={classes['time-right']}>
+                                        00:00
+                                    </Typography>
+                                </div>
+                            </div>
+                            <div className={styles['input-message-wrapper']}>
+                                <TextField
+                                    className={classes['inputMessage']}
+                                    onChange={(event) => {
+                                        setMessage(event.target.value);
+                                    }}
+                                    value={message}
+                                />
+                                <Button variant='contained' color='primary' onClick={send}>
+                                    보내기
+                                </Button>
+                            </div>
+                        </>
+                    ) : null}
                 </div>
             </Dialog>
         </ThemeProvider>
