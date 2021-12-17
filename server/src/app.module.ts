@@ -41,6 +41,7 @@ import {
     MeetRoom,
     PrivateChatRoom,
     ChatLogStorage,
+    GroupChatStorage,
 } from './entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
@@ -59,6 +60,7 @@ console.log(__dirname + '/entity/*.entity.(js,ts)');
 const typeORMConfig: TypeOrmModuleOptions = {
     ...config.get<RDBMSConfig>('RDBMS'),
     entities: [
+        GroupChatStorage,
         FolderBin,
         FileBin,
         FileKeys,

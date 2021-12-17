@@ -34,4 +34,14 @@ export default class SchedulerService {
             throw new AikoError('SchedulerService/deleteBinFiles', 500, 892819);
         }
     }
+
+    @Cron('0 0 2 * * *')
+    async storeGroupChatLog() {
+        try {
+            this.groupChatService.storeGroupChatLog(2);
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('SchedulerService/storeGroupChatLog', 500, 892820);
+        }
+    }
 }

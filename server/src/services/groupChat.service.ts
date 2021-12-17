@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/entity';
 import { AikoError, getRepo } from 'src/Helpers';
 import { Server } from 'socket.io';
-import { GroupChatRoomRepository, UserRepository } from 'src/mapper';
+import { CompanyRepository, GroupChatRoomRepository, UserRepository } from 'src/mapper';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 import { getConnection } from 'typeorm';
@@ -13,7 +13,8 @@ import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { tokenParser } from 'src/Helpers/functions';
+import { getServerTime, tokenParser } from 'src/Helpers/functions';
+import GroupChatStorageRepository from 'src/mapper/groupChatStorage.repository';
 
 // mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
 
@@ -153,6 +154,41 @@ export default class GroupChatService {
             return await this.findGroupChatLogs(GC_PK, COMPANY_PK);
         } catch (err) {
             console.error(err);
+            throw err;
+        }
+    }
+
+    async storeGroupChatLog(serverHour: number) {
+        try {
+            const serverTime = getServerTime(serverHour);
+            const limitTime = serverTime - 60 * 60 * 24 * 30;
+            const companyList = (await getRepo(CompanyRepository).getAllCompanies()).map(
+                (company) => company.COMPANY_PK,
+            );
+
+            const chatLogList = (await this.groupChatLogModel
+                .find()
+                .where('companyPK')
+                .in(companyList)
+                .select('GC_PK companyPK chatLog')
+                .exec()) as GroupChatLog[];
+
+            const storedLogList = chatLogList.map((logs) => {
+                const storedLogs = logs.chatLog.filter((oneLog) => oneLog.date <= limitTime);
+                const { GC_PK, companyPK } = logs;
+                return { GC_PK, companyPK, storedLogs };
+            });
+
+            const modifiedChatLogList = chatLogList.map((logs) => {
+                const { chatLog } = logs;
+                logs.chatLog = chatLog.filter((oneLog) => oneLog.date > limitTime);
+
+                return logs;
+            });
+
+            await getRepo(GroupChatStorageRepository).storeLogsForScheduler(storedLogList);
+            await Promise.all(modifiedChatLogList.map(async (log) => await this.updateChatLog(log)));
+        } catch (err) {
             throw err;
         }
     }
