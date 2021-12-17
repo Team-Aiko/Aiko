@@ -24,13 +24,7 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
 
                     try {
                         const id = another.USER_PK;
-                        const cnt = await this.createQueryBuilder('o')
-                            .where('o.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
-                            .where('o.USER_1 = :USER_1', { USER_1: id })
-                            .orWhere('o.USER_2 = :USER_2', { USER_2: id })
-                            .getCount();
-
-                        if (cnt > 0) return true;
+                        if (id === userId) return true;
 
                         await manager.insert(PrivateChatRoom, {
                             CR_PK: v1(),
