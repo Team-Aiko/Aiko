@@ -1,10 +1,9 @@
 import { ResultSetHeader } from 'mysql2';
 import { Meet } from 'src/entity';
-import { AikoError, getRepo, Pagination, propsRemover, unixTimeStamp } from 'src/Helpers';
+import { AikoError, Pagination, propsRemover, unixTimeStamp } from 'src/Helpers';
 import { unixTimeEnum } from 'src/interfaces';
-import { IMeetingBundle, meetingScheduleDTO } from 'src/interfaces/MVC/meetingMVC';
-import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
-import { UserRepository } from '.';
+import { IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 @EntityRepository(Meet)
 export default class MeetRepository extends Repository<Meet> {

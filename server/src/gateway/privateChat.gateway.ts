@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
-import { AikoError } from 'src/Helpers';
 import PrivateChatService from 'src/services/privateChat.service';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
 

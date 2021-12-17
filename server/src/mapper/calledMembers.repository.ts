@@ -1,19 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
-import { throwIfEmpty } from 'rxjs';
 import { CalledMembers } from 'src/entity';
-import { getRepo, AikoError, unixTimeStamp, Pagination, propsRemover } from 'src/Helpers';
-import { unixTimeEnum } from 'src/interfaces';
-import { IMeetingPagination } from 'src/interfaces/MVC/meetingMVC';
-import {
-    Brackets,
-    DeleteResult,
-    EntityManager,
-    EntityRepository,
-    InsertResult,
-    Repository,
-    SelectQueryBuilder,
-    TransactionManager,
-} from 'typeorm';
+import { getRepo, AikoError, Pagination, propsRemover } from 'src/Helpers';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 import { UserRepository } from '.';
 
 @EntityRepository(CalledMembers)

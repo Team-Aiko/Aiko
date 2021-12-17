@@ -4,7 +4,6 @@ import Country from './country.entity';
 import ResetPw from './resetPw.entity';
 import Department from './department.entity';
 import Company from './company.entity';
-import Socket from './socket.entity';
 import ChatFile from './chatFile.entity';
 import PrivateChatRoom from './privateChatRoom.entity';
 import Refresh from './refresh.entity';
@@ -53,7 +52,6 @@ export {
     ResetPw,
     Department,
     Company,
-    Socket,
     ChatFile,
     NoticeBoard,
     Refresh,

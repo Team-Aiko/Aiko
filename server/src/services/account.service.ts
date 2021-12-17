@@ -31,15 +31,10 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { Meet } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
-import SocketService from './socket.service';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
-import CalledMembersRepository from 'src/mapper/calledMembers.repository';
-import MeetingService from './meeting.service';
-import WorkService from './work.service';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
 import DriveService from './drive.service';
@@ -58,8 +53,6 @@ export default class AccountService {
         private privateChatService: PrivateChatService,
         private statusService: StatusService,
         private driveService: DriveService,
-        private meetingService: MeetingService,
-        private workService: WorkService,
     ) {}
 
     async checkDuplicateEmail(email: string): Promise<number> {

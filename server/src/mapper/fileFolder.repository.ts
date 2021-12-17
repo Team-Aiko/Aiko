@@ -1,16 +1,6 @@
 import { FileFolder } from 'src/entity';
 import { AikoError, getRepo } from 'src/Helpers';
-import {
-    EntityRepository,
-    getConnection,
-    InsertResult,
-    Repository,
-    getManager,
-    TransactionManager,
-    EntityManager,
-    Transaction,
-} from 'typeorm';
-import FileHistoryRepository from './fileHistory.repository';
+import { EntityRepository, InsertResult, Repository, getManager, TransactionManager, EntityManager } from 'typeorm';
 import FileKeysRepository from './fileKeys.repository';
 import FolderBinRepository from './folderBin.repository';
 

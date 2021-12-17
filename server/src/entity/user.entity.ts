@@ -7,10 +7,8 @@ import {
     ManyToOne,
     OneToMany,
     ManyToMany,
-    JoinTable,
 } from 'typeorm';
-import { Department, Company, Country, LoginAuth, ResetPw, Socket, PrivateChatRoom, NoticeBoard } from '.';
-import { BaseEntity } from 'typeorm';
+import { Department, Company, Country, LoginAuth, ResetPw, PrivateChatRoom, NoticeBoard } from '.';
 import Grant from './Grant.entity';
 import CalledMembers from './calledMembers.entity';
 import UserProfileFile from './userProfileFile.entity';
@@ -79,9 +77,6 @@ export default class User {
 
     @OneToMany((type) => ResetPw, (resetPw) => resetPw.user)
     resetPws: ResetPw[];
-
-    @OneToOne(() => Socket, (socket) => socket.user)
-    socket: Socket;
 
     @ManyToMany(() => PrivateChatRoom, (chatRoom) => chatRoom.USER_1)
     socket1: PrivateChatRoom[];

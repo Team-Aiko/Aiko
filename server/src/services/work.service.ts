@@ -4,7 +4,7 @@ import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin, Pagination } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
-import { DepartmentRepository, UserRepository } from 'src/mapper';
+import { UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
 
 @Injectable()

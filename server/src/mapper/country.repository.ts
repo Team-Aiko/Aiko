@@ -1,4 +1,4 @@
-import { Repository, EntityRepository, getConnection } from 'typeorm';
+import { Repository, EntityRepository } from 'typeorm';
 import { Country } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
 

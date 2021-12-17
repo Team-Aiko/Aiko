@@ -1,19 +1,9 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Req,
-    Res,
-    UploadedFile,
-    UploadedFiles,
-    UseGuards,
-    UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
-import { driveFileOption, filePath } from 'src/interfaces/MVC/fileMVC';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { driveFileOption } from 'src/interfaces/MVC/fileMVC';
 import DriveService from 'src/services/drive.service';
 
 @UseGuards(UserGuard)

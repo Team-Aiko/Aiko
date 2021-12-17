@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import * as config from 'config';
@@ -11,7 +11,6 @@ import {
     SocketModule,
     ApprovalModule,
 } from './modules';
-import VerifyJwt from './middlewares/verifyJwt';
 import {
     FolderBin,
     FileBin,
@@ -28,7 +27,6 @@ import {
     Country,
     Department,
     ResetPw,
-    Socket,
     ChatFile,
     Refresh,
     NoticeBoard,
@@ -83,7 +81,6 @@ const typeORMConfig: TypeOrmModuleOptions = {
         Country,
         Department,
         ResetPw,
-        Socket,
         ChatFile,
         PrivateChatRoom,
         Refresh,

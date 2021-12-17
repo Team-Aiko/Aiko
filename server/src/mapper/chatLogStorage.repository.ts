@@ -1,14 +1,6 @@
 import ChatLogStorage from 'src/entity/chatLogStorage.entity';
 import { AikoError } from 'src/Helpers';
-import {
-    Brackets,
-    EntityManager,
-    EntityRepository,
-    InsertResult,
-    Repository,
-    Transaction,
-    TransactionManager,
-} from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(ChatLogStorage)
 export default class ChatLogStorageRepository extends Repository<ChatLogStorage> {

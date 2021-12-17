@@ -1,9 +1,9 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import * as jwt from 'jsonwebtoken';
-import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
+import { accessTokenBluePrint } from '../interfaces/jwt/secretKey';
 import { Request, Response } from 'express';
-import { AikoError, resExecutor, unknownError } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
 import { expiredTokenError, invalidTokenError } from 'src/Helpers/instance';
 @Injectable()
 export class UserGuard implements CanActivate {

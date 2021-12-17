@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { FileFolder } from 'src/entity';
-import FileBin from 'src/entity/fileBin.entity';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
 import { deleteFiles, getServerTime } from 'src/Helpers/functions';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
-import { CompanyRepository } from 'src/mapper';
 import FileBinRepository from 'src/mapper/fileBin.repository';
 import FileFolderRepository from 'src/mapper/fileFolder.repository';
 import FileHistoryRepository from 'src/mapper/fileHistory.repository';

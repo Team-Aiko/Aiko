@@ -1,6 +1,6 @@
 import { GroupChatStorage } from 'src/entity';
 import { AikoError } from 'src/Helpers';
-import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(GroupChatStorage)
 export default class GroupChatStorageRepository extends Repository<GroupChatStorage> {

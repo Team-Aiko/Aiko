@@ -1,6 +1,5 @@
-import { createQueryBuilder, EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import NoticeBoardFile from 'src/entity/noticeBoardFile.entity';
-import { unixTimeStamp } from 'src/Helpers/functions';
 
 @EntityRepository(NoticeBoardFile)
 export default class NoticeBoardFileRepository extends Repository<NoticeBoardFile> {

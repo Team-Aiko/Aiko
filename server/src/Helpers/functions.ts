@@ -1,4 +1,4 @@
-import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
+import { IResponseData, IGetResPacket } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -8,7 +8,6 @@ import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
 import { typeMismatchError } from './instance';
-import { type } from 'os';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';

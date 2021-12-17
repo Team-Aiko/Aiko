@@ -8,13 +8,8 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { User } from 'src/entity';
-import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, getRepo } from 'src/Helpers';
 import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
-import { groupChatPath, IErrorPacket } from 'src/interfaces/MVC/socketMVC';
-import { UserRepository } from 'src/mapper';
-import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
+import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
 
 @WebSocketGateway({ cors: true, namespace: 'group-chat' })

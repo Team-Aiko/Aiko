@@ -2,7 +2,7 @@ import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseIntercept
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
-import { FileInterceptor, FilesInterceptor, MulterModule } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
 import { deleteFiles } from 'src/Helpers/functions';
