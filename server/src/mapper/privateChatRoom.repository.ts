@@ -18,7 +18,8 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
                     USER_2: item.USER_PK,
                     COMPANY_PK: companyPK,
                 }));
-            await manager.insert(PrivateChatRoom, DTOs);
+            const insertedResult = (await manager.insert(PrivateChatRoom, DTOs)).identifiers as { CR_PK: string }[];
+            return insertedResult.map((key) => key.CR_PK);
         } catch (err) {
             console.log(err);
             throw new AikoError('PrivateChatRoomRepository/makePrivateChatRoomList', 500, 500360);

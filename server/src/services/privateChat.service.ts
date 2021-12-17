@@ -20,20 +20,24 @@ export default class PrivateChatService {
     ): Promise<boolean> {
         try {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
-            await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
-
-            const { evenCase, oddCase } = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
+            const roomList = await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(
+                manager,
                 userPK,
+                userList,
                 companyPK,
             );
-            const roomList = evenCase.concat(oddCase);
 
             await Promise.all(
-                roomList.map(async (room) => {
-                    const dto = new PrivateChatlog();
-                    dto.roomId = room.CR_PK;
-                    dto.messages = [];
-                    await this.chatlogModel.create(dto);
+                roomList.map(async (id) => {
+                    const item = new PrivateChatlog();
+                    item.roomId = id;
+                    item.messages = [];
+                    console.log(
+                        '🚀 ~ file: privateChat.service.ts ~ line 36 ~ PrivateChatService ~ roomList.map ~ item',
+                        item,
+                    );
+                    const dto = new this.chatlogModel(item);
+                    await dto.save();
 
                     return true;
                 }),
