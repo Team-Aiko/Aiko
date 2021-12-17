@@ -44,9 +44,12 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             const userPayload = tokenParser(accessToken);
 
             console.log('groupChat connection clientId : ', client.id);
-            const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            // * add client info
+            await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            // * find group chat room infos
             const groupChatRooms = await this.groupChatService.findChatRooms(userPayload);
 
+            // * join group chat
             groupChatRooms.forEach(({ GC_PK }) => {
                 client.join(`company:${userPayload.COMPANY_PK}-${GC_PK}`);
             });
@@ -70,6 +73,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     async handleDisconnect(client: Socket) {
         try {
             console.log('groupChat disconnect clientId : ', client.id);
+            await this.groupChatService.deleteClientInfo(client.id);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -191,23 +195,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
                     getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, payload),
-                );
-        }
-    }
-
-    // * test reactors
-    @SubscribeMessage(groupChatPath.TEST_ADD_NEW_CLIENT)
-    async addNewClientForGroupChat(client: Socket, userPK: number) {
-        try {
-            if (!userPK) return;
-
-            this.groupChatService.addNewClientForGroupChat(userPK);
-        } catch (err) {
-            this.wss
-                .to(client.id)
-                .emit(
-                    groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.TEST_ADD_NEW_CLIENT, err, userPK),
                 );
         }
     }

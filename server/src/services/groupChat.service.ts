@@ -29,14 +29,7 @@ export default class GroupChatService {
 
     async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: IUserPayload) {
         try {
-            let clientInfo = await this.findGroupChatClient(USER_PK);
-
-            if (clientInfo.userPK) {
-                await this.insertGroupChatClientInfo(USER_PK, COMPANY_PK, clientId);
-                clientInfo = await this.findGroupChatClient(USER_PK);
-            }
-
-            return clientInfo;
+            await this.insertGroupChatClientInfo(USER_PK, COMPANY_PK, clientId);
         } catch (err) {
             console.error(err);
             throw err;
@@ -182,7 +175,7 @@ export default class GroupChatService {
     }
     async findGroupChatClient(userPK: number) {
         try {
-            return (await this.groupChatClientModel.findOne({ userPK }).exec()) as GroupChatClientInfo;
+            return (await this.groupChatClientModel.find({ userPK }).exec()) as GroupChatClientInfo[];
         } catch (err) {
             console.error(err);
             throw new AikoError('groupChatService/findGroupChatClient', 0, 812293);
@@ -231,6 +224,15 @@ export default class GroupChatService {
         } catch (err) {
             console.error(err);
             throw new AikoError('groupChatService/updateChatLog', 0, 828192);
+        }
+    }
+
+    async deleteClientInfo(clientId: string) {
+        try {
+            await this.groupChatClientModel.findOneAndDelete({ clientId }).exec();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/deleteClientInfo', 0, 1827289);
         }
     }
 }
