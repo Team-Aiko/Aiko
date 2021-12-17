@@ -1,4 +1,4 @@
-import { IHttpError, IResponseData, IGetResPacket } from 'src/interfaces';
+import { IResponseData, IGetResPacket } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -8,7 +8,6 @@ import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
 import { typeMismatchError } from './instance';
-import { type } from 'os';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -180,10 +179,10 @@ export function getUnixTime(date: Date) {
 
 export function getServerTime(serverHour: number) {
     const today = new Date();
-    const hour = serverHour > 10 ? `0${serverHour}` : serverHour.toString();
+    const hour = serverHour < 10 ? `0${serverHour}` : serverHour.toString();
 
     const serverTime = Math.floor(
-        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} 00:${hour}:00`).getTime() / 1000,
+        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${hour}:00:00`).getTime() / 1000,
     );
 
     return serverTime;

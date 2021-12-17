@@ -1,15 +1,6 @@
 import FileBin from 'src/entity/fileBin.entity';
 import { AikoError, unixTimeStamp } from 'src/Helpers';
-import {
-    EntityRepository,
-    getConnection,
-    InsertResult,
-    Repository,
-    getManager,
-    TransactionManager,
-    EntityManager,
-    Transaction,
-} from 'typeorm';
+import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
 @EntityRepository(FileBin)
 export default class FileBinRepository extends Repository<FileBin> {

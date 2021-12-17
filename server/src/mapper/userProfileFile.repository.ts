@@ -2,7 +2,7 @@ import { ResultSetHeader } from 'mysql2';
 import UserProfileFile from 'src/entity/userProfileFile.entity';
 import { AikoError } from 'src/Helpers';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
-import { EntityManager, EntityRepository, Repository, SelectQueryBuilder, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 @EntityRepository(UserProfileFile)
 export default class UserProfileFileRepository extends Repository<UserProfileFile> {

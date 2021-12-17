@@ -1,15 +1,6 @@
 import { FileHistory } from 'src/entity';
 import { AikoError } from 'src/Helpers';
-import {
-    EntityRepository,
-    getConnection,
-    InsertResult,
-    Repository,
-    getManager,
-    TransactionManager,
-    EntityManager,
-    Transaction,
-} from 'typeorm';
+import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
 @EntityRepository(FileHistory)
 export default class FileHistoryRepository extends Repository<FileHistory> {

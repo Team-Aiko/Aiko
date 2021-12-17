@@ -5,17 +5,11 @@ import { EntityManager, EntityRepository, Repository, TransactionManager } from 
 @EntityRepository(GroupChatUserList)
 export default class GroupChatUserListRepository extends Repository<GroupChatUserList> {
     async insertUserListInNewGroupChatRoom(
-        GC_PK: number,
-        userList: number[],
+        DTOs: { GC_PK: number; USER_PK: number }[],
         @TransactionManager() manager: EntityManager,
     ) {
         try {
-            await manager.insert(
-                GroupChatUserList,
-                userList.map((user) => {
-                    return { GC_PK, USER_PK: user };
-                }),
-            );
+            await manager.insert(GroupChatUserList, DTOs);
         } catch (err) {
             console.error(err);
             throw new AikoError('GroupChatUserListRepository/insertUserListInNewGroupChatRoom', 500, 2911855);

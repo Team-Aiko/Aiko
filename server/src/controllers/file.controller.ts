@@ -1,22 +1,10 @@
-import {
-    Controller,
-    Post,
-    Req,
-    Res,
-    UseInterceptors,
-    UploadedFile,
-    Get,
-    Param,
-    UseGuards,
-    Query,
-} from '@nestjs/common';
+import { Controller, Post, Req, Res, UseInterceptors, Get, UseGuards, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
-import fs from 'fs';
 
 @UseGuards(UserGuard)
 @Controller() // /store

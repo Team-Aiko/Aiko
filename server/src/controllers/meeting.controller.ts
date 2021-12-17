@@ -9,7 +9,6 @@ import {
     IMeetingPagination,
     IMeetingSchedulePagination,
 } from 'src/interfaces/MVC/meetingMVC';
-import { O_DSYNC } from 'constants';
 
 @UseGuards(UserGuard)
 @Controller('meeting')

@@ -1,4 +1,4 @@
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { ChatFile } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';

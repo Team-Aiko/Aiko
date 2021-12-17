@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, getConnection, InsertResult, Repository, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, Repository } from 'typeorm';
 import { PrivateChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';

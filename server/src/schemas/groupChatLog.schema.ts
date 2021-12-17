@@ -14,6 +14,7 @@ export class GroupChatLog {
         sender: number;
         file: number;
         message: string;
+        date: number;
     }[];
 }
 

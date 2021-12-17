@@ -1,9 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
-// import RedisAdapter from 'src/adapters/redis.adapter';
 import { AppModule } from './app.module';
-import { static as staticPath } from 'express';
-import { join } from 'path';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -13,9 +10,6 @@ async function bootstrap() {
 
     // * Cookie global middleware
     app.use(cookieParser());
-
-    // * RedisAdapter
-    // app.useWebSocketAdapter(new RedisAdapter(app));
 
     // * port setting
     await app.listen(5000);

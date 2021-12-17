@@ -1,17 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { MeetRoom } from 'src/entity';
-import { AikoError, getRepo, propsRemover, unixTimeStamp } from 'src/Helpers';
-import { unixTimeEnum } from 'src/interfaces';
-import {
-    Brackets,
-    EntityManager,
-    EntityRepository,
-    getConnection,
-    Repository,
-    Transaction,
-    TransactionManager,
-} from 'typeorm';
-import MeetRepository from './meet.repository';
+import { AikoError, propsRemover } from 'src/Helpers';
+import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(MeetRoom)
 export default class MeetRoomRepository extends Repository<MeetRoom> {

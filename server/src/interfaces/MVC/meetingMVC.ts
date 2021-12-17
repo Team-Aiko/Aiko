@@ -1,4 +1,4 @@
-import { CalledMembers, Grant, Meet, User } from 'src/entity';
+import { Grant, Meet, User } from 'src/entity';
 
 export interface IMeetingRoomBundle {
     ROOM_PK?: number;

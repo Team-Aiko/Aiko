@@ -4,7 +4,6 @@ import ResetPwRepository from './resetPw.repository';
 import LoginAuthRepository from './loginAuth.repository';
 import CompanyRepository from './company.repository';
 import DepartmentRepository from './department.repository';
-import SocketRepository from './socket.repository';
 import ChatFileRepository from './chatFile.repository';
 import PrivateChatRoomRepository from './privateChatRoom.repository';
 import RefreshRepository from './refresh.repository';
@@ -19,7 +18,6 @@ export {
     UserRepository,
     CountryRepository,
     ResetPwRepository,
-    SocketRepository,
     ChatFileRepository,
     PrivateChatRoomRepository,
     RefreshRepository,

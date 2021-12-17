@@ -1,9 +1,7 @@
-import { NoticeBoardFile } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
-import { getRepo, propsRemover } from 'src/Helpers/functions';
+import { getRepo } from 'src/Helpers/functions';
 import { NoticeBoardFileRepository } from 'src/mapper';
 import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
-import { getConnection } from 'typeorm';
 
 export default class NoticeBoardService {
     //게시글 생성
