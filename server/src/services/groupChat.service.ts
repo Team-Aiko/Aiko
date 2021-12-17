@@ -69,6 +69,7 @@ export default class GroupChatService {
 
             // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
             GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
+                COMPANY_PK,
                 USER_PK,
                 roomTitle,
                 maxNum,
@@ -86,7 +87,7 @@ export default class GroupChatService {
             const memberList = (await this.groupChatClientModel
                 .find()
                 .where('userPK')
-                .in(userList)
+                .in(verifiedList)
                 .select('clientId userPK companyPK')) as GroupChatClientInfo[];
 
             return { memberList, GC_PK, COMPANY_PK, USER_PK };
