@@ -37,7 +37,7 @@ export default class PrivateChatService {
                         '🚀 ~ file: privateChat.service.ts ~ line 36 ~ PrivateChatService ~ roomList.map ~ item',
                         item,
                     );
-                    const dto = new this.chatlogModel(item);
+                    const dto = new this.chatlogModel({ ...item, _id: id });
                     await dto.save();
 
                     return true;
