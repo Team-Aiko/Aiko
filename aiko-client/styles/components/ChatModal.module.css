@@ -52,17 +52,6 @@
     padding: 0 20px;
 }
 
-.member-list {
-    padding: 20px;
-}
-
-.member-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
 .member-user-wrapper {
     display: flex;
     align-items: center;
