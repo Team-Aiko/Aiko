@@ -83,7 +83,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     /**
      * 그룹챗방을 생성하는 이벤트
      */
-    @SubscribeMessage(groupChatPath.CREATE_GROUP_CHAT_ROOM)
+    @SubscribeMessage(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM)
     async createGroupChatRoom(
         client: Socket,
         {
@@ -118,7 +118,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         } catch (err) {
             this.wss.to(client.id).emit(
                 groupChatPath.CLIENT_ERROR_ALERT,
-                getSocketErrorPacket(groupChatPath.CREATE_GROUP_CHAT_ROOM, err, {
+                getSocketErrorPacket(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM, err, {
                     userList,
                     admin,
                     roomTitle,
@@ -158,7 +158,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
     async sendMessageToGroup(
         client: Socket,
-        payload: { GC_PK: number; accessToken: string; file: number; message: string },
+        payload: { GC_PK: number; accessToken: string; file: number; message: string; date: number },
     ) {
         try {
             if (!payload) return;

@@ -120,10 +120,29 @@ export default class GroupChatService {
     }
 
     async sendMessageToGroup(
-        payload: { GC_PK: number; accessToken: string; file: number; message: string },
+        {
+            GC_PK,
+            accessToken,
+            file,
+            message,
+            date,
+        }: { GC_PK: number; accessToken: string; file: number; message: string; date: number },
         wss: Server,
     ) {
         try {
+            const { COMPANY_PK, USER_PK } = tokenParser(accessToken);
+            const chatLog = await this.getChatLog(GC_PK, COMPANY_PK);
+
+            chatLog.chatLog.push({ sender: USER_PK, file, message, date });
+            await this.updateChatLog(chatLog);
+
+            wss.to(`company:${COMPANY_PK}-${GC_PK}`).emit(groupChatPath.CLIENT_SEND_MESSAGE, {
+                GC_PK,
+                file,
+                message,
+                sender: USER_PK,
+                date,
+            });
         } catch (err) {
             console.error(err);
             throw err;
@@ -194,6 +213,24 @@ export default class GroupChatService {
         } catch (err) {
             console.error(err);
             throw new AikoError('groupChatService/createChatRoom', 0, 982820);
+        }
+    }
+
+    async getChatLog(GC_PK: number, companyPK: number) {
+        try {
+            return (await this.groupChatLogModel.findOne({ GC_PK, companyPK }).exec()) as GroupChatLog;
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/getChatLog', 0, 828192);
+        }
+    }
+
+    async updateChatLog(chatLog: GroupChatLog) {
+        try {
+            await this.groupChatLogModel.findOneAndUpdate({ GC_PK: chatLog.GC_PK }, chatLog).exec();
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('groupChatService/updateChatLog', 0, 828192);
         }
     }
 }
