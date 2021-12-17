@@ -29,12 +29,12 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
         try {
             // null data filter
             if (!accessToken) return;
+            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(client.id, accessToken);
 
-            const roomList = await this.privateChatService.connectPrivateChat(client.id, accessToken);
-
+            const roomList = oddCase.concat(evenCase);
             roomList.forEach((room) => client.join(room.CR_PK));
 
-            this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, roomList);
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, { oddCase, evenCase });
         } catch (err) {
             this.wss
                 .to(client.id)
