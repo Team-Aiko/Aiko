@@ -26,23 +26,11 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
     }
 
     async getPrivateChatRoomList(userId: number, companyPK: number) {
-        let list: PrivateChatRoom[] = [];
-
         try {
-            list = await this.createQueryBuilder('o')
-                .where('o.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .leftJoinAndSelect('o.user1', 'user1')
-                .leftJoinAndSelect('o.user2', 'user2')
-                .where('o.USER_1 = :USER1', { USER1: userId })
-                .orWhere('o.USER_2 = :USER2', { USER2: userId })
-                .getMany();
+            const oddCase = await this.find({ USER_1: userId, COMPANY_PK: companyPK });
+            const evenCase = await this.find({ USER_2: userId, COMPANY_PK: companyPK });
 
-            return list.map((room) => {
-                room.user1 = propsRemover(room.user1, ...criticalInfos);
-                room.user2 = propsRemover(room.user2, ...criticalInfos);
-
-                return room;
-            });
+            return { oddCase, evenCase };
         } catch (err) {
             console.error(err);
             throw new AikoError('PrivateChatRoomRepository/getOneToOneChatRoomList', 500, 500360);
