@@ -92,19 +92,17 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         client: Socket,
         {
             userList,
-            admin,
             roomTitle,
             maxNum,
             accessToken,
-        }: { userList: number[]; admin: number; roomTitle: string; maxNum: number; accessToken: string },
+        }: { userList: number[]; roomTitle: string; maxNum: number; accessToken: string },
     ) {
         try {
-            if (!admin) return;
+            if (!accessToken) return;
 
             console.log('createGroupChatRoom clientId : ', client.id);
-            const { GC_PK, memberList, COMPANY_PK } = await this.groupChatService.createGroupChatRoom({
+            const { GC_PK, memberList, COMPANY_PK, USER_PK } = await this.groupChatService.createGroupChatRoom({
                 userList,
-                admin,
                 roomTitle,
                 maxNum,
                 accessToken,
@@ -114,7 +112,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 this.wss.to(member.clientId).emit(groupChatPath.CLIENT_JOIN_ROOM_NOTICE, {
                     GC_PK,
                     memberList,
-                    admin,
+                    admin: USER_PK,
                     roomTitle,
                     maxNum,
                 });
@@ -124,7 +122,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 groupChatPath.CLIENT_ERROR_ALERT,
                 getSocketErrorPacket(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM, err, {
                     userList,
-                    admin,
                     roomTitle,
                     maxNum,
                     accessToken,

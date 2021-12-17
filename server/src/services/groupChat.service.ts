@@ -41,13 +41,11 @@ export default class GroupChatService {
      */
     async createGroupChatRoom({
         userList,
-        admin,
         roomTitle,
         maxNum,
         accessToken,
     }: {
         userList: number[];
-        admin: number;
         roomTitle: string;
         maxNum: number;
         accessToken: string;
@@ -60,7 +58,7 @@ export default class GroupChatService {
 
         try {
             // verify accessToken
-            const { COMPANY_PK } = tokenParser(accessToken);
+            const { COMPANY_PK, USER_PK } = tokenParser(accessToken);
 
             // 해당 회사키로 초대유저 적합성 판단
             const verifiedList = await connection
@@ -71,7 +69,7 @@ export default class GroupChatService {
 
             // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
             GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
-                admin,
+                USER_PK,
                 roomTitle,
                 maxNum,
                 queryRunner.manager,
@@ -80,8 +78,7 @@ export default class GroupChatService {
 
             // 생성된 그룹챗룸에 적합한 유저를 초대 (rdb에 추가)
             await getRepo(GroupChatUserListRepository).insertUserListInNewGroupChatRoom(
-                GC_PK,
-                verifiedList.map((user) => user.USER_PK),
+                verifiedList.map((user) => ({ USER_PK: user.USER_PK, GC_PK })),
                 queryRunner.manager,
             );
 
@@ -92,7 +89,7 @@ export default class GroupChatService {
                 .in(userList)
                 .select('clientId userPK companyPK')) as GroupChatClientInfo[];
 
-            return { memberList, GC_PK, COMPANY_PK };
+            return { memberList, GC_PK, COMPANY_PK, USER_PK };
         } catch (err) {
             await this.deleteChatRoom(GC_PK);
             await queryRunner.rollbackTransaction();
