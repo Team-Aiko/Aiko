@@ -22,7 +22,11 @@ export default class PrivateChatService {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
             await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
 
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
+            const { evenCase, oddCase } = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
+                userPK,
+                companyPK,
+            );
+            const roomList = evenCase.concat(oddCase);
 
             await Promise.all(
                 roomList.map(async (room) => {
