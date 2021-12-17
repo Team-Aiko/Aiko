@@ -1,5 +1,6 @@
 import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
 import ApprovalFrame from 'src/entity/approvalFrame.entity';
+import { unixTimeStamp } from 'src/Helpers';
 
 @EntityRepository(ApprovalFrame)
 export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
@@ -11,6 +12,7 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         comPk: number,
         userPk: number,
     ) {
+        const time = unixTimeStamp();
         const result = await manager.insert(ApprovalFrame, {
             TITLE: title,
             CONTENT: content,
@@ -18,6 +20,7 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             DEPARTMENT_PK: departmentPk,
             USER_PK: userPk,
             CURRENT_STEP_LEVEL: 0,
+            START_DATE: time,
         });
         return result.identifiers[0];
     }
