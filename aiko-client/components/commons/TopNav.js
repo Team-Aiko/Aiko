@@ -146,60 +146,57 @@ function PComp(props) {
     const dispatch = useDispatch();
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
-    useEffect(() => {
-        console.log('###### render ######');
-        if (userInfo) {
-            const loadMemberList = async () => await loadMemberList();
-
-            if (loadMemberList) {
-                console.log('loadMemberList : ', loadMemberList);
-                const status = io('http://localhost:5000/status');
-                setStatus(status);
-
-                const uri = '/api/account/raw-token';
-                get(uri)
-                    .then((response) => {
-                        status.emit('handleConnection', response.data.result);
-                    })
-                    .catch((err) => {
-                        console.error('handleConnection - error : ', err);
-                    });
-                status.on('client/status/getStatusList', (payload) => {
-                    console.log('### getStatusList ### : ', payload);
-                    dispatch(setMemberListStatus(payload));
-                    for (const row of payload) {
-                        if (row.userPK === userInfo.USER_PK) {
-                            dispatch(setUserInfo({ status: row.status }));
-                        }
-                    }
-                });
-                status.on('client/status/loginAlert', (payload) => {
-                    dispatch(setMemberStatus(payload.user));
-                });
-                status.on('client/status/logoutAlert', (payload) => {
-                    dispatch(setMemberStatus(payload));
-                });
-                status.on('client/status/error', (err) => {
-                    console.error('status - error : ', err);
-                });
-                status.on('client/status/changeStatus', (payload) => {
-                    dispatch(setMemberStatus(payload));
-                });
-                status.on('client/status/logoutEventExecuted', () => {
-                    status.emit('handleDisconnect');
-                });
-            }
-        }
-    }, [userInfo.USER_PK]);
-
     const loadMemberList = async () => {
         const url = '/api/company/member-list';
 
-        return await get(url).then((result) => {
-            const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
+        await get(url).then((response) => {
+            const excludeMe = response.data.result.filter((row) => row.USER_PK !== userInfo.USER_PK);
             dispatch(setMember(excludeMe));
         });
     };
+
+    useEffect(() => {
+        console.log('###### render ######');
+        if (userInfo) {
+            loadMemberList();
+
+            const status = io('http://localhost:5000/status');
+            setStatus(status);
+
+            const uri = '/api/account/raw-token';
+            get(uri)
+                .then((response) => {
+                    status.emit('handleConnection', response.data.result);
+                })
+                .catch((err) => {
+                    console.error('handleConnection - error : ', err);
+                });
+            status.on('client/status/getStatusList', (payload) => {
+                console.log('### getStatusList ### : ', payload);
+                dispatch(setMemberListStatus(payload));
+                for (const row of payload) {
+                    if (row.userPK === userInfo.USER_PK) {
+                        dispatch(setUserInfo({ status: row.status }));
+                    }
+                }
+            });
+            status.on('client/status/loginAlert', (payload) => {
+                dispatch(setMemberStatus(payload.user));
+            });
+            status.on('client/status/logoutAlert', (payload) => {
+                dispatch(setMemberStatus(payload));
+            });
+            status.on('client/status/error', (err) => {
+                console.error('status - error : ', err);
+            });
+            status.on('client/status/changeStatus', (payload) => {
+                dispatch(setMemberStatus(payload));
+            });
+            status.on('client/status/logoutEventExecuted', () => {
+                status.emit('handleDisconnect');
+            });
+        }
+    }, [userInfo.USER_PK]);
 
     const statusList = [
         {
