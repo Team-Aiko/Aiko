@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/components/ChatModal.module.css';
 import {
     Button,
@@ -11,10 +11,13 @@ import {
     ThemeProvider,
     unstable_createMuiStrictModeTheme,
     Avatar,
+    List,
+    ListItem,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { get, post } from '../_axios';
 import { useSelector, useDispatch } from 'react-redux';
+import { io } from 'socket.io-client';
 
 const useStyles = makeStyles((theme) => ({
     dialogPaper: {
@@ -70,46 +73,55 @@ export default function ChatModal(props) {
     const { open, onClose } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
+    const statusEl = useRef(null);
+    const [status, setStatus] = useState(undefined);
+    const [chatMember, setChatMember] = useState(null);
+
+    useEffect(() => {
+        const status = io('http://localhost:5000/private-chat');
+        setStatus(status);
+
+        const uri = '/api/account/raw-token';
+        get(uri)
+            .then((result) => {
+                status.emit('handleConnection', result);
+            })
+            .catch((err) => {
+                console.error('chat-handleConnection-error : ', err);
+            });
+
+        status.on('client/private-chat/connected', (payload) => {
+            // dispatch(setMemberStatus(payload.user));
+            console.log('client/private-chat/connected : ', payload);
+        });
+    }, []);
 
     const statusList = [
         {
             status: -1,
-            onClick: () => {
-                console.log('오프라인');
-            },
             color: '#ededed',
         },
         {
             status: 1,
-            onClick: () => {
-                console.log('온라인');
-            },
             color: '#2196f3',
         },
         {
             status: 2,
-            onClick: () => {
-                console.log('부재중');
-            },
             color: '#ffe082',
         },
         {
             status: 3,
-            onClick: () => {
-                console.log('바쁨');
-            },
-            view: '바쁨',
             color: '#e91e63',
         },
         {
             status: 4,
-            onClick: () => {
-                console.log('회의중');
-            },
-            view: '회의중',
             color: '#26a69a',
         },
     ];
+
+    const selectedMember = (member) => {
+        console.log('member : ', member);
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -118,11 +130,16 @@ export default function ChatModal(props) {
                     <Toolbar classes={{ root: classes.memberToolbar }}>
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
-                    <div className={styles['member-list']}>
+                    <List component='nav'>
                         {memberList &&
                             memberList.map((member) => {
                                 return (
-                                    <div className={styles['member-item']} key={member.USER_PK}>
+                                    <ListItem
+                                        button
+                                        key={member.USER_PK}
+                                        style={{ justifyContent: 'space-between' }}
+                                        onClick={() => selectedMember(member)}
+                                    >
                                         <div className={styles['member-user-wrapper']}>
                                             <Avatar
                                                 src={
@@ -134,19 +151,20 @@ export default function ChatModal(props) {
                                             />
                                             <Typography>{member.NICKNAME}</Typography>
                                         </div>
-                                        {statusList.map((row) => {
+                                        {statusList.map((row, index) => {
                                             return member.status === row.status ? (
                                                 <div
+                                                    ref={statusEl}
                                                     key={row.status}
                                                     className={styles['member-status']}
                                                     style={{ backgroundColor: row.color }}
                                                 ></div>
                                             ) : null;
                                         })}
-                                    </div>
+                                    </ListItem>
                                 );
                             })}
-                    </div>
+                    </List>
                 </div>
                 <div className={styles['message-container']}>
                     <Toolbar classes={{ root: classes.toolbar }}>

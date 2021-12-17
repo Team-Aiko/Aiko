@@ -307,18 +307,18 @@ function PComp(props) {
             >
                 {statusList.map((row) => {
                     return row.status === userInfo.status ? (
-                        <>
+                        <div key={row.status} style={{ display: 'flex', alignItems: 'center' }}>
                             <div className={styles.status} style={{ backgroundColor: row.color }}></div>
                             {row.view}
                             {statusMenuOpen ? <ExpandLess /> : <ExpandMore />}
-                        </>
+                        </div>
                     ) : null;
                 })}
             </MenuItem>
             <Collapse in={statusMenuOpen} timeout='auto' unmountOnExit>
                 {statusList.map((row) => {
                     return row.status !== userInfo.status ? (
-                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick}>
+                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick} key={row.status}>
                             <div className={styles.status} style={{ backgroundColor: row.color }}></div>
                             {row.view}
                         </MenuItem>
@@ -364,13 +364,17 @@ function PComp(props) {
                     />
                     {statusList.map((row) =>
                         row.status === userInfo.status ? (
-                            <div className={styles['status-badge']} style={{ backgroundColor: row.color }}></div>
+                            <div
+                                key={row.status}
+                                className={styles['status-badge']}
+                                style={{ backgroundColor: row.color }}
+                            ></div>
                         ) : null,
                     )}
                 </IconButton>
                 {statusList.map((row) => {
                     return row.status === userInfo.status ? (
-                        <div className={styles['mobile-status']}>
+                        <div className={styles['mobile-status']} key={row.status}>
                             {row.view}
                             {statusMenuOpen ? <ExpandLess /> : <ExpandMore />}
                         </div>
@@ -380,7 +384,7 @@ function PComp(props) {
             <Collapse in={statusMenuOpen} timeout='auto' unmountOnExit>
                 {statusList.map((row) => {
                     return row.status !== userInfo.status ? (
-                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick}>
+                        <MenuItem style={{ paddingLeft: '20px' }} onClick={row.onClick} key={row.status}>
                             <div className={styles.status} style={{ backgroundColor: row.color }}></div>
                             {row.view}
                         </MenuItem>
@@ -493,6 +497,7 @@ function PComp(props) {
                                         {statusList.map((row) =>
                                             row.status === userInfo.status ? (
                                                 <div
+                                                    key={row.status}
                                                     className={styles['status-badge']}
                                                     style={{ backgroundColor: row.color }}
                                                 ></div>
