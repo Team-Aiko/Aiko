@@ -82,4 +82,15 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     async handleDisconnect(client: Socket) {
         this.logger.log(`disconnect client: ${client.id}`);
     }
+
+    // * for migration
+    @SubscribeMessage('server/temp/generateChatRooms')
+    async chatRoomGenerator(client: Socket, accessToken: string) {
+        try {
+            const result = await this.privateChatService.chatRoomGenerator(accessToken);
+            console.log('all created : ', result);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 }

@@ -7,7 +7,8 @@ import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
 import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
-import { EntityManager, TransactionManager } from 'typeorm';
+import { EntityManager, getConnection, TransactionManager } from 'typeorm';
+import { PrivateChatRoom } from 'src/entity';
 
 @Injectable()
 export default class PrivateChatService {
@@ -135,6 +136,30 @@ export default class PrivateChatService {
             );
         } catch (err) {
             console.error(err);
+            throw err;
+        }
+    }
+
+    // * temp method for migration
+    async chatRoomGenerator(accessToken: string) {
+        try {
+            const { COMPANY_PK } = tokenParser(accessToken);
+            const chatRooms = await getConnection()
+                .createQueryBuilder(PrivateChatRoom, 'c')
+                .where('c.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getMany();
+
+            await Promise.all(
+                chatRooms.map(async (room) => {
+                    const dto = new this.chatlogModel({ _id: room.CR_PK, roomId: room.CR_PK, messages: [] });
+                    await dto.save();
+
+                    return true;
+                }),
+            );
+
+            return true;
+        } catch (err) {
             throw err;
         }
     }
