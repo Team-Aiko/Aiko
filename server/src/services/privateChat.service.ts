@@ -37,7 +37,7 @@ export default class PrivateChatService {
                         '🚀 ~ file: privateChat.service.ts ~ line 36 ~ PrivateChatService ~ roomList.map ~ item',
                         item,
                     );
-                    const dto = new this.chatlogModel({ ...item, _id: id });
+                    const dto = new this.chatlogModel({ roomId: id, messages: [] });
                     await dto.save();
 
                     return true;
@@ -46,7 +46,7 @@ export default class PrivateChatService {
 
             return true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('PrivateChatService/makePrivateChatRoomList', 500, 129828);
         }
     }
 
