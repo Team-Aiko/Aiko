@@ -180,10 +180,10 @@ export function getUnixTime(date: Date) {
 
 export function getServerTime(serverHour: number) {
     const today = new Date();
-    const hour = serverHour > 10 ? `0${serverHour}` : serverHour.toString();
+    const hour = serverHour < 10 ? `0${serverHour}` : serverHour.toString();
 
     const serverTime = Math.floor(
-        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} 00:${hour}:00`).getTime() / 1000,
+        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${hour}:00:00`).getTime() / 1000,
     );
 
     return serverTime;
