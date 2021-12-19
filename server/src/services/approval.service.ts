@@ -57,7 +57,9 @@ export default class ApprovalService {
             queryRunner.release();
         }
     }
-    async viewApproval() {
-
+    async viewApproval(userPk: number, departmentPk: number, comPk: number, view: string) {
+        const stepLevels = await getRepo(ApprovalStepRepository).list(userPk, comPk, departmentPk, view);
+        const result = await getRepo(ApprovalFrameRepository).list(userPk, stepLevels, view);
+        return result;
     }
 }

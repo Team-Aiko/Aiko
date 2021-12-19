@@ -33,4 +33,20 @@ export default class ApprovalStepRepository extends Repository<ApprovalStep> {
             DECISION: 0,
         });
     }
+
+    async list(userPk: number, comPk: number, departmentPk: number, view: string) {
+        if (view == 'all') {
+            console.log(userPk);
+            const result = await this.createQueryBuilder('as')
+                .select(['as.AF_PK', 'as.STEP_LEVEL'])
+                .where('USER_PK =:userPk', { userPk: `${userPk}` })
+                .getMany();
+            return result;
+        } else if (view == 'process') {
+            console.log('pro');
+        }
+
+        // result = propsRemover(result, 'user');
+        // result = Object.assign(result, name);
+    }
 }

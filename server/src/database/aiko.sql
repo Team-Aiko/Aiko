@@ -259,7 +259,6 @@ COMPANY_PK int not null,
 AC_PK int not null,	
 DEPARTMENT_PK int not null,
 CURRENT_STEP_LEVEL int not null,
-AS_PK int not null,
 START_DATE int not null,
 END_DATE int,
 primary key(AF_PK)

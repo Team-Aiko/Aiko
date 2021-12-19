@@ -8,20 +8,32 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         @TransactionManager() manager: EntityManager,
         title: string,
         content: string,
-        departmentPk: number,
         comPk: number,
+        departmentPk: number,
         userPk: number,
     ) {
         const time = unixTimeStamp();
+        console.log(comPk);
         const result = await manager.insert(ApprovalFrame, {
+            USER_PK: userPk,
             TITLE: title,
             CONTENT: content,
             COMPANY_PK: comPk,
+            AC_PK: 0, //TEST
             DEPARTMENT_PK: departmentPk,
-            USER_PK: userPk,
             CURRENT_STEP_LEVEL: 0,
             START_DATE: time,
         });
         return result.identifiers[0];
+    }
+    async list(userPk: number, stepLevels: any, view: string) {
+        if (view == 'all') {
+            console.log(userPk);
+            const result = await this.createQueryBuilder()
+                .select()
+                .where('USER_PK =:userPk', { userPk: `${userPk}` })
+                .getMany();
+            return result;
+        }
     }
 }

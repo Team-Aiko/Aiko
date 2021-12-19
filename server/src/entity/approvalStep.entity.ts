@@ -1,5 +1,5 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
-
+import { User } from '.';
 @Entity({ name: 'APPROVAL_STEP_TABLE' })
 export default class ApprovalStep {
     @PrimaryGeneratedColumn()
@@ -22,4 +22,8 @@ export default class ApprovalStep {
 
     @Column()
     STEP_STATUS: string;
+
+    @ManyToOne(() => User, (as) => as.asUser)
+    @JoinColumn({ name: 'USER_PK' })
+    asUser: User;
 }

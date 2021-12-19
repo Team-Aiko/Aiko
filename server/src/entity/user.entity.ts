@@ -10,6 +10,8 @@ import {
     JoinTable,
 } from 'typeorm';
 import { Department, Company, Country, LoginAuth, ResetPw, Socket, PrivateChatRoom, NoticeBoard } from '.';
+import ApprovalFrame from './approvalFrame.entity';
+import ApprovalStep from './approvalStep.entity';
 import { BaseEntity } from 'typeorm';
 import Grant from './Grant.entity';
 import CalledMembers from './calledMembers.entity';
@@ -109,4 +111,12 @@ export default class User {
     @OneToMany(() => NoticeBoard, (nb) => nb.updateUser)
     @JoinColumn({ name: 'USER_PK' })
     updateUser: NoticeBoard;
+
+    @OneToMany(() => ApprovalFrame, (af) => af.afUser)
+    @JoinColumn({ name: 'USER_PK' })
+    afUser: ApprovalFrame;
+
+    @OneToMany(() => ApprovalStep, (as) => as.asUser)
+    @JoinColumn({ name: 'USER_PK' })
+    asUser: ApprovalStep;
 }

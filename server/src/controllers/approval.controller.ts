@@ -17,6 +17,7 @@ export default class ApprovalController {
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
+            approverPks.push(userPk);
             await this.approvalService.createApproval(
                 title,
                 content,
@@ -36,17 +37,14 @@ export default class ApprovalController {
     async viewApproval(@Req() req: Request, @Res() res: Response) {
         try {
             const { currentPage, feedsPerPage, groupCnt } = req.query;
+            const view = req.query.view.toString();
             const userPayload = usrPayloadParser(req);
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
-            await this.approvalService.createApproval(
-                departmentPk,
-                comPk,
-                userPk,
-            );
-            const cnt = new Pagination(currentPage, )
-            resExecutor(res, { result: true });
+            const result = await this.approvalService.viewApproval(userPk, departmentPk, comPk, view);
+            // const cnt = new Pagination(currentPage, )
+            resExecutor(res, { result: result });
         } catch (err) {
             throw resExecutor(res, { err });
         }
