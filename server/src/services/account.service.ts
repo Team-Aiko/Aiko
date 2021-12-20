@@ -109,7 +109,7 @@ export default class AccountService {
                 console.log('step4');
 
                 // * generate drive root folder
-                await this.driveService.createFolder(data.companyPK, 'root', undefined, queryRunner.manager);
+                await this.driveService.createRootFolder(data.companyPK, queryRunner.manager);
             } else if (data.position === 1) {
                 // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
