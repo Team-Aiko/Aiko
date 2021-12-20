@@ -187,6 +187,8 @@ export default class AccountService {
                 bundle = {
                     header: false,
                 };
+
+                return bundle;
             }
 
             // get grant list
