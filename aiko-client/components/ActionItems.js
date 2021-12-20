@@ -31,18 +31,63 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         textAlign: 'center',
         width: 700,
+    },
+    input : {
+        width:100,
+        textAlign:'center'
     }
 }));
 
-const ActionItems = () => {
+const ActionItems = ({nickname}) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    const [ownerPK, setOwnerPK] = useState(undefined);
-    const [currentUserPK, setCurrentUserPK] = useState(undefined);
-
     //All information about created Action Items.
     const [actionItemArray, setActionItemArray] = useState([]);
+
+    //따로 관리할 priority PK, step PK
+    const [selectedItem, setSelectedItem] = useState(null);
+
+    const priorityChange = (e, num) => {
+        const index = actionItemArray.findIndex((item) => item.ACTION_PK === num)
+        const arr = [...actionItemArray];
+        arr[index].P_PK = e.target.value;
+        setActionItemArray([...arr]);
+        console.log(actionItemArray);
+    };
+
+    const stepChange = (e, num) => {
+        const index = actionItemArray.findIndex((item) => item.ACTION_PK === num);
+        const arr = [...actionItemArray];
+        arr[index].STEP_PK = e.target.value;
+        setActionItemArray([...arr]);
+        console.log(actionItemArray);
+    };
+
+    // Priority 값 변경 & Update 요청
+    const priorityUpdate = (num) => {
+        const url = '/api/work/update-action-item';
+        const index = actionItemArray.findIndex((item) => item.ACTION_PK === num);
+        const data = {
+            ACTION_PK: actionItemArray[index].ACTION_PK,
+            OWNER_PK: actionItemArray[index].owner.USER_PK,
+            TITLE: actionItemArray[index].TITLE,
+            DESCRIPTION: actionItemArray[index].DESCRIPTION,
+            START_DATE: Math.floor(new Date(actionItemArray[index].START_DATE).getTime() / 1000),
+            DUE_DATE: Math.floor(new Date(actionItemArray[index].DUE_DATE).getTime() / 1000),
+            P_PK: actionItemArray[index].P_PK,
+            STEP_PK: actionItemArray[index].STEP_PK,
+            updateCols: ['P_PK', 'STEP_PK'],
+        };
+        post(url, data)
+            .then((res) => {
+                alert('수정되었습니다');
+                console.log(res);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
     // 액션 아이템 추가 모달, 액션 아이템 상세보기 모달 boolean 값.
     const [addActionItemModal, setAddActionItemModal] = useState(false);
@@ -60,7 +105,6 @@ const ActionItems = () => {
     };
 
     //Unix time 변환 함수
-
     function getUnixTime(t) {
         const date = new Date(t * 1000);
         const year = date.getFullYear();
@@ -69,28 +113,29 @@ const ActionItems = () => {
         return year.toString().substr(-2) + '-' + month.substr(-2) + '-' + day.substr(-2);
     }
 
-    //현재 USER_PK 가져오는 API
-    const getCurrentUserPk = async () => {
-        const url = '/api/account/decoding-token';
-        const res = await get(url)
-            .then((res) => {
-                console.log(res);
-                setCurrentUserPK(res.data.USER_PK);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
+    const [userPk, setUserPk] = useState('');
+
+    const getUserInfo = () => {
+        const url = '/api/account/user-info';
+        const data = {
+            nickname: nickname
+        };
+        post(url, data)
+        .then((res) => {
+            console.log(res)
+            setUserPk(res.USER_PK)
+        })
+    }
 
     useEffect(() => {
-        getCurrentUserPk()
-    },[]);
+        getUserInfo()
+    },[])
 
     //생성된 액션 아이템 불러오기 API
     const getActionItems = async () => {
         const url = `/api/work/view-items`;
         const params = {
-            id: currentUserPK,
+            id: userPk,
             currentPage: currentPage,
             feedsPerPage: rowsPerPage,
         };
@@ -114,6 +159,8 @@ const ActionItems = () => {
     }, [actionItemArray]);
 
     const classes = useStyles();
+
+    console.log(nickname)
 
     return (
         <>
@@ -152,21 +199,47 @@ const ActionItems = () => {
                             <TableCell align='right'>Owner</TableCell>
                             <TableCell align='right'>Start date</TableCell>
                             <TableCell align='right'>Due date</TableCell>
+                            <TableCell align='center'>Priority</TableCell>
+                            <TableCell align='center'>Step</TableCell>
                             <TableCell align='right'>Details</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
                         {actionItemArray.map((row, key) => (
-                            <TableRow key={key}>
+                            <TableRow key={row.ACTION_PK}>
                                 <TableCell align='left'>{row.ACTION_PK}</TableCell>
                                 <TableCell component='th' scope='row' align='left'>
                                     {row.TITLE}
                                 </TableCell>
-                                <TableCell align='right'>{row.owner.FIRST_NAME + ' ' + row.owner.LAST_NAME}</TableCell>
-                                <TableCell align='right'>{getUnixTime(row.START_DATE)}</TableCell>
-                                <TableCell align='right'>{getUnixTime(row.DUE_DATE)}</TableCell>
-                                <TableCell align='right'>
+                                <TableCell align='right' style={{width:'13%'}}>{row.owner.FIRST_NAME + ' ' + row.owner.LAST_NAME}</TableCell>
+                                <TableCell align='right' style={{width:'13%'}}>{getUnixTime(row.START_DATE)}</TableCell>
+                                <TableCell align='right' style={{width:'13%'}}>{getUnixTime(row.DUE_DATE)}</TableCell>
+                                <TableCell align='right' style={{width:'13%'}}><Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={row.P_PK}
+                                onChange={(e) => {priorityChange(e, row.ACTION_PK)}}
+                                className={classes.input}
+                                onClick={() => priorityUpdate(row.ACTION_PK)}
+                                >
+                                <MenuItem value={1}>High</MenuItem>
+                                <MenuItem value={2}>Normal</MenuItem>
+                                <MenuItem value={3}>Low</MenuItem>
+                                </Select></TableCell>
+                                <TableCell align='right' style={{width:'10%'}}><Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={row.STEP_PK}
+                                onChange={(e) => {stepChange(e, row.ACTION_PK)}}
+                                className={classes.input}
+                                onClick={() => priorityUpdate(row.ACTION_PK)}
+                                >
+                                <MenuItem value={1}>Assigned</MenuItem>
+                                <MenuItem value={2}>Ongoing</MenuItem>
+                                <MenuItem value={3}>Done</MenuItem>
+                                </Select></TableCell>
+                                <TableCell align='right' style={{width:'3%'}}>
                                     <Tooltip title='View details'>
                                         <IconButton>
                                             <Pageview onClick={() => openDetailModal(key)} />
