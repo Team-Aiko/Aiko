@@ -49,13 +49,19 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
 
     async getChatRoomInfo(roomId: string) {
         try {
-            return await this.createQueryBuilder('pcr')
+            const roomInfo = await this.createQueryBuilder('pcr')
                 .leftJoinAndSelect('pcr.user1', 'user1')
                 .leftJoinAndSelect('prc.user2', 'user2')
                 .leftJoinAndSelect('user1.department', 'department1')
                 .leftJoinAndSelect('user2.department', 'department2')
                 .where(`pcr.CR_PK = '${roomId}'`)
                 .getOneOrFail();
+
+            let { user1, user2 } = roomInfo;
+            user1 = propsRemover(user1, ...criticalInfos);
+            user2 = propsRemover(user2, ...criticalInfos);
+
+            return { user1, user2 };
         } catch (err) {
             console.error(err);
             throw err;

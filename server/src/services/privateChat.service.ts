@@ -81,10 +81,9 @@ export default class PrivateChatService {
 
     async getUserInfo(roomId: string) {
         try {
-            const privateChat = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
-            const { user1, user2 } = privateChat;
+            const userInfos = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
 
-            return { user1, user2 };
+            return userInfos;
         } catch (err) {
             console.error(err);
             throw err;
