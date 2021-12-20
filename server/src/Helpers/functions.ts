@@ -255,6 +255,10 @@ export function generateLoginToken(userInfo: User) {
     return tokens;
 }
 
+export function checkRefreshToken(refreshToken: string) {
+    return jwt.verify(refreshToken, refreshTokenBluePrint.secretKey)['userPk'] as number;
+}
+
 // send mail function
 export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject' | 'to'>) {
     return await new Promise<boolean>((resolve, reject) => {

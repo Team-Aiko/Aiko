@@ -4,16 +4,13 @@
 import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
-import { User } from '../entity';
 
 // * UUID generator
 import { v1 } from 'uuid';
 
 // * jwt
 import * as jwt from 'jsonwebtoken';
-import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 // * others
-
 import { UserTable } from '../interfaces';
 import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
 import {
@@ -25,7 +22,15 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { checkPw, generateLoginToken, generatePwAndSalt, getRepo, propsRemover, sendMail } from 'src/Helpers/functions';
+import {
+    checkPw,
+    checkRefreshToken,
+    generateLoginToken,
+    generatePwAndSalt,
+    getRepo,
+    propsRemover,
+    sendMail,
+} from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
@@ -318,13 +323,13 @@ export default class AccountService {
     // 어세스 토큰 재 발급 (확인필요)
     async getAccessToken(refreshToken: string) {
         try {
-            const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
-            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(payload.userPk);
-            const userData = await this.getUserInfo(payload.userPk);
+            const userPK = checkRefreshToken(refreshToken);
+            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPK);
+            const userData = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
 
             if (dbToken === refreshToken && !('userEntity' in userData)) {
                 const tokens = generateLoginToken(userData);
-                await getRepo(RefreshRepository).updateRefreshToken(payload.userPk, tokens.refresh);
+                await getRepo(RefreshRepository).updateRefreshToken(userPK, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
             } else throw new AikoError('not exact refresh token', 500, 392038);
         } catch (error) {
