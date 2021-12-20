@@ -1,4 +1,4 @@
-import { IResponseData, IGetResPacket } from 'src/interfaces';
+import { IResponseData, IGetResPacket, IMailBotConfig, IMailConfig } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -13,6 +13,17 @@ import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
 // * pbdkf2-password
 import pbkdf2 from 'pbkdf2-pw';
+
+// * config
+import * as config from 'config';
+
+// * mailer
+import * as nodemailer from 'nodemailer';
+import { SendMailOptions } from 'nodemailer';
+import * as smtpPool from 'nodemailer-smtp-pool';
+const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
+const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
+const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
@@ -209,6 +220,20 @@ export async function checkPw(password: string, salt: string, serverHash: string
 
     return await new Promise<boolean>((resolve, reject) => {
         hasher({ password, salt }, (err, pw, salt, hash) => resolve(serverHash === hash));
+    });
+}
+
+// send mail function
+export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject' | 'to'>) {
+    return await new Promise<boolean>((resolve, reject) => {
+        smtpTransporter.sendMail({ ...mailOpt, from: botEmailAddress }, (err, info) => {
+            if (err) {
+                console.error(err);
+                resolve(false);
+            }
+
+            resolve(true);
+        });
     });
 }
 

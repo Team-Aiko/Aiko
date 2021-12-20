@@ -5,20 +5,16 @@ import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
 import { User } from '../entity';
-// * mailer
-import * as nodemailer from 'nodemailer';
-import { SendMailOptions } from 'nodemailer';
-import * as smtpPool from 'nodemailer-smtp-pool';
+
 // * UUID generator
 import { v1 } from 'uuid';
-// * config reader
-import * as config from 'config';
+
 // * jwt
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
 // * others
 
-import { IMailConfig, IMailBotConfig, UserTable } from '../interfaces';
+import { UserTable } from '../interfaces';
 import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
 import {
     RefreshRepository,
@@ -29,18 +25,13 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { checkPw, generatePwAndSalt, getRepo, propsRemover } from 'src/Helpers/functions';
+import { checkPw, generatePwAndSalt, getRepo, propsRemover, sendMail } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
 import DriveService from './drive.service';
-
-// * mailer
-const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
-const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
-const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 @Injectable()
 export default class AccountService {
@@ -141,19 +132,13 @@ export default class AccountService {
             flag = await getRepo(LoginAuthRepository).createNewRow(queryRunner.manager, uuid, userPK);
 
             if (flag) {
-                const mailOpt: SendMailOptions = {
-                    from: botEmailAddress,
+                const mailOpt = {
                     to: data.email,
                     subject: '[Aiko] Auth Email',
                     text: `Please link to this address: http://localhost:5000/account/login-auth?id=${uuid}`,
                 };
 
-                flag = await new Promise<boolean>((resolve, reject) => {
-                    smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                        if (err) resolve(false);
-                        else resolve(true);
-                    });
-                });
+                flag = await sendMail(mailOpt);
 
                 if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
             }
@@ -236,25 +221,12 @@ export default class AccountService {
 
             const { NICKNAME } = result;
             const mailOpt = {
-                from: botEmailAddress,
                 to: email,
                 subject: '[Aiko] We will show you your nickname!',
                 text: `Your Nickname: ${NICKNAME}`,
             };
 
-            flag = await new Promise<boolean>((resolve, reject) => {
-                smtpTransporter.sendMail(mailOpt, (err, response) => {
-                    if (err) {
-                        resolve(false);
-                        throw err;
-                    }
-
-                    console.log('Message send: ', response);
-                    resolve(true);
-                });
-            });
-
-            flag = true;
+            flag = await sendMail(mailOpt);
         } catch (err) {
             throw err;
         }
@@ -279,8 +251,7 @@ export default class AccountService {
             const result3 = await getRepo(ResetPwRepository).insertRequestLog(USER_PK, uuid);
             if (!result3) throw new Error('database insert error');
 
-            const mailOpt: SendMailOptions = {
-                from: botEmailAddress,
+            const mailOpt = {
                 to: email,
                 subject: '[Aiko] We got a request of reset password.',
                 text: `
@@ -289,15 +260,7 @@ export default class AccountService {
                     Please link to this address: http://localhost:3000/reset-password/${uuid}`,
             };
 
-            returnVal = await new Promise<boolean>((resolve, reject) => {
-                smtpTransporter.sendMail(mailOpt, (err, response) => {
-                    if (err) {
-                        resolve(false);
-                        throw err;
-                    }
-                    resolve(true);
-                });
-            });
+            returnVal = await sendMail(mailOpt);
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
