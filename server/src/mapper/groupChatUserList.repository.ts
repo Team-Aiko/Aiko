@@ -1,4 +1,4 @@
-import GroupChatUserList from 'src/entity/groupChatUserList.entity';
+import GroupChatUserList from 'src/entity/groupChatUL.entity';
 import { AikoError, propsRemover } from 'src/Helpers';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
