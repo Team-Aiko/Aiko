@@ -11,6 +11,8 @@ import { typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
+// * pbdkf2-password
+import pbkdf2 from 'pbkdf2-pw';
 
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
@@ -186,6 +188,28 @@ export function getServerTime(serverHour: number) {
     );
 
     return serverTime;
+}
+
+export async function generatePwAndSalt(password: string) {
+    const hasher = pbkdf2();
+
+    const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
+        hasher({ password }, (err, pw, salt, hash) => {
+            if (err) throw err;
+
+            resolve([hash, salt]);
+        });
+    });
+
+    return { hash, salt };
+}
+
+export async function checkPw(password: string, salt: string, serverHash: string) {
+    const hasher = pbkdf2();
+
+    return await new Promise<boolean>((resolve, reject) => {
+        hasher({ password, salt }, (err, pw, salt, hash) => resolve(serverHash === hash));
+    });
 }
 
 // 파일삭제

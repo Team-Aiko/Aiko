@@ -11,8 +11,6 @@ import { SendMailOptions } from 'nodemailer';
 import * as smtpPool from 'nodemailer-smtp-pool';
 // * UUID generator
 import { v1 } from 'uuid';
-// * pbdkf2-password
-import pbkdf2 from 'pbkdf2-pw';
 // * config reader
 import * as config from 'config';
 // * jwt
@@ -31,7 +29,7 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { getRepo, propsRemover } from 'src/Helpers/functions';
+import { checkPw, generatePwAndSalt, getRepo, propsRemover } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
@@ -43,9 +41,6 @@ import DriveService from './drive.service';
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
 const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
-
-// * pbkdf2
-const hasher = pbkdf2();
 
 @Injectable()
 export default class AccountService {
@@ -76,16 +71,9 @@ export default class AccountService {
         let salt: string;
 
         try {
-            const [a1, a2] = await new Promise<string[]>((resolve, reject) => {
-                hasher({ password: data.pw }, (err, pw, salt, hash) => {
-                    if (err) throw err;
-
-                    resolve([hash, salt]);
-                });
-            });
-
-            hash = a1;
-            salt = a2;
+            const generatePwResult = await generatePwAndSalt(data.pw);
+            hash = generatePwResult.hash;
+            salt = generatePwResult.salt;
         } catch (err) {
             throw new AikoError('hasher error', 501, 500021);
         }
@@ -207,47 +195,34 @@ export default class AccountService {
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
             let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
-            const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
-                (resolve, reject) => {
-                    try {
-                        hasher({ password: data.PASSWORD, salt: result.SALT }, async (err, pw, salt, hash) => {
-                            const flag = result.PASSWORD === hash;
+            const flag = await checkPw(data.PASSWORD, result.SALT, result.PASSWORD);
+            let bundle: BasePacket | SuccessPacket;
 
-                            if (!flag) {
-                                const bundle: BasePacket = {
-                                    header: false,
-                                };
-                                resolve(bundle);
-                            }
-                            // get grant list
-                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
-                            result.grants = grantList;
-                            // remove security informations
-                            result = propsRemover(result, 'PASSWORD', 'SALT');
-                            console.log(
-                                '🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result',
-                                result,
-                            );
-                            // make token
-                            const token = this.generateLoginToken(result);
-                            // refresh token update to database
-                            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+            if (!flag) {
+                bundle = {
+                    header: false,
+                };
+            }
 
-                            const bundle: SuccessPacket = {
-                                header: flag,
-                                userInfo: result,
-                                accessToken: token.access,
-                                refreshToken: token.refresh,
-                            };
-                            resolve(bundle);
-                        });
-                    } catch (err) {
-                        throw err;
-                    }
-                },
-            );
+            // get grant list
+            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+            result.grants = grantList;
+            // remove security informations
+            result = propsRemover(result, 'PASSWORD', 'SALT');
+            console.log('🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result', result);
+            // make token
+            const token = this.generateLoginToken(result);
+            // refresh token update to database
+            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
 
-            return packet;
+            bundle = {
+                header: flag,
+                userInfo: result,
+                accessToken: token.access,
+                refreshToken: token.refresh,
+            };
+
+            return bundle;
         } catch (err) {
             throw err;
         }
@@ -343,18 +318,10 @@ export default class AccountService {
             const result1 = await getRepo(ResetPwRepository).getRequest(uuid);
             const { USER_PK } = result1[0];
 
-            returnVal = await new Promise<boolean>((resolve, reject) => {
-                let flag = false;
+            const { hash, salt } = await generatePwAndSalt(password);
 
-                hasher({ password: password }, async (err, pw, salt, hash) => {
-                    if (err) throw err;
-
-                    flag = await getRepo(UserRepository).changePassword(USER_PK, hash, salt);
-                    if (flag) flag = await getRepo(ResetPwRepository).removeRequests(USER_PK);
-
-                    resolve(flag);
-                });
-            });
+            returnVal = await getRepo(UserRepository).changePassword(USER_PK, hash, salt);
+            if (returnVal) returnVal = await getRepo(ResetPwRepository).removeRequests(USER_PK);
 
             await queryRunner.commitTransaction();
         } catch (err) {
