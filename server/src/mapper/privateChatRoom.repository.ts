@@ -46,4 +46,19 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             throw new AikoError('PrivateChatRoomRepository/getPrivateChatRoomListForScheduler', 500, 1892894);
         }
     }
+
+    async getChatRoomInfo(roomId: string) {
+        try {
+            return await this.createQueryBuilder('pcr')
+                .leftJoinAndSelect('pcr.user1', 'user1')
+                .leftJoinAndSelect('prc.user2', 'user2')
+                .leftJoinAndSelect('user1.department', 'department1')
+                .leftJoinAndSelect('user2.department', 'department2')
+                .where(`pcr.CR_PK = '${roomId}'`)
+                .getOneOrFail();
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
 }

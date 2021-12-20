@@ -79,6 +79,18 @@ export default class PrivateChatService {
         }
     }
 
+    async getUserInfo(roomId: string) {
+        try {
+            const privateChat = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
+            const { user1, user2 } = privateChat;
+
+            return { user1, user2 };
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
     // * util functions
     async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
         try {
