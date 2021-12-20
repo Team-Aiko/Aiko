@@ -5,7 +5,7 @@ import { User } from 'src/entity';
 import { AikoError, getRepo } from 'src/Helpers';
 import { Server } from 'socket.io';
 import { CompanyRepository, GroupChatRoomRepository } from 'src/mapper';
-import GroupChatUserListRepository from 'src/mapper/groupChatUserList.entity';
+import GroupChatUserListRepository from 'src/mapper/groupChatUserList.repository';
 import { GroupChatClientInfo, GroupChatClientInfoDocument } from 'src/schemas/groupChatClientInfo.schema';
 import { getConnection } from 'typeorm';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
@@ -186,6 +186,14 @@ export default class GroupChatService {
 
             await getRepo(GroupChatStorageRepository).storeLogsForScheduler(storedLogList);
             await Promise.all(modifiedChatLogList.map(async (log) => await this.updateChatLog(log)));
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async getUserInfos(GC_PK: number, companyPK: number) {
+        try {
+            return await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
         } catch (err) {
             throw err;
         }
