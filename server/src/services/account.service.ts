@@ -8,8 +8,6 @@ import { ResultSetHeader } from 'mysql2';
 // * UUID generator
 import { v1 } from 'uuid';
 
-// * jwt
-import * as jwt from 'jsonwebtoken';
 // * others
 import { UserTable } from '../interfaces';
 import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
@@ -332,11 +330,10 @@ export default class AccountService {
                 await getRepo(RefreshRepository).updateRefreshToken(userPK, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
             } else throw new AikoError('not exact refresh token', 500, 392038);
-        } catch (error) {
-            const err = error as jwt.VerifyErrors;
+        } catch (err) {
             if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
             else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
-            else throw error;
+            else throw err;
         }
     }
 
