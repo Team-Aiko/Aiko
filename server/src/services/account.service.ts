@@ -25,7 +25,7 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { checkPw, generatePwAndSalt, getRepo, propsRemover, sendMail } from 'src/Helpers/functions';
+import { checkPw, generateLoginToken, generatePwAndSalt, getRepo, propsRemover, sendMail } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
@@ -198,7 +198,7 @@ export default class AccountService {
             result = propsRemover(result, 'PASSWORD', 'SALT');
             console.log('🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result', result);
             // make token
-            const token = this.generateLoginToken(result);
+            const token = generateLoginToken(result);
             // refresh token update to database
             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
 
@@ -315,38 +315,6 @@ export default class AccountService {
         }
     }
 
-    generateLoginToken(userInfo: User) {
-        let temporaryUserInfo = propsRemover(
-            userInfo,
-            'SALT',
-            'PASSWORD',
-            'LAST_NAME',
-            'FIRST_NAME',
-            'EMAIL',
-            'TEL',
-            'IS_DELETED',
-            'IS_VERIFIED',
-            'COUNTRY_PK',
-            'PROFILE_FILE_NAME',
-            'company',
-            'department',
-            'country',
-            'resetPws',
-            'socket',
-            'socket1',
-            'socket2',
-            'calledMembers',
-            'profile',
-        );
-        temporaryUserInfo = { ...temporaryUserInfo };
-        const userPk = temporaryUserInfo.USER_PK;
-        const tokens = {
-            access: jwt.sign(temporaryUserInfo, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
-            refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
-        };
-        return tokens;
-    }
-
     // 어세스 토큰 재 발급 (확인필요)
     async getAccessToken(refreshToken: string) {
         try {
@@ -355,7 +323,7 @@ export default class AccountService {
             const userData = await this.getUserInfo(payload.userPk);
 
             if (dbToken === refreshToken && !('userEntity' in userData)) {
-                const tokens = this.generateLoginToken(userData);
+                const tokens = generateLoginToken(userData);
                 await getRepo(RefreshRepository).updateRefreshToken(payload.userPk, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
             } else throw new AikoError('not exact refresh token', 500, 392038);
