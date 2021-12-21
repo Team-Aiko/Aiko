@@ -1,16 +1,29 @@
-import { IResponseData, IGetResPacket } from 'src/interfaces';
+import { IResponseData, IGetResPacket, IMailBotConfig, IMailConfig } from 'src/interfaces';
 import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AikoError, LinkedList } from './classes';
-import { Grant } from 'src/entity';
+import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
 import { typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
-import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
+// * pbdkf2-password
+import pbkdf2 from 'pbkdf2-pw';
+
+// * config
+import * as config from 'config';
+
+// * mailer
+import * as nodemailer from 'nodemailer';
+import { SendMailOptions } from 'nodemailer';
+import * as smtpPool from 'nodemailer-smtp-pool';
+const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
+const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
+const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
@@ -186,6 +199,78 @@ export function getServerTime(serverHour: number) {
     );
 
     return serverTime;
+}
+
+export async function generatePwAndSalt(password: string) {
+    const hasher = pbkdf2();
+
+    const [hash, salt] = await new Promise<string[]>((resolve, reject) => {
+        hasher({ password }, (err, pw, salt, hash) => {
+            if (err) throw err;
+
+            resolve([hash, salt]);
+        });
+    });
+
+    return { hash, salt };
+}
+
+export async function checkPw(password: string, salt: string, serverHash: string) {
+    const hasher = pbkdf2();
+
+    return await new Promise<boolean>((resolve, reject) => {
+        hasher({ password, salt }, (err, pw, salt, hash) => resolve(serverHash === hash));
+    });
+}
+
+export function generateLoginToken(userInfo: User) {
+    let temporaryUserInfo = propsRemover(
+        userInfo,
+        'SALT',
+        'PASSWORD',
+        'LAST_NAME',
+        'FIRST_NAME',
+        'EMAIL',
+        'TEL',
+        'IS_DELETED',
+        'IS_VERIFIED',
+        'COUNTRY_PK',
+        'PROFILE_FILE_NAME',
+        'company',
+        'department',
+        'country',
+        'resetPws',
+        'socket',
+        'socket1',
+        'socket2',
+        'calledMembers',
+        'profile',
+    );
+    temporaryUserInfo = { ...temporaryUserInfo };
+    const userPk = temporaryUserInfo.USER_PK;
+    const tokens = {
+        access: jwt.sign(temporaryUserInfo, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
+        refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
+    };
+    return tokens;
+}
+
+export function checkRefreshToken(refreshToken: string) {
+    return jwt.verify(refreshToken, refreshTokenBluePrint.secretKey)['userPk'] as number;
+}
+
+// send mail function
+export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject' | 'to'>) {
+    return await new Promise<boolean>((resolve, reject) => {
+        smtpTransporter.sendMail({ ...mailOpt, from: botEmailAddress }, (err, info) => {
+            if (err) {
+                console.error(err);
+                resolve(false);
+            }
+
+            resolve(true);
+        });
+    });
 }
 
 // 파일삭제

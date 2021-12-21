@@ -67,7 +67,9 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             if (!roomId) return;
 
             const chatlog = await this.privateChatService.getChalog(roomId);
-            this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
+            const userInfos = await this.privateChatService.getUserInfo(roomId);
+
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, { chatlog, ...userInfos });
         } catch (err) {
             this.wss
                 .to(client.id)

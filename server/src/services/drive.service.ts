@@ -88,6 +88,14 @@ export default class DriveService {
         }
     }
 
+    async createRootFolder(companyPK: number, manager: EntityManager) {
+        try {
+            return await getRepo(FileFolderRepository).createFolder(companyPK, 'root', undefined, manager);
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async deleteFiles(
         { filePKs, folderPKs }: { filePKs: number | number[]; folderPKs: number | number[] },
         userPK: number,

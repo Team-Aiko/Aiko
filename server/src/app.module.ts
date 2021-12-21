@@ -45,7 +45,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { RDBMSConfig } from './interfaces';
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
-import GroupChatUserList from './entity/groupChatUserList.entity';
+import GroupChatUserList from './entity/groupChatUL.entity';
 import ApprovalFrame from './entity/approvalFrame';
 import ApprovalStep from './entity/approvalStep';
 import { RouterModule } from '@nestjs/core';

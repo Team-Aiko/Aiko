@@ -79,6 +79,17 @@ export default class PrivateChatService {
         }
     }
 
+    async getUserInfo(roomId: string) {
+        try {
+            const userInfos = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
+
+            return userInfos;
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
     // * util functions
     async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
         try {
@@ -151,7 +162,7 @@ export default class PrivateChatService {
 
             await Promise.all(
                 chatRooms.map(async (room) => {
-                    const dto = new this.chatlogModel({ _id: room.CR_PK, roomId: room.CR_PK, messages: [] });
+                    const dto = new this.chatlogModel({ roomId: room.CR_PK, messages: [] });
                     await dto.save();
 
                     return true;

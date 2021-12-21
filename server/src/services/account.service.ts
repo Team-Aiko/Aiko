@@ -4,23 +4,12 @@
 import { Injectable } from '@nestjs/common';
 import { getConnection } from 'typeorm';
 import { ResultSetHeader } from 'mysql2';
-import { User } from '../entity';
-// * mailer
-import * as nodemailer from 'nodemailer';
-import { SendMailOptions } from 'nodemailer';
-import * as smtpPool from 'nodemailer-smtp-pool';
+
 // * UUID generator
 import { v1 } from 'uuid';
-// * pbdkf2-password
-import pbkdf2 from 'pbkdf2-pw';
-// * config reader
-import * as config from 'config';
-// * jwt
-import * as jwt from 'jsonwebtoken';
-import { accessTokenBluePrint, refreshTokenBluePrint } from '../interfaces/jwt/secretKey';
-// * others
 
-import { IMailConfig, IMailBotConfig, UserTable } from '../interfaces';
+// * others
+import { UserTable } from '../interfaces';
 import { ISignup, BasePacket, SuccessPacket, ITokenBundle } from '../interfaces/MVC/accountMVC';
 import {
     RefreshRepository,
@@ -31,21 +20,21 @@ import {
     CompanyRepository,
     GrantRepository,
 } from '../mapper';
-import { getRepo, propsRemover } from 'src/Helpers/functions';
+import {
+    checkPw,
+    checkRefreshToken,
+    generateLoginToken,
+    generatePwAndSalt,
+    getRepo,
+    propsRemover,
+    sendMail,
+} from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
 import DriveService from './drive.service';
-
-// * mailer
-const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
-const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
-const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
-
-// * pbkdf2
-const hasher = pbkdf2();
 
 @Injectable()
 export default class AccountService {
@@ -76,16 +65,9 @@ export default class AccountService {
         let salt: string;
 
         try {
-            const [a1, a2] = await new Promise<string[]>((resolve, reject) => {
-                hasher({ password: data.pw }, (err, pw, salt, hash) => {
-                    if (err) throw err;
-
-                    resolve([hash, salt]);
-                });
-            });
-
-            hash = a1;
-            salt = a2;
+            const generatePwResult = await generatePwAndSalt(data.pw);
+            hash = generatePwResult.hash;
+            salt = generatePwResult.salt;
         } catch (err) {
             throw new AikoError('hasher error', 501, 500021);
         }
@@ -130,7 +112,7 @@ export default class AccountService {
                 console.log('step4');
 
                 // * generate drive root folder
-                await this.driveService.createFolder(data.companyPK, 'root', undefined, queryRunner.manager);
+                await this.driveService.createRootFolder(data.companyPK, queryRunner.manager);
             } else if (data.position === 1) {
                 // 사원 생성 쿼리
                 const result = await getRepo(UserRepository).createUser(
@@ -153,19 +135,13 @@ export default class AccountService {
             flag = await getRepo(LoginAuthRepository).createNewRow(queryRunner.manager, uuid, userPK);
 
             if (flag) {
-                const mailOpt: SendMailOptions = {
-                    from: botEmailAddress,
+                const mailOpt = {
                     to: data.email,
                     subject: '[Aiko] Auth Email',
                     text: `Please link to this address: http://localhost:5000/account/login-auth?id=${uuid}`,
                 };
 
-                flag = await new Promise<boolean>((resolve, reject) => {
-                    smtpTransporter.sendMail(mailOpt, async (err, response) => {
-                        if (err) resolve(false);
-                        else resolve(true);
-                    });
-                });
+                flag = await sendMail(mailOpt);
 
                 if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
             }
@@ -207,47 +183,36 @@ export default class AccountService {
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
         try {
             let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
-            const packet: BasePacket | SuccessPacket = await new Promise<BasePacket | SuccessPacket>(
-                (resolve, reject) => {
-                    try {
-                        hasher({ password: data.PASSWORD, salt: result.SALT }, async (err, pw, salt, hash) => {
-                            const flag = result.PASSWORD === hash;
+            const flag = await checkPw(data.PASSWORD, result.SALT, result.PASSWORD);
+            let bundle: BasePacket | SuccessPacket;
 
-                            if (!flag) {
-                                const bundle: BasePacket = {
-                                    header: false,
-                                };
-                                resolve(bundle);
-                            }
-                            // get grant list
-                            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
-                            result.grants = grantList;
-                            // remove security informations
-                            result = propsRemover(result, 'PASSWORD', 'SALT');
-                            console.log(
-                                '🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result',
-                                result,
-                            );
-                            // make token
-                            const token = this.generateLoginToken(result);
-                            // refresh token update to database
-                            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+            if (!flag) {
+                bundle = {
+                    header: false,
+                };
 
-                            const bundle: SuccessPacket = {
-                                header: flag,
-                                userInfo: result,
-                                accessToken: token.access,
-                                refreshToken: token.refresh,
-                            };
-                            resolve(bundle);
-                        });
-                    } catch (err) {
-                        throw err;
-                    }
-                },
-            );
+                return bundle;
+            }
 
-            return packet;
+            // get grant list
+            const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
+            result.grants = grantList;
+            // remove security informations
+            result = propsRemover(result, 'PASSWORD', 'SALT');
+            console.log('🚀 ~ file: account.service.ts ~ line 234 ~ AccountService ~ hasher ~ result', result);
+            // make token
+            const token = generateLoginToken(result);
+            // refresh token update to database
+            await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
+
+            bundle = {
+                header: flag,
+                userInfo: result,
+                accessToken: token.access,
+                refreshToken: token.refresh,
+            };
+
+            return bundle;
         } catch (err) {
             throw err;
         }
@@ -261,25 +226,12 @@ export default class AccountService {
 
             const { NICKNAME } = result;
             const mailOpt = {
-                from: botEmailAddress,
                 to: email,
                 subject: '[Aiko] We will show you your nickname!',
                 text: `Your Nickname: ${NICKNAME}`,
             };
 
-            flag = await new Promise<boolean>((resolve, reject) => {
-                smtpTransporter.sendMail(mailOpt, (err, response) => {
-                    if (err) {
-                        resolve(false);
-                        throw err;
-                    }
-
-                    console.log('Message send: ', response);
-                    resolve(true);
-                });
-            });
-
-            flag = true;
+            flag = await sendMail(mailOpt);
         } catch (err) {
             throw err;
         }
@@ -304,8 +256,7 @@ export default class AccountService {
             const result3 = await getRepo(ResetPwRepository).insertRequestLog(USER_PK, uuid);
             if (!result3) throw new Error('database insert error');
 
-            const mailOpt: SendMailOptions = {
-                from: botEmailAddress,
+            const mailOpt = {
                 to: email,
                 subject: '[Aiko] We got a request of reset password.',
                 text: `
@@ -314,15 +265,7 @@ export default class AccountService {
                     Please link to this address: http://localhost:3000/reset-password/${uuid}`,
             };
 
-            returnVal = await new Promise<boolean>((resolve, reject) => {
-                smtpTransporter.sendMail(mailOpt, (err, response) => {
-                    if (err) {
-                        resolve(false);
-                        throw err;
-                    }
-                    resolve(true);
-                });
-            });
+            returnVal = await sendMail(mailOpt);
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
@@ -343,18 +286,10 @@ export default class AccountService {
             const result1 = await getRepo(ResetPwRepository).getRequest(uuid);
             const { USER_PK } = result1[0];
 
-            returnVal = await new Promise<boolean>((resolve, reject) => {
-                let flag = false;
+            const { hash, salt } = await generatePwAndSalt(password);
 
-                hasher({ password: password }, async (err, pw, salt, hash) => {
-                    if (err) throw err;
-
-                    flag = await getRepo(UserRepository).changePassword(USER_PK, hash, salt);
-                    if (flag) flag = await getRepo(ResetPwRepository).removeRequests(USER_PK);
-
-                    resolve(flag);
-                });
-            });
+            returnVal = await getRepo(UserRepository).changePassword(USER_PK, hash, salt);
+            if (returnVal) returnVal = await getRepo(ResetPwRepository).removeRequests(USER_PK);
 
             await queryRunner.commitTransaction();
         } catch (err) {
@@ -383,55 +318,22 @@ export default class AccountService {
         }
     }
 
-    generateLoginToken(userInfo: User) {
-        let temporaryUserInfo = propsRemover(
-            userInfo,
-            'SALT',
-            'PASSWORD',
-            'LAST_NAME',
-            'FIRST_NAME',
-            'EMAIL',
-            'TEL',
-            'IS_DELETED',
-            'IS_VERIFIED',
-            'COUNTRY_PK',
-            'PROFILE_FILE_NAME',
-            'company',
-            'department',
-            'country',
-            'resetPws',
-            'socket',
-            'socket1',
-            'socket2',
-            'calledMembers',
-            'profile',
-        );
-        temporaryUserInfo = { ...temporaryUserInfo };
-        const userPk = temporaryUserInfo.USER_PK;
-        const tokens = {
-            access: jwt.sign(temporaryUserInfo, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
-            refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
-        };
-        return tokens;
-    }
-
     // 어세스 토큰 재 발급 (확인필요)
     async getAccessToken(refreshToken: string) {
         try {
-            const payload = jwt.verify(refreshToken, refreshTokenBluePrint.secretKey) as jwt.JwtPayload;
-            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(payload.userPk);
-            const userData = await this.getUserInfo(payload.userPk);
+            const userPK = checkRefreshToken(refreshToken);
+            const dbToken = await getRepo(RefreshRepository).checkRefreshToken(userPK);
+            const userData = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
 
             if (dbToken === refreshToken && !('userEntity' in userData)) {
-                const tokens = this.generateLoginToken(userData);
-                await getRepo(RefreshRepository).updateRefreshToken(payload.userPk, tokens.refresh);
+                const tokens = generateLoginToken(userData);
+                await getRepo(RefreshRepository).updateRefreshToken(userPK, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
             } else throw new AikoError('not exact refresh token', 500, 392038);
-        } catch (error) {
-            const err = error as jwt.VerifyErrors;
+        } catch (err) {
             if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
             else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
-            else throw error;
+            else throw err;
         }
     }
 
