@@ -76,11 +76,11 @@ export default function ChatModal(props) {
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
     const [status, setStatus] = useState(undefined);
-    const [chatMember, setChatMember] = useState(null);
     const [selectedMember, setSelectedMember] = useState('');
     const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
     const [messages, setMessages] = useState([]);
+    const [chatMember, setChatMember] = useState([]);
 
     useEffect(() => {
         if (open) {
@@ -122,7 +122,14 @@ export default function ChatModal(props) {
             });
             status.on('client/private-chat/receive-chatlog', (payload) => {
                 console.log('client/private-chat/receive-chatlog - payload : ', payload);
-                setMessages(payload.messages);
+                setMessages(payload.chatlog ? payload.chatlog.messages : []);
+
+                const keys = Object.keys(payload);
+                keys.shift();
+                const chatMember = keys.map((key) => {
+                    return payload[key];
+                });
+                setChatMember(chatMember);
             });
         } else {
             status && status.emit('handleDisconnect');
@@ -223,8 +230,15 @@ export default function ChatModal(props) {
                 <div className={styles['message-container']}>
                     <Toolbar classes={{ root: classes.toolbar }}>
                         <div className={styles['member-info']}>
-                            <div className={styles['profile-image']}></div>
-                            <Typography className={classes.title}>Member name</Typography>
+                            <Avatar
+                                src={
+                                    selectedMember.USER_PROFILE_PK
+                                        ? `/api/store/download-profile-file?fileId=${selectedMember.USER_PROFILE_PK}`
+                                        : null
+                                }
+                                style={{ width: '40px', height: '40px', marginRight: '4px' }}
+                            />
+                            <Typography className={classes.title}>{selectedMember.NICKNAME}</Typography>
                         </div>
                         <IconButton className={classes.closeButton} onClick={onClose}>
                             <CloseIcon className={classes.closeIcon} />
@@ -233,53 +247,64 @@ export default function ChatModal(props) {
                     {selectedMember ? (
                         <>
                             <div className={styles['messages-wrapper']}>
-                                {messages.map((message, index) => {
-                                    return (
-                                        <div key={message.date} className={styles['message-item']}>
-                                            {index === 0 ||
-                                            (index > 0 &&
-                                                moment.unix(messages[index - 1].date).format('YYYY-MM-DD') !==
-                                                    moment.unix(messages[index].date).format('YYYY-MM-DD')) ? (
-                                                <Typography variant='body2' align='center' color='primary'>
-                                                    {moment.unix(message.date).format('LL')}
-                                                </Typography>
-                                            ) : null}
-                                            <div
-                                                className={
-                                                    message.sender !== userInfo.USER_PK
-                                                        ? styles['message-wrapper']
-                                                        : styles['message-wrapper-right']
-                                                }
-                                            >
-                                                {message.sender !== userInfo.USER_PK ? (
-                                                    <Typography variant='body2'>{message.sender}</Typography>
+                                {messages &&
+                                    messages.map((message, index) => {
+                                        return (
+                                            <div key={message.date} className={styles['message-item']}>
+                                                {index === 0 ||
+                                                (index > 0 &&
+                                                    moment.unix(messages[index - 1].date).format('YYYY-MM-DD') !==
+                                                        moment.unix(messages[index].date).format('YYYY-MM-DD')) ? (
+                                                    <Typography
+                                                        variant='body2'
+                                                        align='center'
+                                                        color='primary'
+                                                        style={{ margin: '40px 0 0' }}
+                                                    >
+                                                        {moment.unix(message.date).format('LL')}
+                                                    </Typography>
                                                 ) : null}
                                                 <div
                                                     className={
                                                         message.sender !== userInfo.USER_PK
-                                                            ? styles.contents
-                                                            : styles['contents-right']
+                                                            ? styles['message-wrapper']
+                                                            : styles['message-wrapper-right']
                                                     }
                                                 >
-                                                    <Typography
-                                                        variant='body2'
+                                                    {message.sender !== userInfo.USER_PK ? (
+                                                        <Typography variant='body2'>
+                                                            {chatMember.map((memberInfo) => {
+                                                                if (memberInfo.USER_PK === message.sender)
+                                                                    return memberInfo.NICKNAME;
+                                                            })}
+                                                        </Typography>
+                                                    ) : null}
+                                                    <div
                                                         className={
                                                             message.sender !== userInfo.USER_PK
-                                                                ? classes.message
-                                                                : classes['message-right']
+                                                                ? styles.contents
+                                                                : styles['contents-right']
                                                         }
-                                                        display='inline'
                                                     >
-                                                        {message.message}
-                                                    </Typography>
-                                                    <Typography variant='caption' className={classes.time}>
-                                                        {moment.unix(message.date).format('LT')}
-                                                    </Typography>
+                                                        <Typography
+                                                            variant='body2'
+                                                            className={
+                                                                message.sender !== userInfo.USER_PK
+                                                                    ? classes.message
+                                                                    : classes['message-right']
+                                                            }
+                                                            display='inline'
+                                                        >
+                                                            {message.message}
+                                                        </Typography>
+                                                        <Typography variant='caption' className={classes.time}>
+                                                            {moment.unix(message.date).format('LT')}
+                                                        </Typography>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
                             </div>
                             <div className={styles['input-message-wrapper']}>
                                 <TextField
