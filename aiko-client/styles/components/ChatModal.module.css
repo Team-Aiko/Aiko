@@ -29,20 +29,26 @@
     overflow: auto;
 }
 
+.message-item {
+    display: flex;
+    flex-direction: column;
+}
+
 .message-wrapper {
-    width: 70%;
+    align-self: flex-start;
     display: flex;
     flex-direction: column;
     margin-top: 10px;
+    max-width: 70%;
 }
 
 .message-wrapper-right {
-    width: 70%;
+    align-self: flex-end;
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
-    align-self: flex-end;
+    margin-top: 10px;
     align-items: flex-end;
+    max-width: 70%;
 }
 
 .input-message-wrapper {
@@ -64,4 +70,15 @@
     border-radius: 50%;
     background-color: #ededed;
     box-shadow: 0 0 6px #a5a4a4;
+}
+
+.contents {
+    display: flex;
+    align-items: flex-end;
+}
+
+.contents-right {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row-reverse;
 }
