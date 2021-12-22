@@ -1,9 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { getConnection } from 'typeorm';
 import { ResetPw } from '../entity';
-import { User } from '../entity';
-import { UserRepository } from '.';
-import { InjectRepository } from '@nestjs/typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
 @EntityRepository(ResetPw)

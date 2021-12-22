@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, getConnection, InsertResult, Repository, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, Repository } from 'typeorm';
 import { PrivateChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';
@@ -8,77 +8,33 @@ const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIF
 
 @EntityRepository(PrivateChatRoom)
 export default class PrivateChatRoomRepository extends Repository<PrivateChatRoom> {
-    async makePrivateChatRoomList(
-        manager: EntityManager,
-        userId: number,
-        userList: User[],
-        companyPK: number,
-    ): Promise<boolean> {
-        console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 13 ~ OTOChatRoomRepository ~ userList', userList);
-        let flag = false;
-
+    async makePrivateChatRoomList(manager: EntityManager, userId: number, userList: User[], companyPK: number) {
         try {
-            const result = await Promise.all(
-                userList.map(async (another) => {
-                    let flag2 = false;
-
-                    try {
-                        const id = another.USER_PK;
-                        const cnt = await this.createQueryBuilder('o')
-                            .where('o.COMPANY_PK = COMPANY_PK', { COMPANY_PK: companyPK })
-                            .where('o.USER_1 = :USER_1', { USER_1: id })
-                            .orWhere('o.USER_2 = :USER_2', { USER_2: id })
-                            .getCount();
-
-                        if (cnt > 0) return true;
-
-                        await manager.insert(PrivateChatRoom, {
-                            CR_PK: v1(),
-                            USER_1: userId,
-                            USER_2: id,
-                            COMPANY_PK: companyPK,
-                        });
-
-                        flag2 = true;
-                    } catch (err) {
-                        throw new AikoError('otoChat/makeOneToOneChatRooms', 500, 500360);
-                    }
-
-                    return flag2;
-                }),
-            );
-            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 45 ~ PrivateChatRoomRepository ~ result', result);
-
-            flag = result.reduce((prev, curr) => prev && curr, true);
-            console.log('🚀 ~ file: otoChatRoom.repository.ts ~ line 48 ~ PrivateChatRoomRepository ~ flag', flag);
+            const DTOs = userList
+                .filter((user) => user.USER_PK !== userId)
+                .map((item) => ({
+                    CR_PK: v1(),
+                    USER_1: userId,
+                    USER_2: item.USER_PK,
+                    COMPANY_PK: companyPK,
+                }));
+            const insertedResult = (await manager.insert(PrivateChatRoom, DTOs)).identifiers as { CR_PK: string }[];
+            return insertedResult.map((key) => key.CR_PK);
         } catch (err) {
-            throw err;
+            console.log(err);
+            throw new AikoError('PrivateChatRoomRepository/makePrivateChatRoomList', 500, 500360);
         }
-
-        return flag;
     }
 
     async getPrivateChatRoomList(userId: number, companyPK: number) {
-        let list: PrivateChatRoom[] = [];
-
         try {
-            list = await this.createQueryBuilder('o')
-                .where('o.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
-                .leftJoinAndSelect('o.user1', 'user1')
-                .leftJoinAndSelect('o.user2', 'user2')
-                .where('o.USER_1 = :USER1', { USER1: userId })
-                .orWhere('o.USER_2 = :USER2', { USER2: userId })
-                .getMany();
+            const oddCase = await this.find({ USER_1: userId, COMPANY_PK: companyPK });
+            const evenCase = await this.find({ USER_2: userId, COMPANY_PK: companyPK });
 
-            return list.map((room) => {
-                room.user1 = propsRemover(room.user1, ...criticalInfos);
-                room.user2 = propsRemover(room.user2, ...criticalInfos);
-
-                return room;
-            });
+            return { oddCase, evenCase };
         } catch (err) {
             console.error(err);
-            throw new AikoError('otoChat/getOneToOneChatRoomList', 500, 500360);
+            throw new AikoError('PrivateChatRoomRepository/getOneToOneChatRoomList', 500, 500360);
         }
     }
 
@@ -88,6 +44,27 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
         } catch (err) {
             console.error(err);
             throw new AikoError('PrivateChatRoomRepository/getPrivateChatRoomListForScheduler', 500, 1892894);
+        }
+    }
+
+    async getChatRoomInfo(roomId: string) {
+        try {
+            const roomInfo = await this.createQueryBuilder('pcr')
+                .leftJoinAndSelect('pcr.user1', 'user1')
+                .leftJoinAndSelect('pcr.user2', 'user2')
+                .leftJoinAndSelect('user1.department', 'department1')
+                .leftJoinAndSelect('user2.department', 'department2')
+                .where(`pcr.CR_PK = '${roomId}'`)
+                .getOneOrFail();
+
+            let { user1, user2 } = roomInfo;
+            user1 = propsRemover(user1, ...criticalInfos);
+            user2 = propsRemover(user2, ...criticalInfos);
+
+            return { user1, user2 };
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     }
 }

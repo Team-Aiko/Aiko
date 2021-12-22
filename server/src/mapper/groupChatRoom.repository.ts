@@ -6,6 +6,7 @@ import { EntityManager, EntityRepository, Repository, TransactionManager } from 
 @EntityRepository(GroupChatRoom)
 export default class GroupChatRoomRepository extends Repository<GroupChatRoom> {
     async createGroupChatRoom(
+        COMPANY_PK: number,
         ROOM_ADMIN: number,
         ROOM_TITLE: string,
         MAX_NUM: number,
@@ -15,7 +16,7 @@ export default class GroupChatRoomRepository extends Repository<GroupChatRoom> {
             const result = await this.createQueryBuilder()
                 .insert()
                 .into(GroupChatRoom)
-                .values({ ROOM_ADMIN, ROOM_TITLE, MAX_NUM })
+                .values({ ROOM_ADMIN, ROOM_TITLE, MAX_NUM, COMPANY_PK })
                 .execute();
 
             return (result.raw as ResultSetHeader).insertId;

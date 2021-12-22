@@ -1,21 +1,17 @@
-import GroupChatUserList from 'src/entity/groupChatUserList.entity';
-import { AikoError } from 'src/Helpers';
+import GroupChatUserList from 'src/entity/groupChatUL.entity';
+import { AikoError, propsRemover } from 'src/Helpers';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
+
+const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
 
 @EntityRepository(GroupChatUserList)
 export default class GroupChatUserListRepository extends Repository<GroupChatUserList> {
     async insertUserListInNewGroupChatRoom(
-        GC_PK: number,
-        userList: number[],
+        DTOs: { GC_PK: number; USER_PK: number }[],
         @TransactionManager() manager: EntityManager,
     ) {
         try {
-            await manager.insert(
-                GroupChatUserList,
-                userList.map((user) => {
-                    return { GC_PK, USER_PK: user };
-                }),
-            );
+            await manager.insert(GroupChatUserList, DTOs);
         } catch (err) {
             console.error(err);
             throw new AikoError('GroupChatUserListRepository/insertUserListInNewGroupChatRoom', 500, 2911855);
@@ -34,6 +30,22 @@ export default class GroupChatUserListRepository extends Repository<GroupChatUse
         } catch (err) {
             console.error(err);
             throw new AikoError('GroupChatUserListRepository/findChatRooms', 500, 2911855);
+        }
+    }
+
+    async getMembersInGroupChatRoom(GC_PK: number, COMPANY_PK: number) {
+        try {
+            const list = await this.createQueryBuilder('gcr')
+                .leftJoinAndSelect('gcr.user', 'user')
+                .leftJoinAndSelect('user.department', 'department')
+                .where('gcr.GC_PK = :GC_PK', { GC_PK })
+                .andWhere('gcr.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getMany();
+
+            return list.map((item) => propsRemover(item.user, ...criticalInfos));
+        } catch (err) {
+            console.error(err);
+            throw new AikoError('GroupChatUserListRepository/getMembersInGroupChatRoom', 500, 28192);
         }
     }
 }

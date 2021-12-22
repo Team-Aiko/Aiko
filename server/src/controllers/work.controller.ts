@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';

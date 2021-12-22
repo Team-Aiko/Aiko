@@ -1,6 +1,6 @@
 import Grant from 'src/entity/Grant.entity';
 import { AikoError } from 'src/Helpers/classes';
-import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 @EntityRepository(Grant)
 export default class GrantRepository extends Repository<Grant> {

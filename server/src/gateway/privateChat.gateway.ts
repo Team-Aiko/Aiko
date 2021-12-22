@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
-import { AikoError } from 'src/Helpers';
 import PrivateChatService from 'src/services/privateChat.service';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
 
@@ -30,12 +29,12 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
         try {
             // null data filter
             if (!accessToken) return;
+            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(client.id, accessToken);
 
-            const roomList = await this.privateChatService.connectPrivateChat(client.id, accessToken);
-
+            const roomList = oddCase.concat(evenCase);
             roomList.forEach((room) => client.join(room.CR_PK));
 
-            this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, roomList);
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, { oddCase, evenCase });
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -68,7 +67,9 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
             if (!roomId) return;
 
             const chatlog = await this.privateChatService.getChalog(roomId);
-            this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, chatlog);
+            const userInfos = await this.privateChatService.getUserInfo(roomId);
+
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_RECEIVE_CHAT_LOG, { chatlog, ...userInfos });
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -82,5 +83,16 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     @SubscribeMessage(privateChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         this.logger.log(`disconnect client: ${client.id}`);
+    }
+
+    // * for migration
+    @SubscribeMessage('server/temp/generateChatRooms')
+    async chatRoomGenerator(client: Socket, accessToken: string) {
+        try {
+            const result = await this.privateChatService.chatRoomGenerator(accessToken);
+            console.log('all created : ', result);
+        } catch (err) {
+            console.error(err);
+        }
     }
 }

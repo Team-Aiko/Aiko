@@ -1,13 +1,4 @@
-import {
-    EntityRepository,
-    getConnection,
-    InsertResult,
-    Repository,
-    getManager,
-    TransactionManager,
-    EntityManager,
-    Transaction,
-} from 'typeorm';
+import { EntityRepository, Repository, getManager } from 'typeorm';
 import { Department, User } from 'src/entity';
 import { getRepo, propsRemover } from 'src/Helpers/functions';
 import { UserRepository } from '.';

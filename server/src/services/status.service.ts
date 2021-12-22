@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Socket, Server } from 'socket.io';
-import { AikoError, getRepo } from 'src/Helpers';
+import { Server } from 'socket.io';
+import { AikoError } from 'src/Helpers';
 import { tokenParser } from 'src/Helpers/functions';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
-import { UserRepository } from 'src/mapper';
 import { Status, StatusDocument } from 'src/schemas/status.schema';
 import { StatusClientStorage, StatusClientStorageDocument } from 'src/schemas/statusClientStorage.shcema';
 

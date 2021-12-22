@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { UserTable, DepartmentTable, CompanyTable } from '../DBTables';
 import { User } from '../../entity';
-import { UserDTO } from 'src/DTOs';
 
 // * interfaces & Types
 

@@ -1,15 +1,6 @@
 import { FileBin, FolderBin } from 'src/entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
-import {
-    EntityRepository,
-    getConnection,
-    InsertResult,
-    Repository,
-    getManager,
-    TransactionManager,
-    EntityManager,
-    Transaction,
-} from 'typeorm';
+import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 import FileFolderRepository from './fileFolder.repository';
 
 @EntityRepository(FolderBin)

@@ -1,6 +1,5 @@
-import { User } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
-import { EntityManager, EntityRepository, InsertResult, Repository, Transaction, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
 import Company from '../entity/company.entity';
 
 @EntityRepository(Company)

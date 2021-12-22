@@ -1,5 +1,5 @@
 import { AikoError } from 'src/Helpers/classes';
-import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 import { LoginAuth } from '../entity';
 

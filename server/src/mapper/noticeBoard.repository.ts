@@ -1,4 +1,4 @@
-import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { NoticeBoard } from '../entity';
 import { unixTimeStamp, propsRemover } from 'src/Helpers/functions';
 @EntityRepository(NoticeBoard)

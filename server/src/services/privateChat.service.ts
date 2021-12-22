@@ -7,7 +7,8 @@ import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
 import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
-import { EntityManager, TransactionManager } from 'typeorm';
+import { EntityManager, getConnection, TransactionManager } from 'typeorm';
+import { PrivateChatRoom } from 'src/entity';
 
 @Injectable()
 export default class PrivateChatService {
@@ -20,16 +21,24 @@ export default class PrivateChatService {
     ): Promise<boolean> {
         try {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
-            await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
+            const roomList = await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(
+                manager,
+                userPK,
+                userList,
+                companyPK,
+            );
 
             await Promise.all(
-                roomList.map(async (room) => {
-                    const dto = new PrivateChatlog();
-                    dto.roomId = room.CR_PK;
-                    dto.messages = [];
-                    await this.chatlogModel.create(dto);
+                roomList.map(async (id) => {
+                    const item = new PrivateChatlog();
+                    item.roomId = id;
+                    item.messages = [];
+                    console.log(
+                        '🚀 ~ file: privateChat.service.ts ~ line 36 ~ PrivateChatService ~ roomList.map ~ item',
+                        item,
+                    );
+                    const dto = new this.chatlogModel({ roomId: id, messages: [] });
+                    await dto.save();
 
                     return true;
                 }),
@@ -37,7 +46,7 @@ export default class PrivateChatService {
 
             return true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw new AikoError('PrivateChatService/makePrivateChatRoomList', 500, 129828);
         }
     }
 
@@ -64,6 +73,17 @@ export default class PrivateChatService {
     async getChalog(roomId: string) {
         try {
             return (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+
+    async getUserInfo(roomId: string) {
+        try {
+            const userInfos = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
+
+            return userInfos;
         } catch (err) {
             console.error(err);
             throw err;
@@ -127,6 +147,30 @@ export default class PrivateChatService {
             );
         } catch (err) {
             console.error(err);
+            throw err;
+        }
+    }
+
+    // * temp method for migration
+    async chatRoomGenerator(accessToken: string) {
+        try {
+            const { COMPANY_PK } = tokenParser(accessToken);
+            const chatRooms = await getConnection()
+                .createQueryBuilder(PrivateChatRoom, 'c')
+                .where('c.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getMany();
+
+            await Promise.all(
+                chatRooms.map(async (room) => {
+                    const dto = new this.chatlogModel({ roomId: room.CR_PK, messages: [] });
+                    await dto.save();
+
+                    return true;
+                }),
+            );
+
+            return true;
+        } catch (err) {
             throw err;
         }
     }

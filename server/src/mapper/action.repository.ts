@@ -1,15 +1,7 @@
 import Action from 'src/entity/action.entity';
 import { AikoError, Pagination, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
-import {
-    Brackets,
-    EntityManager,
-    EntityRepository,
-    InsertResult,
-    Repository,
-    Transaction,
-    TransactionManager,
-} from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { Company, Department } from 'src/entity';

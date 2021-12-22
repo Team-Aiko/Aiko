@@ -6,13 +6,11 @@ import {
     InsertResult,
     Repository,
     TransactionManager,
-    Transaction,
     Brackets,
     SelectQueryBuilder,
 } from 'typeorm';
-import { Department, User, Company, Grant } from '../entity';
+import { User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
-import { createQueryBuilder } from 'typeorm';
 import { AikoError } from 'src/Helpers/classes';
 
 const criticalUserInfo: string[] = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];

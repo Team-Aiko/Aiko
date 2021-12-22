@@ -169,7 +169,7 @@ const MemberInfo = () => {
                         </Tabs>
                     </Paper>
 
-                    {value == 0 ? <ActionItems /> : <></>}
+                    {value == 0 ? <ActionItems nickname={nickname}/> : <></>}
                     {value == 1 ? <MyMeetingSchedule nickname={nickname} /> : <></>}
                     {value == 2 ? <div>PAGE NUMBER 3</div> : <></>}
                 </div>
