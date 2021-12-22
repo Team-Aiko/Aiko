@@ -164,7 +164,7 @@ const ActionItems = ({nickname}) => {
 
     return (
         <>
-            {addActionItemModal ? <AddActionItem setAddActionItemModal={setAddActionItemModal} /> : <></>}
+            {addActionItemModal ? <AddActionItem setAddActionItemModal={setAddActionItemModal} nickname={nickname} /> : <></>}
 
             {actionItemDetailModal ? (
                 <ActionItemDetail
