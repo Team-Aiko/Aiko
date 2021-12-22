@@ -51,7 +51,7 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
         try {
             const roomInfo = await this.createQueryBuilder('pcr')
                 .leftJoinAndSelect('pcr.user1', 'user1')
-                .leftJoinAndSelect('prc.user2', 'user2')
+                .leftJoinAndSelect('pcr.user2', 'user2')
                 .leftJoinAndSelect('user1.department', 'department1')
                 .leftJoinAndSelect('user2.department', 'department2')
                 .where(`pcr.CR_PK = '${roomId}'`)
