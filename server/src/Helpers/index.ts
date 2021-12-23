@@ -12,6 +12,7 @@ export {
     unixTimeStamp,
     getExtensionOfFilename,
     transformToLinkedList,
+    parseCookieString,
 } from './functions';
 
 // * instances

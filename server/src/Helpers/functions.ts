@@ -273,6 +273,20 @@ export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject'
     });
 }
 
+export function parseCookieString<T extends { [idx: string]: string }>(cookie: string) {
+    const temp = cookie.split(';');
+    const cookieJson: { [idx: string]: string } = {};
+
+    temp.forEach((str) => {
+        const arr = str.split('=');
+        const key = arr[0].trim();
+        const value = arr[1].trim();
+        cookieJson[key] = value;
+    });
+
+    return cookieJson as T;
+}
+
 // 파일삭제
 export function deleteFiles(destination: string, ...uuid: string[]) {
     for (const _uuid of uuid) {

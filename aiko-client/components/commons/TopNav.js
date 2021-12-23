@@ -160,17 +160,11 @@ function PComp(props) {
         if (userInfo.USER_PK) {
             loadMemberList();
 
-            const status = io('http://localhost:5001/status');
+            const status = io('http://localhost:5001/status', { withCredentials: true });
             setStatus(status);
 
+            status.emit('handleConnection', '뭐지 도대체???');
             const uri = '/api/account/raw-token';
-            get(uri)
-                .then((response) => {
-                    status.emit('handleConnection', response.data.result);
-                })
-                .catch((err) => {
-                    console.error('handleConnection - error : ', err);
-                });
             status.on('client/status/getStatusList', (payload) => {
                 console.log('### getStatusList ### : ', payload);
                 dispatch(setMemberListStatus(payload));

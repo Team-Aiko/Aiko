@@ -12,7 +12,7 @@ import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import PrivateChatService from 'src/services/privateChat.service';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
 
-@WebSocketGateway({ cors: true, namespace: 'private-chat' })
+@WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'private-chat' })
 export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private privateChatService: PrivateChatService) {}
 
