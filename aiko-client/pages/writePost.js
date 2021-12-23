@@ -4,10 +4,9 @@ import { EditorState, convertToRaw, ContentState } from 'draft-js';
 import dynamic from 'next/dynamic';
 const Editor = dynamic(() => import('react-draft-wysiwyg').then((mod) => mod.Editor), { ssr: false });
 import styled from 'styled-components';
-import createImagePlugin from '@draft-js-plugins/image';
 import styles from '../styles/WritePost.module.css';
 import { Button } from '@material-ui/core';
-import { get, post } from '../_axios';
+import { post } from '../_axios';
 import axios from 'axios';
 import router from 'next/router';
 import draftToHtml from 'draftjs-to-html';
@@ -69,7 +68,7 @@ const writePost = () => {
     };
 
     const getCurrentUserName = async () => {
-        const res = await axios
+        await axios
             .get('/api/account/decoding-token')
             .then((res) => {
                 console.log(res);
@@ -89,7 +88,7 @@ const writePost = () => {
         const url = '/api/notice-board/write';
         const obj = {
             title: title,
-            content: editorToHtml
+            content: editorToHtml,
         };
         formData.append('obj', JSON.stringify(obj));
         formData.append('file', files[0]);
@@ -172,7 +171,7 @@ const writePost = () => {
                         />
                     </MyBlock>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', width: '50%', marginTop:'-40px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', width: '50%', marginTop: '-40px' }}>
                         {files.map((file) => (
                             <label style={{ fontSize: '10px', display: 'flex', flexDirection: 'row' }} key={file.name}>
                                 <input

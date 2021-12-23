@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styles from '../../styles/innerPost.module.css';
-import { Button, Typography } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import DeletePostModal from '../../components/DeletePostModal.js';
 import { Delete, Save, List, Edit } from '@material-ui/icons';
+import { get, post } from '../../_axios';
+import Link from 'next/link';
 
 //TEXT EDITOR imports!
 import dynamic from 'next/dynamic';
@@ -46,9 +48,25 @@ const useStyles = makeStyles((theme) => ({
     editor: {
         zIndex: '10 !important',
     },
+    postNo: {
+        color: '#3F51B5',
+        paddingTop: '20px',
+        paddingLeft: '15%',
+    },
+    margin: {
+        color: 'grey',
+    },
+    prevNext: {
+        fontSize: '12px',
+        color: '#9a9a9a',
+        cursor: 'pointer',
+    },
 }));
 
 const innerPost = () => {
+    const classes = useStyles();
+
+    //Details of Posts
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -57,11 +75,15 @@ const innerPost = () => {
     const [pkNum, setPkNum] = useState(undefined);
     const [files, setFiles] = useState([]);
     const [filePkNum, setFilePkNum] = useState('');
+
+    //삭제할 파일들 pk값 받기
     const [deletedFilePk, setDeletedFilePk] = useState([]);
+    console.log(deletedFilePk);
 
     //현재 유저 데이터 (from decoding token API)
     const [currentUserPk, setCurrentUserPk] = useState(undefined);
 
+    //Editor Content State
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
     const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
@@ -70,8 +92,6 @@ const innerPost = () => {
         setEditorState(editorState);
         console.log(stateToHTML(editorState.getCurrentContent()));
     };
-
-    const [disabled, setDisabled] = useState(true);
 
     //게시글 작성자 pkNum
     const [writerPk, setWriterPk] = useState(undefined);
@@ -82,81 +102,62 @@ const innerPost = () => {
     const router = useRouter();
     const { pk } = router.query;
 
+    //Edit Authority
+    const [disabled, setDisabled] = useState(true);
+
+    //Edit Authoirty Check
     const editCheck = () => {
         if (writerPk == currentUserPk) {
             setDisabled(!disabled);
         }
     };
 
-    useEffect(() => {
-        const getFileNames = async () => {
-            const res = await axios
-                .get(`/api/notice-board/detail?num=${pk}`)
-                .then((res) => {
-                    const fileNumber = [];
-                    for (let i = 0; i < res.data.result.files.length; i++) {
-                        fileNumber.push(res.data.result.files[i].ORIGINAL_NAME);
-                    }
-                    setFiles([...files, fileNumber]);
-                    console.log(files);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        };
-        getFileNames();
-    }, []);
-
+    //Post Detail 불러오기 (제목, 작성자, 작성 날짜, 게시글 내용 등)
     const getDetails = async () => {
-        const res = await axios.get(`/api/notice-board/detail?num=${pk}`).then((res) => {
+        await get(`/api/notice-board/detail?num=${pk}`).then((res) => {
             console.log(res);
-            setInnerPosts(res.data.result);
-            setTitle(res.data.result.TITLE);
-            setContent(res.data.result.CONTENT);
-            setName(res.data.result.USER_NAME);
-            setDate(res.data.result.CREATE_DATE);
-            setPkNum(res.data.result.NOTICE_BOARD_PK);
-            setWriterPk(res.data.result.USER_PK);
+            setInnerPosts([...innerPosts, res]);
+            setTitle(res.TITLE);
+            setContent(res.CONTENT);
+            setName(res.USER_NAME);
+            setDate(res.CREATE_DATE);
+            setPkNum(res.NOTICE_BOARD_PK);
+            setWriterPk(res.USER_PK);
+            setFiles(res.files);
         });
     };
 
     useEffect(() => {
         getDetails();
-    }, []);
+    }, [pk]);
+
+    const [nextPage, setNextPage] = useState('');
+    const [previousPage, setPreviousPage] = useState('');
+    //Post, Previous Post Title
+    const getNextPage = async () => {
+        const next = Number(pk) + 1;
+        await get(`/api/notice-board/detail?num=${next}`).then((res) => {
+            setNextPage(res.TITLE);
+        });
+    };
+
+    const getPreviousPage = async () => {
+        const previous = Number(pk) - 1;
+        await get(`/api/notice-board/detail?num=${previous}`).then((res) => {
+            setPreviousPage(res.TITLE);
+        });
+    };
 
     useEffect(() => {
-        const getSpecifics = async () => {
-            const res = await axios.get(`/api/notice-board/detail?num=${pk}`).then((res) => {
-                if (res.data.result.files.length == 0) {
-                    setFilePkNum(0);
-                }
-                if (res.data.result.files.length > 0) {
-                    setFilePkNum(res.data.result.files[0].NBF_PK);
-                }
-            });
-        };
-        getSpecifics();
-    }, []);
+        getNextPage();
+        getPreviousPage();
+    }, [pk]);
 
     const handleTitle = (e) => {
         setTitle(e.target.value);
     };
 
-    const deleteFile1 = () => {
-        setDeletedFilePk([...deletedFilePk, filePkNum]);
-        console.log(deletedFilePk);
-    };
-
-    const deleteFile2 = () => {
-        setDeletedFilePk([...deletedFilePk, filePkNum+1]);
-        console.log(deletedFilePk);
-    };
-
-    const deleteFile3 = () => {
-        setDeletedFilePk([...deletedFilePk, filePkNum+2]);
-        console.log(deletedFilePk);
-    };
-
+    //게시글 수정
     const updateArticle = () => {
         const formData = new FormData();
         const url = '/api/notice-board/update-article';
@@ -164,7 +165,7 @@ const innerPost = () => {
             num: pkNum,
             title: title,
             content: editorToHtml,
-            delFilePks: [filePkNum],
+            delFilePks: deletedFilePk,
         };
         formData.append('obj', JSON.stringify(obj));
         formData.append('file', files[0]);
@@ -187,6 +188,7 @@ const innerPost = () => {
             });
     };
 
+    //게시글 삭제
     const deleteArticle = () => {
         const url = '/api/notice-board/delete-article';
         const data = {
@@ -209,8 +211,7 @@ const innerPost = () => {
             });
     };
 
-    const classes = useStyles();
-
+    //현재 접속중인 유저 정보 (글 작성자 자동 기입)
     const getCurrentUserInfo = async () => {
         const res = await axios
             .get('/api/account/decoding-token')
@@ -228,6 +229,7 @@ const innerPost = () => {
         getCurrentUserInfo();
     }, []);
 
+    //UnixTimeStamp 변경
     function getUnixTime(t) {
         const date = new Date(t * 1000);
         const year = date.getFullYear();
@@ -240,7 +242,6 @@ const innerPost = () => {
     }
 
     //rendering editor states
-
     const htmlToEditor = content;
 
     useEffect(() => {
@@ -253,9 +254,12 @@ const innerPost = () => {
         }
     }, [content]);
 
+    const goNext = Number(pk) + 1;
+    const goPrev = Number(pk) - 1;
+
     return (
         <>
-            <h2 style={{ color: '#3F51B5', paddingTop: '20px', paddingLeft: '15%' }}>Post no.{pkNum}</h2>
+            <h2 className={classes.postNo}>Post no.{pkNum}</h2>
 
             <hr className={styles.writeHr} />
 
@@ -303,124 +307,28 @@ const innerPost = () => {
                     />
                 </MyBlock>
 
-                {files.map((file) => {
-                    if (file.length == 0) {
-                        return (
-                            <div className={styles.fileInput}>
-                                <h5 style={{ color: '#3F51B5' }}>THERE IS NO FILE.</h5>
-                            </div>
-                        );
-                    }
-                    if (file.length == 1) {
-                        return (
-                            <div className={styles.fileInput}>
-                                <div>
-                                    <a
-                                        href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`}
-                                        className={styles.files}
-                                    >
-                                        {file[0]}
-                                    </a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile1}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                            </div>
-                        );
-                    }
-                    if (file.length == 2) {
-                        return (
-                            <div className={styles.fileInput}>
-                                <div>
-                                    <a
-                                        href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`}
-                                        className={styles.files}
-                                    >
-                                        {file[0]}
-                                    </a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile1}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                                <div>
-                                    <a
-                                        href={`/api/store/download-noticeboard-file?fileId=${filePkNum + 1}`}
-                                        className={styles.files}
-                                    >
-                                        {file[1]}
-                                    </a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile2}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                            </div>
-                        );
-                    }
-                    if (file.length == 3) {
-                        return (
-                            <div className={styles.fileInput}>
-                                <div>
-                                    <a
-                                        href={`/api/store/download-noticeboard-file?fileId=${filePkNum}`}
-                                        className={styles.files}
-                                    >
-                                        {file[0]}
-                                    </a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile1}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                                <div>
-                                    <a
-                                        href={`/api/store/download-noticeboard-file?fileId=${filePkNum + 1}`}
-                                        className={styles.files}
-                                    >
-                                        {file[1]}
-                                    </a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile2}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                                <div>
-                                    <a href={`/api/store/download-noticeboard-file?fileId=${filePkNum + 2}`}></a>
-                                    <Button
-                                        size='small'
-                                        onClick={deleteFile3}
-                                        className={classes.margin}
-                                        style={{ color: 'grey' }}
-                                    >
-                                        삭제
-                                    </Button>
-                                </div>
-                            </div>
-                        );
-                    }
-                })}
+                {files.map((file, key) => (
+                    <div className={styles.fileInput} key={file.NBF_PK}>
+                        <div>
+                            <a
+                                href={`/api/store/download-noticeboard-file?fileId=${file.NBF_PK}`}
+                                className={styles.files}
+                            >
+                                {file.ORIGINAL_NAME}
+                            </a>
+                            <Button
+                                size='small'
+                                className={classes.margin}
+                                style={{ color: 'grey' }}
+                                onClick={() => {
+                                    setDeletedFilePk([...deletedFilePk, file.NBF_PK]);
+                                }}
+                            >
+                                삭제
+                            </Button>
+                        </div>
+                    </div>
+                ))}
 
                 <div className={styles.reviseDelete}>
                     <div>
@@ -489,35 +397,29 @@ const innerPost = () => {
                     </div>
                 </div>
 
-                {openModal == true ? <DeletePostModal deleteArticle={deleteArticle} setOpenModal={setOpenModal}/> : <></>}
+                {openModal == true ? (
+                    <DeletePostModal deleteArticle={deleteArticle} setOpenModal={setOpenModal} />
+                ) : (
+                    <></>
+                )}
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
-                    <div className={styles.previousPost}>
-                        <Button size='small' className={classes.margin} style={{ width: '20%' }}>
-                            이전 글 보기
-                        </Button>
-                        <p
-                            style={{ fontSize: '12px', color: '#9a9a9a', cursor: 'pointer' }}
-                            onClick={function () {
-                                alert('아직 기능 구현 중입니다.');
-                            }}
-                        >
-                            기능 구현 필요
-                        </p>
-                    </div>
+                    <Link href={`/innerPost/${encodeURIComponent(goPrev)}`}>
+                        <div className={styles.previousPost}>
+                            <Button size='small' style={{ width: '20%' }}>
+                                이전 글 보기
+                            </Button>
+                            <p className={classes.prevNext}>{nextPage}</p>
+                        </div>
+                    </Link>
 
                     <div className={styles.nextPost}>
-                        <Button size='small' className={classes.margin} style={{ width: '20%' }}>
+                        <Button size='small' style={{ width: '20%' }}>
                             다음 글 보기
                         </Button>
-                        <p
-                            style={{ fontSize: '12px', color: '#9a9a9a', cursor: 'pointer' }}
-                            onClick={function () {
-                                alert('아직 기능 구현 중입니다.');
-                            }}
-                        >
-                            기능 구현 필요
-                        </p>
+                        <Link href={`/innerPost/${encodeURIComponent(goNext)}`}>
+                            <p className={classes.prevNext}>{previousPage}</p>
+                        </Link>
                     </div>
                 </div>
             </div>

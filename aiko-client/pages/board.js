@@ -2,13 +2,10 @@ import * as React from 'react';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import router from 'next/router';
-import Link from 'next/link';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectRow } from '../_redux/boardReducer';
 import styles from '../styles/Board.module.css';
 import { makeStyles } from '@material-ui/core/styles';
 import Posts from '../components/Posts.js';
-import { MenuItem, ButtonGroup, InputLabel, Select, FormControl, Button } from '@material-ui/core';
+import { MenuItem, InputLabel, Select, FormControl, Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -51,6 +48,7 @@ export default function board() {
                 pageButtons.push(i);
             }
             setBtnNumbers(pageButtons);
+            console.log('loop?')
         });
     };
 
