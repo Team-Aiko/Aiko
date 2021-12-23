@@ -188,7 +188,6 @@ export default function ChatModal(props) {
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
                     <List component='nav'>
-                        {console.log('memberList : ', memberList)}
                         {memberList &&
                             memberList.map((member) => {
                                 return (
@@ -228,18 +227,24 @@ export default function ChatModal(props) {
                 </div>
 
                 <div className={styles['message-container']}>
-                    <Toolbar classes={{ root: classes.toolbar }}>
-                        <div className={styles['member-info']}>
-                            <Avatar
-                                src={
-                                    selectedMember.USER_PROFILE_PK
-                                        ? `/api/store/download-profile-file?fileId=${selectedMember.USER_PROFILE_PK}`
-                                        : null
-                                }
-                                style={{ width: '40px', height: '40px', marginRight: '4px' }}
-                            />
-                            <Typography className={classes.title}>{selectedMember.NICKNAME}</Typography>
-                        </div>
+                    <Toolbar
+                        classes={{ root: classes.toolbar }}
+                        style={{ justifyContent: selectedMember ? 'space-between' : 'flex-end' }}
+                    >
+                        {selectedMember && (
+                            <div className={styles['member-info']}>
+                                <Avatar
+                                    src={
+                                        selectedMember.USER_PROFILE_PK
+                                            ? `/api/store/download-profile-file?fileId=${selectedMember.USER_PROFILE_PK}`
+                                            : null
+                                    }
+                                    style={{ width: '40px', height: '40px', marginRight: '4px' }}
+                                />
+                                <Typography className={classes.title}>{selectedMember.NICKNAME}</Typography>
+                            </div>
+                        )}
+
                         <IconButton className={classes.closeButton} onClick={onClose}>
                             <CloseIcon className={classes.closeIcon} />
                         </IconButton>
