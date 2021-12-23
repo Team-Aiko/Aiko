@@ -160,7 +160,7 @@ function PComp(props) {
         if (userInfo.USER_PK) {
             loadMemberList();
 
-            const status = io('http://localhost:5000/status');
+            const status = io('http://localhost:5001/status');
             setStatus(status);
 
             const uri = '/api/account/raw-token';

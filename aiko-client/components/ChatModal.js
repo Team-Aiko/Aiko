@@ -84,7 +84,7 @@ export default function ChatModal(props) {
 
     useEffect(() => {
         if (open) {
-            const status = io('http://localhost:5000/private-chat');
+            const status = io('http://localhost:5001/private-chat');
             setStatus(status);
 
             const uri = '/api/account/raw-token';
