@@ -119,6 +119,7 @@ const ActionItems = ({nickname}) => {
         };
         post(url, data)
         .then((res) => {
+            console.log('^^'+res.USER_PK)
             setUserPk(res.USER_PK)
         })
     };
@@ -126,8 +127,6 @@ const ActionItems = ({nickname}) => {
     useEffect(() => {
         getUserInfo()
     },[nickname])
-
-    console.log(userPk)
 
     //생성된 액션 아이템 불러오기 API
     const getActionItems = async () => {
@@ -137,6 +136,7 @@ const ActionItems = ({nickname}) => {
             currentPage: currentPage,
             feedsPerPage: rowsPerPage,
         };
+        console.log(params)
         await get(url, { params: params }).then((res) => {
             setActionItemArray(res.items);
         });
@@ -144,7 +144,7 @@ const ActionItems = ({nickname}) => {
 
     useEffect(() => {
         getActionItems();
-    }, [rowsPerPage, currentPage]);
+    }, [userPk, rowsPerPage, currentPage]);
 
     const nullPageAlert = () => {
         if (actionItemArray.length == 0) {
