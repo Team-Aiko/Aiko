@@ -7,7 +7,7 @@ import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
-import { typeMismatchError } from './instance';
+import { invalidTokenError, typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -53,16 +53,19 @@ export function tokenParser(accessToken: string) {
         return jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
     } catch (err) {
         console.error(err);
-        throw new AikoError('invalid access token', 0, 190241);
+        throw invalidTokenError;
     }
 }
 
-export function getSocketErrorPacket<T>(path: string, err: Error, originalData: T) {
+export function getSocketErrorPacket<T>(path: string, err: AikoError, originalData: T) {
     const errorPacket: IErrorPacket<T> = {
         path,
         err,
         originalData,
+        tokenError: false,
     };
+
+    if (err.appCode === 2) errorPacket.tokenError = true;
 
     return errorPacket;
 }

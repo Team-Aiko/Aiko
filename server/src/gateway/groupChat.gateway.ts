@@ -8,10 +8,13 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
+import { SocketGuard } from 'src/guard/socket.guard';
+import { AikoError } from 'src/Helpers';
+import { getSocketErrorPacket, tokenParser, parseCookieString } from 'src/Helpers/functions';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
 
+@UseGuards(SocketGuard)
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
@@ -32,11 +35,15 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * @returns
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, accessToken: string) {
+    async handleConnection(client: Socket) {
         try {
-            if (!accessToken) return;
+            const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
 
-            const userPayload = tokenParser(accessToken);
+            if (!ACCESS_TOKEN) return;
+
+            const userPayload = tokenParser(ACCESS_TOKEN);
 
             console.log('groupChat connection clientId : ', client.id);
             // * add client info
@@ -55,7 +62,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, accessToken),
+                    getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, undefined),
                 );
         }
     }
@@ -85,22 +92,21 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     @SubscribeMessage(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM)
     async createGroupChatRoom(
         client: Socket,
-        {
-            userList,
-            roomTitle,
-            maxNum,
-            accessToken,
-        }: { userList: number[]; roomTitle: string; maxNum: number; accessToken: string },
+        { userList, roomTitle, maxNum }: { userList: number[]; roomTitle: string; maxNum: number },
     ) {
         try {
-            if (!accessToken) return;
+            const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
+
+            if (!roomTitle) return;
 
             console.log('createGroupChatRoom clientId : ', client.id);
             const { GC_PK, memberList, COMPANY_PK, USER_PK } = await this.groupChatService.createGroupChatRoom({
                 userList,
                 roomTitle,
                 maxNum,
-                accessToken,
+                accessToken: ACCESS_TOKEN,
             });
 
             memberList.forEach((member) => {
@@ -119,7 +125,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                     userList,
                     roomTitle,
                     maxNum,
-                    accessToken,
                 }),
             );
         }
@@ -129,10 +134,15 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 새로 생성된 방에 추가로 조인하는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
-    async joinGroupChatRoom(client: Socket, { GC_PK, accessToken }: { GC_PK: number; accessToken: string }) {
+    async joinGroupChatRoom(client: Socket, GC_PK: number) {
         try {
             if (!GC_PK) return;
-            const { COMPANY_PK } = tokenParser(accessToken);
+
+            const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
+
+            const { COMPANY_PK } = tokenParser(ACCESS_TOKEN);
 
             // 해당 채팅룸에 조인하는 프로세스
             client.join(`company:${COMPANY_PK}-${GC_PK}`);
@@ -143,7 +153,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM, err, { GC_PK, accessToken }),
+                    getSocketErrorPacket(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM, err, GC_PK),
                 );
         }
     }
@@ -152,14 +162,15 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 특정 그룹챗방에 메세지를 보내는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
-    async sendMessageToGroup(
-        client: Socket,
-        payload: { GC_PK: number; accessToken: string; file: number; message: string; date: number },
-    ) {
+    async sendMessageToGroup(client: Socket, payload: { GC_PK: number; file: number; message: string; date: number }) {
         try {
             if (!payload) return;
 
-            await this.groupChatService.sendMessageToGroup(payload, this.wss);
+            const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
+
+            await this.groupChatService.sendMessageToGroup({ ...payload, accessToken: ACCESS_TOKEN }, this.wss);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -174,20 +185,27 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 특정 그룹채팅방의 챗로그를 불러오는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
-    async readChatLogs(client: Socket, payload: { GC_PK: number; accessToken: string }) {
+    async readChatLogs(client: Socket, GC_PK: number) {
         try {
-            if (!payload) return;
-            const { COMPANY_PK } = tokenParser(payload.accessToken);
+            if (!GC_PK) return;
+            const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
 
-            const chatLogs = await this.groupChatService.readChatLogs(payload.GC_PK, COMPANY_PK);
-            const userInfos = await this.groupChatService.getUserInfos(payload.GC_PK, COMPANY_PK);
+            const { COMPANY_PK } = tokenParser(ACCESS_TOKEN);
+
+            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, COMPANY_PK);
+            const userInfos = await this.groupChatService.getUserInfos(GC_PK, COMPANY_PK);
             this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userInfos });
         } catch (err) {
+            if (err instanceof AikoError) {
+            } else {
+            }
             this.wss
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, payload),
+                    getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, GC_PK),
                 );
         }
     }

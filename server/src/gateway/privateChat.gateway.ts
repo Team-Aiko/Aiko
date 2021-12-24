@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import {
     OnGatewayConnection,
     OnGatewayDisconnect,
@@ -10,8 +10,10 @@ import {
 import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import PrivateChatService from 'src/services/privateChat.service';
-import { getSocketErrorPacket } from 'src/Helpers/functions';
+import { getSocketErrorPacket, parseCookieString } from 'src/Helpers/functions';
+import { SocketGuard } from 'src/guard/socket.guard';
 
+@UseGuards(SocketGuard)
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'private-chat' })
 export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private privateChatService: PrivateChatService) {}
@@ -25,11 +27,18 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     }
 
     @SubscribeMessage(privateChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, accessToken: string) {
+    async handleConnection(client: Socket) {
         try {
+            const cookies = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
+
             // null data filter
-            if (!accessToken) return;
-            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(client.id, accessToken);
+            if (!cookies) return;
+            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(
+                client.id,
+                cookies.ACCESS_TOKEN,
+            );
 
             const roomList = oddCase.concat(evenCase);
             roomList.forEach((room) => client.join(room.CR_PK));
@@ -40,7 +49,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
                 .to(client.id)
                 .emit(
                     privateChatPath.CLIENT_ERROR,
-                    getSocketErrorPacket(privateChatPath.HANDLE_CONNECTION, err, accessToken),
+                    getSocketErrorPacket(privateChatPath.HANDLE_CONNECTION, err, undefined),
                 );
         }
     }
