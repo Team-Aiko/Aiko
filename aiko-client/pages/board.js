@@ -48,7 +48,7 @@ export default function board() {
                 pageButtons.push(i);
             }
             setBtnNumbers(pageButtons);
-            console.log('loop?')
+            console.log('loop?');
         });
     };
 

@@ -66,6 +66,9 @@ const useStyles = makeStyles((theme) => ({
 const innerPost = () => {
     const classes = useStyles();
 
+    const router = useRouter();
+    const { pk } = router.query;
+
     //Details of Posts
     const [innerPosts, setInnerPosts] = useState([]);
     const [title, setTitle] = useState('');
@@ -74,7 +77,10 @@ const innerPost = () => {
     const [date, setDate] = useState('');
     const [pkNum, setPkNum] = useState(undefined);
     const [files, setFiles] = useState([]);
-    const [filePkNum, setFilePkNum] = useState('');
+
+    //페이지 이동에 필요한 변수
+    const goNext = Number(pk) + 1;
+    const goPrev = Number(pk) - 1;
 
     //삭제할 파일들 pk값 받기
     const [deletedFilePk, setDeletedFilePk] = useState([]);
@@ -98,9 +104,6 @@ const innerPost = () => {
 
     //warning modal open
     const [openModal, setOpenModal] = useState(false);
-
-    const router = useRouter();
-    const { pk } = router.query;
 
     //Edit Authority
     const [disabled, setDisabled] = useState(true);
@@ -254,9 +257,6 @@ const innerPost = () => {
         }
     }, [content]);
 
-    const goNext = Number(pk) + 1;
-    const goPrev = Number(pk) - 1;
-
     return (
         <>
             <h2 className={classes.postNo}>Post no.{pkNum}</h2>
@@ -316,16 +316,21 @@ const innerPost = () => {
                             >
                                 {file.ORIGINAL_NAME}
                             </a>
-                            <Button
+                            {
+                                writerPk == currentUserPk
+                                ? <Button
                                 size='small'
                                 className={classes.margin}
                                 style={{ color: 'grey' }}
                                 onClick={() => {
                                     setDeletedFilePk([...deletedFilePk, file.NBF_PK]);
                                 }}
-                            >
-                                삭제
-                            </Button>
+                                >
+                                    삭제
+                                </Button>
+                                : <></>
+                            }
+                            
                         </div>
                     </div>
                 ))}
@@ -404,23 +409,23 @@ const innerPost = () => {
                 )}
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
-                    <Link href={`/innerPost/${encodeURIComponent(goPrev)}`}>
+                    <Link href={ previousPage == null ? `/innerPost/${encodeURIComponent(pk)}` : `/innerPost/${encodeURIComponent(goPrev)}`}>
                         <div className={styles.previousPost}>
                             <Button size='small' style={{ width: '20%' }}>
                                 이전 글 보기
                             </Button>
-                            <p className={classes.prevNext}>{nextPage}</p>
+                            <p className={classes.prevNext}>{previousPage}</p>
                         </div>
                     </Link>
 
-                    <div className={styles.nextPost}>
-                        <Button size='small' style={{ width: '20%' }}>
-                            다음 글 보기
-                        </Button>
-                        <Link href={`/innerPost/${encodeURIComponent(goNext)}`}>
-                            <p className={classes.prevNext}>{previousPage}</p>
-                        </Link>
-                    </div>
+                    <Link href={ nextPage == null ? `/innerPost/${encodeURIComponent(pk)}` :`/innerPost/${encodeURIComponent(goNext)}`}>
+                        <div className={styles.nextPost}>
+                            <Button size='small' style={{ width: '20%' }}>
+                                다음 글 보기
+                            </Button>
+                            <p className={classes.prevNext}>{nextPage}</p>
+                        </div>
+                    </Link>
                 </div>
             </div>
         </>

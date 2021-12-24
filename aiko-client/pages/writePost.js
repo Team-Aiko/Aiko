@@ -33,6 +33,7 @@ const MyBlock = styled.div`
 `;
 
 const writePost = () => {
+
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
     const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
@@ -51,20 +52,24 @@ const writePost = () => {
     };
 
     const handleFile = (e) => {
-        setFiles([...files, e.target.files[0], e.target.files[1], e.target.files[2]]);
-        if (e.target.files[1] == null) {
-            setFiles([...files, e.target.files[0]]);
-        }
-        if (e.target.files[2] == null) {
-            setFiles([...files, e.target.files[0], e.target.files[1]]);
-        }
-        if (e.target.files[1] == null && e.target.files[2] == null) {
-            setFiles([...files, e.target.files[0]]);
-        }
+        setFiles((prev) => [...prev, ...Object.values(e.target.files)])
     };
 
-    const deleteSelectedFile = () => {
-        setFiles([]);
+    const maxFileWarning = () => {
+        if(files.length > 3) {
+            alert('3개까지 전송 가능합니다.');
+            setFiles(files.splice(0,3))
+        }
+    }
+
+    useEffect(() => {
+        maxFileWarning()
+    }, [files])
+
+    console.log(files)
+
+    const deleteSelectedFile = (name) => {
+        setFiles(files.filter(file => file.name !== name))
     };
 
     const getCurrentUserName = async () => {
@@ -133,7 +138,6 @@ const writePost = () => {
                         value={title}
                         placeholder='제목을 입력해주세요'
                         onChange={titleChange}
-                        onInvalid={'야'}
                     />
                 </div>
                 <div style={{ width: '20%' }}>
@@ -171,38 +175,33 @@ const writePost = () => {
                         />
                     </MyBlock>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', width: '50%', marginTop: '-40px' }}>
-                        {files.map((file) => (
-                            <label style={{ fontSize: '10px', display: 'flex', flexDirection: 'row' }} key={file.name}>
-                                <input
-                                    value={JSON.stringify(file.name)}
-                                    disabled
-                                    style={{
-                                        borderStyle: 'none',
-                                        color: '#3F51B5',
-                                        width: '100%',
-                                        backgroundColor: 'white',
-                                    }}
-                                />
-                            </label>
-                        ))}
-                    </div>
-                    {files.length > 0 ? (
-                        <Button size='small' style={{ width: '20%', color: '#656565' }} onClick={deleteSelectedFile}>
-                            파일 일괄 삭제
-                        </Button>
-                    ) : (
-                        <div>
-                            <h5 style={{ color: '#3F51B5' }}>파일이 존재하지 않습니다.</h5>
-                            <p style={{ fontSize: '7px', color: '#848482' }}>
-                                * 파일은 한 번에 세개까지 첨부 가능합니다.
-                            </p>
+                        {files.map((file, index) => (
+                        <div className={styles.fileContainer}>
+                            <div key={index} style={{display:'flex'}}>
+                                <p className={styles.files}>
+                                    {file.name}
+                                </p>
+                                <Button size='small' onClick={() => {deleteSelectedFile(file.name)}}style={{color:'grey'}}>
+                                삭제
+                                </Button>
+                            </div>
                         </div>
-                    )}
+                        ))}
+                    
+                    {
+                        files.length == 0
+                        ? <div>
+                        <h5 style={{ color: '#3F51B5' }}>파일이 존재하지 않습니다.</h5>
+                        <p style={{ fontSize: '7px', color: '#848482' }}>
+                            * 파일은 한 번에 세개까지 첨부 가능합니다.
+                        </p>
+                    </div>
+                        : <></>
+                    }
 
                     <div className={styles.fileSubmit}>
                         <label className={styles.fileLabel} onChange={handleFile}>
-                            <input type='file' multiple style={{ display: 'none' }} />+ Attach File
+                            <input type='file' multiple style={{ display: 'none' }}/>+ Attach File
                         </label>
                         <Button
                             variant='contained'
