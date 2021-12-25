@@ -121,7 +121,7 @@ export function transformToLinkedList<T>(list: T[]) {
     return linkedList;
 }
 
-export function bodyChecker<T>(
+export function bodyChecker<T extends { [idx: string]: any }>(
     body: T,
     sample: {
         [idx: string]:
@@ -136,27 +136,29 @@ export function bodyChecker<T>(
             | 'object[]';
     },
 ) {
-    const keys = Object.keys(body);
+    const requiredKeys = Object.keys(sample);
 
-    const flag = keys.some((key) => {
-        const type1 = typeof body[key];
-        const type2 = sample[key];
-        let isArr = false;
-
-        // undefined filter
-        if (type1 === 'undefined') return true;
+    const isInvalidDataType = requiredKeys.some((key) => {
+        const requiredType = sample[key];
+        const bodyDataType = typeof body[key];
 
         // array filter
-        if (type2.slice(-2) === '[]') isArr = Array.isArray(body[key]);
-        if (isArr) {
-            if (body[key].length > 0 && typeof body[key][0] !== type2.slice(0, -2)) return true;
-        } else {
-            return type1 !== type2;
+        if (requiredType.slice(-2) === '[]') {
+            const bodyData = body[key];
+            const isArray = Array.isArray(bodyData);
+
+            if (isArray) {
+                if (bodyData.length <= 0) return false;
+                else return requiredType.slice(0, -2) !== typeof bodyData[0];
+            } else return true;
         }
+
+        // other data types
+        if (requiredType !== bodyDataType) return true;
     });
 
-    if (flag) throw typeMismatchError;
-    return true;
+    if (isInvalidDataType) throw typeMismatchError;
+    else return true;
 }
 
 export function getExtensionOfFilename(filename: string) {
