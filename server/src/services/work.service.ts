@@ -2,10 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin, Pagination } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
+
+enum workServiceError {
+    createActionItem = 1,
+    deleteActionItem = 2,
+    updateActionItem = 3,
+    viewItems = 4,
+}
 
 @Injectable()
 export default class WorkService {
@@ -24,7 +33,12 @@ export default class WorkService {
 
             return (result.raw as ResultSetHeader).insertId;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/createActionItem',
+                500,
+                headErrorCode.work + workServiceError.createActionItem,
+            );
         }
     }
 
@@ -40,7 +54,12 @@ export default class WorkService {
 
             flag = await getRepo(ActionRepository).deleteActionItem(ACTION_PK);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/deleteActionItem',
+                500,
+                headErrorCode.work + workServiceError.deleteActionItem,
+            );
         }
 
         return flag;
@@ -77,7 +96,12 @@ export default class WorkService {
             // update item
             flag = await getRepo(ActionRepository).updateItem(item);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/updateActionItem',
+                500,
+                headErrorCode.work + workServiceError.updateActionItem,
+            );
         }
 
         return flag;
@@ -91,7 +115,7 @@ export default class WorkService {
 
             return result;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(err, 'WorkService/viewItems', 500, headErrorCode.work + workServiceError.viewItems);
         }
     }
 }

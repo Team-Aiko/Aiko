@@ -3,10 +3,31 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Server } from 'socket.io';
 import { AikoError } from 'src/Helpers';
-import { tokenParser } from 'src/Helpers/functions';
+import { stackAikoError, tokenParser } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import { Status, StatusDocument } from 'src/schemas/status.schema';
 import { StatusClientStorage, StatusClientStorageDocument } from 'src/schemas/statusClientStorage.shcema';
+
+enum statusServiceError {
+    generateUserStatus = 1,
+    statusConnection = 2,
+    statusDisconnect = 3,
+    logoutEvent = 4,
+    getStatusList = 5,
+    changeStatus = 6,
+    getUserInfoStatus = 7,
+    setUserStatus = 8,
+    updateStatus = 9,
+    getUserStatus = 10,
+    getUserStatusWithSocketId = 11,
+    deleteUserStatus = 12,
+    insertClientInfo = 13,
+    selectClientInfos = 14,
+    getClientInfo = 15,
+    allDeleteClientInfo = 16,
+    deleteOneClientInfo = 17,
+}
 
 @Injectable()
 export default class StatusService {
@@ -24,8 +45,12 @@ export default class StatusService {
             status.status = -1;
             await this.setUserStatus(status);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/generateUserStatus', 100, 193948);
+            throw stackAikoError(
+                err,
+                'StatusService/generateUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.generateUserStatus,
+            );
         }
     }
 
@@ -55,8 +80,12 @@ export default class StatusService {
 
             return { isSendable, user: statusDTO, myClients };
         } catch (err) {
-            if (err instanceof AikoError) throw err;
-            else throw new AikoError('socketService/statusConnection', 100, 1);
+            throw stackAikoError(
+                err,
+                'StatusService/statusConnection',
+                500,
+                headErrorCode.status + statusServiceError.statusConnection,
+            );
         }
     }
 
@@ -115,7 +144,12 @@ export default class StatusService {
                 await this.deleteOneClientInfo(clientId);
             }
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'StatusService/statusDisconnect',
+                500,
+                headErrorCode.status + statusServiceError.statusDisconnect,
+            );
         }
     }
 
@@ -125,7 +159,12 @@ export default class StatusService {
             await this.allDeleteClientInfo(userPK);
             await this.insertClientInfo(userPK, companyPK, id);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'StatusService/logoutEvent',
+                500,
+                headErrorCode.status + statusServiceError.logoutEvent,
+            );
         }
     }
 
@@ -134,8 +173,12 @@ export default class StatusService {
             const { companyPK } = await this.getUserInfoStatus(userPK);
             return (await this.statusModel.find({ companyPK }).exec()) as Status[];
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'StatusService/getStatusList',
+                500,
+                headErrorCode.status + statusServiceError.getStatusList,
+            );
         }
     }
 
@@ -149,8 +192,13 @@ export default class StatusService {
 
             return userStatus;
         } catch (err) {
-            console.error(err);
-            if (err instanceof AikoError) throw err;
+            if (err instanceof AikoError)
+                throw stackAikoError(
+                    err,
+                    'StatusService/changeStatus',
+                    500,
+                    headErrorCode.status + statusServiceError.changeStatus,
+                );
         }
     }
 
@@ -159,8 +207,12 @@ export default class StatusService {
             const userStatus = await this.getUserStatus(userPK);
             return userStatus;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getUserInfoStatus', 0, 4);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserInfoStatus',
+                500,
+                headErrorCode.status + statusServiceError.getUserInfoStatus,
+            );
         }
     }
 
@@ -172,8 +224,12 @@ export default class StatusService {
             const dto = new this.statusModel(container);
             return await dto.save();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/setUsrCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/setUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.setUserStatus,
+            );
         }
     }
 
@@ -190,8 +246,12 @@ export default class StatusService {
                 )
                 .exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socket/Service/updateStatus', 100, 2039483);
+            throw stackAikoError(
+                err,
+                'StatusService/updateStatus',
+                500,
+                headErrorCode.status + statusServiceError.updateStatus,
+            );
         }
     }
 
@@ -199,8 +259,12 @@ export default class StatusService {
         try {
             return (await this.statusModel.findOne({ userPK }).exec()) as Status;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getUsrCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.getUserStatus,
+            );
         }
     }
 
@@ -208,8 +272,12 @@ export default class StatusService {
         try {
             return (await this.statusModel.findOne({ socketId })) as Status;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getSocketCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserStatusWithSocketId',
+                500,
+                headErrorCode.status + statusServiceError.getUserStatusWithSocketId,
+            );
         }
     }
 
@@ -217,8 +285,12 @@ export default class StatusService {
         try {
             return await this.statusModel.findOneAndRemove({ userPK }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService', 100, 5028123);
+            throw stackAikoError(
+                err,
+                'StatusService/deleteUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.deleteUserStatus,
+            );
         }
     }
 
@@ -232,8 +304,12 @@ export default class StatusService {
             const dto = new this.statusClientStorageModel(pac);
             await dto.save();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('statusService/insertClientInfo', 100, 2971892);
+            throw stackAikoError(
+                err,
+                'StatusService/insertClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.insertClientInfo,
+            );
         }
     }
 
@@ -241,8 +317,12 @@ export default class StatusService {
         try {
             return (await this.statusClientStorageModel.find({ userPK })) as StatusClientStorage[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError('statusService/selectClientInfos', 100, 291829);
+            throw stackAikoError(
+                err,
+                'StatusService/selectClientInfos',
+                500,
+                headErrorCode.status + statusServiceError.selectClientInfos,
+            );
         }
     }
 
@@ -250,8 +330,12 @@ export default class StatusService {
         try {
             return (await this.statusClientStorageModel.findOne({ clientId })) as StatusClientStorage;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('statusService/getClientInfo', 100, 12939021);
+            throw stackAikoError(
+                err,
+                'StatusService/getClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.getClientInfo,
+            );
         }
     }
 
@@ -261,8 +345,12 @@ export default class StatusService {
         try {
             await this.statusClientStorageModel.deleteMany({ userPK }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('statusService/allDeleteClientInfo', 100, 12939031);
+            throw stackAikoError(
+                err,
+                'StatusService/allDeleteClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.allDeleteClientInfo,
+            );
         }
     }
 
@@ -270,8 +358,12 @@ export default class StatusService {
         try {
             await this.statusClientStorageModel.deleteOne({ clientId }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('statusService/deleteOneClientInfo', 100, 12939032);
+            throw stackAikoError(
+                err,
+                'StatusService/deleteOneClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.deleteOneClientInfo,
+            );
         }
     }
 }

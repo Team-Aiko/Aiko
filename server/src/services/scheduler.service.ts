@@ -1,9 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import DriveService from './drive.service';
 import GroupChatService from './groupChat.service';
 import PrivateChatService from './privateChat.service';
+
+enum SchedulerServiceError {
+    storePrivateChatLogsToRDB = 1,
+    deleteBinFiles = 2,
+    storeGroupChatLog = 3,
+}
 
 @Injectable()
 export default class SchedulerService {
@@ -20,8 +28,12 @@ export default class SchedulerService {
         try {
             this.privateChatService.storePrivateChatLogsToRDB(0);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('SchedulerService/storePrivateChatLogsToRDB', 500, 192945);
+            throw stackAikoError(
+                err,
+                'SchedulerService/storePrivateChatLogsToRDB',
+                500,
+                headErrorCode.scheduler + SchedulerServiceError.storePrivateChatLogsToRDB,
+            );
         }
     }
 
@@ -30,8 +42,12 @@ export default class SchedulerService {
         try {
             this.driveService.deleteBinFiles(1);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('SchedulerService/deleteBinFiles', 500, 892819);
+            throw stackAikoError(
+                err,
+                'SchedulerService/deleteBinFiles',
+                500,
+                headErrorCode.scheduler + SchedulerServiceError.deleteBinFiles,
+            );
         }
     }
 
@@ -40,8 +56,12 @@ export default class SchedulerService {
         try {
             this.groupChatService.storeGroupChatLog(2);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('SchedulerService/storeGroupChatLog', 500, 892820);
+            throw stackAikoError(
+                err,
+                'SchedulerService/storeGroupChatLog',
+                500,
+                headErrorCode.scheduler + SchedulerServiceError.storeGroupChatLog,
+            );
         }
     }
 }

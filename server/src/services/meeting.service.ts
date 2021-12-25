@@ -12,6 +12,23 @@ import MeetRepository from 'src/mapper/meet.repository';
 import { getConnection } from 'typeorm';
 import CalledMembersRepository from 'src/mapper/calledMembers.repository';
 import { UserRepository } from 'src/mapper';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum meetingServiceError {
+    makeMeetingRoom = 1,
+    deleteMeetingRoom = 2,
+    updateMeetingRoom = 3,
+    viewMeetingRoom = 4,
+    getMeetRoomList = 5,
+    makeMeeting = 6,
+    meetingSchedule = 7,
+    checkMeetSchedule = 8,
+    updateMeeting = 9,
+    deleteMeeting = 10,
+    checkMeetScheduleForUserInfo = 11,
+    finishMeeting = 12,
+}
 
 @Injectable()
 export default class MeetingService {
@@ -21,9 +38,15 @@ export default class MeetingService {
             isChiefAdmin(grants);
             return await getRepo(MeetRoomRepository).makeMeetingRoom(COMPANY_PK, IS_ONLINE, LOCATE, ROOM_NAME);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/makeMeetingRoom',
+                500,
+                headErrorCode.meet + meetingServiceError.makeMeetingRoom,
+            );
         }
     }
+
     async deleteMeetingRoom(roomId: number, grants: Grant[]) {
         try {
             // auth filter
@@ -31,7 +54,12 @@ export default class MeetingService {
 
             return await getRepo(MeetRoomRepository).deleteMeetingRoom(roomId);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/deleteMeetingRoom',
+                500,
+                headErrorCode.meet + meetingServiceError.deleteMeetingRoom,
+            );
         }
     }
 
@@ -51,7 +79,12 @@ export default class MeetingService {
 
             return await getRepo(MeetRoomRepository).updateMeetingRoom(room);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/updateMeetingRoom',
+                500,
+                headErrorCode.meet + meetingServiceError.updateMeetingRoom,
+            );
         }
     }
 
@@ -59,7 +92,12 @@ export default class MeetingService {
         try {
             return await getRepo(MeetRoomRepository).viewMeetingRoom(roomId);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/viewMeetingRoom',
+                500,
+                headErrorCode.meet + meetingServiceError.viewMeetingRoom,
+            );
         }
     }
 
@@ -67,7 +105,12 @@ export default class MeetingService {
         try {
             return await getRepo(MeetRoomRepository).getMeetRoomList(companyId);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/getMeetRoomList',
+                500,
+                headErrorCode.meet + meetingServiceError.getMeetRoomList,
+            );
         }
     }
 
@@ -106,7 +149,12 @@ export default class MeetingService {
             return { MEET_PK: insertedId, calledPKList: calledList };
         } catch (err) {
             queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/makeMeeting',
+                500,
+                headErrorCode.meet + meetingServiceError.makeMeeting,
+            );
         } finally {
             queryRunner.release();
         }
@@ -124,7 +172,12 @@ export default class MeetingService {
             const schedules = await getRepo(MeetRepository).getMeetingSchedules(ROOM_PK, pag);
             return { pagination: pag, schedules: schedules };
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/meetingSchedule',
+                500,
+                headErrorCode.meet + meetingServiceError.meetingSchedule,
+            );
         }
     }
 
@@ -141,7 +194,12 @@ export default class MeetingService {
 
             return { pag, schedules: await getRepo(CalledMembersRepository).checkMeetSchedule(USER_PK, pag) };
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/checkMeetSchedule',
+                500,
+                headErrorCode.meet + meetingServiceError.checkMeetSchedule,
+            );
         }
     }
 
@@ -222,11 +280,17 @@ export default class MeetingService {
             return { flag: true, insertedIds, newMembers, removedMembers };
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/updateMeeting',
+                500,
+                headErrorCode.meet + meetingServiceError.updateMeeting,
+            );
         } finally {
             await queryRunner.release();
         }
     }
+
     async deleteMeeting(meetPK: number, COMPANY_PK: number) {
         let flag = false;
         const queryRunner = getConnection().createQueryRunner();
@@ -247,7 +311,12 @@ export default class MeetingService {
             } else throw new AikoError('meetingService/invalidEmployee', 500, 839193);
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/deleteMeeting',
+                500,
+                headErrorCode.meet + meetingServiceError.deleteMeeting,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -267,7 +336,12 @@ export default class MeetingService {
 
             return await getRepo(CalledMembersRepository).checkMeetScheduleForUserInfo(userPK, pagination);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/checkMeetScheduleForUserInfo',
+                500,
+                headErrorCode.meet + meetingServiceError.checkMeetScheduleForUserInfo,
+            );
         }
     }
 
@@ -275,7 +349,12 @@ export default class MeetingService {
         try {
             return await getRepo(MeetRepository).finishMeeting(finishFlag, meetPK, companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'MeetingService/finishMeeting',
+                500,
+                headErrorCode.meet + meetingServiceError.finishMeeting,
+            );
         }
     }
 }

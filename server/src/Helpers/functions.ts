@@ -33,6 +33,7 @@ export const resExecutor: IGetResPacket = function (res: Response, pack: { resul
         description:
             err instanceof AikoError ? err.description : result ? success.description : unknownError.description,
         appCode: err instanceof AikoError ? err.appCode : result ? success.appCode : unknownError.appCode,
+        errorStack: err instanceof AikoError ? err.errorStack : undefined,
     };
 
     if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);

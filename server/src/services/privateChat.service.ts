@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { getServerTime, tokenParser } from 'src/Helpers/functions';
+import { getServerTime, stackAikoError, tokenParser } from 'src/Helpers/functions';
 import { AikoError, getRepo } from 'src/Helpers';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
@@ -9,6 +9,17 @@ import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
 import { EntityManager, getConnection, TransactionManager } from 'typeorm';
 import { PrivateChatRoom } from 'src/entity';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum privateChatServiceError {
+    makePrivateChatRoomList = 1,
+    connectPrivateChat = 2,
+    sendMessage = 3,
+    getChalog = 4,
+    getUserInfo = 5,
+    updateChatlog = 6,
+    storePrivateChatLogsToRDB = 7,
+}
 
 @Injectable()
 export default class PrivateChatService {
@@ -46,7 +57,12 @@ export default class PrivateChatService {
 
             return true;
         } catch (err) {
-            throw new AikoError('PrivateChatService/makePrivateChatRoomList', 500, 129828);
+            throw stackAikoError(
+                err,
+                'PrivateChatService/makePrivateChatRoomList',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.makePrivateChatRoomList,
+            );
         }
     }
 
@@ -58,7 +74,12 @@ export default class PrivateChatService {
 
             return roomList;
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/connectPrivateChat',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.connectPrivateChat,
+            );
         }
     }
 
@@ -66,7 +87,12 @@ export default class PrivateChatService {
         try {
             await this.updateChatlog(payload);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/sendMessage',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.sendMessage,
+            );
         }
     }
 
@@ -74,8 +100,12 @@ export default class PrivateChatService {
         try {
             return (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/getChalog',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.getChalog,
+            );
         }
     }
 
@@ -85,8 +115,12 @@ export default class PrivateChatService {
 
             return userInfos;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/getUserInfo',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.getUserInfo,
+            );
         }
     }
 
@@ -103,7 +137,12 @@ export default class PrivateChatService {
 
             await this.chatlogModel.findOneAndUpdate({ roomId }, chatlog).exec();
         } catch (err) {
-            console.error(err);
+            throw stackAikoError(
+                err,
+                'PrivateChatService/updateChatlog',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.updateChatlog,
+            );
         }
     }
 
@@ -146,32 +185,12 @@ export default class PrivateChatService {
                 }),
             );
         } catch (err) {
-            console.error(err);
-            throw err;
-        }
-    }
-
-    // * temp method for migration
-    async chatRoomGenerator(accessToken: string) {
-        try {
-            const { COMPANY_PK } = tokenParser(accessToken);
-            const chatRooms = await getConnection()
-                .createQueryBuilder(PrivateChatRoom, 'c')
-                .where('c.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
-                .getMany();
-
-            await Promise.all(
-                chatRooms.map(async (room) => {
-                    const dto = new this.chatlogModel({ roomId: room.CR_PK, messages: [] });
-                    await dto.save();
-
-                    return true;
-                }),
+            throw stackAikoError(
+                err,
+                'PrivateChatService/storePrivateChatLogsToRDB',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.storePrivateChatLogsToRDB,
             );
-
-            return true;
-        } catch (err) {
-            throw err;
         }
     }
 }

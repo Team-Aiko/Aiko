@@ -37,4 +37,8 @@ export enum headErrorCode {
     userDB = 3600000,
     userProfileFileDB = 3700000,
     privateChatRoomDB = 3800000,
+    privateChat = 3900000,
+    status = 4000000,
+    scheduler = 41 * 100000,
+    groupChat = 42 * 100000,
 }
