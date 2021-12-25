@@ -101,7 +101,6 @@ const innerPost = () => {
 
     //삭제할 파일들 pk값 받기
     const [deletedFilePk, setDeletedFilePk] = useState([]);
-    console.log(deletedFilePk);
 
     //현재 유저 데이터 (from decoding token API)
     const [currentUserPk, setCurrentUserPk] = useState(undefined);
