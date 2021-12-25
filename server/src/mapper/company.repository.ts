@@ -19,7 +19,7 @@ export default class CompanyRepository extends Repository<Company> {
                 .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
                 .getMany();
         } catch (err) {
-            throw stackAikoError(err, 'company/list', 500, headErrorCode.company + companyError.list);
+            throw stackAikoError(err, 'company/list', 500, headErrorCode.companyDB + companyError.list);
         }
     }
 
@@ -45,7 +45,12 @@ export default class CompanyRepository extends Repository<Company> {
             // })
             // .execute();
         } catch (err) {
-            throw stackAikoError(err, 'company/createCompany', 500, headErrorCode.company + companyError.createCompany);
+            throw stackAikoError(
+                err,
+                'company/createCompany',
+                500,
+                headErrorCode.companyDB + companyError.createCompany,
+            );
         }
 
         return insertResult;
@@ -59,7 +64,7 @@ export default class CompanyRepository extends Repository<Company> {
                 err,
                 'CompanyRepository/getAllCompanies',
                 500,
-                headErrorCode.company + companyError.getAllCompanies,
+                headErrorCode.companyDB + companyError.getAllCompanies,
             );
         }
     }

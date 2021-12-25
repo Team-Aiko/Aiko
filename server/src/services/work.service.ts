@@ -3,6 +3,7 @@ import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin, Pagination } from 'src/Helpers';
 import { stackAikoError } from 'src/Helpers/functions';
+import { notSameCompanyError, notSameDepartmentError } from 'src/Helpers/instance';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
@@ -48,7 +49,7 @@ export default class WorkService {
         try {
             const item = await getRepo(ActionRepository).findActionItem(ACTION_PK, DEPARTMENT_PK);
             // department filter
-            if (item.DEPARTMENT_PK !== DEPARTMENT_PK) throw new AikoError('not appropriate department', 500, 500909);
+            if (item.DEPARTMENT_PK !== DEPARTMENT_PK) throw notSameDepartmentError;
             // Chief admin filter
             if (item.ASSIGNER_PK !== item.USER_PK) isChiefAdmin(grants);
 
@@ -71,7 +72,7 @@ export default class WorkService {
         try {
             // company filter
             const owner = await getRepo(UserRepository).getUserInfoWithUserPK(bundle.USER_PK);
-            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw new AikoError('not same company', 500, 500129);
+            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw notSameCompanyError;
 
             // select original
             const item = await getRepo(ActionRepository).findActionItem(bundle.ACTION_PK, bundle.DEPARTMENT_PK);

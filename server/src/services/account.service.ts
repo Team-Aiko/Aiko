@@ -37,6 +37,7 @@ import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
 import DriveService from './drive.service';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { unknownError } from 'src/Helpers';
 
 enum accountServiceError {
     checkDuplicateEmail = 1,
@@ -96,7 +97,7 @@ export default class AccountService {
             hash = generatePwResult.hash;
             salt = generatePwResult.salt;
         } catch (err) {
-            throw new AikoError('hasher error', 501, 500021);
+            throw new AikoError('AccountService/signup/hasherError', 500, -1);
         }
 
         const queryRunner = getConnection().createQueryRunner();
@@ -170,7 +171,7 @@ export default class AccountService {
 
                 flag = await sendMail(mailOpt);
 
-                if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
+                if (!flag) throw new AikoError('AccountService/signup/mailing error', 500, -1);
             }
 
             await queryRunner.commitTransaction();
@@ -194,7 +195,7 @@ export default class AccountService {
             const result = await getRepo(LoginAuthRepository).findUser(uuid);
             flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
 
-            if (!flag) throw new AikoError('unknown fail error', 500, 500026);
+            if (!flag) throw unknownError;
 
             await queryRunner.commitTransaction();
         } catch (err) {
@@ -386,10 +387,10 @@ export default class AccountService {
                 const tokens = generateLoginToken(userData);
                 await getRepo(RefreshRepository).updateRefreshToken(userPK, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
-            } else throw new AikoError('not exact refresh token', 500, 392038);
+            } else throw new AikoError('not exact refresh token', 500, -1);
         } catch (err) {
-            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
-            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
+            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, -1);
+            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, -1);
             else
                 throw stackAikoError(
                     err,

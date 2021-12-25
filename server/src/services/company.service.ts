@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import GrantRepository from 'src/mapper/grant.repository';
 import { Department, Grant, User } from 'src/entity';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { notSameCompanyError } from 'src/Helpers/instance';
 
 const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 interface IExtendedUser extends User {
@@ -24,8 +25,7 @@ enum companyError {
     searchMembers = 7,
     getDepartmentTree = 8,
     addMemberToDepartment = 9,
-    checkAdmin = 10,
-    getCompanyMemberList = 11,
+    getCompanyMemberList = 10,
 }
 
 @Injectable()
@@ -61,17 +61,15 @@ export default class CompanyService {
 
         try {
             const grants = await this.accountService.getGrantList(bundle.userPK);
-            const isAdmin = grants.some((grant) => grant.USER_PK === bundle.userPK && grant.AUTH_LIST_PK === 1);
+            isChiefAdmin(grants);
 
-            if (isAdmin) {
-                const { companyPK, departmentName, parentPK, parentDepth } = bundle;
-                flag = await getRepo(DepartmentRepository).createDepartment({
-                    companyPK,
-                    departmentName,
-                    parentPK,
-                    parentDepth,
-                });
-            } else throw new AikoError("He isn't a admin", 500, 500011);
+            const { companyPK, departmentName, parentPK, parentDepth } = bundle;
+            flag = await getRepo(DepartmentRepository).createDepartment({
+                companyPK,
+                departmentName,
+                parentPK,
+                parentDepth,
+            });
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -97,7 +95,7 @@ export default class CompanyService {
 
                 await getRepo(GrantRepository).grantPermission(1, targetMember.USER_PK);
                 isSuccess = true;
-            } else throw new AikoError('not same company error', 500, 500043);
+            } else throw notSameCompanyError;
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -199,19 +197,6 @@ export default class CompanyService {
                 'CompanyService/addMemberToDepartment',
                 500,
                 headErrorCode.company + companyError.addMemberToDepartment,
-            );
-        }
-    }
-
-    async checkAdmin(grants: Grant[]) {
-        try {
-            return isChiefAdmin(grants);
-        } catch (err) {
-            throw stackAikoError(
-                err,
-                'CompanyService/checkAdmin',
-                500,
-                headErrorCode.company + companyError.checkAdmin,
             );
         }
     }

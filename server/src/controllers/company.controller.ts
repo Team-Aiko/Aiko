@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { resExecutor, usrPayloadParser, isChiefAdmin } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 import { bodyChecker } from 'src/Helpers/functions';
 
@@ -215,7 +215,7 @@ export default class CompanyController {
     async checkAdmin(@Req() req: Request, @Res() res: Response) {
         try {
             const { grants } = usrPayloadParser(req);
-            const result = await this.companyService.checkAdmin(grants);
+            const result = isChiefAdmin(grants);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

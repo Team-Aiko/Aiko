@@ -14,6 +14,7 @@ import CalledMembersRepository from 'src/mapper/calledMembers.repository';
 import { UserRepository } from 'src/mapper';
 import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { notSameCompanyError } from 'src/Helpers/instance';
 
 enum meetingServiceError {
     makeMeetingRoom = 1,
@@ -127,7 +128,7 @@ export default class MeetingService {
         await queryRunner.startTransaction();
 
         try {
-            if (calledMemberList.length > MAX_MEM_NUM) throw new AikoError('exceed maximum member count', 500, 930129);
+            if (calledMemberList.length > MAX_MEM_NUM) throw new AikoError('exceed maximum member count', 500, -1);
 
             const partial: Omit<Required<IMeetingBundle>, 'MEET_PK' | 'calledMemberList' | 'COMPANY_PK'> = {
                 DATE,
@@ -164,8 +165,7 @@ export default class MeetingService {
         try {
             const meetRoom = await getRepo(MeetRoomRepository).getMeetRoom(ROOM_PK);
             // company filter
-            if (meetRoom.COMPANY_PK !== COMPANY_PK)
-                throw new AikoError('meetingService/meetingSchedule/not valid company member', 500, 2920123);
+            if (meetRoom.COMPANY_PK !== COMPANY_PK) throw notSameCompanyError;
             const meetingCnt = await getRepo(MeetRepository).meetingCnt(ROOM_PK);
             const pag = new Pagination(currentPage, meetingCnt, feedsPerPage, groupCnt);
 
@@ -186,8 +186,7 @@ export default class MeetingService {
             const userInfo = await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK);
 
             // company filter
-            if (userInfo.COMPANY_PK !== COMPANY_PK)
-                throw new AikoError('meetingService/checkMeetSchedule/not valid company member', 500, 2920123);
+            if (userInfo.COMPANY_PK !== COMPANY_PK) throw notSameCompanyError;
 
             const cnt = await getRepo(CalledMembersRepository).getMeetingScheduleCnt(USER_PK);
             const pag = new Pagination(currentPage, cnt, feedsPerPage, groupCnt);
@@ -306,9 +305,9 @@ export default class MeetingService {
                 const flag2 = await getRepo(MeetRepository).deleteMeeting(meetPK, manager);
 
                 flag = flag1 && flag2;
-                if (!flag) new AikoError('meetingService/deleteMeeting', 500, 839192);
+                if (!flag) new AikoError('meetingService/deleteMeeting', 500, -1);
                 await queryRunner.commitTransaction();
-            } else throw new AikoError('meetingService/invalidEmployee', 500, 839193);
+            } else throw notSameCompanyError;
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw stackAikoError(

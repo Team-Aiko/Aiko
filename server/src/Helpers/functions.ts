@@ -7,7 +7,7 @@ import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
-import { invalidTokenError, typeMismatchError } from './instance';
+import { invalidTokenError, notAuthorizedUserError, typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -86,7 +86,7 @@ export function propsRemover<T>(obj: T, ...props: string[]) {
 export function isChiefAdmin(grants: Grant[]) {
     try {
         const isAdmin = grants?.some((grant) => grant.AUTH_LIST_PK === 1);
-        if (!isAdmin) throw new AikoError('NO_AUTHORIZATION', 500, 500321);
+        if (!isAdmin) throw notAuthorizedUserError;
         else return isAdmin;
     } catch (err) {
         throw err;
