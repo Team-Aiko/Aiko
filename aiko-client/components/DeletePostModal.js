@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from '../styles/DeletePostModal.module.css';
-import Image from 'next/image';
 import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import {Tooltip, IconButton, Typography, Button} from '@material-ui/core';
+import {Delete, Close} from '@material-ui/icons'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -10,35 +10,49 @@ const useStyles = makeStyles((theme) => ({
       margin: theme.spacing(1),
     },
   },
+  features : {
+    display:'flex',
+    alignItems:'center',
+    flexDirection:'column',
+    width:'90%',
+    height:'50%',
+    margin:'0 auto',
+    marginTop:'30%'
+  },
+  button : {
+    display:'flex',
+    width: '70%',
+    height:'20%',
+    justifyContent:'space-between',
+    marginTop:'30%'
+  }
 }));
 
-const DeletePostModal = () => {
+const DeletePostModal = ({deleteArticle, setOpenModal}) => {
 
     const classes = useStyles();
 
     return (
-        <div className={styles.window}>
-            <div className={styles.outerContainer}>
+        <div className={styles.modalContainer}>
+            <div className={styles.modal}>
+              <div style={{float:'right'}}>
+              <Tooltip title="Exit">
+                <IconButton aria-label="delete" onClick={() => setOpenModal(false)}>
+                  <Close />
+                </IconButton>
+              </Tooltip>
+              </div>
 
-                <div className={styles.upperContainer}>
-                    <div className={styles.warning}>
-                        <Image src="/../public/images/question.png" width={200} height={200}/>
-                    </div>
-
-                    <div>
-                        <h1 style={{color:'white', width:'100%', textAlign:'center', fontFamily:'SeoulHangang CBL'}}>Are you sure you delete the post?</h1>
-                    </div>
+              <div className={classes.features}>
+                <div>
+                  <Typography variant="h5" gutterBottom style={{color:'#F92F28'}}>Are you sure to delete the post?</Typography>
                 </div>
 
-                <div className={styles.lowerContainer}>
-                    <Button className={styles.yesBtn} variant="contained" style={{backgroundColor:"#d93d3d", color:'white', width:'30%', borderRadius:'15px'}}>
-                    <span style={{fontWeight:'bold'}}>YES</span>
-                    </Button>
-                    <Button className={styles.noBtn} variant="contained" style={{backgroundColor:"#6c6969", color:'white', width:'30%', borderRadius:'15px'}}>
-                    <span style={{fontWeight:'bold'}}>NO</span>
-                    </Button>
+                <div className={classes.button}>
+                  <Button onClick={() => setOpenModal(false)}>No</Button>
+                  <Button onClick={deleteArticle}>Yes</Button>
                 </div>
-
+              </div>
             </div>
         </div>
     )
