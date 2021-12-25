@@ -104,73 +104,26 @@ export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
     const memberList = useSelector((state) => state.memberReducer);
-
-    const handleNav = (bools) => {
-        dispatch(handleSideNav(bools));
-    };
-
-    const handleLogout = () => {
-        (async () => {
-            try {
-                const url = '/api/account/logout';
-                const res = await get(url);
-                const flag = res.data;
-
-                if (!flag) throw new Error('NO_SERVER_RESPONSE');
-
-                dispatch(resetUserInfo());
-                dispatch(setMember([]));
-
-                Router.push('/');
-            } catch (e) {
-                console.log(e);
-            }
-        })();
-    };
-
-    return <PComp handleSideNav={handleNav} userInfo={userInfo} handleLogout={handleLogout} />;
-}
-
-// * Presentational component
-function PComp(props) {
     const classes = useStyles();
     const theme = unstable_createMuiStrictModeTheme();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-    const { userInfo } = props;
     const { USER_PK } = userInfo;
     const [status, setStatus] = useState(undefined);
-    const memberList = useSelector((state) => state.memberReducer);
-    const dispatch = useDispatch();
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
-
-    const loadMemberList = async () => {
-        const url = '/api/company/member-list';
-
-        await get(url).then((response) => {
-            const excludeMe = response.data.result.filter((row) => row.USER_PK !== userInfo.USER_PK);
-            dispatch(setMember(excludeMe));
-        });
-    };
 
     useEffect(() => {
         console.log('###### render ######');
         if (userInfo.USER_PK) {
             loadMemberList();
 
-            const status = io('http://localhost:5000/status');
+            const status = io('http://localhost:5001/status', { withCredentials: true });
             setStatus(status);
 
+            status.emit('handleConnection', '뭐지 도대체???');
             const uri = '/api/account/raw-token';
-            get(uri)
-                .then((response) => {
-                    status.emit('handleConnection', response.data.result);
-                })
-                .catch((err) => {
-                    console.error('handleConnection - error : ', err);
-                });
             status.on('client/status/getStatusList', (payload) => {
                 console.log('### getStatusList ### : ', payload);
                 dispatch(setMemberListStatus(payload));
@@ -197,6 +150,44 @@ function PComp(props) {
             });
         }
     }, [userInfo.USER_PK]);
+
+    const handleNav = (bools) => {
+        dispatch(handleSideNav(bools));
+    };
+
+    const handleLogout = () => {
+        setAnchorEl(null);
+        handleMobileMenuClose();
+        if (status) {
+            status.emit('server/status/logoutEvent');
+
+            (async () => {
+                try {
+                    const url = '/api/account/logout';
+                    const res = await get(url);
+                    const flag = res.data;
+
+                    if (!flag) throw new Error('NO_SERVER_RESPONSE');
+
+                    dispatch(resetUserInfo());
+                    dispatch(setMember([]));
+
+                    Router.push('/');
+                } catch (e) {
+                    console.log(e);
+                }
+            })();
+        }
+    };
+
+    const loadMemberList = async () => {
+        const url = '/api/company/member-list';
+
+        await get(url).then((response) => {
+            const excludeMe = response.data.result.filter((row) => row.USER_PK !== userInfo.USER_PK);
+            dispatch(setMember(excludeMe));
+        });
+    };
 
     const statusList = [
         {
@@ -252,15 +243,6 @@ function PComp(props) {
     const handleMenuClose = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
-    };
-
-    const handleLogout = () => {
-        setAnchorEl(null);
-        handleMobileMenuClose();
-        if (status) {
-            status.emit('server/status/logoutEvent');
-        }
-        props.handleLogout();
     };
 
     const handleMobileMenuOpen = (event) => {
@@ -532,9 +514,3 @@ function PComp(props) {
         </div>
     );
 }
-
-PComp.propTypes = {
-    userInfo: PropTypes.object.isRequired,
-    handleSideNav: PropTypes.func.isRequired,
-    handleLogout: PropTypes.func.isRequired,
-};

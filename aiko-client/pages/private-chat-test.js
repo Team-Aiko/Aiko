@@ -59,7 +59,7 @@ export default function PrivateChatDemo() {
                 companyPK: COMPANY_PK,
             });
 
-            const client = io('http://localhost:5000/private-chat');
+            const client = io('http://localhost:5001/private-chat');
             setSocketClient(client);
 
             console.log('step1');

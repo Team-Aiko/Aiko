@@ -12,7 +12,7 @@ import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
 
-@WebSocketGateway({ cors: true, namespace: 'group-chat' })
+@WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     private readonly wss: Server;

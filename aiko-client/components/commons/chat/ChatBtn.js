@@ -37,7 +37,7 @@ function PComp(props) {
     };
 
     const handleSocket = useCallback(() => {
-        const socket = io('http://localhost:5000');
+        const socket = io('http://localhost:5001');
         socket.emit('handleConnection', USER_PK);
         socket.on('msgToClient', (message) => {
             console.log(message);

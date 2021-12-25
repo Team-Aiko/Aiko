@@ -316,21 +316,20 @@ const innerPost = () => {
                             >
                                 {file.ORIGINAL_NAME}
                             </a>
-                            {
-                                writerPk == currentUserPk
-                                ? <Button
-                                size='small'
-                                className={classes.margin}
-                                style={{ color: 'grey' }}
-                                onClick={() => {
-                                    setDeletedFilePk([...deletedFilePk, file.NBF_PK]);
-                                }}
+                            {writerPk == currentUserPk ? (
+                                <Button
+                                    size='small'
+                                    className={classes.margin}
+                                    style={{ color: 'grey' }}
+                                    onClick={() => {
+                                        setDeletedFilePk([...deletedFilePk, file.NBF_PK]);
+                                    }}
                                 >
                                     삭제
                                 </Button>
-                                : <></>
-                            }
-                            
+                            ) : (
+                                <></>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -353,53 +352,61 @@ const innerPost = () => {
                             <List />
                         </Button>
 
-                        <Button
-                            variant='contained'
-                            color='primary'
-                            style={{
-                                width: '80px',
-                                height: '40px',
-                                borderRadius: '15px',
-                                backgroundColor: '#969696',
-                                marginLeft: '5px',
-                            }}
-                            onClick={editCheck}
-                        >
-                            <Edit />
-                        </Button>
+                        {writerPk == currentUserPk ? (
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                style={{
+                                    width: '80px',
+                                    height: '40px',
+                                    borderRadius: '15px',
+                                    backgroundColor: '#969696',
+                                    marginLeft: '5px',
+                                }}
+                                onClick={editCheck}
+                            >
+                                <Edit />
+                            </Button>
+                        ) : (
+                            <></>
+                        )}
                     </div>
 
-                    <div className={styles.align}>
-                        <Button
-                            onClick={updateArticle}
-                            variant='contained'
-                            color='primary'
-                            style={{
-                                width: '80px',
-                                height: '40px',
-                                borderRadius: '15px',
-                            }}
-                        >
-                            <Save />
-                        </Button>
+                    {writerPk == currentUserPk ? (
+                        <div className={styles.align}>
+                            <Button
+                                onClick={updateArticle}
+                                variant='contained'
+                                color='primary'
+                                style={{
+                                    width: '80px',
+                                    height: '40px',
+                                    borderRadius: '15px',
+                                }}
+                            >
+                                <Save />
+                            </Button>
 
-                        <Button
-                            onClick={() => {
-                                setOpenModal(!openModal);
-                            }}
-                            variant='contained'
-                            color='primary'
-                            style={{
-                                width: '80px',
-                                height: '40px',
-                                borderRadius: '15px',
-                                marginLeft: '5px',
-                                backgroundColor: '#D93D3D',
-                            }}
-                        >
-                            <Delete />
-                        </Button>
-                    </div>
+                            <Button
+                                onClick={() => {
+                                    setOpenModal(!openModal);
+                                }}
+                                variant='contained'
+                                color='primary'
+                                style={{
+                                    width: '80px',
+                                    height: '40px',
+                                    borderRadius: '15px',
+                                    marginLeft: '5px',
+                                    backgroundColor: '#D93D3D',
+                                }}
+                            >
+                                <Delete />
+                            </Button>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
 
                 {openModal == true ? (
@@ -409,7 +416,13 @@ const innerPost = () => {
                 )}
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
-                    <Link href={ previousPage == null ? `/innerPost/${encodeURIComponent(pk)}` : `/innerPost/${encodeURIComponent(goPrev)}`}>
+                    <Link
+                        href={
+                            previousPage == null
+                                ? `/innerPost/${encodeURIComponent(pk)}`
+                                : `/innerPost/${encodeURIComponent(goPrev)}`
+                        }
+                    >
                         <div className={styles.previousPost}>
                             <Button size='small' style={{ width: '20%' }}>
                                 이전 글 보기
@@ -418,7 +431,13 @@ const innerPost = () => {
                         </div>
                     </Link>
 
-                    <Link href={ nextPage == null ? `/innerPost/${encodeURIComponent(pk)}` :`/innerPost/${encodeURIComponent(goNext)}`}>
+                    <Link
+                        href={
+                            nextPage == null
+                                ? `/innerPost/${encodeURIComponent(pk)}`
+                                : `/innerPost/${encodeURIComponent(goNext)}`
+                        }
+                    >
                         <div className={styles.nextPost}>
                             <Button size='small' style={{ width: '20%' }}>
                                 다음 글 보기

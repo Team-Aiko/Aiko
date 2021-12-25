@@ -35,7 +35,7 @@ export async function getServerSideProps(context) {
     console.log('🚀 ~ file: [userPK].js ~ line 28 ~ getServerSideProps ~ TOKEN', TOKEN);
 
     if (userPK && TOKEN) {
-        const url = 'http://localhost:5000/api/account/getUserInfo';
+        const url = 'http://localhost:5001/api/account/getUserInfo';
         const config = {
             headers: {
                 'content-type': 'application/json',
@@ -54,7 +54,7 @@ export async function getServerSideProps(context) {
 }
 
 // export async function getStaticPaths() {
-//     const { data } = await get('http://localhost:5000/api/getPath/userPKList');
+//     const { data } = await get('http://localhost:5001/api/getPath/userPKList');
 //     console.log('🚀 ~ file: [userPK].js ~ line 21 ~ getStaticPaths ~ data', data);
 //     const paths = data.map((curr) => ({
 //         params: { userPK: curr.USER_PK.toString() },
@@ -65,7 +65,7 @@ export async function getServerSideProps(context) {
 
 // export async function getStaticProps(context) {
 //     const { userPK } = context.params;
-//     const url = `http://localhost:5000/api/account/getUser?userPK=${userPK}`;
+//     const url = `http://localhost:5001/api/account/getUser?userPK=${userPK}`;
 //     const { data } = await get(url);
 
 //     return {
