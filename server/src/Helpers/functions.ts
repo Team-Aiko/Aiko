@@ -3,13 +3,13 @@ import { ObjectType, getConnection } from 'typeorm';
 import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AikoError, LinkedList } from './classes';
-import { Grant } from 'src/entity';
+import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
 import { typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
-import { accessTokenBluePrint } from 'src/interfaces/jwt/secretKey';
+import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
 // * pbdkf2-password
 import pbkdf2 from 'pbkdf2-pw';
@@ -223,6 +223,42 @@ export async function checkPw(password: string, salt: string, serverHash: string
     });
 }
 
+export function generateLoginToken(userInfo: User) {
+    let temporaryUserInfo = propsRemover(
+        userInfo,
+        'SALT',
+        'PASSWORD',
+        'LAST_NAME',
+        'FIRST_NAME',
+        'EMAIL',
+        'TEL',
+        'IS_DELETED',
+        'IS_VERIFIED',
+        'COUNTRY_PK',
+        'PROFILE_FILE_NAME',
+        'company',
+        'department',
+        'country',
+        'resetPws',
+        'socket',
+        'socket1',
+        'socket2',
+        'calledMembers',
+        'profile',
+    );
+    temporaryUserInfo = { ...temporaryUserInfo };
+    const userPk = temporaryUserInfo.USER_PK;
+    const tokens = {
+        access: jwt.sign(temporaryUserInfo, accessTokenBluePrint.secretKey, accessTokenBluePrint.options),
+        refresh: jwt.sign({ userPk: userPk }, refreshTokenBluePrint.secretKey, refreshTokenBluePrint.options),
+    };
+    return tokens;
+}
+
+export function checkRefreshToken(refreshToken: string) {
+    return jwt.verify(refreshToken, refreshTokenBluePrint.secretKey)['userPk'] as number;
+}
+
 // send mail function
 export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject' | 'to'>) {
     return await new Promise<boolean>((resolve, reject) => {
@@ -235,6 +271,20 @@ export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject'
             resolve(true);
         });
     });
+}
+
+export function parseCookieString<T extends { [idx: string]: string }>(cookie: string) {
+    const temp = cookie.split(';');
+    const cookieJson: { [idx: string]: string } = {};
+
+    temp.forEach((str) => {
+        const arr = str.split('=');
+        const key = arr[0].trim();
+        const value = arr[1].trim();
+        cookieJson[key] = value;
+    });
+
+    return cookieJson as T;
 }
 
 // 파일삭제

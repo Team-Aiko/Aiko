@@ -6,13 +6,15 @@ import {
     OnGatewayDisconnect,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
-import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
+import { getSocketErrorPacket, tokenParser, parseCookieString } from 'src/Helpers/functions';
+import { SocketGuard } from 'src/guard/socket.guard';
 
-@WebSocketGateway({ cors: true, namespace: 'status' })
+@UseGuards(SocketGuard)
+@WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private statusService: StatusService) {}
 
@@ -31,17 +33,20 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * 4. 날려진 유저정보는 해당 이벤트를 구독하는 유저들에게 날아온다
      * 5. 이를 통해 해당 유저의 접속 상태를 확인 가능하다.
      */
+    // @UseGuards(UserGuard)
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, accessToken: string) {
-        console.log('handleConnection method', accessToken);
-
+    async handleConnection(client: Socket) {
         try {
-            if (!accessToken) return;
+            const cookies = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
+                client.request.headers.cookie,
+            );
+            if (!cookies) return;
+            // console.log('test4: ', client);
 
-            const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
+            const { USER_PK, COMPANY_PK } = tokenParser(cookies.ACCESS_TOKEN);
 
             // connection check and select user info
-            const connResult = await this.statusService.statusConnection(accessToken, client.id);
+            const connResult = await this.statusService.statusConnection(cookies.ACCESS_TOKEN, client.id);
 
             // join company
             client.join(`company:${COMPANY_PK}`);
@@ -58,7 +63,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, accessToken));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, undefined));
         }
     }
 

@@ -59,10 +59,8 @@ const useStyles = makeStyles((theme) => ({
         marginTop: '4px',
     },
     time: {
-        textAlign: 'end',
-    },
-    'time-right': {
-        alignSelf: 'self-start',
+        margin: '0 4px',
+        flex: 'none',
     },
     inputMessage: {
         flex: 1,
@@ -78,26 +76,29 @@ export default function ChatModal(props) {
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
     const [status, setStatus] = useState(undefined);
-    const [chatMember, setChatMember] = useState(null);
     const [selectedMember, setSelectedMember] = useState('');
-    const [message, setMessage] = useState('');
+    const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
+    const [messages, setMessages] = useState([]);
+    const [chatMember, setChatMember] = useState([]);
 
     useEffect(() => {
         if (open) {
-            const status = io('http://localhost:5000/private-chat');
+            const status = io('http://localhost:5001/private-chat');
             setStatus(status);
 
             const uri = '/api/account/raw-token';
             get(uri)
                 .then((result) => {
                     status.emit('handleConnection', result);
+                    // status.emit('server/temp/generateChatRooms', result);
                 })
                 .catch((err) => {
                     console.error('chat-handleConnection-error : ', err);
                 });
 
             status.on('client/private-chat/connected', (payload) => {
+                console.log('payload : ', payload);
                 let newPayload = [];
                 if (payload.evenCase.length > 0) {
                     const evenCase = payload.evenCase.map((row) => {
@@ -119,10 +120,28 @@ export default function ChatModal(props) {
                 }
                 dispatch(setMemberChatRoomPK(newPayload));
             });
+            status.on('client/private-chat/receive-chatlog', (payload) => {
+                console.log('client/private-chat/receive-chatlog - payload : ', payload);
+                setMessages(payload.chatlog ? payload.chatlog.messages : []);
+
+                const keys = Object.keys(payload);
+                keys.shift();
+                const chatMember = keys.map((key) => {
+                    return payload[key];
+                });
+                setChatMember(chatMember);
+            });
         } else {
             status && status.emit('handleDisconnect');
         }
     }, [open]);
+
+    useEffect(() => {
+        if (selectedMember) {
+            console.log('click@@@ : ', selectedMember);
+            status.emit('server/private-chat/call-chatLog', selectedMember.CR_PK);
+        }
+    }, [selectedMember]);
 
     const statusList = [
         {
@@ -148,17 +167,16 @@ export default function ChatModal(props) {
     ];
 
     const send = () => {
-        if (message) {
+        if (inputMessage) {
             const data = {
                 roomId: selectedMember.CR_PK,
                 sender: userInfo.USER_PK,
-                message: message,
+                message: inputMessage,
                 date: Number(moment().format('X')),
             };
-            console.log('data : ', data);
 
             status.emit('server/private-chat/send', data);
-            setMessage('');
+            setInputMessage('');
         }
     };
 
@@ -177,7 +195,9 @@ export default function ChatModal(props) {
                                         button
                                         key={member.USER_PK}
                                         style={{ justifyContent: 'space-between' }}
-                                        onClick={() => setSelectedMember(member)}
+                                        onClick={() => {
+                                            setSelectedMember(member);
+                                        }}
                                     >
                                         <div className={styles['member-user-wrapper']}>
                                             <Avatar
@@ -207,11 +227,24 @@ export default function ChatModal(props) {
                 </div>
 
                 <div className={styles['message-container']}>
-                    <Toolbar classes={{ root: classes.toolbar }}>
-                        <div className={styles['member-info']}>
-                            <div className={styles['profile-image']}></div>
-                            <Typography className={classes.title}>Member name</Typography>
-                        </div>
+                    <Toolbar
+                        classes={{ root: classes.toolbar }}
+                        style={{ justifyContent: selectedMember ? 'space-between' : 'flex-end' }}
+                    >
+                        {selectedMember && (
+                            <div className={styles['member-info']}>
+                                <Avatar
+                                    src={
+                                        selectedMember.USER_PROFILE_PK
+                                            ? `/api/store/download-profile-file?fileId=${selectedMember.USER_PROFILE_PK}`
+                                            : null
+                                    }
+                                    style={{ width: '40px', height: '40px', marginRight: '4px' }}
+                                />
+                                <Typography className={classes.title}>{selectedMember.NICKNAME}</Typography>
+                            </div>
+                        )}
+
                         <IconButton className={classes.closeButton} onClick={onClose}>
                             <CloseIcon className={classes.closeIcon} />
                         </IconButton>
@@ -219,33 +252,72 @@ export default function ChatModal(props) {
                     {selectedMember ? (
                         <>
                             <div className={styles['messages-wrapper']}>
-                                <div className={styles['message-wrapper']}>
-                                    <Typography variant='body2'>Username</Typography>
-                                    <Typography variant='body2' className={classes.message}>
-                                        UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                                    </Typography>
-                                    <Typography variant='caption' className={classes.time}>
-                                        00:00
-                                    </Typography>
-                                </div>
-
-                                <div className={styles['message-wrapper-right']}>
-                                    <Typography variant='body2'>Username</Typography>
-                                    <Typography variant='body2' className={classes['message-right']}>
-                                        UI작업중입니다. '나', '상대방'에 따라 좌우 변경할 것
-                                    </Typography>
-                                    <Typography variant='caption' className={classes['time-right']}>
-                                        00:00
-                                    </Typography>
-                                </div>
+                                {messages &&
+                                    messages.map((message, index) => {
+                                        return (
+                                            <div key={message.date} className={styles['message-item']}>
+                                                {index === 0 ||
+                                                (index > 0 &&
+                                                    moment.unix(messages[index - 1].date).format('YYYY-MM-DD') !==
+                                                        moment.unix(messages[index].date).format('YYYY-MM-DD')) ? (
+                                                    <Typography
+                                                        variant='body2'
+                                                        align='center'
+                                                        color='primary'
+                                                        style={{ margin: '40px 0 0' }}
+                                                    >
+                                                        {moment.unix(message.date).format('LL')}
+                                                    </Typography>
+                                                ) : null}
+                                                <div
+                                                    className={
+                                                        message.sender !== userInfo.USER_PK
+                                                            ? styles['message-wrapper']
+                                                            : styles['message-wrapper-right']
+                                                    }
+                                                >
+                                                    {message.sender !== userInfo.USER_PK ? (
+                                                        <Typography variant='body2'>
+                                                            {chatMember.map((memberInfo) => {
+                                                                if (memberInfo.USER_PK === message.sender)
+                                                                    return memberInfo.NICKNAME;
+                                                            })}
+                                                        </Typography>
+                                                    ) : null}
+                                                    <div
+                                                        className={
+                                                            message.sender !== userInfo.USER_PK
+                                                                ? styles.contents
+                                                                : styles['contents-right']
+                                                        }
+                                                    >
+                                                        <Typography
+                                                            variant='body2'
+                                                            className={
+                                                                message.sender !== userInfo.USER_PK
+                                                                    ? classes.message
+                                                                    : classes['message-right']
+                                                            }
+                                                            display='inline'
+                                                        >
+                                                            {message.message}
+                                                        </Typography>
+                                                        <Typography variant='caption' className={classes.time}>
+                                                            {moment.unix(message.date).format('LT')}
+                                                        </Typography>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                             </div>
                             <div className={styles['input-message-wrapper']}>
                                 <TextField
                                     className={classes['inputMessage']}
                                     onChange={(event) => {
-                                        setMessage(event.target.value);
+                                        setInputMessage(event.target.value);
                                     }}
-                                    value={message}
+                                    value={inputMessage}
                                 />
                                 <Button variant='contained' color='primary' onClick={send}>
                                     보내기

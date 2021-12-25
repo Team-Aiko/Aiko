@@ -26,8 +26,10 @@ import FileBin from './fileBin.entity';
 import FolderBin from './folderBin.entity';
 import ChatLogStorage from './chatLogStorage.entity';
 import GroupChatStorage from './groupChatStorage.entity';
+import GroupChatUserList from './groupChatUL.entity';
 
 export {
+    GroupChatUserList,
     GroupChatStorage,
     ChatLogStorage,
     FolderBin,
