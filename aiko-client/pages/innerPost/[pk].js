@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styles from '../../styles/innerPost.module.css';
-import { Button } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import DeletePostModal from '../../components/DeletePostModal.js';
 import { Delete, Save, List, Edit } from '@material-ui/icons';
 import { get, post } from '../../_axios';
 import Link from 'next/link';
+import Modal from '../../components/Modal.js';
 
 //TEXT EDITOR imports!
 import dynamic from 'next/dynamic';
@@ -33,6 +33,9 @@ const MyBlock = styled.div`
         padding: 5px !important;
         border-radius: 2px !important;
         z-index: 10 !important;
+    }
+    .toolbarHidden {
+        display:none;
     }
 `;
 
@@ -61,6 +64,20 @@ const useStyles = makeStyles((theme) => ({
         color: '#9a9a9a',
         cursor: 'pointer',
     },
+    modalDesc: {
+        width:'90%',
+        height:'30%',
+        margin: '0 auto',
+        textAlign:'center'
+
+    },
+    modalButton: {
+        display:'flex',
+        width: '80%',
+        margin: '0 auto',
+        justifyContent:'space-around',
+        padding:'20px'
+    }
 }));
 
 const innerPost = () => {
@@ -179,8 +196,7 @@ const innerPost = () => {
                 'content-type': 'multipart/form-data',
             },
         };
-        axios
-            .post(url, formData, config)
+            post(url, formData, config)
             .then((response) => {
                 console.log(response);
                 router.push('/board');
@@ -266,7 +282,7 @@ const innerPost = () => {
             <div className={styles.outerContainer}>
                 <div className={styles.titleName}>
                     <input
-                        className={styles.titleInput}
+                        className={disabled ? styles.titleInput : styles.titleInputOnChange}
                         value={title}
                         disabled={writerPk !== currentUserPk}
                         onChange={handleTitle}
@@ -285,7 +301,7 @@ const innerPost = () => {
                         // 에디터 주변에 적용된 클래스
                         editorClassName='editor'
                         // 툴바 주위에 적용된 클래스
-                        toolbarClassName='toolbar-class'
+                        toolbarClassName={disabled ? 'toolbarHidden' : 'toolbar'}
                         // 툴바 설정
                         toolbar={{
                             // inDropdown: 해당 항목과 관련된 항목을 드롭다운으로 나타낼것인지
@@ -316,7 +332,7 @@ const innerPost = () => {
                             >
                                 {file.ORIGINAL_NAME}
                             </a>
-                            {writerPk == currentUserPk ? (
+                            {writerPk == currentUserPk && disabled == false ? (
                                 <Button
                                     size='small'
                                     className={classes.margin}
@@ -409,11 +425,20 @@ const innerPost = () => {
                     )}
                 </div>
 
-                {openModal == true ? (
-                    <DeletePostModal deleteArticle={deleteArticle} setOpenModal={setOpenModal} />
-                ) : (
-                    <></>
-                )}
+                {
+                    openModal == true
+                    ? <Modal open={openModal} onClose={() => {setOpenModal(false)}} Title='Delete Post'>
+                    
+                    <div className={classes.modalDesc}>
+                    <Typography variant="h6" gutterBottom>Are you sure to delete the post?</Typography>
+                    </div>
+
+                    <div className={classes.modalButton}>
+                    <Button onClick={deleteArticle}>Yes</Button>
+                    </div>
+                    </Modal>
+                    : <></>
+                }
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
                     <Link
