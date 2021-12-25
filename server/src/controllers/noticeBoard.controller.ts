@@ -5,7 +5,7 @@ import { UserGuard } from 'src/guard/user.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
-import { deleteFiles } from 'src/Helpers/functions';
+import { bodyChecker, deleteFiles } from 'src/Helpers/functions';
 
 @UseGuards(UserGuard)
 @Controller('notice-board')
@@ -20,14 +20,12 @@ export default class NoticeBoardController {
         try {
             console.log(files); //merge  test
             const obj = JSON.parse(req.body.obj);
-            const userPayload = usrPayloadParser(req);
-            const title = obj.title;
+            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const { title, content } = obj;
+            bodyChecker({ title, content }, { title: 'string', content: 'string' });
 
-            const content = obj.content;
-            const userPk = userPayload.USER_PK;
-            const comPk = userPayload.COMPANY_PK;
             // const originalName = files.map((file) => file.originalname);
-            await this.noticeboardService.createArtcle(title, content, userPk, comPk, files);
+            await this.noticeboardService.createArtcle(title, content, USER_PK, COMPANY_PK, files);
             resExecutor(res, { result: true });
             console.log(files[0]);
         } catch (err) {
@@ -44,14 +42,14 @@ export default class NoticeBoardController {
     async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
             const obj = JSON.parse(req.body.obj);
-            const userPayload = usrPayloadParser(req);
-            const title = obj.title;
-            const content = obj.content;
-            const userPk = userPayload.USER_PK;
-            const comPk = userPayload.COMPANY_PK;
-            const num = obj.num;
-            const delFilePks = obj.delFilePks;
-            await this.noticeboardService.updateArtcle(title, content, userPk, comPk, num, delFilePks, files);
+            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const { title, content, num, delFilePks } = obj;
+            bodyChecker(
+                { title, content, num, delFilePks },
+                { title: 'string', content: 'string', num: 'number', delFilePks: 'number[]' },
+            );
+
+            await this.noticeboardService.updateArtcle(title, content, USER_PK, COMPANY_PK, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
             const uuid = files.map((file) => file.filename);
@@ -65,10 +63,11 @@ export default class NoticeBoardController {
     @Post('delete-article')
     async deleteArticle(@Req() req: Request, @Res() res: Response) {
         try {
-            const userPayload = usrPayloadParser(req);
-            const num = req.body.num;
-            const userPk = userPayload.USER_PK;
-            await this.noticeboardService.deleteArtcle(userPk, num);
+            const { USER_PK } = usrPayloadParser(req);
+            const { num } = req.body;
+            bodyChecker({ num }, { num: 'number' });
+
+            await this.noticeboardService.deleteArtcle(USER_PK, num);
             resExecutor(res, { result: true });
         } catch (err) {
             throw resExecutor(res, { err });

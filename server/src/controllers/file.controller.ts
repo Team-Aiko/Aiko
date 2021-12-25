@@ -5,6 +5,7 @@ import FileService from 'src/services/file.service';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
+import { bodyChecker } from 'src/Helpers/functions';
 
 @UseGuards(UserGuard)
 @Controller() // /store
@@ -25,6 +26,8 @@ export default class FileController {
         try {
             const { chatRoomId } = req.body;
             const { filename, originalname, size } = file;
+            bodyChecker({ chatRoomId }, { chatRoomId: 'string' });
+
             const bundle: IFileBundle = {
                 FILE_NAME: filename,
                 ORIGINAL_NAME: originalname,

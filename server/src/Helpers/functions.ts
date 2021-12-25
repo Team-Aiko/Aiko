@@ -136,29 +136,34 @@ export function bodyChecker<T extends { [idx: string]: any }>(
             | 'object[]';
     },
 ) {
-    const requiredKeys = Object.keys(sample);
+    try {
+        const requiredKeys = Object.keys(sample);
 
-    const isInvalidDataType = requiredKeys.some((key) => {
-        const requiredType = sample[key];
-        const bodyDataType = typeof body[key];
+        const isInvalidDataType = requiredKeys.some((key) => {
+            const requiredType = sample[key];
+            const bodyDataType = typeof body[key];
 
-        // array filter
-        if (requiredType.slice(-2) === '[]') {
-            const bodyData = body[key];
-            const isArray = Array.isArray(bodyData);
+            // array filter
+            if (requiredType.slice(-2) === '[]') {
+                const bodyData = body[key];
+                const isArray = Array.isArray(bodyData);
 
-            if (isArray) {
-                if (bodyData.length <= 0) return false;
-                else return requiredType.slice(0, -2) !== typeof bodyData[0];
-            } else return true;
-        }
+                if (isArray) {
+                    if (bodyData.length <= 0) return false;
+                    else return requiredType.slice(0, -2) !== typeof bodyData[0];
+                } else return true;
+            }
 
-        // other data types
-        if (requiredType !== bodyDataType) return true;
-    });
+            // other data types
+            if (requiredType !== bodyDataType) return true;
+        });
 
-    if (isInvalidDataType) throw typeMismatchError;
-    else return true;
+        if (isInvalidDataType) throw typeMismatchError;
+        else return true;
+    } catch (err) {
+        console.log('🚀 ~ file: functions.ts ~ line 164 ~ err', err);
+        throw err;
+    }
 }
 
 export function getExtensionOfFilename(filename: string) {
