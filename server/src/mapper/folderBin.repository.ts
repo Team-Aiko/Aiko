@@ -1,7 +1,14 @@
 import { FileBin, FolderBin } from 'src/entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 import FileFolderRepository from './fileFolder.repository';
+
+enum folderBinError {
+    deleteFolder = 1,
+    deleteFolderForScheduler = 2,
+    getDeleteFlagFolder = 3,
+}
 
 @EntityRepository(FolderBin)
 export default class FolderBinRepository extends Repository<FolderBin> {
@@ -30,7 +37,11 @@ export default class FolderBinRepository extends Repository<FolderBin> {
             return returnVal;
         } catch (err) {
             console.error(err);
-            throw new AikoError('FolderBinRepository/deleteFolder', 500, 819284);
+            throw new AikoError(
+                'FolderBinRepository/deleteFolder',
+                500,
+                headErrorCode.folderBinDB + folderBinError.deleteFolder,
+            );
         }
     }
 
@@ -44,7 +55,11 @@ export default class FolderBinRepository extends Repository<FolderBin> {
                 .execute();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FolderBinRepository/deleteFolderForScheduler', 500, 819284);
+            throw new AikoError(
+                'FolderBinRepository/deleteFolderForScheduler',
+                500,
+                headErrorCode.folderBinDB + folderBinError.deleteFolderForScheduler,
+            );
         }
     }
 
@@ -53,7 +68,11 @@ export default class FolderBinRepository extends Repository<FolderBin> {
             return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FolderBinRepository/getDeleteFlagFolder', 500, 819284);
+            throw new AikoError(
+                'FolderBinRepository/getDeleteFlagFolder',
+                500,
+                headErrorCode.folderBinDB + folderBinError.getDeleteFlagFolder,
+            );
         }
     }
 }

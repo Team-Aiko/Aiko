@@ -3,8 +3,16 @@ import { PrivateChatRoom, User } from '../entity';
 import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';
 import { propsRemover } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 
 const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
+
+enum privateChatRoomError {
+    makePrivateChatRoomList = 1,
+    getPrivateChatRoomList = 2,
+    getPrivateChatRoomListForScheduler = 3,
+    getChatRoomInfo = 4,
+}
 
 @EntityRepository(PrivateChatRoom)
 export default class PrivateChatRoomRepository extends Repository<PrivateChatRoom> {
@@ -22,7 +30,11 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             return insertedResult.map((key) => key.CR_PK);
         } catch (err) {
             console.log(err);
-            throw new AikoError('PrivateChatRoomRepository/makePrivateChatRoomList', 500, 500360);
+            throw new AikoError(
+                'PrivateChatRoomRepository/makePrivateChatRoomList',
+                500,
+                headErrorCode.privateChatRoomDB + privateChatRoomError.makePrivateChatRoomList,
+            );
         }
     }
 
@@ -34,7 +46,11 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             return { oddCase, evenCase };
         } catch (err) {
             console.error(err);
-            throw new AikoError('PrivateChatRoomRepository/getOneToOneChatRoomList', 500, 500360);
+            throw new AikoError(
+                'PrivateChatRoomRepository/getOneToOneChatRoomList',
+                500,
+                headErrorCode.privateChatRoomDB + privateChatRoomError.getPrivateChatRoomList,
+            );
         }
     }
 
@@ -43,7 +59,11 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             return await this.find({ COMPANY_PK });
         } catch (err) {
             console.error(err);
-            throw new AikoError('PrivateChatRoomRepository/getPrivateChatRoomListForScheduler', 500, 1892894);
+            throw new AikoError(
+                'PrivateChatRoomRepository/getPrivateChatRoomListForScheduler',
+                500,
+                headErrorCode.privateChatRoomDB + privateChatRoomError.getPrivateChatRoomListForScheduler,
+            );
         }
     }
 
@@ -64,7 +84,11 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             return { user1, user2 };
         } catch (err) {
             console.error(err);
-            throw err;
+            new AikoError(
+                'PrivateChatRoomRepository/getChatRoomInfo',
+                500,
+                headErrorCode.privateChatRoomDB + privateChatRoomError.getChatRoomInfo,
+            );
         }
     }
 }

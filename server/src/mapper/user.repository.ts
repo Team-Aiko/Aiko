@@ -12,8 +12,26 @@ import {
 import { User } from '../entity';
 import { propsRemover } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 
 const criticalUserInfo: string[] = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
+
+enum userError {
+    getUserInfoWithEmail = 1,
+    getUserInfoWithNickname = 2,
+    checkDuplicateEmail = 3,
+    changePassword = 4,
+    findNickname = 5,
+    getUserInfoWithUserPK = 6,
+    giveAuth = 7,
+    createUser = 8,
+    getMembers = 9,
+    checkDuplicateNickname = 10,
+    searchMembers = 11,
+    addMemberToDepartment = 12,
+    getUserInfoWithUserPKAndCompanyPK = 13,
+    getCompanyMemberList = 14,
+}
 
 @EntityRepository(User)
 export default class UserRepository extends Repository<User> {
@@ -21,7 +39,12 @@ export default class UserRepository extends Repository<User> {
         try {
             return await this.createQueryBuilder('u').where('u.EMAIL = :email', { email: email }).getOneOrFail();
         } catch (err) {
-            throw new AikoError('select error(search userinfo with email)', 500, 500125);
+            console.error(err);
+            throw new AikoError(
+                'select error(search userinfo with email)',
+                500,
+                headErrorCode.userDB + userError.getUserInfoWithEmail,
+            );
         }
     }
 
@@ -48,7 +71,11 @@ export default class UserRepository extends Repository<User> {
             console.log('🚀 ~ file: user.repository.ts ~ line 50 ~ UserRepository ~ userInfo', userInfo);
         } catch (err) {
             console.error(err);
-            throw new AikoError('select error(search user with nickname)', 500, 500121);
+            throw new AikoError(
+                'select error(search user with nickname)',
+                500,
+                headErrorCode.userDB + userError.getUserInfoWithNickname,
+            );
         }
 
         return userInfo;
@@ -58,7 +85,7 @@ export default class UserRepository extends Repository<User> {
         try {
             return await this.count({ EMAIL: email });
         } catch (err) {
-            throw new AikoError('count error (email)', 500, 500019);
+            throw new AikoError('count error (email)', 500, headErrorCode.userDB + userError.checkDuplicateEmail);
         }
     }
 
@@ -74,7 +101,7 @@ export default class UserRepository extends Repository<User> {
 
             returnVal = true;
         } catch (err) {
-            throw new AikoError('update error(change password)', 500, 500123);
+            throw new AikoError('update error(change password)', 500, headErrorCode.userDB + userError.changePassword);
         }
 
         return returnVal;
@@ -86,7 +113,7 @@ export default class UserRepository extends Repository<User> {
         try {
             returnVal = await this.createQueryBuilder('u').where('u.EMAIL = :EMAIL', { EMAIL: email }).getOneOrFail();
         } catch (err) {
-            throw new AikoError('select error(search nickname)', 500, 500029);
+            throw new AikoError('select error(search nickname)', 500, headErrorCode.userDB + userError.findNickname);
         }
 
         return returnVal;
@@ -99,7 +126,11 @@ export default class UserRepository extends Repository<User> {
             const result = await this.findOne({ USER_PK: userPK }, { relations: ['company', 'department', 'grants'] });
             user = propsRemover(result, 'PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED');
         } catch (err) {
-            throw new AikoError('select error (user information)', 500, 500012);
+            throw new AikoError(
+                'select error (user information)',
+                500,
+                headErrorCode.userDB + userError.getUserInfoWithUserPK,
+            );
         }
 
         return user;
@@ -117,7 +148,7 @@ export default class UserRepository extends Repository<User> {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('update error(give auth)', 500, 500026);
+            throw new AikoError('update error(give auth)', 500, headErrorCode.userDB + userError.giveAuth);
         }
 
         return flag;
@@ -151,7 +182,7 @@ export default class UserRepository extends Repository<User> {
 
             result = await manager.insert(User, user);
         } catch (err) {
-            throw new AikoError('insert error(create user)', 500, 500122);
+            throw new AikoError('insert error(create user)', 500, headErrorCode.userDB + userError.createUser);
         }
 
         return result;
@@ -173,7 +204,7 @@ export default class UserRepository extends Repository<User> {
                 .where('U.COMPANY_PK = :COMPANY_PK', { COMPANY_PK: companyPK })
                 .getMany();
         } catch (err) {
-            throw new AikoError('select error(member list)', 500, 500044);
+            throw new AikoError('select error(member list)', 500, headErrorCode.userDB + userError.getMembers);
         }
 
         return userList;
@@ -185,7 +216,11 @@ export default class UserRepository extends Repository<User> {
                 .where('U.NICKNAME = :NICKNAME', { NICKNAME: nickname })
                 .getCount();
         } catch (err) {
-            throw new AikoError('count error(duplicate nickname)', 500, 500045);
+            throw new AikoError(
+                'count error(duplicate nickname)',
+                500,
+                headErrorCode.userDB + userError.checkDuplicateNickname,
+            );
         }
     }
 
@@ -208,7 +243,7 @@ export default class UserRepository extends Repository<User> {
                 )
                 .getMany();
         } catch (err) {
-            throw new AikoError('user/searchMembers', 500, 506040);
+            throw new AikoError('user/searchMembers', 500, headErrorCode.userDB + userError.searchMembers);
         }
 
         return users;
@@ -230,7 +265,12 @@ export default class UserRepository extends Repository<User> {
         } catch (err) {
             console.log(err);
             if (err instanceof AikoError) throw err;
-            else throw new AikoError('user/addMemberToDepartment', 500, 578431);
+            else
+                throw new AikoError(
+                    'user/addMemberToDepartment',
+                    500,
+                    headErrorCode.userDB + userError.addMemberToDepartment,
+                );
         }
 
         return flag;
@@ -244,7 +284,11 @@ export default class UserRepository extends Repository<User> {
                 .getOneOrFail();
         } catch (err) {
             console.error(err);
-            throw new AikoError('user/getUserInfoWithUserPKAndCompanyPK', 500, 100203);
+            throw new AikoError(
+                'user/getUserInfoWithUserPKAndCompanyPK',
+                500,
+                headErrorCode.userDB + userError.getUserInfoWithUserPKAndCompanyPK,
+            );
         }
     }
 
@@ -259,7 +303,11 @@ export default class UserRepository extends Repository<User> {
             return memberList.map((member) => propsRemover(member, ...criticalUserInfo));
         } catch (err) {
             console.error(err);
-            throw new AikoError('user/getCompanyMemberList', 500, 1023894);
+            throw new AikoError(
+                'user/getCompanyMemberList',
+                500,
+                headErrorCode.userDB + userError.getCompanyMemberList,
+            );
         }
     }
 }

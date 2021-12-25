@@ -1,7 +1,13 @@
 import { AikoError } from 'src/Helpers/classes';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 import { LoginAuth } from '../entity';
+
+enum loginAuthError {
+    findUser = 1,
+    createNewRow = 2,
+}
 
 @EntityRepository(LoginAuth)
 export default class LoginAuthRepository extends Repository<LoginAuth> {
@@ -11,7 +17,11 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
         try {
             row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOneOrFail();
         } catch (err) {
-            throw new AikoError('select error(finduser-loginAuth)', 500, 500025);
+            throw new AikoError(
+                'select error(finduser-loginAuth)',
+                500,
+                headErrorCode.loginAuthDB + loginAuthError.findUser,
+            );
         }
 
         return row;
@@ -27,7 +37,7 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('loginAuth/createNewRow', 500, 500360);
+            throw new AikoError('loginAuth/createNewRow', 500, headErrorCode.loginAuthDB + loginAuthError.createNewRow);
         }
 
         return flag;

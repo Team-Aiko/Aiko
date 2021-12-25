@@ -1,7 +1,18 @@
 import { ResultSetHeader } from 'mysql2';
 import { MeetRoom } from 'src/entity';
 import { AikoError, propsRemover } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository } from 'typeorm';
+
+enum meetRoomError {
+    makeMeetingRoom = 1,
+    deleteMeetingRoom = 2,
+    updateMeetingRoom = 3,
+    selectOneMeetingRoomWithRoomPK = 4,
+    viewMeetingRoom = 5,
+    getMeetRoomList = 6,
+    getMeetRoom = 7,
+}
 
 @EntityRepository(MeetRoom)
 export default class MeetRoomRepository extends Repository<MeetRoom> {
@@ -20,7 +31,11 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             return (insertResult.raw as ResultSetHeader).insertId;
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/makeMeetingRoom', 500, 234123);
+            throw new AikoError(
+                'meetRoom/makeMeetingRoom',
+                500,
+                headErrorCode.meetRoomDB + meetRoomError.makeMeetingRoom,
+            );
         }
     }
 
@@ -32,7 +47,11 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             flag = true;
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/deleteMeetingRoom', 500, 595413);
+            throw new AikoError(
+                'meetRoom/deleteMeetingRoom',
+                500,
+                headErrorCode.meetRoomDB + meetRoomError.deleteMeetingRoom,
+            );
         }
 
         return flag;
@@ -55,7 +74,11 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             flag = true;
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/updateMeetingRoom', 500, 404124);
+            throw new AikoError(
+                'meetRoom/updateMeetingRoom',
+                500,
+                headErrorCode.meetRoomDB + meetRoomError.updateMeetingRoom,
+            );
         }
 
         return flag;
@@ -65,7 +88,11 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
         try {
             return await this.findOne(ROOM_PK);
         } catch (err) {
-            throw new AikoError('meetRoom/selectOneMeetingRoomWithRoomPK', 500, 591845);
+            throw new AikoError(
+                'meetRoom/selectOneMeetingRoomWithRoomPK',
+                500,
+                headErrorCode.meetRoomDB + meetRoomError.selectOneMeetingRoomWithRoomPK,
+            );
         }
     }
 
@@ -99,7 +126,11 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             return room;
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/viewMeetingRoom', 500, 582912);
+            throw new AikoError(
+                'meetRoom/viewMeetingRoom',
+                500,
+                headErrorCode.meetRoomDB + meetRoomError.viewMeetingRoom,
+            );
         }
     }
 
@@ -108,7 +139,7 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             return await this.createQueryBuilder('mr').where('mr.COMPANY_PK = :COMPANY_PK', { COMPANY_PK }).getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/meetRoomList', 500, 582912);
+            throw new AikoError('meetRoom/meetRoomList', 500, headErrorCode.meetRoomDB + meetRoomError.getMeetRoomList);
         }
     }
 
@@ -117,7 +148,7 @@ export default class MeetRoomRepository extends Repository<MeetRoom> {
             return await this.createQueryBuilder('mr').where('mr.ROOM_PK = :ROOM_PK', { ROOM_PK }).getOneOrFail();
         } catch (err) {
             console.error(err);
-            throw new AikoError('meetRoom/getMeetRoom', 500, 5044911);
+            throw new AikoError('meetRoom/getMeetRoom', 500, headErrorCode.meetRoomDB + meetRoomError.getMeetRoom);
         }
     }
 }

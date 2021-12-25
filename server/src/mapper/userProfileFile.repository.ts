@@ -1,8 +1,14 @@
 import { ResultSetHeader } from 'mysql2';
 import UserProfileFile from 'src/entity/userProfileFile.entity';
 import { AikoError } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
+
+enum userProfileError {
+    insertProfileImage = 1,
+    viewProfileFile = 2,
+}
 
 @EntityRepository(UserProfileFile)
 export default class UserProfileFileRepository extends Repository<UserProfileFile> {
@@ -21,7 +27,11 @@ export default class UserProfileFileRepository extends Repository<UserProfileFil
             return (insertedResult.raw as ResultSetHeader).insertId;
         } catch (err) {
             console.error(err);
-            throw new AikoError('UserProfileFileRepository/insertProfileImage', 500, 129384);
+            throw new AikoError(
+                'UserProfileFileRepository/insertProfileImage',
+                500,
+                headErrorCode.userProfileFileDB + userProfileError.insertProfileImage,
+            );
         }
     }
 
@@ -32,7 +42,11 @@ export default class UserProfileFileRepository extends Repository<UserProfileFil
                 .getOneOrFail();
         } catch (err) {
             console.error(err);
-            throw new AikoError('UserProfileFileRepository/viewProfileFile', 500, 593211);
+            throw new AikoError(
+                'UserProfileFileRepository/viewProfileFile',
+                500,
+                headErrorCode.userProfileFileDB + userProfileError.viewProfileFile,
+            );
         }
     }
 }

@@ -1,6 +1,19 @@
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
+
+enum fileKeysError {
+    createFileKeys = 1,
+    getFiles = 2,
+    getAFileInfo = 3,
+    getFilesInFolder = 4,
+    deleteFiles = 5,
+    selectFilesInFolder = 6,
+    getFilesInfoInFolder = 7,
+    moveFile = 8,
+    deleteFlagFiles = 9,
+}
 
 type FileOrFiles = Express.Multer.File | Express.Multer.File[];
 
@@ -25,7 +38,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             return insertedResult.identifiers as Pick<FileKeys, 'FILE_KEY_PK'>[];
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/createFileKeys', 500, 292102);
+            throw new AikoError(
+                'FileKeysRepository/createFileKeys',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.createFileKeys,
+            );
         }
     }
 
@@ -48,7 +65,7 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/getFiles', 500, 928192);
+            throw new AikoError('FileKeysRepository/getFiles', 500, headErrorCode.fileKeysDB + fileKeysError.getFiles);
         }
     }
 
@@ -60,7 +77,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .getOneOrFail();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/getAFileInfo', 500, 9281923);
+            throw new AikoError(
+                'FileKeysRepository/getAFileInfo',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.getAFileInfo,
+            );
         }
     }
 
@@ -71,7 +92,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             return await this.createQueryBuilder().where(whereCondition, { folderPKs }).getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/getFilesInFolder', 500, 912030);
+            throw new AikoError(
+                'FileKeysRepository/getFilesInFolder',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.getFilesInFolder,
+            );
         }
     }
 
@@ -91,7 +116,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             return true;
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/deleteFiles', 500, 910292);
+            throw new AikoError(
+                'FileKeysRepository/deleteFiles',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.deleteFiles,
+            );
         }
     }
 
@@ -100,7 +129,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             return await this.find({ FOLDER_PK });
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/selectFilesInFolder', 500, 190284);
+            throw new AikoError(
+                'FileKeysRepository/selectFilesInFolder',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.selectFilesInFolder,
+            );
         }
     }
 
@@ -114,7 +147,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/getFilesInfoInFolder', 500, 182934);
+            throw new AikoError(
+                'FileKeysRepository/getFilesInfoInFolder',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.getFilesInfoInFolder,
+            );
         }
     }
 
@@ -128,21 +165,9 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .execute();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/moveFile', 500, 8918277);
+            throw new AikoError('FileKeysRepository/moveFile', 500, headErrorCode.fileKeysDB + fileKeysError.moveFile);
         }
     }
-
-    // async getDeleteFlagFiles(companyPKs: number[]) {
-    //     try {
-    //         return await this.createQueryBuilder()
-    //             .where('COMPANY_PK IN(:...companyPKs)', { companyPKs })
-    //             .andWhere('IS_DELETED = 1')
-    //             .getMany();
-    //     } catch (err) {
-    //         console.error(err);
-    //         throw new AikoError('FileKeysRepository/getDeleteFlagFiles', 500, 3911912);
-    //     }
-    // }
 
     async deleteFlagFiles(files: number[], @TransactionManager() manager: EntityManager) {
         try {
@@ -155,7 +180,11 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .execute();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileKeysRepository/deleteFlagFiles', 500, 3918912);
+            throw new AikoError(
+                'FileKeysRepository/deleteFlagFiles',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.deleteFlagFiles,
+            );
         }
     }
 }

@@ -1,8 +1,15 @@
 import GroupChatUserList from 'src/entity/groupChatUL.entity';
 import { AikoError, propsRemover } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
 const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
+
+enum groupChatUserListError {
+    insertUserListInNewGroupChatRoom = 1,
+    findChatRooms = 2,
+    getMembersInGroupChatRoom = 3,
+}
 
 @EntityRepository(GroupChatUserList)
 export default class GroupChatUserListRepository extends Repository<GroupChatUserList> {
@@ -14,7 +21,11 @@ export default class GroupChatUserListRepository extends Repository<GroupChatUse
             await manager.insert(GroupChatUserList, DTOs);
         } catch (err) {
             console.error(err);
-            throw new AikoError('GroupChatUserListRepository/insertUserListInNewGroupChatRoom', 500, 2911855);
+            throw new AikoError(
+                'GroupChatUserListRepository/insertUserListInNewGroupChatRoom',
+                500,
+                headErrorCode.groupChatUserListDB + groupChatUserListError.insertUserListInNewGroupChatRoom,
+            );
         }
     }
 
@@ -29,7 +40,11 @@ export default class GroupChatUserListRepository extends Repository<GroupChatUse
             return list.map((item) => item.groupChatRoom);
         } catch (err) {
             console.error(err);
-            throw new AikoError('GroupChatUserListRepository/findChatRooms', 500, 2911855);
+            throw new AikoError(
+                'GroupChatUserListRepository/findChatRooms',
+                500,
+                headErrorCode.groupChatUserListDB + groupChatUserListError.findChatRooms,
+            );
         }
     }
 
@@ -45,7 +60,11 @@ export default class GroupChatUserListRepository extends Repository<GroupChatUse
             return list.map((item) => propsRemover(item.user, ...criticalInfos));
         } catch (err) {
             console.error(err);
-            throw new AikoError('GroupChatUserListRepository/getMembersInGroupChatRoom', 500, 28192);
+            throw new AikoError(
+                'GroupChatUserListRepository/getMembersInGroupChatRoom',
+                500,
+                headErrorCode.groupChatUserListDB + groupChatUserListError.getMembersInGroupChatRoom,
+            );
         }
     }
 }

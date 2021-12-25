@@ -1,6 +1,13 @@
 import FileBin from 'src/entity/fileBin.entity';
 import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
+
+enum fileBinError {
+    deleteFiles = 1,
+    getDeleteFlagFiles = 2,
+    deleteFilesForScheduler = 3,
+}
 
 @EntityRepository(FileBin)
 export default class FileBinRepository extends Repository<FileBin> {
@@ -25,7 +32,11 @@ export default class FileBinRepository extends Repository<FileBin> {
             await manager.save(FileBin, fileBinList);
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileBinRepository/deleteFiles', 500, 9192384);
+            throw new AikoError(
+                'FileBinRepository/deleteFiles',
+                500,
+                headErrorCode.fileBinDB + fileBinError.deleteFiles,
+            );
         }
     }
 
@@ -34,7 +45,11 @@ export default class FileBinRepository extends Repository<FileBin> {
             return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileBinRepository/getDeleteFlagFiles', 500, 9192384);
+            throw new AikoError(
+                'FileBinRepository/getDeleteFlagFiles',
+                500,
+                headErrorCode.fileBinDB + fileBinError.getDeleteFlagFiles,
+            );
         }
     }
 
@@ -48,7 +63,11 @@ export default class FileBinRepository extends Repository<FileBin> {
                 .execute();
         } catch (err) {
             console.error(err);
-            throw new AikoError('FileBinRepository/deleteFilesForScheduler', 500, 9192384);
+            throw new AikoError(
+                'FileBinRepository/deleteFilesForScheduler',
+                500,
+                headErrorCode.fileBinDB + fileBinError.deleteFilesForScheduler,
+            );
         }
     }
 }

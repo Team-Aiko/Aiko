@@ -1,6 +1,14 @@
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 import { Refresh } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum refreshError {
+    createRow = 1,
+    checkRefreshToken = 2,
+    updateRefreshToken = 3,
+    getRefreshTokenRow = 4,
+}
 
 @EntityRepository(Refresh)
 export default class RefreshRepository extends Repository<Refresh> {
@@ -9,7 +17,12 @@ export default class RefreshRepository extends Repository<Refresh> {
         try {
             return await manager.insert(Refresh, { USER_PK: userPk });
         } catch (err) {
-            throw new AikoError('insert error (refresh token table)', 500, 500010);
+            console.error(err);
+            throw new AikoError(
+                'insert error (refresh token table)',
+                500,
+                headErrorCode.refreshDB + refreshError.createRow,
+            );
         }
     }
 
@@ -25,7 +38,12 @@ export default class RefreshRepository extends Repository<Refresh> {
                     .getOne()
             ).USER_TOKEN;
         } catch (error) {
-            throw new AikoError('select error (refresh token)', 500, 500004);
+            console.error(error);
+            throw new AikoError(
+                'select error (refresh token)',
+                500,
+                headErrorCode.refreshDB + refreshError.checkRefreshToken,
+            );
         }
 
         return refresh;
@@ -40,7 +58,12 @@ export default class RefreshRepository extends Repository<Refresh> {
                 .where('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
-            throw new AikoError('update error(refresh token)', 500, 500006);
+            console.error(err);
+            throw new AikoError(
+                'update error(refresh token)',
+                500,
+                headErrorCode.refreshDB + refreshError.updateRefreshToken,
+            );
         }
     }
 
@@ -49,7 +72,11 @@ export default class RefreshRepository extends Repository<Refresh> {
             return await this.createQueryBuilder('r').where('r.USER_TOKEN = USER_TOKEN', { USER_TOKEN }).getOneOrFail();
         } catch (err) {
             console.error(err);
-            throw new AikoError('refresh/getRefreshTokenRow', 500, 929122);
+            throw new AikoError(
+                'refresh/getRefreshTokenRow',
+                500,
+                headErrorCode.refreshDB + refreshError.getRefreshTokenRow,
+            );
         }
     }
 }

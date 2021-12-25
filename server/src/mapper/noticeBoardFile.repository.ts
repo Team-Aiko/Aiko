@@ -1,5 +1,13 @@
 import { EntityRepository, Repository } from 'typeorm';
 import NoticeBoardFile from 'src/entity/noticeBoardFile.entity';
+import { AikoError } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum noticeBoardFileError {
+    createFiles = 1,
+    deleteFiles = 2,
+    downloadFile = 3,
+}
 
 @EntityRepository(NoticeBoardFile)
 export default class NoticeBoardFileRepository extends Repository<NoticeBoardFile> {
@@ -25,6 +33,11 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
             }
         } catch (err) {
             console.log(err);
+            throw new AikoError(
+                'NoticeBoardFileRepository/createFiles',
+                500,
+                headErrorCode.noticeBoardFileDB + noticeBoardFileError.createFiles,
+            );
         }
     }
     async deleteFiles(delFilePks: number[]) {
@@ -41,7 +54,11 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
             }
         } catch (err) {
             console.log(err);
-            return err;
+            throw new AikoError(
+                'NoticeBoardFileRepository/createFiles',
+                500,
+                headErrorCode.noticeBoardFileDB + noticeBoardFileError.deleteFiles,
+            );
         }
     }
 
