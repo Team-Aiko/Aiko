@@ -1,5 +1,6 @@
 import { FileBin, FolderBin } from 'src/entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 import FileFolderRepository from './fileFolder.repository';
@@ -36,8 +37,8 @@ export default class FolderBinRepository extends Repository<FolderBin> {
 
             return returnVal;
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FolderBinRepository/deleteFolder',
                 500,
                 headErrorCode.folderBinDB + folderBinError.deleteFolder,
@@ -54,8 +55,8 @@ export default class FolderBinRepository extends Repository<FolderBin> {
                 .where('FOLDER_PK IN(:...folders)', { folders })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FolderBinRepository/deleteFolderForScheduler',
                 500,
                 headErrorCode.folderBinDB + folderBinError.deleteFolderForScheduler,
@@ -67,8 +68,8 @@ export default class FolderBinRepository extends Repository<FolderBin> {
         try {
             return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FolderBinRepository/getDeleteFlagFolder',
                 500,
                 headErrorCode.folderBinDB + folderBinError.getDeleteFlagFolder,

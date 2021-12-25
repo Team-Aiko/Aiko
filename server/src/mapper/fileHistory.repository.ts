@@ -1,5 +1,6 @@
 import { FileHistory } from 'src/entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
@@ -18,8 +19,8 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
         try {
             return (await manager.insert(FileHistory, files)).identifiers as Pick<FileHistory, 'FH_PK'>[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileHistoryRepository/createFileHistory',
                 500,
                 headErrorCode.fileHistoryDB + fileHistoryError.createFileHistory,
@@ -40,8 +41,8 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
             );
             return result.length ? result[0] : undefined;
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileHistoryRepository/downloadDriveFiles',
                 500,
                 headErrorCode.fileHistoryDB + fileHistoryError.downloadDriveFiles,
@@ -58,8 +59,8 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
                 .where('FILE_KEY_PK IN(:...files)', { files })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileHistoryRepository/deletedFlagFiles',
                 500,
                 headErrorCode.fileHistoryDB + fileHistoryError.deletedFlagFiles,

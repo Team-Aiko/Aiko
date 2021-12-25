@@ -1,6 +1,6 @@
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { NoticeBoard } from '../entity';
-import { unixTimeStamp, propsRemover } from 'src/Helpers/functions';
+import { unixTimeStamp, propsRemover, stackAikoError } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 
@@ -34,8 +34,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 })
                 .execute();
         } catch (err) {
-            console.error(err);
-            return new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardRepository/createArticle',
                 500,
                 headErrorCode.noticeBoardDB + noticeBoardError.createArticle,
@@ -52,8 +52,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
-            console.error(err);
-            return new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardRepository/createArticle',
                 500,
                 headErrorCode.noticeBoardDB + noticeBoardError.deleteArticle,
@@ -71,8 +71,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .andWhere('IS_DELETE = 0')
                 .execute();
         } catch (err) {
-            console.error(err);
-            return new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardRepository/createArticle',
                 500,
                 headErrorCode.noticeBoardDB + noticeBoardError.updateArticle,
@@ -110,8 +110,8 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             }
             return result;
         } catch (err) {
-            console.error(err);
-            return new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardRepository/createArticle',
                 500,
                 headErrorCode.noticeBoardDB + noticeBoardError.getList,

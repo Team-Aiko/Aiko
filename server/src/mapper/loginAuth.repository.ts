@@ -1,4 +1,5 @@
 import { AikoError } from 'src/Helpers/classes';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
@@ -17,7 +18,8 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
         try {
             row = await this.createQueryBuilder('l').where('l.UUID = :UUID', { UUID: uuid }).getOneOrFail();
         } catch (err) {
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'select error(finduser-loginAuth)',
                 500,
                 headErrorCode.loginAuthDB + loginAuthError.findUser,
@@ -37,7 +39,12 @@ export default class LoginAuthRepository extends Repository<LoginAuth> {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('loginAuth/createNewRow', 500, headErrorCode.loginAuthDB + loginAuthError.createNewRow);
+            throw stackAikoError(
+                err,
+                'loginAuth/createNewRow',
+                500,
+                headErrorCode.loginAuthDB + loginAuthError.createNewRow,
+            );
         }
 
         return flag;

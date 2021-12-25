@@ -2,6 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { ResetPw } from '../entity';
 import { AikoError } from 'src/Helpers/classes';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { stackAikoError } from 'src/Helpers/functions';
 
 enum ResetPwError {
     getRequestCount = 1,
@@ -15,8 +16,8 @@ export default class ResetPwRepository extends Repository<ResetPw> {
     async getRequestCount(userPK: number): Promise<number> {
         try {
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'ResetPwRepository/getRequestCount',
                 500,
                 headErrorCode.resetPWDB + ResetPwError.getRequestCount,
@@ -30,8 +31,8 @@ export default class ResetPwRepository extends Repository<ResetPw> {
             await this.createQueryBuilder().insert().into(ResetPw).values({ USER_PK: userPK, UUID: uuid }).execute();
             return true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'resetPw/insertRequestLog',
                 500,
                 headErrorCode.resetPWDB + ResetPwError.insertRequestLog,
@@ -46,7 +47,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
                 .orderBy('r.RESET_PK', 'DESC')
                 .getOne();
         } catch (err) {
-            throw new AikoError('resetPw/getRequest', 500, headErrorCode.resetPWDB + ResetPwError.getRequest);
+            throw stackAikoError(err, 'resetPw/getRequest', 500, headErrorCode.resetPWDB + ResetPwError.getRequest);
         }
     }
 
@@ -55,7 +56,12 @@ export default class ResetPwRepository extends Repository<ResetPw> {
             await this.createQueryBuilder().delete().where('USER_PK = :USER_PK', { USER_PK: userId }).execute();
             return true;
         } catch (err) {
-            throw new AikoError('resetPw/removeRequests', 500, headErrorCode.resetPWDB + ResetPwError.removeRequests);
+            throw stackAikoError(
+                err,
+                'resetPw/removeRequests',
+                500,
+                headErrorCode.resetPWDB + ResetPwError.removeRequests,
+            );
         }
     }
 }

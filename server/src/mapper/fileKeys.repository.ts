@@ -1,5 +1,6 @@
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
@@ -37,8 +38,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
 
             return insertedResult.identifiers as Pick<FileKeys, 'FILE_KEY_PK'>[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/createFileKeys',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.createFileKeys,
@@ -64,8 +65,12 @@ export default class FileKeysRepository extends Repository<FileKeys> {
 
             return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileKeysRepository/getFiles', 500, headErrorCode.fileKeysDB + fileKeysError.getFiles);
+            throw stackAikoError(
+                err,
+                'FileKeysRepository/getFiles',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.getFiles,
+            );
         }
     }
 
@@ -76,8 +81,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .andWhere(`COMPANY_PK = ${companyPK}`)
                 .getOneOrFail();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/getAFileInfo',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.getAFileInfo,
@@ -91,8 +96,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             const whereCondition = `FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
             return await this.createQueryBuilder().where(whereCondition, { folderPKs }).getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/getFilesInFolder',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.getFilesInFolder,
@@ -115,8 +120,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
 
             return true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/deleteFiles',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.deleteFiles,
@@ -128,8 +133,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         try {
             return await this.find({ FOLDER_PK });
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/selectFilesInFolder',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.selectFilesInFolder,
@@ -146,8 +151,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .andWhere(`fk.COMPANY_PK = ${COMPANY_PK}`)
                 .getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/getFilesInfoInFolder',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.getFilesInfoInFolder,
@@ -164,8 +169,12 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .where('FILE_KEY_PK IN (...:fromFilePKs)', { fromFilePKs })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileKeysRepository/moveFile', 500, headErrorCode.fileKeysDB + fileKeysError.moveFile);
+            throw stackAikoError(
+                err,
+                'FileKeysRepository/moveFile',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.moveFile,
+            );
         }
     }
 
@@ -179,8 +188,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .andWhere('IS_DELETED = 1')
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileKeysRepository/deleteFlagFiles',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.deleteFlagFiles,

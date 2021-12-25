@@ -2,12 +2,14 @@ export class AikoError extends Error {
     description: string;
     stateCode: number;
     appCode: number;
+    errorStack: AikoError = undefined;
 
-    constructor(description: string, stateCode: number, appCode: number) {
+    constructor(description: string, stateCode: number, appCode: number, errorStack?: AikoError) {
         super();
         this.description = description;
         this.stateCode = stateCode;
         this.appCode = appCode;
+        this.errorStack = errorStack;
     }
 }
 

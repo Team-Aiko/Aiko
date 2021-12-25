@@ -310,3 +310,15 @@ export function deleteFiles(destination: string, ...uuid: string[]) {
         });
     }
 }
+
+export function stackAikoError(err: Error, description: string, httpCode: number, appCode: number) {
+    let returnErr: AikoError = undefined;
+
+    if (err instanceof AikoError) returnErr = new AikoError(description, httpCode, appCode, err);
+    else {
+        console.error(err);
+        returnErr = new AikoError(description, httpCode, appCode);
+    }
+
+    return returnErr;
+}

@@ -2,6 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import NoticeBoardFile from 'src/entity/noticeBoardFile.entity';
 import { AikoError } from 'src/Helpers';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { stackAikoError } from 'src/Helpers/functions';
 
 enum noticeBoardFileError {
     createFiles = 1,
@@ -32,8 +33,8 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
                     .execute();
             }
         } catch (err) {
-            console.log(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardFileRepository/createFiles',
                 500,
                 headErrorCode.noticeBoardFileDB + noticeBoardFileError.createFiles,
@@ -53,8 +54,8 @@ export default class NoticeBoardFileRepository extends Repository<NoticeBoardFil
                     .execute();
             }
         } catch (err) {
-            console.log(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'NoticeBoardFileRepository/createFiles',
                 500,
                 headErrorCode.noticeBoardFileDB + noticeBoardFileError.deleteFiles,

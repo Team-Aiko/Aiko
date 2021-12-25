@@ -1,5 +1,6 @@
 import Grant from 'src/entity/Grant.entity';
 import { AikoError } from 'src/Helpers/classes';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 
@@ -23,8 +24,7 @@ export default class GrantRepository extends Repository<Grant> {
                     })
                     .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('grantPermission error', 500, headErrorCode.grantDB + grantError.grantPermission);
+            throw stackAikoError(err, 'grantPermission error', 500, headErrorCode.grantDB + grantError.grantPermission);
         }
     }
 
@@ -32,7 +32,12 @@ export default class GrantRepository extends Repository<Grant> {
         try {
             return await this.createQueryBuilder('g').where('g.USER_PK = :USER_PK', { USER_PK: userPK }).getMany();
         } catch (err) {
-            throw new AikoError('grantInfo selection error', 500, headErrorCode.grantDB + grantError.getGrantList);
+            throw stackAikoError(
+                err,
+                'grantInfo selection error',
+                500,
+                headErrorCode.grantDB + grantError.getGrantList,
+            );
         }
     }
 }

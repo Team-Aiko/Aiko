@@ -4,6 +4,7 @@ import { v1 } from 'uuid';
 import { AikoError } from 'src/Helpers/classes';
 import { propsRemover } from 'src/Helpers';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { stackAikoError } from 'src/Helpers/functions';
 
 const criticalInfos = ['SALT', 'PASSWORD', 'COUNTRY_PK', 'IS_DELETED', 'IS_VERIFIED'];
 
@@ -29,8 +30,8 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
             const insertedResult = (await manager.insert(PrivateChatRoom, DTOs)).identifiers as { CR_PK: string }[];
             return insertedResult.map((key) => key.CR_PK);
         } catch (err) {
-            console.log(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'PrivateChatRoomRepository/makePrivateChatRoomList',
                 500,
                 headErrorCode.privateChatRoomDB + privateChatRoomError.makePrivateChatRoomList,
@@ -45,8 +46,8 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
 
             return { oddCase, evenCase };
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'PrivateChatRoomRepository/getOneToOneChatRoomList',
                 500,
                 headErrorCode.privateChatRoomDB + privateChatRoomError.getPrivateChatRoomList,
@@ -58,8 +59,8 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
         try {
             return await this.find({ COMPANY_PK });
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'PrivateChatRoomRepository/getPrivateChatRoomListForScheduler',
                 500,
                 headErrorCode.privateChatRoomDB + privateChatRoomError.getPrivateChatRoomListForScheduler,
@@ -83,8 +84,8 @@ export default class PrivateChatRoomRepository extends Repository<PrivateChatRoo
 
             return { user1, user2 };
         } catch (err) {
-            console.error(err);
-            new AikoError(
+            throw stackAikoError(
+                err,
                 'PrivateChatRoomRepository/getChatRoomInfo',
                 500,
                 headErrorCode.privateChatRoomDB + privateChatRoomError.getChatRoomInfo,

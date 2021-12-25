@@ -1,5 +1,6 @@
 import { FileFolder } from 'src/entity';
 import { AikoError, getRepo } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, InsertResult, Repository, getManager, TransactionManager, EntityManager } from 'typeorm';
 import FileKeysRepository from './fileKeys.repository';
@@ -45,8 +46,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             return insertedResult.identifiers as Pick<FileFolder, 'FOLDER_PK'>[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/createFolder',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.createFolder,
@@ -70,8 +71,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             return result;
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/createFolder',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getFolderInfo,
@@ -118,8 +119,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 return sql;
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/getAllChildrenWithMyself',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getAllChildrenWithMyself,
@@ -162,8 +163,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 }
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/deleteFolderAndFiles',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.deleteFolderAndFiles,
@@ -182,8 +183,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 .where(whereCondition, { folders })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/updateDeleteFlag',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.updateDeleteFlag,
@@ -199,8 +200,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
             return isArray ? await fraction.getMany() : await fraction.getOne();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/checkValidDeleteFolder',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.checkValidDeleteFolder,
@@ -212,8 +213,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         try {
             return await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/getDirectChildren',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getDirectChildren,
@@ -236,8 +237,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 }),
             );
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/updateFileSize',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.updateFileSize,
@@ -261,8 +262,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                     FF1.FOLDER_PK = FF2.PARENT_PK
              ) select * from GET_ALL_PARENT`)) as FileFolder[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/getAllParentWithMyself',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getAllParentWithMyself,
@@ -279,8 +280,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 .where('FOLDER_PK IN(...:fromFolderPKs)', { fromFolderPKs })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/moveFolder',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.moveFolder,
@@ -297,8 +298,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 .where('FOLDER_PK IN(:...folders)', { folders })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileFolderRepository/deleteFolderForScheduler',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.deleteFolderForScheduler,

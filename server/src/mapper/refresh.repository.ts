@@ -2,6 +2,7 @@ import { EntityManager, EntityRepository, Repository, TransactionManager } from 
 import { Refresh } from 'src/entity';
 import { AikoError } from 'src/Helpers/classes';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { stackAikoError } from 'src/Helpers/functions';
 
 enum refreshError {
     createRow = 1,
@@ -17,8 +18,8 @@ export default class RefreshRepository extends Repository<Refresh> {
         try {
             return await manager.insert(Refresh, { USER_PK: userPk });
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'insert error (refresh token table)',
                 500,
                 headErrorCode.refreshDB + refreshError.createRow,
@@ -38,8 +39,8 @@ export default class RefreshRepository extends Repository<Refresh> {
                     .getOne()
             ).USER_TOKEN;
         } catch (error) {
-            console.error(error);
-            throw new AikoError(
+            throw stackAikoError(
+                error,
                 'select error (refresh token)',
                 500,
                 headErrorCode.refreshDB + refreshError.checkRefreshToken,
@@ -58,8 +59,8 @@ export default class RefreshRepository extends Repository<Refresh> {
                 .where('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'update error(refresh token)',
                 500,
                 headErrorCode.refreshDB + refreshError.updateRefreshToken,
@@ -71,8 +72,8 @@ export default class RefreshRepository extends Repository<Refresh> {
         try {
             return await this.createQueryBuilder('r').where('r.USER_TOKEN = USER_TOKEN', { USER_TOKEN }).getOneOrFail();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'refresh/getRefreshTokenRow',
                 500,
                 headErrorCode.refreshDB + refreshError.getRefreshTokenRow,

@@ -1,5 +1,6 @@
 import FileBin from 'src/entity/fileBin.entity';
 import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
@@ -31,8 +32,8 @@ export default class FileBinRepository extends Repository<FileBin> {
 
             await manager.save(FileBin, fileBinList);
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileBinRepository/deleteFiles',
                 500,
                 headErrorCode.fileBinDB + fileBinError.deleteFiles,
@@ -44,8 +45,8 @@ export default class FileBinRepository extends Repository<FileBin> {
         try {
             return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileBinRepository/getDeleteFlagFiles',
                 500,
                 headErrorCode.fileBinDB + fileBinError.getDeleteFlagFiles,
@@ -62,8 +63,8 @@ export default class FileBinRepository extends Repository<FileBin> {
                 .where('FILE_KEY_PK IN(:...files)', { files })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError(
+            throw stackAikoError(
+                err,
                 'FileBinRepository/deleteFilesForScheduler',
                 500,
                 headErrorCode.fileBinDB + fileBinError.deleteFilesForScheduler,
