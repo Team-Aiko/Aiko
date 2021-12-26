@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { resExecutor } from 'src/Helpers';
 import { bodyChecker } from 'src/Helpers/functions';

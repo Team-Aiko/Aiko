@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 import CompanyService from '../services/company.service';
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
-import { resExecutor, usrPayloadParser, isChiefAdmin } from 'src/Helpers';
+import { resExecutor, isChiefAdmin } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
 import { bodyChecker } from 'src/Helpers/functions';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('company')
+@UseInterceptors(UserPayloadParserInterceptor)
 export default class CompanyController {
     constructor(private companyService: CompanyService) {}
 
@@ -26,8 +29,8 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Get('employee-list')
-    async getDepartmentMembers(@Req() req: Request, @Res() res: Response) {
-        const { COMPANY_PK } = usrPayloadParser(req);
+    async getDepartmentMembers(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+        const { COMPANY_PK } = userPayload;
         const { deptId } = req.query;
 
         try {
@@ -45,10 +48,10 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Post('new-department')
-    async createDepartment(@Req() req: Request, @Res() res: Response) {
+    async createDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentName, parentPK, parentDepth } = req.body;
-            const { COMPANY_PK, USER_PK } = usrPayloadParser(req);
+            const { COMPANY_PK, USER_PK } = userPayload;
             bodyChecker(
                 { departmentName, parentPK, parentDepth },
                 { departmentName: 'string', parentPK: 'number', parentDepth: 'number' },
@@ -78,10 +81,10 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Post('permission')
-    async givePermission(@Req() req: Request, @Res() res: Response) {
+    async givePermission(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { authListPK, targetUserPK } = req.body;
-            const { USER_PK, COMPANY_PK, grants } = usrPayloadParser(req);
+            const { USER_PK, COMPANY_PK, grants } = userPayload;
             bodyChecker({ authListPK, targetUserPK }, { authListPK: 'number', targetUserPK: 'number' });
 
             const bundle: IPermissionBundle = {
@@ -106,10 +109,10 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Post('delete-department')
-    async deleteDepartment(@Req() req: Request, @Res() res: Response) {
+    async deleteDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentPK } = req.body;
-            const { grants, COMPANY_PK } = usrPayloadParser(req);
+            const { grants, COMPANY_PK } = userPayload;
             bodyChecker({ departmentPK }, { departmentPK: 'number' });
 
             const result = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
@@ -127,10 +130,10 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Post('change-department-name')
-    async updateDepartmentName(@Req() req: Request, @Res() res: Response) {
+    async updateDepartmentName(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentPK, departmentName } = req.body;
-            const { grants, COMPANY_PK } = usrPayloadParser(req);
+            const { grants, COMPANY_PK } = userPayload;
             bodyChecker({ departmentPK, departmentName }, { departmentPK: 'number', departmentName: 'string' });
 
             const result = await this.companyService.updateDepartmentName(
@@ -153,9 +156,9 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Get('searching-members')
-    async searchMembers(@Req() req: Request, @Res() res: Response) {
+    async searchMembers(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         const { str } = req.query;
-        const { grants, COMPANY_PK } = usrPayloadParser(req);
+        const { grants, COMPANY_PK } = userPayload;
 
         try {
             const result = await this.companyService.searchMembers(str as string, COMPANY_PK, grants);
@@ -172,8 +175,8 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Get('department-tree')
-    async getDepartmentTree(@Req() req: Request, @Res() res: Response) {
-        const { COMPANY_PK } = usrPayloadParser(req);
+    async getDepartmentTree(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+        const { COMPANY_PK } = userPayload;
         const { departmentPK } = req.query;
 
         try {
@@ -196,10 +199,10 @@ export default class CompanyController {
      */
     @UseGuards(UserGuard)
     @Post('add-mem-to-dept')
-    async addMemberToDepartment(@Req() req: Request, @Res() res: Response) {
+    async addMemberToDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentPK, userPK } = req.body;
-            const { grants, COMPANY_PK } = usrPayloadParser(req);
+            const { grants, COMPANY_PK } = userPayload;
             bodyChecker({ departmentPK, userPK }, { departmentPK: 'number', userPK: 'number' });
 
             const result = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
@@ -212,9 +215,9 @@ export default class CompanyController {
     // ! api doc
     @UseGuards(UserGuard)
     @Get('check-admin')
-    async checkAdmin(@Req() req: Request, @Res() res: Response) {
+    async checkAdmin(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { grants } = usrPayloadParser(req);
+            const { grants } = userPayload;
             const result = isChiefAdmin(grants);
             resExecutor(res, { result });
         } catch (err) {
@@ -225,9 +228,9 @@ export default class CompanyController {
     // ! api doc
     @UseGuards(UserGuard)
     @Get('member-list')
-    async getCompanyMemberList(@Req() req: Request, @Res() res: Response) {
+    async getCompanyMemberList(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { COMPANY_PK } = usrPayloadParser(req);
+            const { COMPANY_PK } = userPayload;
             const result = await this.companyService.getCompanyMemberList(COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {

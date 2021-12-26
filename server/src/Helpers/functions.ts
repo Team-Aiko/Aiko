@@ -151,7 +151,10 @@ export function bodyChecker<T extends { [idx: string]: any }>(
 
                 if (isArray) {
                     if (bodyData.length <= 0) return false;
-                    else return requiredType.slice(0, -2) !== typeof bodyData[0];
+                    else {
+                        const validType = requiredType.slice(0, -2);
+                        return bodyData.some((item) => typeof item !== validType);
+                    }
                 } else return true;
             }
 

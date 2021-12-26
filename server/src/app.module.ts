@@ -49,11 +49,4 @@ export class AppModule {
     constructor(private connection: Connection) {
         // database connection : connection
     }
-    //middleware
-    // configure(consumer: MiddlewareConsumer) {
-    //     consumer.apply(VerifyJwt).forRoutes({
-    //         path: 'company/organization-chart',
-    //         method: RequestMethod.ALL,
-    //     });
-    // }
 }

@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserGuard } from 'src/guard/user.guard';
 import { Request, Response } from 'express';
 import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
 import ApprovalService from 'src/services/approval.service';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
+@UseInterceptors(UserPayloadParserInterceptor)
 @UseGuards(UserGuard)
 @Controller('approval')
 export default class ApprovalController {
@@ -11,9 +14,8 @@ export default class ApprovalController {
 
     // ! api doc
     @Post('write')
-    createApproval(@Req() req: Request, @Res() res: Response) {
+    createApproval(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         const { title, content, approverPks, agreerPks } = req.body;
-        const userPayload = usrPayloadParser(req);
         const departmentPk = userPayload.DEPARTMENT_PK;
         const comPk = userPayload.COMPANY_PK;
         const userPk = userPayload.USER_PK;

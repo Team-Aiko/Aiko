@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Express, Response } from 'express';
 import { ISignup, IResetPw } from '../interfaces/MVC/accountMVC';
@@ -9,8 +9,11 @@ import { UserRepository } from 'src/mapper';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
 import MeetingService from 'src/services/meeting.service';
 import { bodyChecker } from 'src/Helpers/functions';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('account')
+@UseInterceptors(UserPayloadParserInterceptor)
 export default class AccountController {
     // private accountService: AccountService;
 
@@ -176,10 +179,10 @@ export default class AccountController {
     // ! api doc
     @Post('user-info')
     @UseGuards(UserGuard)
-    async getUserInfo(@Req() req: Request, @Res() res: Response) {
+    async getUserInfo(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { nickname } = req.body;
-            const { COMPANY_PK } = usrPayloadParser(req);
+            const { COMPANY_PK } = userPayload;
             bodyChecker({ nickname }, { nickname: 'string' });
 
             const result = await this.accountService.getUserInfo(nickname, COMPANY_PK);
@@ -212,9 +215,9 @@ export default class AccountController {
     // ! api doc
     @UseGuards(UserGuard)
     @Get('decoding-token')
-    async decodeToken(@Req() req: Request, @Res() res: Response) {
+    async decodeToken(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { USER_PK } = usrPayloadParser(req);
+            const { USER_PK } = userPayload;
             resExecutor(res, {
                 result: propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
             });
