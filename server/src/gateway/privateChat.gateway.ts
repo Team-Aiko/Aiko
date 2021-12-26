@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import PrivateChatService from 'src/services/privateChat.service';
-import { getSocketErrorPacket, parseCookieString } from 'src/Helpers/functions';
+import { getSocketErrorPacket, parseCookieString, parseUserPayloadString } from 'src/Helpers/functions';
 import { SocketGuard } from 'src/guard/socket.guard';
 
 @UseGuards(SocketGuard)
@@ -29,16 +29,12 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     @SubscribeMessage(privateChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
         try {
-            const cookies = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(
-                client.request.headers.cookie,
-            );
+            const payload = parseUserPayloadString(client.request.headers['user-payload']);
+            const { COMPANY_PK, USER_PK } = payload;
 
             // null data filter
-            if (!cookies) return;
-            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(
-                client.id,
-                cookies.ACCESS_TOKEN,
-            );
+            if (!payload) return;
+            const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(USER_PK, COMPANY_PK);
 
             const roomList = oddCase.concat(evenCase);
             roomList.forEach((room) => client.join(room.CR_PK));

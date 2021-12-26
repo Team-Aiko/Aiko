@@ -66,11 +66,9 @@ export default class PrivateChatService {
         }
     }
 
-    async connectPrivateChat(socketId: string, accessToken: string) {
+    async connectPrivateChat(userPK: number, companyPK: number) {
         try {
-            const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(USER_PK, COMPANY_PK);
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
 
             return roomList;
         } catch (err) {

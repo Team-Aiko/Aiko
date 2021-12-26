@@ -298,6 +298,10 @@ export function parseCookieString<T extends { [idx: string]: string }>(cookie: s
     return cookieJson as T;
 }
 
+export function parseUserPayloadString(stringifiedUserPayload: string | string[]) {
+    return JSON.parse(stringifiedUserPayload as string) as IUserPayload;
+}
+
 // 파일삭제
 export function deleteFiles(destination: string, ...uuid: string[]) {
     for (const _uuid of uuid) {

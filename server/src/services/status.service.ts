@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Server } from 'socket.io';
 import { AikoError } from 'src/Helpers';
-import { stackAikoError, tokenParser } from 'src/Helpers/functions';
+import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import { Status, StatusDocument } from 'src/schemas/status.schema';
@@ -55,26 +55,25 @@ export default class StatusService {
     }
 
     async statusConnection(
-        accessToken: string,
+        userPK: number,
+        companyPK: number,
         clientId: string,
     ): Promise<{ isSendable: boolean; user?: Status; myClients: StatusClientStorage[] }> {
-        const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
-
         try {
-            const statusInfo = await this.getUserStatus(USER_PK);
+            const statusInfo = await this.getUserStatus(userPK);
             console.log(
                 '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ statusInfo',
                 statusInfo,
             );
             const statusDTO = new Status();
-            statusDTO.userPK = USER_PK;
-            statusDTO.companyPK = COMPANY_PK;
+            statusDTO.userPK = userPK;
+            statusDTO.companyPK = companyPK;
             statusDTO.logoutPending = false;
             statusDTO.status = !statusInfo ? 1 : statusInfo.status === -1 ? 1 : statusInfo.status;
 
             await this.updateStatus(statusDTO);
-            await this.insertClientInfo(USER_PK, COMPANY_PK, clientId);
-            const myClients = await this.selectClientInfos(USER_PK);
+            await this.insertClientInfo(userPK, companyPK, clientId);
+            const myClients = await this.selectClientInfos(userPK);
 
             const isSendable = !statusInfo.logoutPending;
 
