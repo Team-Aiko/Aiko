@@ -151,10 +151,6 @@ export default function CComp() {
         }
     }, [userInfo.USER_PK]);
 
-    const handleNav = (bools) => {
-        dispatch(handleSideNav(bools));
-    };
-
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
@@ -258,7 +254,7 @@ export default function CComp() {
     }, []);
 
     const handleSNav = useCallback(() => {
-        props.handleSideNav(true);
+        dispatch(handleSideNav(true));
     }, []);
 
     const goToAdmin = () => {
