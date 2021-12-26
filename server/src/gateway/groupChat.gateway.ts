@@ -36,6 +36,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             const payloadStr = client.request.headers['user-payload'];
             if (!payloadStr) return;
@@ -69,6 +71,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             console.log('groupChat disconnect clientId : ', client.id);
             await this.groupChatService.deleteClientInfo(client.id);
@@ -90,6 +94,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         client: Socket,
         { userList, roomTitle, maxNum }: { userList: number[]; roomTitle: string; maxNum: number },
     ) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             const payloadStr = client.request.headers['user-payload'];
             if (!payloadStr) return;
@@ -132,6 +138,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
     async joinGroupChatRoom(client: Socket, GC_PK: number) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             if (!GC_PK) return;
 
@@ -158,6 +166,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
     async sendMessageToGroup(client: Socket, payload: { GC_PK: number; file: number; message: string; date: number }) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             if (!payload) return;
 
@@ -181,6 +191,8 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
     async readChatLogs(client: Socket, GC_PK: number) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             if (!GC_PK) return;
 
