@@ -45,7 +45,7 @@ export default class ResetPwRepository extends Repository<ResetPw> {
             return await this.createQueryBuilder('r')
                 .where('r.UUID = :UUID', { UUID: uuid })
                 .orderBy('r.RESET_PK', 'DESC')
-                .getOne();
+                .getOneOrFail();
         } catch (err) {
             throw stackAikoError(err, 'resetPw/getRequest', 500, headErrorCode.resetPWDB + ResetPwError.getRequest);
         }
