@@ -327,7 +327,7 @@ export default class AccountService {
 
         try {
             const result1 = await getRepo(ResetPwRepository).getRequest(uuid);
-            const { USER_PK } = result1[0];
+            const { USER_PK } = result1;
 
             const { hash, salt } = await generatePwAndSalt(password);
 
