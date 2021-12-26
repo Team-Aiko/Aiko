@@ -36,9 +36,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
         try {
-            const payload = parseUserPayloadString(client.request.headers['user-payload']);
-            if (!payload) return;
-            // console.log('test4: ', client);
+            const payloadStr = client.request.headers['user-payload'];
+            if (!payloadStr) return;
+            const payload = parseUserPayloadString(payloadStr);
 
             const { USER_PK, COMPANY_PK } = payload;
 
@@ -47,7 +47,6 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
             // join company
             client.join(`company:${COMPANY_PK}`);
-
             if (connResult.isSendable) {
                 this.wss
                     .to(`company:${COMPANY_PK}`)
@@ -115,7 +114,11 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
         try {
-            await this.statusService.logoutEvent(client.id);
+            const payloadStr = client.request.headers['user-payload'];
+            if (!payloadStr) return;
+
+            const { COMPANY_PK, USER_PK } = parseUserPayloadString(payloadStr);
+            await this.statusService.logoutEvent(USER_PK, COMPANY_PK, client.id);
             this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
         } catch (err) {
             this.wss

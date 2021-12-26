@@ -66,12 +66,14 @@ export default class GroupChatService {
         userList,
         roomTitle,
         maxNum,
-        accessToken,
+        USER_PK,
+        COMPANY_PK,
     }: {
         userList: number[];
         roomTitle: string;
         maxNum: number;
-        accessToken: string;
+        USER_PK: number;
+        COMPANY_PK: number;
     }) {
         let GC_PK = 0;
         const connection = getConnection();
@@ -80,9 +82,6 @@ export default class GroupChatService {
         await queryRunner.startTransaction();
 
         try {
-            // verify accessToken
-            const { COMPANY_PK, USER_PK } = tokenParser(accessToken);
-
             // 해당 회사키로 초대유저 적합성 판단
             const verifiedList = await connection
                 .createQueryBuilder(User, 'u')
@@ -145,15 +144,15 @@ export default class GroupChatService {
     async sendMessageToGroup(
         {
             GC_PK,
-            accessToken,
             file,
             message,
             date,
-        }: { GC_PK: number; accessToken: string; file: number; message: string; date: number },
+            USER_PK,
+            COMPANY_PK,
+        }: { GC_PK: number; USER_PK: number; COMPANY_PK: number; file: number; message: string; date: number },
         wss: Server,
     ) {
         try {
-            const { COMPANY_PK, USER_PK } = tokenParser(accessToken);
             const chatLog = await this.getChatLog(GC_PK, COMPANY_PK);
 
             chatLog.chatLog.push({ sender: USER_PK, file, message, date });

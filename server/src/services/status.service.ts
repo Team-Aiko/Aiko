@@ -74,6 +74,7 @@ export default class StatusService {
             await this.updateStatus(statusDTO);
             await this.insertClientInfo(userPK, companyPK, clientId);
             const myClients = await this.selectClientInfos(userPK);
+            console.log('🚀 ~ file: status.service.ts ~ line 77 ~ StatusService ~ myClients', myClients);
 
             const isSendable = !statusInfo.logoutPending;
 
@@ -152,9 +153,8 @@ export default class StatusService {
         }
     }
 
-    async logoutEvent(id: string) {
+    async logoutEvent(userPK: number, companyPK: number, id: string) {
         try {
-            const { userPK, companyPK } = await this.getClientInfo(id);
             await this.allDeleteClientInfo(userPK);
             await this.insertClientInfo(userPK, companyPK, id);
         } catch (err) {
