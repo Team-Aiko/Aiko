@@ -1,6 +1,14 @@
 import { FileHistory } from 'src/entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
+
+enum fileHistoryError {
+    createFileHistory = 1,
+    downloadDriveFiles = 2,
+    deletedFlagFiles = 3,
+}
 
 @EntityRepository(FileHistory)
 export default class FileHistoryRepository extends Repository<FileHistory> {
@@ -11,14 +19,17 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
         try {
             return (await manager.insert(FileHistory, files)).identifiers as Pick<FileHistory, 'FH_PK'>[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileHistoryRepository/createFileHistory', 500, 192845);
+            throw stackAikoError(
+                err,
+                'FileHistoryRepository/createFileHistory',
+                500,
+                headErrorCode.fileHistoryDB + fileHistoryError.createFileHistory,
+            );
         }
     }
 
     async downloadDriveFiles(fileId: number) {
         try {
-            console.log('여기오는거지??? 와라 제발 시발럼아');
             const result = await this.createQueryBuilder()
                 .where(`FILE_KEY_PK = ${fileId}`)
                 .orderBy('FH_PK', 'DESC')
@@ -30,8 +41,12 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
             );
             return result.length ? result[0] : undefined;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileHistoryRepository/downloadDriveFiles', 500, 829182);
+            throw stackAikoError(
+                err,
+                'FileHistoryRepository/downloadDriveFiles',
+                500,
+                headErrorCode.fileHistoryDB + fileHistoryError.downloadDriveFiles,
+            );
         }
     }
 
@@ -44,8 +59,12 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
                 .where('FILE_KEY_PK IN(:...files)', { files })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileHistoryRepository/deletedFlagFiles', 500, 829184);
+            throw stackAikoError(
+                err,
+                'FileHistoryRepository/deletedFlagFiles',
+                500,
+                headErrorCode.fileHistoryDB + fileHistoryError.deletedFlagFiles,
+            );
         }
     }
 }

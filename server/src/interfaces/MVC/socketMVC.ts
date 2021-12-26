@@ -58,4 +58,5 @@ export interface IErrorPacket<T> {
     path: string;
     err: Error;
     originalData: T;
+    tokenError: boolean;
 }

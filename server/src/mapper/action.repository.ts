@@ -2,9 +2,19 @@ import Action from 'src/entity/action.entity';
 import { AikoError, Pagination, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { EntityRepository, Repository } from 'typeorm';
-
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { Company, Department } from 'src/entity';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { stackAikoError } from 'src/Helpers/functions';
+
+enum actionErr {
+    createActionItem = 1,
+    findActionItem = 2,
+    deleteActionItem = 3,
+    updateItem = 4,
+    viewItems = 5,
+    getItemCnt = 6,
+}
 
 @EntityRepository(Action)
 export default class ActionRepository extends Repository<Action> {
@@ -28,8 +38,12 @@ export default class ActionRepository extends Repository<Action> {
                 })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/createActionItem', 500, 500982);
+            throw stackAikoError(
+                err,
+                'action/createActionItem',
+                500,
+                headErrorCode.actionDB + actionErr.createActionItem,
+            );
         }
     }
 
@@ -42,8 +56,7 @@ export default class ActionRepository extends Repository<Action> {
                 .andWhere('a.DEPARTMENT_PK = :DEPARTMENT_PK', { DEPARTMENT_PK })
                 .getOneOrFail();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/findActionItem', 500, 500861);
+            throw stackAikoError(err, 'action/findActionItem', 500, headErrorCode.actionDB + actionErr.findActionItem);
         }
 
         return item;
@@ -56,8 +69,12 @@ export default class ActionRepository extends Repository<Action> {
             await this.createQueryBuilder().delete().where('ACTION_PK = :ACTION_PK', { ACTION_PK }).execute();
             flag = true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/deleteActionItem', 500, 509212);
+            throw stackAikoError(
+                err,
+                'action/deleteActionItem',
+                500,
+                headErrorCode.actionDB + actionErr.deleteActionItem,
+            );
         }
 
         return flag;
@@ -81,8 +98,7 @@ export default class ActionRepository extends Repository<Action> {
 
             flag = true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/updateItem', 500, 500999);
+            throw stackAikoError(err, 'action/updateItem', 500, headErrorCode.actionDB + actionErr.updateItem);
         }
 
         return flag;
@@ -129,8 +145,7 @@ export default class ActionRepository extends Repository<Action> {
                 return item;
             });
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/viewItems', 500, 900563);
+            throw stackAikoError(err, 'action/viewItems', 500, headErrorCode.actionDB + actionErr.viewItems);
         }
     }
 
@@ -147,8 +162,7 @@ export default class ActionRepository extends Repository<Action> {
 
             return await fracture.getCount();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('action/getItemCnt', 500, 200563);
+            throw stackAikoError(err, 'action/getItemCnt', 500, headErrorCode.actionDB + actionErr.getItemCnt);
         }
     }
 }

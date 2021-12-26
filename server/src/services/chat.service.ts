@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { getRepo } from 'src/Helpers';
-import { getUnixTime } from 'src/Helpers/functions';
+import { getUnixTime, stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
+
+enum chatServiceError {
+    getPrivateChatLog = 1,
+}
 
 @Injectable()
 export default class ChatService {
@@ -25,7 +30,12 @@ export default class ChatService {
                 time: startTime,
             };
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'ChatSerivce/getPrivateChatLog',
+                500,
+                headErrorCode.chat + chatServiceError.getPrivateChatLog,
+            );
         }
     }
 }

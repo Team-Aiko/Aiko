@@ -1,9 +1,21 @@
 import { EntityRepository, Repository, getManager } from 'typeorm';
 import { Department, User } from 'src/entity';
-import { getRepo, propsRemover } from 'src/Helpers/functions';
+import { getRepo, propsRemover, stackAikoError } from 'src/Helpers/functions';
 import { UserRepository } from '.';
 import { INewDepartment } from 'src/interfaces/MVC/companyMVC';
 import { AikoError } from 'src/Helpers/classes';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum departmentError {
+    createDepartment = 1,
+    getDepartmentMembers = 2,
+    deleteDepartment = 3,
+    updateDepartmentName = 4,
+    searchDepartment = 5,
+    getDepartmentTree = 6,
+    getDepartmentList = 7,
+    bootstrapNode = 8,
+}
 
 type DeptUnion = Pick<INewDepartment, 'companyPK' | 'departmentName' | 'parentPK' | 'parentDepth'>;
 
@@ -26,7 +38,12 @@ export default class DepartmentRepository extends Repository<Department> {
 
             flag = true;
         } catch (err) {
-            throw new AikoError('insert error (new department row)', 500, 500012);
+            throw stackAikoError(
+                err,
+                'insert error (new department row)',
+                500,
+                headErrorCode.departmentDB + departmentError.createDepartment,
+            );
         }
         return flag;
     }
@@ -79,7 +96,12 @@ export default class DepartmentRepository extends Repository<Department> {
 
             result2.forEach((arr) => userList.concat(arr));
         } catch (err) {
-            throw new AikoError('department/getDepartmentMembers', 500, 500360);
+            throw stackAikoError(
+                err,
+                'department/getDepartmentMembers',
+                500,
+                headErrorCode.departmentDB + departmentError.getDepartmentMembers,
+            );
         }
 
         return userList;
@@ -95,7 +117,7 @@ export default class DepartmentRepository extends Repository<Department> {
                 })
                 .getCount();
 
-            if (childrenCnt) throw new AikoError('department/deleteDepartment/isChildren', 500, 500452);
+            if (childrenCnt) throw stackAikoError(undefined, 'department/deleteDepartment/isChildren', 500, 500452);
 
             const result2 = await this.createQueryBuilder('d')
                 .leftJoinAndSelect('d.users', 'users')
@@ -105,9 +127,10 @@ export default class DepartmentRepository extends Repository<Department> {
                 .andWhere('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .getOne();
 
-            if (result2?.users.length) throw new AikoError('department/deleteDepartment/isMembers', 500, 500451);
+            if (result2?.users.length)
+                throw stackAikoError(undefined, 'department/deleteDepartment/isMembers', 500, 500451);
             else if (result2 === undefined || result2 === null)
-                throw new AikoError('department/deleteDepartment/noDepartment', 500, 500678);
+                throw stackAikoError(undefined, 'department/deleteDepartment/noDepartment', 500, 500678);
             else {
                 this.createQueryBuilder()
                     .delete()
@@ -116,7 +139,13 @@ export default class DepartmentRepository extends Repository<Department> {
                 flag = true;
             }
         } catch (err) {
-            throw err;
+            console.error(err);
+            throw stackAikoError(
+                err,
+                'departmentRepository/deleteDepartment',
+                500,
+                headErrorCode.departmentDB + departmentError.deleteDepartment,
+            );
         }
 
         return flag;
@@ -142,7 +171,12 @@ export default class DepartmentRepository extends Repository<Department> {
             flag = true;
         } catch (err) {
             console.error(err);
-            throw new AikoError('department/updateDepartmentName', 500, 506071);
+            throw stackAikoError(
+                err,
+                'department/updateDepartmentName',
+                500,
+                headErrorCode.departmentDB + departmentError.updateDepartmentName,
+            );
         }
 
         return flag;
@@ -159,7 +193,12 @@ export default class DepartmentRepository extends Repository<Department> {
                 .andWhere('d.DEPARTMENT_NAME like :DEPARTMENT_NAME', { DEPARTMENT_NAME: query })
                 .getMany();
         } catch (err) {
-            throw new AikoError('department/searchDepartment', 500, 506071);
+            throw stackAikoError(
+                err,
+                'department/searchDepartment',
+                500,
+                headErrorCode.departmentDB + departmentError.searchDepartment,
+            );
         }
 
         return depts;
@@ -191,7 +230,7 @@ export default class DepartmentRepository extends Repository<Department> {
                 const flagList = await this.bootstrapNode(initial, COMPANY_PK, DEPTH + 1);
                 const flag = flagList.reduce((prev, curr) => prev && curr, true);
 
-                if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
+                if (!flag) throw stackAikoError(undefined, 'department/getDepartmentTree', 500, 500821);
                 departmentTree = departmentTree.concat(initial);
             } else {
                 const initial = await fracture
@@ -201,11 +240,19 @@ export default class DepartmentRepository extends Repository<Department> {
                 const flagList = await this.bootstrapNode([initial], COMPANY_PK, DEPTH + 1);
                 const flag = flagList.reduce((prev, curr) => prev && curr, true);
 
-                if (!flag) throw new AikoError('department/getDepartmentTree', 500, 500821);
+                if (!flag) throw stackAikoError(undefined, 'department/getDepartmentTree', 500, 500821);
                 departmentTree = departmentTree.concat(initial);
             }
         } catch (err) {
             if (err instanceof AikoError) throw err;
+            else {
+                throw stackAikoError(
+                    err,
+                    'departmentRepository/getDepartmentTree',
+                    500,
+                    headErrorCode.departmentDB + departmentError.getDepartmentTree,
+                );
+            }
         }
 
         return departmentTree;
@@ -216,7 +263,12 @@ export default class DepartmentRepository extends Repository<Department> {
             return await this.createQueryBuilder('d').where('d.COMPANY_PK = :COMPANY_PK', { COMPANY_PK }).getMany();
         } catch (err) {
             console.error(err);
-            throw new AikoError('department/getDepartmentList', 500, 500581);
+            throw stackAikoError(
+                err,
+                'department/getDepartmentList',
+                500,
+                headErrorCode.departmentDB + departmentError.getDepartmentList,
+            );
         }
     }
 
@@ -237,7 +289,12 @@ export default class DepartmentRepository extends Repository<Department> {
                     await this.bootstrapNode(dept.children, COMPANY_PK, DEPTH + 1);
                     return true;
                 } catch (err) {
-                    throw new AikoError('department/bootstrapNode', 500, 500621);
+                    throw stackAikoError(
+                        err,
+                        'department/bootstrapNode',
+                        500,
+                        headErrorCode.departmentDB + departmentError.bootstrapNode,
+                    );
                 }
             }),
         );

@@ -9,6 +9,7 @@ import {
     IMeetingPagination,
     IMeetingSchedulePagination,
 } from 'src/interfaces/MVC/meetingMVC';
+import { bodyChecker } from 'src/Helpers/functions';
 
 @UseGuards(UserGuard)
 @Controller('meeting')
@@ -20,6 +21,8 @@ export default class MeetingController {
     async makeMeetingRoom(@Req() req: Request, @Res() res: Response) {
         const { IS_ONLINE, ROOM_NAME, LOCATE } = req.body;
         const { COMPANY_PK, grants } = usrPayloadParser(req);
+        bodyChecker({ IS_ONLINE, ROOM_NAME, LOCATE }, { IS_ONLINE: 'boolean', ROOM_NAME: 'string', LOCATE: 'string' });
+
         const bundle: IMeetingRoomBundle = {
             IS_ONLINE,
             ROOM_NAME,
@@ -38,10 +41,11 @@ export default class MeetingController {
     // ! api doc
     @Post('delete-meeting-room')
     async deleteMeetingRoom(@Req() req: Request, @Res() res: Response) {
-        const { ROOM_PK } = req.body;
-        const { grants } = usrPayloadParser(req);
-
         try {
+            const { ROOM_PK } = req.body;
+            const { grants } = usrPayloadParser(req);
+            bodyChecker({ ROOM_PK }, { ROOM_PK: 'number' });
+
             const result = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
             resExecutor(res, { result });
         } catch (err) {
@@ -52,18 +56,18 @@ export default class MeetingController {
     // ! api doc
     @Post('update-meeting-room')
     async updateMeetingRoom(@Req() req: Request, @Res() res: Response) {
-        const { IS_ONLINE, LOCATE, ROOM_NAME, ROOM_PK }: Partial<IMeetingRoomBundle> = req.body;
-        const { COMPANY_PK, grants } = usrPayloadParser(req);
-        const bundle: IMeetingRoomBundle = {
-            ROOM_PK,
-            COMPANY_PK,
-            IS_ONLINE,
-            LOCATE,
-            ROOM_NAME,
-            grants,
-        };
-
         try {
+            const { IS_ONLINE, LOCATE, ROOM_NAME, ROOM_PK }: Partial<IMeetingRoomBundle> = req.body;
+            const { COMPANY_PK, grants } = usrPayloadParser(req);
+            const bundle: IMeetingRoomBundle = {
+                ROOM_PK,
+                COMPANY_PK,
+                IS_ONLINE,
+                LOCATE,
+                ROOM_NAME,
+                grants,
+            };
+
             const result = await this.meetingService.updateMeetingRoom(bundle);
             resExecutor(res, { result });
         } catch (err) {
@@ -102,6 +106,17 @@ export default class MeetingController {
     async makeMeeting(@Req() req: Request, @Res() res: Response) {
         const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION } = req.body;
         const { COMPANY_PK } = usrPayloadParser(req);
+        bodyChecker(
+            { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION },
+            {
+                calledMemberList: 'number[]',
+                MAX_MEM_NUM: 'number',
+                ROOM_PK: 'number',
+                TITLE: 'string',
+                DATE: 'number',
+                DESCRIPTION: 'string',
+            },
+        );
 
         const bundle: IMeetingBundle = {
             calledMemberList,
@@ -182,21 +197,32 @@ export default class MeetingController {
      */
     @Post('update-meeting')
     async updateMeeting(@Req() req: Request, @Res() res: Response) {
-        const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
-        const { COMPANY_PK } = usrPayloadParser(req);
-
-        const bundle: IMeetingBundle = {
-            DATE,
-            DESCRIPTION,
-            MAX_MEM_NUM,
-            MEET_PK,
-            ROOM_PK,
-            TITLE,
-            calledMemberList,
-            COMPANY_PK,
-        };
-
         try {
+            const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            bodyChecker(
+                { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK },
+                {
+                    calledMemberList: 'number[]',
+                    MAX_MEM_NUM: 'number',
+                    ROOM_PK: 'number',
+                    TITLE: 'string',
+                    DATE: 'number',
+                    DESCRIPTION: 'string',
+                    MEET_PK: 'number',
+                },
+            );
+
+            const bundle: IMeetingBundle = {
+                DATE,
+                DESCRIPTION,
+                MAX_MEM_NUM,
+                MEET_PK,
+                ROOM_PK,
+                TITLE,
+                calledMemberList,
+                COMPANY_PK,
+            };
             const result = await this.meetingService.updateMeeting(bundle);
             resExecutor(res, { result });
         } catch (err) {
@@ -207,10 +233,11 @@ export default class MeetingController {
     // ! api doc
     @Post('delete-meeting')
     async deleteMeeting(@Req() req: Request, @Res() res: Response) {
-        const { meetPK } = req.body;
-        const { COMPANY_PK } = usrPayloadParser(req);
-
         try {
+            const { meetPK } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            bodyChecker({ meetPK }, { meetPK: 'string' });
+
             const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
@@ -221,10 +248,11 @@ export default class MeetingController {
     // ! api doc
     @Post('finish-meeting')
     async finishMeeting(@Req() req: Request, @Res() res: Response) {
-        const { meetPK, finishFlag } = req.body;
-        const { COMPANY_PK } = usrPayloadParser(req);
-
         try {
+            const { meetPK, finishFlag } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            bodyChecker({ meetPK, finishFlag }, { meetPK: 'number', finishFlag: 'boolean' });
+
             const result = await this.meetingService.finishMeeting(finishFlag, meetPK, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {

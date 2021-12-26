@@ -11,10 +11,30 @@ import { getConnection } from 'typeorm';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { getServerTime, tokenParser } from 'src/Helpers/functions';
+import { getServerTime, stackAikoError, tokenParser } from 'src/Helpers/functions';
 import GroupChatStorageRepository from 'src/mapper/groupChatStorage.repository';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 
 // mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
+
+enum groupChatService {
+    addClientForGroupChat = 1,
+    createGroupChatRoom = 2,
+    findChatRooms = 3,
+    sendMessageToGroup = 4,
+    addNewClientForGroupChat = 5,
+    readChatLogs = 6,
+    storeGroupChatLog = 7,
+    getUserInfos = 8,
+    insertGroupChatClientInfo = 9,
+    findGroupChatClient = 10,
+    findGroupChatLogs = 11,
+    createChatRoom = 12,
+    deleteChatRoom = 13,
+    getChatLog = 14,
+    updateChatLog = 15,
+    deleteClientInfo = 16,
+}
 
 /**
  * 그룹채팅의 비즈니스 로직을 담당하는 서비스 클래스
@@ -30,8 +50,12 @@ export default class GroupChatService {
         try {
             await this.insertGroupChatClientInfo(USER_PK, COMPANY_PK, clientId);
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/addClientForGroupChat',
+                500,
+                headErrorCode.groupChat + groupChatService.addClientForGroupChat,
+            );
         }
     }
 
@@ -93,7 +117,12 @@ export default class GroupChatService {
         } catch (err) {
             await this.deleteChatRoom(GC_PK);
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/createGroupChatRoom',
+                500,
+                headErrorCode.groupChat + groupChatService.createGroupChatRoom,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -104,8 +133,12 @@ export default class GroupChatService {
             const groupChatRooms = await getRepo(GroupChatUserListRepository).findChatRooms(USER_PK);
             return groupChatRooms;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/findChatRooms',
+                500,
+                headErrorCode.groupChat + groupChatService.findChatRooms,
+            );
         }
     }
 
@@ -134,16 +167,24 @@ export default class GroupChatService {
                 date,
             });
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/sendMessageToGroup',
+                500,
+                headErrorCode.groupChat + groupChatService.sendMessageToGroup,
+            );
         }
     }
 
     async addNewClientForGroupChat(userPK: number) {
         try {
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/addNewClientForGroupChat',
+                500,
+                headErrorCode.groupChat + groupChatService.addNewClientForGroupChat,
+            );
         }
     }
 
@@ -151,8 +192,12 @@ export default class GroupChatService {
         try {
             return await this.findGroupChatLogs(GC_PK, COMPANY_PK);
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/readChatLogs',
+                500,
+                headErrorCode.groupChat + groupChatService.readChatLogs,
+            );
         }
     }
 
@@ -187,7 +232,12 @@ export default class GroupChatService {
             await getRepo(GroupChatStorageRepository).storeLogsForScheduler(storedLogList);
             await Promise.all(modifiedChatLogList.map(async (log) => await this.updateChatLog(log)));
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/storeGroupChatLog',
+                500,
+                headErrorCode.groupChat + groupChatService.storeGroupChatLog,
+            );
         }
     }
 
@@ -195,7 +245,12 @@ export default class GroupChatService {
         try {
             return await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'GroupChatService/getUserInfos',
+                500,
+                headErrorCode.groupChat + groupChatService.getUserInfos,
+            );
         }
     }
 
@@ -209,16 +264,24 @@ export default class GroupChatService {
             });
             await this.groupChatClientModel.create(dto);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/insertGroupChatClientInfo', 0, 696022);
+            throw stackAikoError(
+                err,
+                'GroupChatService/insertGroupChatClientInfo',
+                500,
+                headErrorCode.groupChat + groupChatService.insertGroupChatClientInfo,
+            );
         }
     }
     async findGroupChatClient(userPK: number) {
         try {
             return (await this.groupChatClientModel.find({ userPK }).exec()) as GroupChatClientInfo[];
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/findGroupChatClient', 0, 812293);
+            throw stackAikoError(
+                err,
+                'GroupChatService/findGroupChatClient',
+                500,
+                headErrorCode.groupChat + groupChatService.findGroupChatClient,
+            );
         }
     }
 
@@ -226,7 +289,12 @@ export default class GroupChatService {
         try {
             return (await this.groupChatLogModel.findOne({ GC_PK, companyPK }).exec()) as GroupChatLog;
         } catch (err) {
-            throw new AikoError('groupChatService/findGroupChatLogs', 0, 812294);
+            throw stackAikoError(
+                err,
+                'GroupChatService/findGroupChatLogs',
+                500,
+                headErrorCode.groupChat + groupChatService.findGroupChatLogs,
+            );
         }
     }
 
@@ -235,8 +303,12 @@ export default class GroupChatService {
             const dto = new this.groupChatLogModel({ GC_PK, companyPK, chatLog: [] });
             await this.groupChatLogModel.create(dto);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/createChatRoom', 0, 982819);
+            throw stackAikoError(
+                err,
+                'GroupChatService/createChatRoom',
+                500,
+                headErrorCode.groupChat + groupChatService.createChatRoom,
+            );
         }
     }
 
@@ -244,8 +316,12 @@ export default class GroupChatService {
         try {
             await this.groupChatLogModel.findOneAndDelete({ GC_PK }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/createChatRoom', 0, 982820);
+            throw stackAikoError(
+                err,
+                'GroupChatService/deleteChatRoom',
+                500,
+                headErrorCode.groupChat + groupChatService.deleteChatRoom,
+            );
         }
     }
 
@@ -253,8 +329,12 @@ export default class GroupChatService {
         try {
             return (await this.groupChatLogModel.findOne({ GC_PK, companyPK }).exec()) as GroupChatLog;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/getChatLog', 0, 828192);
+            throw stackAikoError(
+                err,
+                'GroupChatService/getChatLog',
+                500,
+                headErrorCode.groupChat + groupChatService.getChatLog,
+            );
         }
     }
 
@@ -262,8 +342,12 @@ export default class GroupChatService {
         try {
             await this.groupChatLogModel.findOneAndUpdate({ GC_PK: chatLog.GC_PK }, chatLog).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/updateChatLog', 0, 828192);
+            throw stackAikoError(
+                err,
+                'GroupChatService/updateChatLog',
+                500,
+                headErrorCode.groupChat + groupChatService.updateChatLog,
+            );
         }
     }
 
@@ -271,8 +355,12 @@ export default class GroupChatService {
         try {
             await this.groupChatClientModel.findOneAndDelete({ clientId }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('groupChatService/deleteClientInfo', 0, 1827289);
+            throw stackAikoError(
+                err,
+                'GroupChatService/deleteClientInfo',
+                500,
+                headErrorCode.groupChat + groupChatService.deleteClientInfo,
+            );
         }
     }
 }

@@ -3,7 +3,8 @@ import { FileFolder } from 'src/entity';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
-import { deleteFiles, getServerTime } from 'src/Helpers/functions';
+import { deleteFiles, getServerTime, stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
 import FileBinRepository from 'src/mapper/fileBin.repository';
 import FileFolderRepository from 'src/mapper/fileFolder.repository';
@@ -11,6 +12,17 @@ import FileHistoryRepository from 'src/mapper/fileHistory.repository';
 import FileKeysRepository from 'src/mapper/fileKeys.repository';
 import FolderBinRepository from 'src/mapper/folderBin.repository';
 import { EntityManager, getConnection } from 'typeorm';
+
+enum driveServiceError {
+    saveFiles = 1,
+    getFiles = 2,
+    createFolder = 3,
+    createRootFolder = 4,
+    deleteFiles = 5,
+    viewFolder = 6,
+    moveFolder = 7,
+    deleteBinFiles = 8,
+}
 
 @Injectable()
 export default class DriveService {
@@ -57,7 +69,7 @@ export default class DriveService {
         } catch (err) {
             console.log('🚀 ~ file: drive.service.ts ~ line 33 ~ DriveService ~ saveFiles ~ err', err);
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(err, 'DriveService/saveFiles', 500, headErrorCode.drive + driveServiceError.saveFiles);
         } finally {
             await queryRunner.release();
         }
@@ -67,7 +79,7 @@ export default class DriveService {
         try {
             return await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(err, 'DriveService/getFiles', 500, headErrorCode.drive + driveServiceError.getFiles);
         }
     }
 
@@ -80,11 +92,16 @@ export default class DriveService {
             console.log('🚀 ~ file: drive.service.ts ~ line 68 ~ DriveService ~ createFolder ~ folderInfo', folderInfo);
 
             if (!Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
-                throw new AikoError('DriveService/createFolder/invalidMember', 500, 239182);
+                throw new AikoError('DriveService/createFolder/invalidMember', 500, -1);
 
             return await getRepo(FileFolderRepository).createFolder(companyPK, folderName, parentPK, manager);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/createFolder',
+                500,
+                headErrorCode.drive + driveServiceError.createFolder,
+            );
         }
     }
 
@@ -92,7 +109,12 @@ export default class DriveService {
         try {
             return await getRepo(FileFolderRepository).createFolder(companyPK, 'root', undefined, manager);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/createRootFolder',
+                500,
+                headErrorCode.drive + driveServiceError.createRootFolder,
+            );
         }
     }
 
@@ -143,7 +165,12 @@ export default class DriveService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/getDepartmentMembers',
+                500,
+                headErrorCode.drive + driveServiceError.deleteFiles,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -158,7 +185,12 @@ export default class DriveService {
 
             return { directChildrenFolders, filesInFolder };
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/getDepartmentMembers',
+                500,
+                headErrorCode.drive + driveServiceError.viewFolder,
+            );
         }
     }
 
@@ -182,7 +214,7 @@ export default class DriveService {
 
                 // * company validation check
                 if (folderInfos.COMPANY_PK !== companyPK)
-                    throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
+                    throw new AikoError('DriveService/moveFolder/invalid-access', 500, -1);
             }
 
             await getRepo(FileKeysRepository).moveFile(toFolderPK, fromFilePKs, queryRunner.manager);
@@ -191,7 +223,12 @@ export default class DriveService {
             return true;
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/moveFolder',
+                500,
+                headErrorCode.drive + driveServiceError.moveFolder,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -232,7 +269,12 @@ export default class DriveService {
             deleteFiles(filePath.DRIVE, ...fileNames);
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'DriveService/getDepartmentMembers',
+                500,
+                headErrorCode.drive + driveServiceError.deleteBinFiles,
+            );
         } finally {
             await queryRunner.release();
         }

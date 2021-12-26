@@ -1,7 +1,13 @@
 import { ResultSetHeader } from 'mysql2';
 import { GroupChatRoom } from 'src/entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
+
+enum groupChatRoomError {
+    createGroupChatRoom = 1,
+}
 
 @EntityRepository(GroupChatRoom)
 export default class GroupChatRoomRepository extends Repository<GroupChatRoom> {
@@ -21,8 +27,12 @@ export default class GroupChatRoomRepository extends Repository<GroupChatRoom> {
 
             return (result.raw as ResultSetHeader).insertId;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('GroupChatRoomRepository/createGroupChatRoom', 500, 4562123);
+            throw stackAikoError(
+                err,
+                'GroupChatRoomRepository/createGroupChatRoom',
+                500,
+                headErrorCode.groupChatRoomDB + groupChatRoomError.createGroupChatRoom,
+            );
         }
     }
 }

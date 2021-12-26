@@ -1,6 +1,14 @@
 import { AikoError } from 'src/Helpers/classes';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
 import Company from '../entity/company.entity';
+
+enum companyError {
+    list = 1,
+    createCompany = 2,
+    getAllCompanies = 3,
+}
 
 @EntityRepository(Company)
 export default class CompanyRepository extends Repository<Company> {
@@ -11,7 +19,7 @@ export default class CompanyRepository extends Repository<Company> {
                 .where('c.COMPANY_NAME like :COMPANY_NAME', { COMPANY_NAME: `${companyName}%` })
                 .getMany();
         } catch (err) {
-            throw new AikoError('company/list', 500, 500360);
+            throw stackAikoError(err, 'company/list', 500, headErrorCode.companyDB + companyError.list);
         }
     }
 
@@ -37,7 +45,12 @@ export default class CompanyRepository extends Repository<Company> {
             // })
             // .execute();
         } catch (err) {
-            throw new AikoError('company/createCompany', 500, 500360);
+            throw stackAikoError(
+                err,
+                'company/createCompany',
+                500,
+                headErrorCode.companyDB + companyError.createCompany,
+            );
         }
 
         return insertResult;
@@ -47,8 +60,12 @@ export default class CompanyRepository extends Repository<Company> {
         try {
             return await this.createQueryBuilder().getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('CompanyRepository/getAllCompanies', 500, 1924891);
+            throw stackAikoError(
+                err,
+                'CompanyRepository/getAllCompanies',
+                500,
+                headErrorCode.companyDB + companyError.getAllCompanies,
+            );
         }
     }
 }

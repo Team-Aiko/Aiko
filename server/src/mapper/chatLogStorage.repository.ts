@@ -1,6 +1,13 @@
 import ChatLogStorage from 'src/entity/chatLogStorage.entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository } from 'typeorm';
+
+enum chatLogStorageError {
+    saveChatLogs = 1,
+    getPrivateChatLog = 2,
+}
 
 @EntityRepository(ChatLogStorage)
 export default class ChatLogStorageRepository extends Repository<ChatLogStorage> {
@@ -24,8 +31,12 @@ export default class ChatLogStorageRepository extends Repository<ChatLogStorage>
                 })),
             );
         } catch (err) {
-            console.log(err);
-            throw new AikoError('ChatLogStorageRepository/saveChatLogs', 500, 1892384);
+            throw stackAikoError(
+                err,
+                'ChatLogStorageRepository/saveChatLogs',
+                500,
+                headErrorCode.chatLogStorageDB + chatLogStorageError.saveChatLogs,
+            );
         }
     }
 
@@ -37,8 +48,12 @@ export default class ChatLogStorageRepository extends Repository<ChatLogStorage>
                 .andWhere(`DATE < ${endTime}`)
                 .getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('ChatLogStorageRepository/getPrivateChatLog', 500, 192849);
+            throw stackAikoError(
+                err,
+                'ChatLogStorageRepository/getPrivateChatLog',
+                500,
+                headErrorCode.chatLogStorageDB + chatLogStorageError.getPrivateChatLog,
+            );
         }
     }
 }

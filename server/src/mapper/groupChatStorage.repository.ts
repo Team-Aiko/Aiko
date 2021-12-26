@@ -1,6 +1,12 @@
 import { GroupChatStorage } from 'src/entity';
 import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository } from 'typeorm';
+
+enum groupChatStorageError {
+    storeLogsForScheduler = 1,
+}
 
 @EntityRepository(GroupChatStorage)
 export default class GroupChatStorageRepository extends Repository<GroupChatStorage> {
@@ -36,8 +42,12 @@ export default class GroupChatStorageRepository extends Repository<GroupChatStor
                 }),
             );
         } catch (err) {
-            console.error(err);
-            throw new AikoError('GroupChatStorageRepository/storeLogsForScheduler', 500, 129341);
+            throw stackAikoError(
+                err,
+                'GroupChatStorageRepository/storeLogsForScheduler',
+                500,
+                headErrorCode.groupChatStroageDB + groupChatStorageError.storeLogsForScheduler,
+            );
         }
     }
 }

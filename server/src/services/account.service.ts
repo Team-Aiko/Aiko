@@ -28,6 +28,7 @@ import {
     getRepo,
     propsRemover,
     sendMail,
+    stackAikoError,
 } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers/classes';
 import { IFileBundle } from 'src/interfaces/MVC/fileMVC';
@@ -35,6 +36,23 @@ import UserProfileFileRepository from 'src/mapper/userProfileFile.repository';
 import PrivateChatService from './privateChat.service';
 import StatusService from './status.service';
 import DriveService from './drive.service';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { unknownError } from 'src/Helpers';
+
+enum accountServiceError {
+    checkDuplicateEmail = 1,
+    getCountryList = 2,
+    signup = 3,
+    grantLoginAuth = 4,
+    login = 5,
+    findNickname = 6,
+    requestResetPassword = 7,
+    resetPassword = 8,
+    checkDuplicateNickname = 9,
+    getGrantList = 10,
+    getAccessToken = 11,
+    getUserInfo = 12,
+}
 
 @Injectable()
 export default class AccountService {
@@ -48,7 +66,12 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateEmail(email);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'AccountService/checkDuplicateEmail',
+                500,
+                headErrorCode.account + accountServiceError.checkDuplicateEmail,
+            );
         }
     }
 
@@ -56,7 +79,12 @@ export default class AccountService {
         try {
             return await getRepo(CountryRepository).getCountryList(str);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'AccountService/getCountryList',
+                500,
+                headErrorCode.account + accountServiceError.getCountryList,
+            );
         }
     }
 
@@ -69,7 +97,7 @@ export default class AccountService {
             hash = generatePwResult.hash;
             salt = generatePwResult.salt;
         } catch (err) {
-            throw new AikoError('hasher error', 501, 500021);
+            throw new AikoError('AccountService/signup/hasherError', 500, -1);
         }
 
         const queryRunner = getConnection().createQueryRunner();
@@ -143,14 +171,14 @@ export default class AccountService {
 
                 flag = await sendMail(mailOpt);
 
-                if (!flag) throw new AikoError('account/signup/mailing error', 500, 3901892);
+                if (!flag) throw new AikoError('AccountService/signup/mailing error', 500, -1);
             }
 
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
             await this.statusService.deleteUserStatus(userPK);
-            throw err;
+            throw stackAikoError(err, 'AccountService/signup', 500, headErrorCode.account + accountServiceError.signup);
         } finally {
             await queryRunner.release();
         }
@@ -167,12 +195,17 @@ export default class AccountService {
             const result = await getRepo(LoginAuthRepository).findUser(uuid);
             flag = await getRepo(UserRepository).giveAuth(result.USER_PK);
 
-            if (!flag) throw new AikoError('unknown fail error', 500, 500026);
+            if (!flag) throw unknownError;
 
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw err;
+            throw stackAikoError(
+                err,
+                'AccountService/grantLoginAuth',
+                500,
+                headErrorCode.account + accountServiceError.grantLoginAuth,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -214,7 +247,7 @@ export default class AccountService {
 
             return bundle;
         } catch (err) {
-            throw err;
+            throw stackAikoError(err, 'AccountService/login', 500, headErrorCode.account + accountServiceError.login);
         }
     }
 
@@ -233,7 +266,12 @@ export default class AccountService {
 
             flag = await sendMail(mailOpt);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'AccountService/findNickname',
+                500,
+                headErrorCode.account + accountServiceError.findNickname,
+            );
         }
 
         return flag;
@@ -269,7 +307,12 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'AccountService/requestResetPassword',
+                500,
+                headErrorCode.account + accountServiceError.requestResetPassword,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -294,7 +337,12 @@ export default class AccountService {
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'AccountService/resetPassword',
+                500,
+                headErrorCode.account + accountServiceError.resetPassword,
+            );
         } finally {
             await queryRunner.release();
         }
@@ -306,7 +354,12 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).checkDuplicateNickname(nickname);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'AccountService/checkDuplicateNickname',
+                500,
+                headErrorCode.account + accountServiceError.checkDuplicateNickname,
+            );
         }
     }
 
@@ -314,7 +367,12 @@ export default class AccountService {
         try {
             return await getRepo(GrantRepository).getGrantList(userPK);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'AccountService/getGrantList',
+                500,
+                headErrorCode.account + accountServiceError.getGrantList,
+            );
         }
     }
 
@@ -329,11 +387,17 @@ export default class AccountService {
                 const tokens = generateLoginToken(userData);
                 await getRepo(RefreshRepository).updateRefreshToken(userPK, tokens.refresh);
                 return { header: true, accessToken: tokens.access, refreshToken: tokens.refresh } as ITokenBundle;
-            } else throw new AikoError('not exact refresh token', 500, 392038);
+            } else throw new AikoError('not exact refresh token', 500, -1);
         } catch (err) {
-            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, 500001);
-            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, 500002);
-            else throw err;
+            if (err.name === 'TokenExpiredError') throw new AikoError(err.name, 500, -1);
+            else if (err.name === 'JsonWebTokenError') throw new AikoError(err.name, 500, -1);
+            else
+                throw stackAikoError(
+                    err,
+                    'AccountService/getAccessToken',
+                    500,
+                    headErrorCode.account + accountServiceError.getAccessToken,
+                );
         }
     }
 
@@ -341,7 +405,12 @@ export default class AccountService {
         try {
             return await getRepo(UserRepository).getUserInfoWithNickname(nickname, true, true, companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'AccountService/getUserInfo',
+                500,
+                headErrorCode.account + accountServiceError.getUserInfo,
+            );
         }
     }
 }

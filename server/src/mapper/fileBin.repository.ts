@@ -1,6 +1,14 @@
 import FileBin from 'src/entity/fileBin.entity';
 import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
+
+enum fileBinError {
+    deleteFiles = 1,
+    getDeleteFlagFiles = 2,
+    deleteFilesForScheduler = 3,
+}
 
 @EntityRepository(FileBin)
 export default class FileBinRepository extends Repository<FileBin> {
@@ -24,8 +32,12 @@ export default class FileBinRepository extends Repository<FileBin> {
 
             await manager.save(FileBin, fileBinList);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileBinRepository/deleteFiles', 500, 9192384);
+            throw stackAikoError(
+                err,
+                'FileBinRepository/deleteFiles',
+                500,
+                headErrorCode.fileBinDB + fileBinError.deleteFiles,
+            );
         }
     }
 
@@ -33,8 +45,12 @@ export default class FileBinRepository extends Repository<FileBin> {
         try {
             return await this.createQueryBuilder().where(`DATE <= ${limitTime}`).getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileBinRepository/getDeleteFlagFiles', 500, 9192384);
+            throw stackAikoError(
+                err,
+                'FileBinRepository/getDeleteFlagFiles',
+                500,
+                headErrorCode.fileBinDB + fileBinError.getDeleteFlagFiles,
+            );
         }
     }
 
@@ -47,8 +63,12 @@ export default class FileBinRepository extends Repository<FileBin> {
                 .where('FILE_KEY_PK IN(:...files)', { files })
                 .execute();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('FileBinRepository/deleteFilesForScheduler', 500, 9192384);
+            throw stackAikoError(
+                err,
+                'FileBinRepository/deleteFilesForScheduler',
+                500,
+                headErrorCode.fileBinDB + fileBinError.deleteFilesForScheduler,
+            );
         }
     }
 }

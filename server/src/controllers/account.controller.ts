@@ -8,6 +8,7 @@ import { usrPayloadParser, AikoError, resExecutor, propsRemover, getRepo, unknow
 import { UserRepository } from 'src/mapper';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
 import MeetingService from 'src/services/meeting.service';
+import { bodyChecker } from 'src/Helpers/functions';
 
 @Controller('account')
 export default class AccountController {
@@ -60,6 +61,18 @@ export default class AccountController {
     async signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
         const data = JSON.parse(req.body.obj) as ISignup;
 
+        bodyChecker(data, {
+            header: 'number',
+            firstName: 'string',
+            lastName: 'string',
+            nickname: 'string',
+            email: 'string',
+            tel: 'string',
+            countryPK: 'number',
+            pw: 'string',
+            position: 'number',
+        });
+
         try {
             let originalname: string;
             let filename: string;
@@ -92,12 +105,13 @@ export default class AccountController {
     // ! check complete - api doc
     @Post('login')
     async login(@Req() req: Request, @Res() res: Response) {
-        const data = {
-            NICKNAME: req.body.NICKNAME,
-            PASSWORD: req.body.PASSWORD,
-        };
-
         try {
+            const data = {
+                NICKNAME: req.body.NICKNAME,
+                PASSWORD: req.body.PASSWORD,
+            };
+            bodyChecker(data, { NICKNAME: 'string', PASSWORD: 'string' });
+
             let result = await this.accountService.login(data);
             if ('accessToken' in result) {
                 res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
@@ -134,9 +148,10 @@ export default class AccountController {
     // ! check complete - api doc
     @Post('requesting-reset-password')
     async requestResetPassword(@Req() req: Request, @Res() res: Response) {
-        const { email } = req.body;
-
         try {
+            const { email } = req.body;
+            bodyChecker({ email }, { email: 'string' });
+
             const result = await this.accountService.requestResetPassword(email);
             resExecutor(res, { result });
         } catch (err) {
@@ -147,9 +162,10 @@ export default class AccountController {
     // ! check complete - api doc
     @Post('reset-password')
     async resetPassword(@Req() req: Request, @Res() res: Response) {
-        const { uuid, password }: IResetPw = req.body;
-
         try {
+            const { uuid, password }: IResetPw = req.body;
+            bodyChecker({ uuid, password }, { uuid: 'string', password: 'string' });
+
             const result = await this.accountService.resetPassword(uuid, password);
             resExecutor(res, { result });
         } catch (err) {
@@ -161,10 +177,11 @@ export default class AccountController {
     @Post('user-info')
     @UseGuards(UserGuard)
     async getUserInfo(@Req() req: Request, @Res() res: Response) {
-        const { nickname } = req.body;
-        const { COMPANY_PK } = usrPayloadParser(req);
-
         try {
+            const { nickname } = req.body;
+            const { COMPANY_PK } = usrPayloadParser(req);
+            bodyChecker({ nickname }, { nickname: 'string' });
+
             const result = await this.accountService.getUserInfo(nickname, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
@@ -176,9 +193,8 @@ export default class AccountController {
     // 어세스 토큰 재발급
     @Post('access-token')
     async getAccessToken(@Req() req: Request, @Res() res: Response) {
-        const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
-
         try {
+            const { REFRESH_TOKEN }: { REFRESH_TOKEN: string } = req.cookies;
             const result = await this.accountService.getAccessToken(REFRESH_TOKEN);
 
             if (result.header) {
@@ -197,23 +213,11 @@ export default class AccountController {
     @UseGuards(UserGuard)
     @Get('decoding-token')
     async decodeToken(@Req() req: Request, @Res() res: Response) {
-        const { USER_PK } = usrPayloadParser(req);
-
         try {
+            const { USER_PK } = usrPayloadParser(req);
             resExecutor(res, {
                 result: propsRemover(await getRepo(UserRepository).getUserInfoWithUserPK(USER_PK), 'iat', 'exp', 'iss'),
             });
-        } catch (err) {
-            throw resExecutor(res, { err });
-        }
-    }
-
-    // ! api doc
-    @UseGuards(UserGuard)
-    @Get('raw-token')
-    async getRawToken(@Req() req: Request, @Res() res: Response) {
-        try {
-            resExecutor(res, { result: req.cookies.ACCESS_TOKEN });
         } catch (err) {
             throw resExecutor(res, { err });
         }

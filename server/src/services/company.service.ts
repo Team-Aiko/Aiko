@@ -1,5 +1,5 @@
 import CompanyRepository from 'src/mapper/company.repository';
-import { getRepo, propsRemover } from 'src/Helpers/functions';
+import { getRepo, propsRemover, stackAikoError } from 'src/Helpers/functions';
 import { DepartmentRepository, UserRepository } from 'src/mapper';
 import { AikoError, isChiefAdmin } from 'src/Helpers';
 import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC';
@@ -7,10 +7,25 @@ import AccountService from './account.service';
 import { Injectable } from '@nestjs/common';
 import GrantRepository from 'src/mapper/grant.repository';
 import { Department, Grant, User } from 'src/entity';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { notSameCompanyError } from 'src/Helpers/instance';
 
 const criticalUserInfo = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 interface IExtendedUser extends User {
     departments: Partial<Department>;
+}
+
+enum companyError {
+    list = 1,
+    getDepartmentMembers = 2,
+    createDepartment = 3,
+    givePermission = 4,
+    deleteDepartment = 5,
+    updateDepartmentName = 6,
+    searchMembers = 7,
+    getDepartmentTree = 8,
+    addMemberToDepartment = 9,
+    getCompanyMemberList = 10,
 }
 
 @Injectable()
@@ -23,7 +38,7 @@ export default class CompanyService {
         try {
             return await getRepo(CompanyRepository).list(companyName);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(err, 'CompanyService/list', 500, headErrorCode.company + companyError.list);
         }
     }
 
@@ -32,7 +47,12 @@ export default class CompanyService {
         try {
             return await getRepo(DepartmentRepository).getDepartmentMembers(departmentPK, companyPK);
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'CompanyService/getDepartmentMembers',
+                500,
+                headErrorCode.company + companyError.getDepartmentMembers,
+            );
         }
     }
 
@@ -41,19 +61,22 @@ export default class CompanyService {
 
         try {
             const grants = await this.accountService.getGrantList(bundle.userPK);
-            const isAdmin = grants.some((grant) => grant.USER_PK === bundle.userPK && grant.AUTH_LIST_PK === 1);
+            isChiefAdmin(grants);
 
-            if (isAdmin) {
-                const { companyPK, departmentName, parentPK, parentDepth } = bundle;
-                flag = await getRepo(DepartmentRepository).createDepartment({
-                    companyPK,
-                    departmentName,
-                    parentPK,
-                    parentDepth,
-                });
-            } else throw new AikoError("He isn't a admin", 500, 500011);
+            const { companyPK, departmentName, parentPK, parentDepth } = bundle;
+            flag = await getRepo(DepartmentRepository).createDepartment({
+                companyPK,
+                departmentName,
+                parentPK,
+                parentDepth,
+            });
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/createDepartment',
+                500,
+                headErrorCode.company + companyError.createDepartment,
+            );
         }
 
         return flag;
@@ -72,9 +95,14 @@ export default class CompanyService {
 
                 await getRepo(GrantRepository).grantPermission(1, targetMember.USER_PK);
                 isSuccess = true;
-            } else throw new AikoError('not same company error', 500, 500043);
+            } else throw notSameCompanyError;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/givePermission',
+                500,
+                headErrorCode.company + companyError.givePermission,
+            );
         }
 
         return isSuccess;
@@ -85,7 +113,12 @@ export default class CompanyService {
             isChiefAdmin(grants);
             return getRepo(DepartmentRepository).deleteDepartment(departmentPK, COMPANY_PK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/deleteDepartment',
+                500,
+                headErrorCode.company + companyError.deleteDepartment,
+            );
         }
     }
 
@@ -96,7 +129,12 @@ export default class CompanyService {
             isChiefAdmin(grants);
             flag = await getRepo(DepartmentRepository).updateDepartmentName(departmentPK, departmentName, companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/updateDepartmentName',
+                500,
+                headErrorCode.company + companyError.updateDepartmentName,
+            );
         }
 
         return flag;
@@ -124,7 +162,12 @@ export default class CompanyService {
             users.forEach((user) => propsRemover(user, ...criticalUserInfo));
             searchedUser = users;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/searchMembers',
+                500,
+                headErrorCode.company + companyError.searchMembers,
+            );
         }
 
         return searchedUser;
@@ -134,19 +177,12 @@ export default class CompanyService {
         try {
             return await getRepo(DepartmentRepository).getDepartmentTree(COMPANY_PK, DEPARTMENT_PK);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
-        }
-    }
-
-    // * util functions
-
-    isChiefAdmin(grants: Grant[]) {
-        try {
-            const isAdmin = grants.some((grant) => grant.AUTH_LIST_PK === 1);
-            if (!isAdmin) throw new AikoError('NO_AUTHORIZATION', 500, 500321);
-            else return isAdmin;
-        } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/getDepartmentTree',
+                500,
+                headErrorCode.company + companyError.getDepartmentTree,
+            );
         }
     }
 
@@ -156,15 +192,12 @@ export default class CompanyService {
             isChiefAdmin(grants);
             return await getRepo(UserRepository).addMemberToDepartment(companyPK, departmentPK, userPK);
         } catch (err) {
-            throw err;
-        }
-    }
-
-    async checkAdmin(grants: Grant[]) {
-        try {
-            return isChiefAdmin(grants);
-        } catch (err) {
-            return false;
+            throw stackAikoError(
+                err,
+                'CompanyService/addMemberToDepartment',
+                500,
+                headErrorCode.company + companyError.addMemberToDepartment,
+            );
         }
     }
 
@@ -172,7 +205,12 @@ export default class CompanyService {
         try {
             return await getRepo(UserRepository).getCompanyMemberList(companyPK);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'CompanyService/getCompanyMemberList',
+                500,
+                headErrorCode.company + companyError.getCompanyMemberList,
+            );
         }
     }
 }

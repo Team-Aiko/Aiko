@@ -7,7 +7,7 @@ import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
-import { typeMismatchError } from './instance';
+import { invalidTokenError, notAuthorizedUserError, typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -33,6 +33,7 @@ export const resExecutor: IGetResPacket = function (res: Response, pack: { resul
         description:
             err instanceof AikoError ? err.description : result ? success.description : unknownError.description,
         appCode: err instanceof AikoError ? err.appCode : result ? success.appCode : unknownError.appCode,
+        errorStack: err instanceof AikoError ? err.errorStack : undefined,
     };
 
     if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);
@@ -53,16 +54,19 @@ export function tokenParser(accessToken: string) {
         return jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
     } catch (err) {
         console.error(err);
-        throw new AikoError('invalid access token', 0, 190241);
+        throw invalidTokenError;
     }
 }
 
-export function getSocketErrorPacket<T>(path: string, err: Error, originalData: T) {
+export function getSocketErrorPacket<T>(path: string, err: AikoError, originalData: T) {
     const errorPacket: IErrorPacket<T> = {
         path,
         err,
         originalData,
+        tokenError: false,
     };
+
+    if (err.appCode === 2) errorPacket.tokenError = true;
 
     return errorPacket;
 }
@@ -82,7 +86,7 @@ export function propsRemover<T>(obj: T, ...props: string[]) {
 export function isChiefAdmin(grants: Grant[]) {
     try {
         const isAdmin = grants?.some((grant) => grant.AUTH_LIST_PK === 1);
-        if (!isAdmin) throw new AikoError('NO_AUTHORIZATION', 500, 500321);
+        if (!isAdmin) throw notAuthorizedUserError;
         else return isAdmin;
     } catch (err) {
         throw err;
@@ -118,7 +122,7 @@ export function transformToLinkedList<T>(list: T[]) {
     return linkedList;
 }
 
-export function bodyChecker<T>(
+export function bodyChecker<T extends { [idx: string]: any }>(
     body: T,
     sample: {
         [idx: string]:
@@ -133,27 +137,34 @@ export function bodyChecker<T>(
             | 'object[]';
     },
 ) {
-    const keys = Object.keys(body);
+    try {
+        const requiredKeys = Object.keys(sample);
 
-    const flag = keys.some((key) => {
-        const type1 = typeof body[key];
-        const type2 = sample[key];
-        let isArr = false;
+        const isInvalidDataType = requiredKeys.some((key) => {
+            const requiredType = sample[key];
+            const bodyDataType = typeof body[key];
 
-        // undefined filter
-        if (type1 === 'undefined') return true;
+            // array filter
+            if (requiredType.slice(-2) === '[]') {
+                const bodyData = body[key];
+                const isArray = Array.isArray(bodyData);
 
-        // array filter
-        if (type2.slice(-2) === '[]') isArr = Array.isArray(body[key]);
-        if (isArr) {
-            if (body[key].length > 0 && typeof body[key][0] !== type2.slice(0, -2)) return true;
-        } else {
-            return type1 !== type2;
-        }
-    });
+                if (isArray) {
+                    if (bodyData.length <= 0) return false;
+                    else return requiredType.slice(0, -2) !== typeof bodyData[0];
+                } else return true;
+            }
 
-    if (flag) throw typeMismatchError;
-    return true;
+            // other data types
+            if (requiredType !== bodyDataType) return true;
+        });
+
+        if (isInvalidDataType) throw typeMismatchError;
+        else return true;
+    } catch (err) {
+        console.log('🚀 ~ file: functions.ts ~ line 164 ~ err', err);
+        throw err;
+    }
 }
 
 export function getExtensionOfFilename(filename: string) {
@@ -299,4 +310,16 @@ export function deleteFiles(destination: string, ...uuid: string[]) {
             }
         });
     }
+}
+
+export function stackAikoError(err: Error, description: string, httpCode: number, appCode: number) {
+    let returnErr: AikoError = undefined;
+
+    if (err instanceof AikoError) returnErr = new AikoError(description, httpCode, appCode, err);
+    else {
+        console.error(err);
+        returnErr = new AikoError(description, httpCode, appCode);
+    }
+
+    return returnErr;
 }

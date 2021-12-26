@@ -1,8 +1,21 @@
 import { ResultSetHeader } from 'mysql2';
 import { CalledMembers } from 'src/entity';
 import { getRepo, AikoError, Pagination, propsRemover } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 import { UserRepository } from '.';
+
+enum calledMemberError {
+    addMeetingMember = 1,
+    checkMeetSchedule = 2,
+    getMeetingMembers = 3,
+    removeMeetingMembers = 4,
+    addMeetingMembers = 5,
+    deleteMeetingMembers = 6,
+    getMeetingScheduleCnt = 7,
+    checkMeetScheduleForUserInfo = 8,
+}
 
 @EntityRepository(CalledMembers)
 export default class CalledMembersRepository extends Repository<CalledMembers> {
@@ -46,8 +59,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                 );
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/addMeetingMember', 500, 492812);
+            throw stackAikoError(
+                err,
+                'calledMembers/addMeetingMember',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.addMeetingMember,
+            );
         }
     }
 
@@ -85,8 +102,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                 return meeting;
             });
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/checkMeetSchedule', 500, 549231);
+            throw stackAikoError(
+                err,
+                'calledMembers/checkMeetSchedule',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.checkMeetSchedule,
+            );
         }
     }
 
@@ -94,8 +115,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         try {
             return await this.createQueryBuilder('c').where('c.MEET_PK = :MEET_PK', { MEET_PK }).getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/getMeetingMembers', 500, 594391);
+            throw stackAikoError(
+                err,
+                'calledMembers/getMeetingMembers',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.getMeetingMembers,
+            );
         }
     }
 
@@ -127,8 +152,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
             return affectedList;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/removeMeetingMembers', 500, 495013);
+            throw stackAikoError(
+                err,
+                'calledMembers/removeMeetingMembers',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.removeMeetingMembers,
+            );
         }
     }
 
@@ -162,8 +191,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
             const insrtedIds = await Promise.all(newMembers.map(cb));
             return insrtedIds;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/addMeetingMembers', 500, 591202);
+            throw stackAikoError(
+                err,
+                'calledMembers/addMeetingMembers',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.addMeetingMembers,
+            );
         }
     }
 
@@ -180,8 +213,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
 
             flag = true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/deleteMeetingMembers', 500, 591027);
+            throw stackAikoError(
+                err,
+                'calledMembers/deleteMeetingMembers',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.deleteMeetingMembers,
+            );
         }
 
         return flag;
@@ -191,7 +228,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
         try {
             return await this.createQueryBuilder('c').where('c.USER_PK = :USER_PK', { USER_PK }).getCount();
         } catch (err) {
-            console.error(err);
+            throw stackAikoError(
+                err,
+                'CalledMembersRepository/getMeetingScheduleCnt',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.getMeetingScheduleCnt,
+            );
         }
     }
 
@@ -204,8 +246,12 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                 .orderBy('c.MEET_PK', 'DESC')
                 .getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('calledMembers/checkMeetScheduleForUserInfo', 500, 281291);
+            throw stackAikoError(
+                err,
+                'calledMembers/checkMeetScheduleForUserInfo',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.checkMeetScheduleForUserInfo,
+            );
         }
     }
 }
