@@ -16,11 +16,11 @@ export class SocketGuard implements CanActivate {
             const { ACCESS_TOKEN } = parseCookieString<{ ACCESS_TOKEN: string; REFRESH_TOKEN: string }>(cookie);
             const userPayload = tokenParser(ACCESS_TOKEN);
             socket.client.request.headers['user-payload'] = JSON.stringify(userPayload);
+            socket.client.request.headers['guardPassed'] = 'true';
+            return true;
         } catch (err) {
             console.error(err);
-            throw new AikoError('SocketGuard/invalid token error', 100, 8928192);
+            return true;
         }
-
-        return true;
     }
 }

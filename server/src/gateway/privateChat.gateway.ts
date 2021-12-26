@@ -28,12 +28,10 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
-        try {
-            const payload = parseUserPayloadString(client.request.headers['user-payload']);
-            const { COMPANY_PK, USER_PK } = payload;
+        if (!client.request.headers['guardPassed']) return;
 
-            // null data filter
-            if (!payload) return;
+        try {
+            const { COMPANY_PK, USER_PK } = parseUserPayloadString(client.request.headers['user-payload']);
             const { oddCase, evenCase } = await this.privateChatService.connectPrivateChat(USER_PK, COMPANY_PK);
 
             const roomList = oddCase.concat(evenCase);
@@ -52,9 +50,14 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.SERVER_SEND)
     async sendMessage(client: Socket, payload: IMessagePayload) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             // null data filter
             if (!payload) return;
+
+            const { COMPANY_PK, USER_PK } = parseUserPayloadString(client.request.headers['user-payload']);
+            payload.sender = USER_PK;
 
             await this.privateChatService.sendMessage(payload);
             this.wss.to(payload.roomId).emit(privateChatPath.CLIENT_SEND, payload);
@@ -67,6 +70,8 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.SERVER_CALL_CHAT_LOG)
     async callChatlog(client: Socket, roomId: string) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             // null data filter
             if (!roomId) return;
@@ -87,6 +92,8 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
+
         this.logger.log(`disconnect client: ${client.id}`);
     }
 }

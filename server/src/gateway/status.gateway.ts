@@ -12,6 +12,7 @@ import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
 import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
 import { SocketGuard } from 'src/guard/socket.guard';
+import { invalidTokenError } from 'src/Helpers/instance';
 
 @UseGuards(SocketGuard)
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'status' })
@@ -35,12 +36,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
-        try {
-            const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
-            const payload = parseUserPayloadString(payloadStr);
+        if (!client.request.headers['guardPassed']) return;
 
-            const { USER_PK, COMPANY_PK } = payload;
+        try {
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(client.request.headers['user-payload']);
 
             // connection check and select user info
             const connResult = await this.statusService.statusConnection(USER_PK, COMPANY_PK, client.id);
@@ -74,7 +73,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
-        console.log('handleDisconnect method');
+        if (!client.request.headers['guardPassed']) return;
 
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
@@ -93,10 +92,11 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
     async changeStatus(client: Socket, stat: number) {
-        console.log('changeStatus method');
+        if (!client.request.headers['guardPassed']) return;
 
         try {
             if (!stat) return;
+
             const status = await this.statusService.changeStatus(client.id, stat);
             const clientInfos = await this.statusService.selectClientInfos(status.userPK);
 
@@ -113,11 +113,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
     @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
-        try {
-            const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
+        if (!client.request.headers['guardPassed']) return;
 
-            const { COMPANY_PK, USER_PK } = parseUserPayloadString(payloadStr);
+        try {
+            const { COMPANY_PK, USER_PK } = parseUserPayloadString(client.request.headers['user-payload']);
             await this.statusService.logoutEvent(USER_PK, COMPANY_PK, client.id);
             this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
         } catch (err) {

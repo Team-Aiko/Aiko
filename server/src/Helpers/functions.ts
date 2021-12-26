@@ -302,7 +302,12 @@ export function parseCookieString<T extends { [idx: string]: string }>(cookie: s
 }
 
 export function parseUserPayloadString(stringifiedUserPayload: string | string[]) {
-    return JSON.parse(stringifiedUserPayload as string) as IUserPayload;
+    try {
+        if (stringifiedUserPayload === undefined || stringifiedUserPayload === null) throw invalidTokenError;
+        return JSON.parse(stringifiedUserPayload as string) as IUserPayload;
+    } catch (err) {
+        throw err;
+    }
 }
 
 // 파일삭제
