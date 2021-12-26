@@ -1,13 +1,15 @@
 import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
-import { AikoError, resExecutor, usrPayloadParser } from 'src/Helpers';
+import { AikoError, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
 import { bodyChecker, deleteFiles } from 'src/Helpers/functions';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 
 @UseGuards(UserGuard)
+@UseInterceptors(UserPayloadParserInterceptor)
 @Controller('notice-board')
 export default class NoticeBoardController {
     constructor(private noticeboardService: NoticeBoardService) {}
@@ -20,7 +22,8 @@ export default class NoticeBoardController {
         try {
             console.log(files); //merge  test
             const obj = JSON.parse(req.body.obj);
-            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const { userPayload } = req.body;
+            const { USER_PK, COMPANY_PK } = userPayload;
             const { title, content } = obj;
             bodyChecker({ title, content }, { title: 'string', content: 'string' });
 
@@ -42,7 +45,8 @@ export default class NoticeBoardController {
     async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
         try {
             const obj = JSON.parse(req.body.obj);
-            const { USER_PK, COMPANY_PK } = usrPayloadParser(req);
+            const { userPayload } = req.body;
+            const { USER_PK, COMPANY_PK } = userPayload;
             const { title, content, num, delFilePks } = obj;
             bodyChecker(
                 { title, content, num, delFilePks },
@@ -63,7 +67,8 @@ export default class NoticeBoardController {
     @Post('delete-article')
     async deleteArticle(@Req() req: Request, @Res() res: Response) {
         try {
-            const { USER_PK } = usrPayloadParser(req);
+            const { userPayload } = req.body;
+            const { USER_PK } = userPayload;
             const { num } = req.body;
             bodyChecker({ num }, { num: 'number' });
 
@@ -77,7 +82,7 @@ export default class NoticeBoardController {
     // ! api doc
     @Get('btn-size')
     async createBtnSize(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
+        const { userPayload } = req.body;
         const option = parseInt(req.query.option as string);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
@@ -91,7 +96,7 @@ export default class NoticeBoardController {
     // ! api doc
     @Get('list')
     async getList(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
+        const { userPayload } = req.body;
         const comPk = userPayload.COMPANY_PK;
         const option = parseInt(req.query.option as string);
         const pageNum = (parseInt(req.query.pageNum as string) - 1) * 10;
@@ -106,7 +111,7 @@ export default class NoticeBoardController {
     // ! api doc
     @Get('detail')
     async getDetail(@Req() req: Request, @Res() res: Response) {
-        const userPayload = usrPayloadParser(req);
+        const { userPayload } = req.body;
         const num = parseInt(req.query.num as string);
         const comPk = userPayload.COMPANY_PK;
         if (num !== undefined) {

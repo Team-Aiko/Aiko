@@ -2,12 +2,14 @@ import { Controller, Post, Req, Res, UseInterceptors, Get, UseGuards, Query } fr
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
-import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import { bodyChecker } from 'src/Helpers/functions';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 
 @UseGuards(UserGuard)
+@UseInterceptors(UserPayloadParserInterceptor)
 @Controller() // /store
 export default class FileController {
     constructor(private fileService: FileService) {}
@@ -96,7 +98,7 @@ export default class FileController {
     @Get('download-noticeboard-file')
     async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
         try {
-            const userPayload = usrPayloadParser(req);
+            const { userPayload } = req.body;
             const comPk = userPayload.COMPANY_PK;
             const { UUID, ORIGINAL_NAME } = await this.fileService.downloadNoticeBoardFile(Number(fileId), comPk);
             const target = filePath.NOTICE_BOARD + '/' + UUID;
@@ -110,7 +112,8 @@ export default class FileController {
     @Get('download-drive-file')
     async downloadDriveFiles(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
         try {
-            const { COMPANY_PK } = usrPayloadParser(req);
+            const { userPayload } = req.body;
+            const { COMPANY_PK } = userPayload;
             const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
 
             res.download(`${filePath.DRIVE}${NAME}`, ORIGINAL_FILE_NAME, (err) => {
