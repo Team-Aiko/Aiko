@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ResetPwTable } from '../interfaces';
 import { User } from '.';
 
@@ -12,5 +12,6 @@ export default class ResetPw implements ResetPwTable {
     UUID: string;
 
     @ManyToOne((type) => User, (user) => user.resetPws)
+    @JoinColumn({ name: 'USER_PK' })
     user: User;
 }
