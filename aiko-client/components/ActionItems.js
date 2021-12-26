@@ -45,9 +45,6 @@ const ActionItems = ({nickname}) => {
     //All information about created Action Items.
     const [actionItemArray, setActionItemArray] = useState([]);
 
-    //따로 관리할 priority PK, step PK
-    const [selectedItem, setSelectedItem] = useState(null);
-
     const priorityChange = (e, num) => {
         const index = actionItemArray.findIndex((item) => item.ACTION_PK === num)
         const arr = [...actionItemArray];
@@ -122,14 +119,14 @@ const ActionItems = ({nickname}) => {
         };
         post(url, data)
         .then((res) => {
-            console.log(res)
+            console.log('^^'+res.USER_PK)
             setUserPk(res.USER_PK)
         })
-    }
+    };
 
     useEffect(() => {
         getUserInfo()
-    },[])
+    },[nickname])
 
     //생성된 액션 아이템 불러오기 API
     const getActionItems = async () => {
@@ -139,6 +136,7 @@ const ActionItems = ({nickname}) => {
             currentPage: currentPage,
             feedsPerPage: rowsPerPage,
         };
+        console.log(params)
         await get(url, { params: params }).then((res) => {
             setActionItemArray(res.items);
         });
@@ -146,7 +144,7 @@ const ActionItems = ({nickname}) => {
 
     useEffect(() => {
         getActionItems();
-    }, [currentPage, rowsPerPage]);
+    }, [userPk, rowsPerPage, currentPage]);
 
     const nullPageAlert = () => {
         if (actionItemArray.length == 0) {
@@ -160,11 +158,9 @@ const ActionItems = ({nickname}) => {
 
     const classes = useStyles();
 
-    console.log(nickname)
-
     return (
         <>
-            {addActionItemModal ? <AddActionItem setAddActionItemModal={setAddActionItemModal} /> : <></>}
+            {addActionItemModal ? <AddActionItem setAddActionItemModal={setAddActionItemModal} nickname={nickname} /> : <></>}
 
             {actionItemDetailModal ? (
                 <ActionItemDetail
