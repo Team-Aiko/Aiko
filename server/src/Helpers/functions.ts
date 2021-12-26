@@ -153,7 +153,7 @@ export function bodyChecker<T extends { [idx: string]: any }>(
                     if (bodyData.length <= 0) return false;
                     else {
                         const validType = requiredType.slice(0, -2);
-                        return bodyData.some((item) => item !== validType);
+                        return bodyData.some((item) => typeof item !== validType);
                     }
                 } else return true;
             }
