@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor } from 'src/Helpers';
 import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { driveFileOption } from 'src/interfaces/MVC/fileMVC';
 import DriveService from 'src/services/drive.service';
 
@@ -16,9 +17,9 @@ export default class DriveController {
 
     // ! api doc
     @Post('create-folder')
-    async createFolder(@Req() req: Request, @Res() res: Response) {
+    async createFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { folderName, parentPK, userPayload } = req.body;
+            const { folderName, parentPK } = req.body;
             const { COMPANY_PK } = userPayload;
             bodyChecker({ folderName, parentPK }, { folderName: 'string', parentPK: 'number' });
 
@@ -31,10 +32,9 @@ export default class DriveController {
 
     // ! api doc
     @Get('view-folder')
-    async viewFolder(@Req() req: Request, @Res() res: Response) {
+    async viewFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { folderId } = req.query;
-            const { userPayload } = req.body;
             const { COMPANY_PK } = userPayload;
 
             const result = this.driveService.viewFolder(COMPANY_PK, Number(folderId));
@@ -48,9 +48,13 @@ export default class DriveController {
     // ! api doc
     @Post('save-files')
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
-    async saveFiles(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
+    async saveFiles(
+        @Req() req: Request,
+        @Body() userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFiles() files: Express.Multer.File[],
+    ) {
         try {
-            const { userPayload } = req.body;
             const { USER_PK, COMPANY_PK } = userPayload;
             const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, COMPANY_PK, files);
             resExecutor(res, { result });
@@ -62,9 +66,9 @@ export default class DriveController {
 
     // ! api doc
     @Get('get-files')
-    async getFiles(@Req() req: Request, @Res() res: Response) {
+    async getFiles(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { filePKs, userPayload } = req.body;
+            const { filePKs } = req.body;
             const { COMPANY_PK } = userPayload;
             bodyChecker({ filePKs }, { filePKs: 'number' });
 
@@ -77,9 +81,9 @@ export default class DriveController {
 
     // ! api doc
     @Post('delete-files')
-    async deleteFiles(@Req() req: Request, @Res() res: Response) {
+    async deleteFiles(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { filePKs, folderPKs, userPayload } = req.body;
+            const { filePKs, folderPKs } = req.body;
             const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
                 filePKs: filePKs || -1,
                 folderPKs: folderPKs || -1,
@@ -95,9 +99,9 @@ export default class DriveController {
 
     // ! api doc
     @Post('move-folder')
-    async moveFolder(@Req() req: Request, @Res() res: Response) {
+    async moveFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { fromFilePKs, fromFolderPKs, toFolderPK, userPayload } = req.body;
+            const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
             const { COMPANY_PK } = userPayload;
             bodyChecker(
                 { fromFilePKs, fromFolderPKs, toFolderPK },

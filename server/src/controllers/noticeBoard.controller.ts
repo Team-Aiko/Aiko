@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import NoticeBoardService from 'src/services/noticeBoard.service';
 import { AikoError, resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import { NoticeBoardFileOption } from 'src/interfaces/MVC/fileMVC';
 import { bodyChecker, deleteFiles } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @UseGuards(UserGuard)
 @UseInterceptors(UserPayloadParserInterceptor)
@@ -17,12 +18,16 @@ export default class NoticeBoardController {
     // ! api doc
     @Post('write')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
-    async createArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
+    async createArticle(
+        @Req() req: Request,
+        @Body() userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFiles() files: Express.Multer.File[],
+    ) {
         console.log('hello');
         try {
             console.log(files); //merge  test
             const obj = JSON.parse(req.body.obj);
-            const { userPayload } = req.body;
             const { USER_PK, COMPANY_PK } = userPayload;
             const { title, content } = obj;
             bodyChecker({ title, content }, { title: 'string', content: 'string' });
@@ -42,10 +47,14 @@ export default class NoticeBoardController {
     // ! api doc
     @Post('update-article')
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
-    async updateArticle(@Req() req: Request, @Res() res: Response, @UploadedFiles() files: Express.Multer.File[]) {
+    async updateArticle(
+        @Req() req: Request,
+        @Body() userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFiles() files: Express.Multer.File[],
+    ) {
         try {
             const obj = JSON.parse(req.body.obj);
-            const { userPayload } = req.body;
             const { USER_PK, COMPANY_PK } = userPayload;
             const { title, content, num, delFilePks } = obj;
             bodyChecker(
@@ -65,9 +74,8 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Post('delete-article')
-    async deleteArticle(@Req() req: Request, @Res() res: Response) {
+    async deleteArticle(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { userPayload } = req.body;
             const { USER_PK } = userPayload;
             const { num } = req.body;
             bodyChecker({ num }, { num: 'number' });
@@ -81,8 +89,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('btn-size')
-    async createBtnSize(@Req() req: Request, @Res() res: Response) {
-        const { userPayload } = req.body;
+    async createBtnSize(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         const option = parseInt(req.query.option as string);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
@@ -95,8 +102,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('list')
-    async getList(@Req() req: Request, @Res() res: Response) {
-        const { userPayload } = req.body;
+    async getList(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         const comPk = userPayload.COMPANY_PK;
         const option = parseInt(req.query.option as string);
         const pageNum = (parseInt(req.query.pageNum as string) - 1) * 10;
@@ -110,8 +116,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('detail')
-    async getDetail(@Req() req: Request, @Res() res: Response) {
-        const { userPayload } = req.body;
+    async getDetail(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
         const num = parseInt(req.query.num as string);
         const comPk = userPayload.COMPANY_PK;
         if (num !== undefined) {

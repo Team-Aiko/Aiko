@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Res, UseInterceptors, Get, UseGuards, Query } from '@nestjs/common';
+import { Controller, Post, Req, Res, UseInterceptors, Get, UseGuards, Query, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
@@ -7,6 +7,7 @@ import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @UseGuards(UserGuard)
 @UseInterceptors(UserPayloadParserInterceptor)
@@ -96,9 +97,13 @@ export default class FileController {
     // ! api doc
     // 파일 다운로드 s
     @Get('download-noticeboard-file')
-    async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+    async downloadNoticeBoardFile(
+        @Query('fileId') fileId: string,
+        @Body() userPayload: IUserPayload,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         try {
-            const { userPayload } = req.body;
             const comPk = userPayload.COMPANY_PK;
             const { UUID, ORIGINAL_NAME } = await this.fileService.downloadNoticeBoardFile(Number(fileId), comPk);
             const target = filePath.NOTICE_BOARD + '/' + UUID;
@@ -110,9 +115,13 @@ export default class FileController {
 
     // ! api doc
     @Get('download-drive-file')
-    async downloadDriveFiles(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+    async downloadDriveFiles(
+        @Query('fileId') fileId: string,
+        @Body() userPayload: IUserPayload,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         try {
-            const { userPayload } = req.body;
             const { COMPANY_PK } = userPayload;
             const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
 
