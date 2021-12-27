@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/entity';
-import { AikoError, getRepo } from 'src/Helpers';
+import { getRepo } from 'src/Helpers';
 import { Server } from 'socket.io';
 import { CompanyRepository, GroupChatRoomRepository } from 'src/mapper';
 import GroupChatUserListRepository from 'src/mapper/groupChatUserList.repository';
@@ -11,7 +11,7 @@ import { getConnection } from 'typeorm';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import { GroupChatLog, GroupChatLogDocument } from 'src/schemas/groupChatlog.schema';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
-import { getServerTime, stackAikoError, tokenParser } from 'src/Helpers/functions';
+import { getServerTime, stackAikoError } from 'src/Helpers/functions';
 import GroupChatStorageRepository from 'src/mapper/groupChatStorage.repository';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 
@@ -240,9 +240,15 @@ export default class GroupChatService {
         }
     }
 
-    async getUserInfos(GC_PK: number, companyPK: number) {
+    async getUserInfos(GC_PK: number, companyPK: number, userPK: number) {
         try {
-            return await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
+            let memberList = await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
+            memberList = memberList.filter((member) => member.USER_PK !== userPK);
+
+            const userMap = new Map<number, User>();
+            memberList.forEach((member) => userMap.set(member.USER_PK, member));
+
+            return userMap;
         } catch (err) {
             throw stackAikoError(
                 err,

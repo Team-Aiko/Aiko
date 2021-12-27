@@ -9,8 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { SocketGuard } from 'src/guard/socket.guard';
-import { AikoError } from 'src/Helpers';
-import { getSocketErrorPacket, tokenParser, parseCookieString, parseUserPayloadString } from 'src/Helpers/functions';
+import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
 
@@ -40,7 +39,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
 
         try {
             const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
             const userPayload = parseUserPayloadString(payloadStr);
 
             console.log('groupChat connection clientId : ', client.id);
@@ -98,7 +96,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
 
         try {
             const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
 
             if (!roomTitle) return;
@@ -144,7 +141,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!GC_PK) return;
 
             const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
 
             // 해당 채팅룸에 조인하는 프로세스
@@ -172,7 +168,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!payload) return;
 
             const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
 
             await this.groupChatService.sendMessageToGroup({ ...payload, USER_PK, COMPANY_PK }, this.wss);
@@ -197,16 +192,12 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!GC_PK) return;
 
             const payloadStr = client.request.headers['user-payload'];
-            if (!payloadStr) return;
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
 
             const chatLogs = await this.groupChatService.readChatLogs(GC_PK, COMPANY_PK);
-            const userInfos = await this.groupChatService.getUserInfos(GC_PK, COMPANY_PK);
-            this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userInfos });
+            const userMap = await this.groupChatService.getUserInfos(GC_PK, COMPANY_PK, USER_PK);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userMap });
         } catch (err) {
-            if (err instanceof AikoError) {
-            } else {
-            }
             this.wss
                 .to(client.id)
                 .emit(
