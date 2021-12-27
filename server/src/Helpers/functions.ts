@@ -21,6 +21,7 @@ import * as config from 'config';
 import * as nodemailer from 'nodemailer';
 import { SendMailOptions } from 'nodemailer';
 import * as smtpPool from 'nodemailer-smtp-pool';
+import winstonLogger from 'src/logger/logger';
 const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
 const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
@@ -329,7 +330,7 @@ export function stackAikoError(err: Error, description: string, httpCode: number
 
     if (err instanceof AikoError) returnErr = new AikoError(description, httpCode, appCode, err);
     else {
-        console.error(err);
+        winstonLogger.debug(err);
         returnErr = new AikoError(description, httpCode, appCode);
     }
 
