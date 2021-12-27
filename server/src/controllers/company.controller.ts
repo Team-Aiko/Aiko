@@ -9,7 +9,6 @@ import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.int
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
 @Controller('company')
-@UseInterceptors(UserPayloadParserInterceptor)
 export default class CompanyController {
     constructor(private companyService: CompanyService) {}
 
@@ -28,8 +27,13 @@ export default class CompanyController {
      * 해당부서와 하속부서의 직원정보를 조회하는 api
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Get('employee-list')
-    async getDepartmentMembers(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getDepartmentMembers(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+    ) {
         const { COMPANY_PK } = userPayload;
         const { deptId } = req.query;
 
@@ -47,8 +51,9 @@ export default class CompanyController {
      * body에 담기는 내용: departmentName, parentPK, parentDepth
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Post('new-department')
-    async createDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async createDepartment(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentName, parentPK, parentDepth } = req.body;
             const { COMPANY_PK, USER_PK } = userPayload;
@@ -80,8 +85,9 @@ export default class CompanyController {
      * 현재는 authListPK === 1 인 경우만 존재
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Post('permission')
-    async givePermission(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async givePermission(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { authListPK, targetUserPK } = req.body;
             const { USER_PK, COMPANY_PK, grants } = userPayload;
@@ -108,8 +114,9 @@ export default class CompanyController {
      * 지정한 부서를 지우는 api
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Post('delete-department')
-    async deleteDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteDepartment(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { departmentPK } = req.body;
             const { grants, COMPANY_PK } = userPayload;
@@ -129,8 +136,13 @@ export default class CompanyController {
      * 지정한 부서의 이름을 바꾸는 api
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Post('change-department-name')
-    async updateDepartmentName(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async updateDepartmentName(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+    ) {
         try {
             const { departmentPK, departmentName } = req.body;
             const { grants, COMPANY_PK } = userPayload;
@@ -155,8 +167,9 @@ export default class CompanyController {
      * 사원 통합검색 api  (닉네임, 성, 이름, 이메일, 전화번호, 부서명 와일드카드 검색)
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Get('searching-members')
-    async searchMembers(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async searchMembers(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { str } = req.query;
         const { grants, COMPANY_PK } = userPayload;
 
@@ -174,8 +187,9 @@ export default class CompanyController {
      * 부서의 풀트리를 만드는 api
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Get('department-tree')
-    async getDepartmentTree(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getDepartmentTree(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { COMPANY_PK } = userPayload;
         const { departmentPK } = req.query;
 
@@ -198,8 +212,13 @@ export default class CompanyController {
      * @param res
      */
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Post('add-mem-to-dept')
-    async addMemberToDepartment(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async addMemberToDepartment(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+    ) {
         try {
             const { departmentPK, userPK } = req.body;
             const { grants, COMPANY_PK } = userPayload;
@@ -214,8 +233,9 @@ export default class CompanyController {
 
     // ! api doc
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Get('check-admin')
-    async checkAdmin(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async checkAdmin(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { grants } = userPayload;
             const result = isChiefAdmin(grants);
@@ -227,8 +247,13 @@ export default class CompanyController {
 
     // ! api doc
     @UseGuards(UserGuard)
+    @UseInterceptors(UserPayloadParserInterceptor)
     @Get('member-list')
-    async getCompanyMemberList(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getCompanyMemberList(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+    ) {
         try {
             const { COMPANY_PK } = userPayload;
             const result = await this.companyService.getCompanyMemberList(COMPANY_PK);
