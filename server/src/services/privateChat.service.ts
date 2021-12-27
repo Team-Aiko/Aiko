@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { getServerTime, stackAikoError, tokenParser } from 'src/Helpers/functions';
-import { AikoError, getRepo } from 'src/Helpers';
+import { getServerTime, stackAikoError } from 'src/Helpers/functions';
+import { getRepo } from 'src/Helpers';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
 import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
 import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
-import { EntityManager, getConnection, TransactionManager } from 'typeorm';
-import { PrivateChatRoom } from 'src/entity';
+import { EntityManager, TransactionManager } from 'typeorm';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { User } from 'src/entity';
 
 enum privateChatServiceError {
     makePrivateChatRoomList = 1,
@@ -107,11 +107,15 @@ export default class PrivateChatService {
         }
     }
 
-    async getUserInfo(roomId: string) {
+    async getUserInfo(roomId: string, companyPK: number, userPK: number) {
         try {
-            const userInfos = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId);
+            const roomInfo = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId, companyPK);
+            let userInfo: User = undefined;
 
-            return userInfos;
+            if (roomInfo.user1.USER_PK !== userPK) userInfo = roomInfo.user1;
+            else userInfo = roomInfo.user2;
+
+            return { roomInfo, userInfo };
         } catch (err) {
             throw stackAikoError(
                 err,
