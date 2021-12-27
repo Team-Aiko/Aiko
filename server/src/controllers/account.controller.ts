@@ -179,7 +179,7 @@ export default class AccountController {
     // ! api doc
     @Post('user-info')
     @UseGuards(UserGuard)
-    async getUserInfo(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getUserInfo(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { nickname } = req.body;
             const { COMPANY_PK } = userPayload;
@@ -215,7 +215,7 @@ export default class AccountController {
     // ! api doc
     @UseGuards(UserGuard)
     @Get('decoding-token')
-    async decodeToken(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async decodeToken(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { USER_PK } = userPayload;
             resExecutor(res, {

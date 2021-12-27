@@ -20,7 +20,7 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async createArticle(
         @Req() req: Request,
-        @Body() userPayload: IUserPayload,
+        @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
         @UploadedFiles() files: Express.Multer.File[],
     ) {
@@ -49,7 +49,7 @@ export default class NoticeBoardController {
     @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
     async updateArticle(
         @Req() req: Request,
-        @Body() userPayload: IUserPayload,
+        @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
         @UploadedFiles() files: Express.Multer.File[],
     ) {
@@ -74,7 +74,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Post('delete-article')
-    async deleteArticle(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteArticle(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { USER_PK } = userPayload;
             const { num } = req.body;
@@ -89,7 +89,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('btn-size')
-    async createBtnSize(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async createBtnSize(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const option = parseInt(req.query.option as string);
         const comPk = userPayload.COMPANY_PK;
         if (option === 10 || option === 20 || option === 30) {
@@ -102,7 +102,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('list')
-    async getList(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getList(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const comPk = userPayload.COMPANY_PK;
         const option = parseInt(req.query.option as string);
         const pageNum = (parseInt(req.query.pageNum as string) - 1) * 10;
@@ -116,7 +116,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Get('detail')
-    async getDetail(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getDetail(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const num = parseInt(req.query.num as string);
         const comPk = userPayload.COMPANY_PK;
         if (num !== undefined) {

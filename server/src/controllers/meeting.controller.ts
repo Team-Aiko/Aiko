@@ -21,7 +21,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('creation-meeting-room')
-    async makeMeetingRoom(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async makeMeetingRoom(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { IS_ONLINE, ROOM_NAME, LOCATE } = req.body;
         const { COMPANY_PK, grants } = userPayload;
         bodyChecker({ IS_ONLINE, ROOM_NAME, LOCATE }, { IS_ONLINE: 'boolean', ROOM_NAME: 'string', LOCATE: 'string' });
@@ -43,7 +43,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('delete-meeting-room')
-    async deleteMeetingRoom(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteMeetingRoom(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { ROOM_PK } = req.body;
             const { grants } = userPayload;
@@ -58,7 +58,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('update-meeting-room')
-    async updateMeetingRoom(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async updateMeetingRoom(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { IS_ONLINE, LOCATE, ROOM_NAME, ROOM_PK }: Partial<IMeetingRoomBundle> = req.body;
             const { COMPANY_PK, grants } = userPayload;
@@ -93,7 +93,11 @@ export default class MeetingController {
 
     // ! api doc
     @Get('meeting-room-list')
-    async getMeetingRoomList(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getMeetingRoomList(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+    ) {
         const { COMPANY_PK } = userPayload;
 
         try {
@@ -106,7 +110,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('make-meeting')
-    async makeMeeting(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async makeMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION } = req.body;
         const { COMPANY_PK } = userPayload;
         bodyChecker(
@@ -144,7 +148,7 @@ export default class MeetingController {
      * 미팅 룸 인포페이지에서 스케쥴의 정보를 받아오기 위한 api
      */
     @Get('meet-schedule')
-    async meetingSchedule(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async meetingSchedule(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { roomId, currentPage, feedsPerPage, groupCnt } = req.query;
             const { COMPANY_PK, USER_PK } = userPayload;
@@ -171,7 +175,7 @@ export default class MeetingController {
      *
      */
     @Get('check-meet-schedule')
-    async checkMeetSchedule(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async checkMeetSchedule(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { userId, currentPage, feedsPerPage, groupCnt } = req.query;
             const { USER_PK, COMPANY_PK } = userPayload;
@@ -199,7 +203,7 @@ export default class MeetingController {
      * @param res
      */
     @Post('update-meeting')
-    async updateMeeting(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async updateMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK } = req.body;
             const { COMPANY_PK } = userPayload;
@@ -235,7 +239,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('delete-meeting')
-    async deleteMeeting(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { meetPK } = req.body;
             const { COMPANY_PK } = userPayload;
@@ -250,7 +254,7 @@ export default class MeetingController {
 
     // ! api doc
     @Post('finish-meeting')
-    async finishMeeting(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async finishMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { meetPK, finishFlag } = req.body;
             const { COMPANY_PK } = userPayload;

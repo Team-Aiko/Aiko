@@ -99,7 +99,7 @@ export default class FileController {
     @Get('download-noticeboard-file')
     async downloadNoticeBoardFile(
         @Query('fileId') fileId: string,
-        @Body() userPayload: IUserPayload,
+        @Body('userPayload') userPayload: IUserPayload,
         @Req() req: Request,
         @Res() res: Response,
     ) {
@@ -117,7 +117,7 @@ export default class FileController {
     @Get('download-drive-file')
     async downloadDriveFiles(
         @Query('fileId') fileId: string,
-        @Body() userPayload: IUserPayload,
+        @Body('userPayload') userPayload: IUserPayload,
         @Req() req: Request,
         @Res() res: Response,
     ) {

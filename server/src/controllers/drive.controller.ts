@@ -17,7 +17,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('create-folder')
-    async createFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async createFolder(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { folderName, parentPK } = req.body;
             const { COMPANY_PK } = userPayload;
@@ -32,7 +32,7 @@ export default class DriveController {
 
     // ! api doc
     @Get('view-folder')
-    async viewFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async viewFolder(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { folderId } = req.query;
             const { COMPANY_PK } = userPayload;
@@ -50,7 +50,7 @@ export default class DriveController {
     @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
     async saveFiles(
         @Req() req: Request,
-        @Body() userPayload: IUserPayload,
+        @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
         @UploadedFiles() files: Express.Multer.File[],
     ) {
@@ -66,7 +66,7 @@ export default class DriveController {
 
     // ! api doc
     @Get('get-files')
-    async getFiles(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async getFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { filePKs } = req.body;
             const { COMPANY_PK } = userPayload;
@@ -81,7 +81,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('delete-files')
-    async deleteFiles(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { filePKs, folderPKs } = req.body;
             const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
@@ -99,7 +99,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('move-folder')
-    async moveFolder(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async moveFolder(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
             const { COMPANY_PK } = userPayload;
