@@ -78,6 +78,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
             this.statusService.statusDisconnect(client.id, this.wss);
+            client.disconnect(true);
         } catch (err) {
             this.wss
                 .to(client.id)

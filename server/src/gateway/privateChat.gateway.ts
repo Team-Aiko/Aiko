@@ -97,5 +97,6 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
         if (!client.request.headers['guardPassed']) return;
 
         this.logger.log(`disconnect client: ${client.id}`);
+        client.disconnect(true);
     }
 }
