@@ -20,7 +20,7 @@ export default class WorkController {
      * action item 생성 api
      */
     @Post('create-action-item')
-    async createActionItem(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async createActionItem(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK } = req.body;
             const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = userPayload;
@@ -59,7 +59,7 @@ export default class WorkController {
 
     // ! api doc
     @Post('delete-action-item')
-    async deleteActionItem(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async deleteActionItem(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { ACTION_PK } = req.body;
             const { grants, DEPARTMENT_PK } = userPayload;
@@ -75,7 +75,7 @@ export default class WorkController {
 
     // ! api doc
     @Post('update-action-item')
-    async updateActionItem(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async updateActionItem(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { ACTION_PK, OWNER_PK, TITLE, DESCRIPTION, START_DATE, DUE_DATE, P_PK, STEP_PK, updateCols } =
                 req.body;
@@ -122,7 +122,7 @@ export default class WorkController {
 
     // ! api doc
     @Get('view-items')
-    async viewItems(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    async viewItems(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { id, currentPage, feedsPerPage, groupCnt } = req.query;
         let USER_PK = -1;
         const { COMPANY_PK } = userPayload;

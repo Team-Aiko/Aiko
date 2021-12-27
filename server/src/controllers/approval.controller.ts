@@ -14,7 +14,7 @@ export default class ApprovalController {
 
     // ! api doc
     @Post('write')
-    createApproval(@Req() req: Request, @Body() userPayload: IUserPayload, @Res() res: Response) {
+    createApproval(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { title, content, approverPks, agreerPks } = req.body;
         const departmentPk = userPayload.DEPARTMENT_PK;
         const comPk = userPayload.COMPANY_PK;
