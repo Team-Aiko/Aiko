@@ -1,4 +1,4 @@
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
 import { NoticeBoard } from '../entity';
 import { unixTimeStamp, propsRemover, stackAikoError } from 'src/Helpers/functions';
 import { AikoError } from 'src/Helpers';
@@ -15,11 +15,18 @@ enum noticeBoardError {
 
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
-    async createArticle(title: string, content: string, userPk: number, comPk: number) {
+    async createArticle(
+        title: string,
+        content: string,
+        userPk: number,
+        comPk: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         let insertResult: InsertResult;
         try {
             const time = unixTimeStamp();
-            insertResult = await this.createQueryBuilder()
+            insertResult = await manager
+                .createQueryBuilder()
                 .insert()
                 .into(NoticeBoard)
                 .values({
@@ -60,10 +67,17 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             );
         }
     }
-    async updateArticle(title: string, content: string, userPk: number, num: number) {
+    async updateArticle(
+        title: string,
+        content: string,
+        userPk: number,
+        num: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         try {
             const time = unixTimeStamp();
-            return await this.createQueryBuilder()
+            await manager
+                .createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time, UPDATE_USER_PK: userPk })
                 .where('NOTICE_BOARD_PK like :num', { num: `${num}` })

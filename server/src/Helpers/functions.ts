@@ -330,7 +330,8 @@ export function stackAikoError(err: Error, description: string, httpCode: number
 
     if (err instanceof AikoError) returnErr = new AikoError(description, httpCode, appCode, err);
     else {
-        winstonLogger.debug(err);
+        const errStr = `err-name: ${err.name} /// err-message: ${err.message} /// err-stack: ${err.stack}`;
+        winstonLogger.debug(errStr);
         returnErr = new AikoError(description, httpCode, appCode);
     }
 
