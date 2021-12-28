@@ -54,8 +54,12 @@ export function tokenParser(accessToken: string) {
     try {
         return jwt.verify(accessToken, accessTokenBluePrint.secretKey) as IUserPayload;
     } catch (err) {
-        console.error(err);
-        throw invalidTokenError;
+        throw stackAikoError(
+            err,
+            invalidTokenError.description,
+            invalidTokenError.stateCode,
+            invalidTokenError.appCode,
+        );
     }
 }
 

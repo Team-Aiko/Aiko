@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
-import { usrPayloadParser } from 'src/Helpers';
+import { resExecutor, usrPayloadParser } from 'src/Helpers';
 
 @Injectable()
 export default class UserPayloadParserInterceptor implements NestInterceptor {
@@ -14,7 +14,7 @@ export default class UserPayloadParserInterceptor implements NestInterceptor {
             req.body['userPayload'] = userPayload;
             return next.handle().pipe();
         } catch (err) {
-            return next.handle().pipe();
+            throw resExecutor(res, { err });
         }
     }
 }
