@@ -25,7 +25,7 @@ const transportOption: transports.ConsoleTransportOptions = {
 };
 
 const loggingFileOption: LoggerDailyRotate.DailyRotateFileTransportOptions = {
-    level: 'debug',
+    level: 'silly',
     format: format.combine(
         format.label({ label: '[Aiko - Server]' }), // label option
         format.timestamp(timestampOption),
@@ -33,7 +33,7 @@ const loggingFileOption: LoggerDailyRotate.DailyRotateFileTransportOptions = {
             return `${info.timestamp} - ${info.level}:  ${info.label} /// ${info.message}`;
         }),
     ),
-    filename: `${appRootPath}/aiko-log-file/%DATE%.log`,
+    filename: `${appRootPath}/../../aiko-log-file/%DATE%.log`,
     datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
     maxSize: '20m',
