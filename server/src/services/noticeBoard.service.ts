@@ -3,6 +3,7 @@ import { getRepo, stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { NoticeBoardFileRepository } from 'src/mapper';
 import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
+import { getConnection } from 'typeorm';
 
 enum noticeBoardServiceError {
     createArtcle = 1,
@@ -16,16 +17,29 @@ enum noticeBoardServiceError {
 export default class NoticeBoardService {
     //게시글 생성
     async createArtcle(title: string, content: string, userPk: number, comPk: number, files: Express.Multer.File[]) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
+
         try {
-            const nbfPk = await getRepo(NoticeBoardRepository).createArticle(title, content, userPk, comPk);
-            await getRepo(NoticeBoardFileRepository).createFiles(files, nbfPk, userPk, comPk); //파일 생성
+            const nbfPk = await getRepo(NoticeBoardRepository).createArticle(
+                title,
+                content,
+                userPk,
+                comPk,
+                queryRunner.manager,
+            );
+            await getRepo(NoticeBoardFileRepository).createFiles(files, nbfPk, userPk, comPk, queryRunner.manager);
+            await queryRunner.commitTransaction();
         } catch (err) {
+            await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
                 'NoticeBoardService/createArtcle',
                 500,
                 headErrorCode.noticeBoard + noticeBoardServiceError.createArtcle,
             );
+        } finally {
+            await queryRunner.release();
         }
     }
 
@@ -40,17 +54,23 @@ export default class NoticeBoardService {
         delFilePks: number[],
         files: Express.Multer.File[],
     ) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.startTransaction();
         try {
-            await getRepo(NoticeBoardRepository).updateArticle(title, content, userPk, num);
-            await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk); //파일 생성
-            await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks);
+            await getRepo(NoticeBoardRepository).updateArticle(title, content, userPk, num, queryRunner.manager);
+            await getRepo(NoticeBoardFileRepository).createFiles(files, num, userPk, comPk, queryRunner.manager);
+            await getRepo(NoticeBoardFileRepository).deleteFiles(delFilePks, queryRunner.manager);
+            await queryRunner.commitTransaction();
         } catch (err) {
+            await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
                 'NoticeBoardService/updateArtcle',
                 500,
                 headErrorCode.noticeBoard + noticeBoardServiceError.updateArtcle,
             );
+        } finally {
+            await queryRunner.release();
         }
     }
 
