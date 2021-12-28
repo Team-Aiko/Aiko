@@ -17,13 +17,17 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Post('write')
-    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
+    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption), UserPayloadParserInterceptor)
     async createArticle(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
         @UploadedFiles() files: Express.Multer.File[],
     ) {
+        console.log(
+            '🚀 ~ file: noticeBoard.controller.ts ~ line 27 ~ NoticeBoardController ~ userPayload',
+            userPayload,
+        );
         console.log('hello');
         try {
             console.log(files); //merge  test
@@ -46,7 +50,7 @@ export default class NoticeBoardController {
 
     // ! api doc
     @Post('update-article')
-    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption))
+    @UseInterceptors(FilesInterceptor('file', 3, NoticeBoardFileOption), UserPayloadParserInterceptor)
     async updateArticle(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,

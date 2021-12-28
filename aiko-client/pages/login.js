@@ -71,7 +71,7 @@ function Login(props) {
     }, []);
 
     const find = function () {
-        Router.push('/forgot');
+        Router.push('/idpw');
     };
 
     return (

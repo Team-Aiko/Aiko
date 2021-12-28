@@ -47,7 +47,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('save-files')
-    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption))
+    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
     async saveFiles(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
