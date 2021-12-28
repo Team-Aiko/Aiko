@@ -11,10 +11,11 @@ export default class UserPayloadParserInterceptor implements NestInterceptor {
 
         try {
             const userPayload = usrPayloadParser(req);
+            console.log('ste1');
             req.body['userPayload'] = userPayload;
             return next.handle().pipe();
         } catch (err) {
-            throw resExecutor(res, { err });
+            return next.handle().pipe();
         }
     }
 }
