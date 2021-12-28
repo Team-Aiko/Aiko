@@ -45,3 +45,10 @@ yarn.lock
 
 # and uncomment the following lines
 # .pnp.*
+
+
+#files
+/files/noticeboard/*
+/files/chatFles/*
+/files/profile/*
+/files/drive/*
