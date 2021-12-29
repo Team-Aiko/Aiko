@@ -24,7 +24,7 @@ export default class FileController {
      * @param s
      */
     @Post('save-private-chat-file')
-    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }), UserPayloadParserInterceptor)
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         try {
             const { chatRoomId } = req.body;

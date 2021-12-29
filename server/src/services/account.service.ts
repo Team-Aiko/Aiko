@@ -38,6 +38,7 @@ import StatusService from './status.service';
 import DriveService from './drive.service';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { unknownError } from 'src/Helpers';
+import winstonLogger from 'src/logger/logger';
 
 enum accountServiceError {
     checkDuplicateEmail = 1,
@@ -214,6 +215,7 @@ export default class AccountService {
     }
 
     async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
+        winstonLogger.debug('login method executed');
         try {
             let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
             const flag = await checkPw(data.PASSWORD, result.SALT, result.PASSWORD);
@@ -327,7 +329,7 @@ export default class AccountService {
 
         try {
             const result1 = await getRepo(ResetPwRepository).getRequest(uuid);
-            const { USER_PK } = result1[0];
+            const { USER_PK } = result1;
 
             const { hash, salt } = await generatePwAndSalt(password);
 

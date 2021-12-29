@@ -74,6 +74,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         try {
             console.log('groupChat disconnect clientId : ', client.id);
             await this.groupChatService.deleteClientInfo(client.id);
+            client.disconnect(true);
         } catch (err) {
             this.wss
                 .to(client.id)

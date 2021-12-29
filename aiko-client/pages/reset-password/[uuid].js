@@ -40,7 +40,7 @@ export default function ResetPassword() {
                     'content-type': 'application/json',
                 },
             };
-            const url = '/api/account/resetPassword';
+            const url = '/api/account/reset-password';
 
             post(url, packet, config)
                 .then(res => {
