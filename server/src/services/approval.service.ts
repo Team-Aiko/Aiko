@@ -11,8 +11,7 @@ export default class ApprovalService {
     async createApproval(
         title: string,
         content: string,
-        approverPks: number[],
-        agreerPks: number[],
+        approvalInfo: any[],
         departmentPk: number,
         comPk: number,
         userPk: number,
@@ -29,25 +28,15 @@ export default class ApprovalService {
                 departmentPk,
                 userPk,
             );
-            let stepStatus = 1;
-            for (const agreerPk of agreerPks) {
-                await getRepo(ApprovalStepRepository).createApprovalStepOfAgreer(
+            for (const approval of approvalInfo) {
+                await getRepo(ApprovalStepRepository).createApprovalStep(
                     queryRunner.manager,
                     insertId.AF_PK,
-                    agreerPk,
-                    stepStatus,
+                    approval.stepStatus,
+                    approval.userPk,
+                    approval.stepLevel,
                 );
             }
-            for (const approverPk of approverPks) {
-                stepStatus++;
-                await getRepo(ApprovalStepRepository).createApprovalStepOfApprover(
-                    queryRunner.manager,
-                    insertId.AF_PK,
-                    approverPk,
-                    stepStatus,
-                );
-            }
-
             await queryRunner.commitTransaction(); //커밋 트랜젝션
         } catch (err) {
             await queryRunner.rollbackTransaction();
@@ -58,8 +47,25 @@ export default class ApprovalService {
         }
     }
     async viewApproval(userPk: number, departmentPk: number, comPk: number, view: string) {
-        const stepLevels = await getRepo(ApprovalStepRepository).list(userPk, comPk, departmentPk, view);
-        const result = await getRepo(ApprovalFrameRepository).list(userPk, stepLevels, view);
-        return result;
+        // const result = await getRepo(ApprovalStepRepository).list(userPk, comPk, departmentPk, view);
+        // 결제 전체보기 => 내가 결제 해야할 건 + 이미 결제가 완료난 건들
+        // 대기중인 결제 => 내가 결제 해야할 건
+        // 진행중인 결제 => 내가 올린 결제건 - 내가 결제해야할 건
+        // 완료난 건 => 이미 결제 완료된 건
+        if (view === 'done') {
+            const result = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
+            return result;
+        } // 완료난 건
+        else if (view === 'all') {
+            const done = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
+            const infos = await getRepo(ApprovalFrameRepository).myRelatedList(userPk, comPk, departmentPk);
+            for (const info of infos) {
+                const result = await getRepo(ApprovalStepRepository).needToDoList(info.AF_PK, info.CURRENT_STEP_LEVEL);
+                console.log(result);
+            }
+            return done;
+        } // 전체보기 건
+
+        // process
     }
 }

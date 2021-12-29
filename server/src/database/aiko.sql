@@ -271,7 +271,7 @@ USER_PK int not null,
 STEP_LEVEL int not null,
 DECISION int not null,
 SIGN_DATE int,
-STEP_STATUS VARCHAR(1),
+STEP_STATUS int not null,
 primary key(AS_PK)
 );
 

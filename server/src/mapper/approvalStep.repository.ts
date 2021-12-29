@@ -4,48 +4,33 @@ import { AikoError, unixTimeStamp } from 'src/Helpers';
 
 @EntityRepository(ApprovalStep)
 export default class ApprovalStepRepository extends Repository<ApprovalStep> {
-    async createApprovalStepOfAgreer(
+    async createApprovalStep(
         @TransactionManager() manager: EntityManager,
         insertId: number,
-        agreerPk: number,
+        stepStatus: number,
+        userPk: number,
         stepLevel: number,
     ) {
         return await manager.insert(ApprovalStep, {
             AF_PK: insertId,
-            USER_PK: agreerPk,
+            USER_PK: userPk,
             STEP_LEVEL: stepLevel,
-            STEP_STATUS: 'A',
+            STEP_STATUS: stepStatus,
             DECISION: 0,
         });
     }
 
-    async createApprovalStepOfApprover(
-        @TransactionManager() manager: EntityManager,
-        insertId: number,
-        approverPk: number,
-        stepLevel: number,
-    ) {
-        return await manager.insert(ApprovalStep, {
-            AF_PK: insertId,
-            USER_PK: approverPk,
-            STEP_LEVEL: stepLevel,
-            STEP_STATUS: 'S',
-            DECISION: 0,
-        });
-    }
-
-    async list(userPk: number, comPk: number, departmentPk: number, view: string) {
-        if (view == 'all') {
-            console.log(userPk);
-            const result = await this.createQueryBuilder('as')
-                .select(['as.AF_PK', 'as.STEP_LEVEL'])
-                .where('USER_PK =:userPk', { userPk: `${userPk}` })
-                .getMany();
+    async needToDoList(afPk: number, stepLevel: number) {
+        try {
+            const result = await this.createQueryBuilder()
+                .select()
+                .andWhere('AF_PK =:afPk', { afPk: `${afPk}` })
+                .andWhere('STEP_LEVEL =:stepLevel', { stepLevel: `${stepLevel}` })
+                .getOne();
             return result;
-        } else if (view == 'process') {
-            console.log('pro');
+        } catch (err) {
+            console.log(err);
         }
-
         // result = propsRemover(result, 'user');
         // result = Object.assign(result, name);
     }

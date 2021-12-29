@@ -12,23 +12,17 @@ export default class ApprovalController {
     @Post('write')
     async createApproval(@Req() req: Request, @Res() res: Response) {
         try {
-            const { title, content, approverPks, agreerPks } = req.body;
+            const { title, content, approverPks, agreerPks, approvalInfo } = req.body;
             const userPayload = usrPayloadParser(req);
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
-            approverPks.push(userPk);
-            await this.approvalService.createApproval(
-                title,
-                content,
-                approverPks,
-                agreerPks,
-                departmentPk,
-                comPk,
-                userPk,
-            );
+            // approverPks.push(userPk);
+            console.log(approvalInfo[1]);
+            await this.approvalService.createApproval(title, content, approvalInfo, departmentPk, comPk, userPk);
             resExecutor(res, { result: true });
         } catch (err) {
+            console.log(err);
             throw resExecutor(res, { err });
         }
     }

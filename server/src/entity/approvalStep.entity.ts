@@ -21,7 +21,7 @@ export default class ApprovalStep {
     SIGN_DATE: number;
 
     @Column()
-    STEP_STATUS: string;
+    STEP_STATUS: number;
 
     @ManyToOne(() => User, (as) => as.asUser)
     @JoinColumn({ name: 'USER_PK' })

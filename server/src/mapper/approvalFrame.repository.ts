@@ -26,14 +26,56 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         });
         return result.identifiers[0];
     }
-    async list(userPk: number, stepLevels: any, view: string) {
-        if (view == 'all') {
-            console.log(userPk);
-            const result = await this.createQueryBuilder()
+    async doneList(comPk: number, departmentPk: number) {
+        try {
+            const result = await this.createQueryBuilder('af')
                 .select()
-                .where('USER_PK =:userPk', { userPk: `${userPk}` })
+                .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+                .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+                .andWhere('END_DATE is not null')
                 .getMany();
             return result;
+        } catch (err) {
+            console.log(err);
         }
     }
+    async myRelatedList(userPk: number, comPk: number, departmentPk: number) {
+        try {
+            const result = await this.createQueryBuilder('af')
+                .select(['af.CURRENT_STEP_LEVEL', 'af.AF_PK'])
+                .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+                .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+                .andWhere('USER_PK =:userPk', { userPk: `${userPk}` })
+                .getMany();
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    // async needToDoList(infos: any) {
+    //     try {
+            
+    //         for (const info of infos) {
+    //             console.log(info);
+    //         }
+    //         // const result = await this.createQueryBuilder('as')
+    //         //     .select(['as.AF_PK', 'as.STEP_LEVEL'])
+    //         //     // .where('USER_PK =:userPk', { userPk: `${userPk}` })
+    //         //     .orWhere('END_DATE is not null')
+    //         //     .getMany();
+    //         // return result;
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    //     // result = propsRemover(result, 'user');
+    //     // result = Object.assign(result, name);
+    // }
 }
+
+/* .select()
+            .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+            .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+            .orWhere('USER_PK =:userPk', { userPk: `${userPk}` })
+            .orWhere('END_DATE is not null')
+            .getMany();
+*/
