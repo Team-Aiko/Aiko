@@ -115,15 +115,16 @@ export default function CComp() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        console.log('###### render ######');
         if (userInfo.USER_PK) {
+            console.log('###### render ######');
+
             loadMemberList();
 
             const status = io('http://localhost:5001/status', { withCredentials: true });
             setStatus(status);
+            console.log('setStatus : ', status);
 
-            status.emit('handleConnection', '뭐지 도대체???');
-            const uri = '/api/account/raw-token';
+            status.emit('handleConnection');
             status.on('client/status/getStatusList', (payload) => {
                 console.log('### getStatusList ### : ', payload);
                 dispatch(setMemberListStatus(payload));
@@ -134,7 +135,7 @@ export default function CComp() {
                 }
             });
             status.on('client/status/loginAlert', (payload) => {
-                dispatch(setMemberStatus(payload.user));
+                dispatch(setMemberStatus(payload));
             });
             status.on('client/status/logoutAlert', (payload) => {
                 dispatch(setMemberStatus(payload));
@@ -386,7 +387,7 @@ export default function CComp() {
                 <p>Notifications</p>
             </MenuItem>
             {USER_PK ? (
-                <MenuItem onClick={handleProfileMenuOpen}>
+                <MenuItem onClick={goToMyMemberInfo}>
                     <IconButton
                         aria-label='account of current user'
                         aria-controls='primary-search-account-menu'
