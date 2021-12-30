@@ -34,7 +34,7 @@ export default class NoticeBoardController {
             const obj = JSON.parse(req.body.obj);
             const { USER_PK, COMPANY_PK } = userPayload;
             const { title, content } = obj;
-            bodyChecker({ title, content }, { title: 'string', content: 'string' });
+            bodyChecker({ title, content }, { title: ['string'], content: ['string'] });
 
             // const originalName = files.map((file) => file.originalname);
             await this.noticeboardService.createArtcle(title, content, USER_PK, COMPANY_PK, files);
@@ -63,7 +63,7 @@ export default class NoticeBoardController {
             const { title, content, num, delFilePks } = obj;
             bodyChecker(
                 { title, content, num, delFilePks },
-                { title: 'string', content: 'string', num: 'number', delFilePks: 'number[]' },
+                { title: ['string'], content: ['string'], num: ['number'], delFilePks: ['number[]'] },
             );
 
             await this.noticeboardService.updateArtcle(title, content, USER_PK, COMPANY_PK, num, delFilePks, files);
@@ -82,7 +82,7 @@ export default class NoticeBoardController {
         try {
             const { USER_PK } = userPayload;
             const { num } = req.body;
-            bodyChecker({ num }, { num: 'number' });
+            bodyChecker({ num }, { num: ['number'] });
 
             await this.noticeboardService.deleteArtcle(USER_PK, num);
             resExecutor(res, { result: true });

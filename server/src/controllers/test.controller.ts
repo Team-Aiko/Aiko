@@ -16,7 +16,12 @@ export default class TestController {
     async testBodyChecker(@Req() req: Request, @Res() res: Response) {
         try {
             console.log(req.body);
-            const result = bodyChecker(req.body, { a: 'string', b: 'string[]', c: 'number', d: 'number[]' });
+            const result = bodyChecker(req.body, {
+                a: ['string', 'number'],
+                b: ['string[]', 'number[]'],
+                c: ['number'],
+                d: ['number[]'],
+            });
             resExecutor(res, { result });
         } catch (err) {
             console.error(err);

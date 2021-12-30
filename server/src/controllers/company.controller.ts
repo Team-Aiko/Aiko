@@ -57,7 +57,7 @@ export default class CompanyController {
         try {
             const { departmentName, parentPK, parentDepth } = req.body;
             const { COMPANY_PK, USER_PK } = userPayload;
-            bodyChecker({ departmentName, parentDepth }, { departmentName: 'string', parentDepth: 'number' });
+            bodyChecker({ departmentName, parentDepth }, { departmentName: ['string'], parentDepth: ['number'] });
 
             const bundle: INewDepartment = {
                 companyPK: COMPANY_PK,
@@ -88,7 +88,7 @@ export default class CompanyController {
         try {
             const { authListPK, targetUserPK } = req.body;
             const { USER_PK, COMPANY_PK, grants } = userPayload;
-            bodyChecker({ authListPK, targetUserPK }, { authListPK: 'number', targetUserPK: 'number' });
+            bodyChecker({ authListPK, targetUserPK }, { authListPK: ['number'], targetUserPK: ['number'] });
 
             const bundle: IPermissionBundle = {
                 authListPK,
@@ -117,7 +117,7 @@ export default class CompanyController {
         try {
             const { departmentPK } = req.body;
             const { grants, COMPANY_PK } = userPayload;
-            bodyChecker({ departmentPK }, { departmentPK: 'number' });
+            bodyChecker({ departmentPK }, { departmentPK: ['number'] });
 
             const result = await this.companyService.deleteDepartment(departmentPK, COMPANY_PK, grants);
             if (result) resExecutor(res, { result });
@@ -143,7 +143,7 @@ export default class CompanyController {
         try {
             const { departmentPK, departmentName } = req.body;
             const { grants, COMPANY_PK } = userPayload;
-            bodyChecker({ departmentPK, departmentName }, { departmentPK: 'number', departmentName: 'string' });
+            bodyChecker({ departmentPK, departmentName }, { departmentPK: ['number'], departmentName: ['string'] });
 
             const result = await this.companyService.updateDepartmentName(
                 departmentPK,
@@ -219,7 +219,7 @@ export default class CompanyController {
         try {
             const { departmentPK, userPK } = req.body;
             const { grants, COMPANY_PK } = userPayload;
-            bodyChecker({ departmentPK, userPK }, { departmentPK: 'number', userPK: 'number' });
+            bodyChecker({ departmentPK, userPK }, { departmentPK: ['number'], userPK: ['number'] });
 
             const result = await this.companyService.addMemberToDepartment(COMPANY_PK, departmentPK, userPK, grants);
             resExecutor(res, { result });

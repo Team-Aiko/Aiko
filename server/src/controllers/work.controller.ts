@@ -25,14 +25,15 @@ export default class WorkController {
             const { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK } = req.body;
             const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = userPayload;
             bodyChecker(
-                { TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK },
+                { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK },
                 {
-                    TITLE: 'string',
-                    DESCRIPTION: 'string',
-                    DUE_DATE: 'number',
-                    START_DATE: 'number',
-                    P_PK: 'number',
-                    STEP_PK: 'number',
+                    OWNER_PK: ['undefined', 'number', 'null'],
+                    TITLE: ['string'],
+                    DESCRIPTION: ['string'],
+                    DUE_DATE: ['number'],
+                    START_DATE: ['number'],
+                    P_PK: ['number'],
+                    STEP_PK: ['number'],
                 },
             );
 
@@ -62,7 +63,7 @@ export default class WorkController {
         try {
             const { ACTION_PK } = req.body;
             const { grants, DEPARTMENT_PK } = userPayload;
-            bodyChecker({ ACTION_PK }, { ACTION_PK: 'number' });
+            bodyChecker({ ACTION_PK }, { ACTION_PK: ['number'] });
 
             const result = await this.workService.deleteActionItem(ACTION_PK, DEPARTMENT_PK, grants);
             if (result) resExecutor(res, { result });
@@ -83,15 +84,15 @@ export default class WorkController {
             bodyChecker(
                 { ACTION_PK, OWNER_PK, TITLE, DESCRIPTION, START_DATE, DUE_DATE, P_PK, STEP_PK, updateCols },
                 {
-                    ACTION_PK: 'number',
-                    OWNER_PK: 'number',
-                    TITLE: 'string',
-                    DESCRIPTION: 'string',
-                    START_DATE: 'number',
-                    DUE_DATE: 'number',
-                    P_PK: 'number',
-                    STEP_PK: 'number',
-                    updateCols: 'string[]',
+                    ACTION_PK: ['number'],
+                    OWNER_PK: ['number'],
+                    TITLE: ['string'],
+                    DESCRIPTION: ['string'],
+                    START_DATE: ['number'],
+                    DUE_DATE: ['number'],
+                    P_PK: ['number'],
+                    STEP_PK: ['number'],
+                    updateCols: ['string[]'],
                 },
             );
 
