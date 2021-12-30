@@ -30,7 +30,7 @@ export default class DepartmentRepository extends Repository<Department> {
                 .into(Department)
                 .values({
                     COMPANY_PK: bundle.companyPK,
-                    PARENT_PK: bundle.parentPK ? bundle.parentPK : null,
+                    PARENT_PK: bundle.parentPK === -1 ? null : bundle.parentPK,
                     DEPARTMENT_NAME: bundle.departmentName,
                     DEPTH: bundle.parentPK ? bundle.parentDepth + 1 : 0,
                 })

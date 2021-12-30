@@ -57,10 +57,7 @@ export default class CompanyController {
         try {
             const { departmentName, parentPK, parentDepth } = req.body;
             const { COMPANY_PK, USER_PK } = userPayload;
-            bodyChecker(
-                { departmentName, parentPK, parentDepth },
-                { departmentName: 'string', parentPK: 'number', parentDepth: 'number' },
-            );
+            bodyChecker({ departmentName, parentDepth }, { departmentName: 'string', parentDepth: 'number' });
 
             const bundle: INewDepartment = {
                 companyPK: COMPANY_PK,
