@@ -167,6 +167,8 @@ export function bodyChecker<T extends { [idx: string]: any }>(
                     } else return true;
                 }
 
+                // null checker
+                if (requiredType === 'null') return !(bodyDataType === 'object' && !bodyDataType) ? false : true;
                 // other data types
                 if (requiredType !== bodyDataType) return true;
             });
