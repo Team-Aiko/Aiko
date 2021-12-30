@@ -85,7 +85,6 @@ export default function ChatModal(props) {
 
     useEffect(() => {
         if (open) {
-            console.log('membrList : ', memberList);
             const socket = io('http://localhost:5001/private-chat', { withCredentials: true });
             setSocket(socket);
 
@@ -114,7 +113,7 @@ export default function ChatModal(props) {
                 dispatch(setMemberChatRoomPK(newPayload));
             });
             socket.on('client/private-chat/receive-chatlog', (payload) => {
-                setMessages(payload.chatlog ? payload.chatlog.messages : []);
+                setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
                 setChatMember(payload.info.userInfo);
             });
 
@@ -131,12 +130,6 @@ export default function ChatModal(props) {
             scrollToBottom();
         }
     }, [messages]);
-
-    useEffect(() => {
-        if (selectedMember) {
-            socket.emit('server/private-chat/call-chatLog', selectedMember.CR_PK);
-        }
-    }, [selectedMember]);
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -171,16 +164,12 @@ export default function ChatModal(props) {
 
     const send = () => {
         if (inputMessage) {
-            console.log('selectedMember : ', selectedMember);
             const data = {
                 roomId: selectedMember.CR_PK,
                 sender: userInfo.USER_PK,
                 message: inputMessage,
                 date: Number(moment().format('X')),
             };
-
-            console.log('data : ', data);
-
             socket.emit('server/private-chat/send', data);
             setInputMessage('');
         }
@@ -194,6 +183,11 @@ export default function ChatModal(props) {
         setChatMember([]);
         setInputMessage('');
         onClose();
+    };
+
+    const handleSelectMember = (member) => {
+        setSelectedMember(member);
+        socket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
 
     return (
@@ -211,10 +205,7 @@ export default function ChatModal(props) {
                                         button
                                         key={member.USER_PK}
                                         style={{ justifyContent: 'space-between' }}
-                                        onClick={() => {
-                                            console.log('member : ', member);
-                                            setSelectedMember(member);
-                                        }}
+                                        onClick={() => handleSelectMember(member)}
                                     >
                                         <div className={styles['member-user-wrapper']}>
                                             <Avatar

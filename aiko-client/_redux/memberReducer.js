@@ -47,26 +47,28 @@ const memberReducer = (state = [], action) => {
 
         case SET_MEMBER_LIST_STATUS:
             if (state) {
+                const newState = new Map(state);
                 for (const row of action.memberList) {
-                    state.has(row.userPK) &&
-                        state.set(row.userPK, {
-                            ...state.get(row.userPK),
+                    newState.has(row.userPK) &&
+                        newState.set(row.userPK, {
+                            ...newState.get(row.userPK),
                             status: row.status,
                         });
                 }
-                return state;
+                return newState;
             }
 
         case SET_MEMBER_CHAT_ROOM_PK:
             if (state) {
+                const newState = new Map(state);
                 for (const room of action.roomList) {
-                    state.has(room[room.member]) &&
-                        state.set(room[room.member], {
-                            ...state.get(room[room.member]),
+                    newState.has(room[room.member]) &&
+                        newState.set(room[room.member], {
+                            ...newState.get(room[room.member]),
                             CR_PK: room.CR_PK,
                         });
                 }
-                return state;
+                return newState;
             }
         default:
             return state;
