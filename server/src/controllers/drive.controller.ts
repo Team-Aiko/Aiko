@@ -21,7 +21,7 @@ export default class DriveController {
         try {
             const { folderName, parentPK } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ folderName, parentPK }, { folderName: 'string', parentPK: 'number' });
+            bodyChecker({ folderName }, { folderName: 'string' });
 
             const result = await this.driveService.createFolder(COMPANY_PK, folderName, parentPK);
             resExecutor(res, { result });
@@ -70,7 +70,6 @@ export default class DriveController {
         try {
             const { filePKs } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ filePKs }, { filePKs: 'number' });
 
             const result = await this.driveService.getFiles(filePKs, COMPANY_PK);
             resExecutor(res, { result });

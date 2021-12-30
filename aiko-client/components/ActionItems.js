@@ -142,6 +142,7 @@ const ActionItems = ({nickname}) => {
         };
         console.log(params)
         await get(url, { params: params }).then((res) => {
+            console.log(res)
             setActionItemArray(res.items);
         });
     };

@@ -26,54 +26,48 @@ export const setMemberChatRoomPK = (roomList) => ({
 const memberReducer = (state = [], action) => {
     switch (action.type) {
         case SET_MEMBER:
-            return action.member;
+            if (state) {
+                const memberMap = action.member.reduce((map, obj) => {
+                    map.set(obj.USER_PK, { ...obj });
+                    return map;
+                }, new Map());
+                return memberMap;
+            }
+
         case SET_MEMBER_STATUS:
             if (state) {
-                const updateMember = state.map((row) => {
-                    if (row.USER_PK === action.user.userPK) {
-                        return {
-                            ...row,
-                            status: action.user.status,
-                        };
-                    } else {
-                        return {
-                            ...row,
-                        };
-                    }
-                });
-                return updateMember;
+                const newState = state;
+                newState.has(action.user.userPK) &&
+                    newState.set(action.user.userPK, {
+                        ...newState.get(action.user.userPK),
+                        status: action.user.status,
+                    });
+                return newState;
             }
+
         case SET_MEMBER_LIST_STATUS:
             if (state) {
-                const updateMember = [];
                 for (const row of action.memberList) {
-                    for (const member of state) {
-                        if (member.USER_PK === row.userPK) {
-                            updateMember.push({
-                                ...member,
-                                status: row.status,
-                            });
-                        }
-                    }
+                    console.log('state.has(row.userPK) : ', state.has(row.userPK));
+                    state.has(row.userPK) &&
+                        state.set(row.userPK, {
+                            ...state.get(row.userPK),
+                            status: row.status,
+                        });
                 }
-                return updateMember;
+                return state;
             }
+
         case SET_MEMBER_CHAT_ROOM_PK:
             if (state) {
-                // console.log('state : ', state);
-                // console.log(action.roomList);
-                const updateMember = [];
-                for (const member of state) {
-                    for (const room of action.roomList) {
-                        if (member.USER_PK === room[room.member]) {
-                            updateMember.push({
-                                ...member,
-                                CR_PK: room.CR_PK,
-                            });
-                        }
-                    }
+                for (const room of action.roomList) {
+                    state.has(room[room.member]) &&
+                        state.set(room[room.member], {
+                            ...state.get(room[room.member]),
+                            CR_PK: room.CR_PK,
+                        });
                 }
-                return updateMember;
+                return state;
             }
         default:
             return state;

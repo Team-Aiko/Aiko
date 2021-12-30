@@ -25,9 +25,8 @@ export default class WorkController {
             const { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK } = req.body;
             const { USER_PK, DEPARTMENT_PK, COMPANY_PK, grants } = userPayload;
             bodyChecker(
-                { OWNER_PK, TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK },
+                { TITLE, DESCRIPTION, DUE_DATE, START_DATE, P_PK, STEP_PK },
                 {
-                    OWNER_PK: 'number',
                     TITLE: 'string',
                     DESCRIPTION: 'string',
                     DUE_DATE: 'number',

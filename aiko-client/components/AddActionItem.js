@@ -62,23 +62,23 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
     const [isAdmin, setIsAdmin] = useState(false);
 
     //nickname으로 userInfo , assigner에 부여
-    // const getAssignerName = () => {
-    //     const url = '/api/account/user-info';
-    //     const data = {
-    //         nickname: nickname
-    //     };
-    //     post(url, data)
-    //     .then((res) => {
-    //         setSelectedAssigner(res.FIRST_NAME + " " + res.LAST_NAME)
-    //     })
-    //     .catch((error) => {
-    //         console.log(error)
-    //     })
-    // };
+    const getAssignerName = () => {
+        const url = '/api/account/user-info';
+        const data = {
+            nickname: nickname
+        };
+        post(url, data)
+        .then((res) => {
+            setSelectedAssigner(res.FIRST_NAME + " " + res.LAST_NAME)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    };
 
-    // useEffect(() => {
-    //     getAssignerName()
-    // }, [nickname]);
+    useEffect(() => {
+        getAssignerName()
+    }, [nickname]);
 
     //member list modal로 정보 불러오기
     const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
@@ -286,10 +286,10 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                             id='standard-basic'
                             label='Assigner'
                             style={{ margin: 3 }}
-                            onClick={() => {setOpenSearchMemberModalAssigner(true)}}
-                            value={selectedAssigner == '' ? '' : selectedAssigner[0].FIRST_NAME + ' ' + selectedAssigner[0].LAST_NAME}
+                            // onClick={() => {setOpenSearchMemberModalAssigner(true)}}
+                            value={selectedAssigner}
                         />
-                        {
+                        {/* {
                             openSearchMemberModalAssigner
                             ? <SearchMemberModal
                             open={openSearchMemberModalAssigner}
@@ -300,7 +300,7 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                             }}
                             multipleSelection={true}/>
                             : <></>
-                        }
+                        } */}
                     </div>
 
                     <div style={{ marginTop: 10 }}>
