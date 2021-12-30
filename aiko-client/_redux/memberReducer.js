@@ -36,7 +36,7 @@ const memberReducer = (state = [], action) => {
 
         case SET_MEMBER_STATUS:
             if (state) {
-                const newState = state;
+                const newState = new Map(state);
                 newState.has(action.user.userPK) &&
                     newState.set(action.user.userPK, {
                         ...newState.get(action.user.userPK),
@@ -48,7 +48,6 @@ const memberReducer = (state = [], action) => {
         case SET_MEMBER_LIST_STATUS:
             if (state) {
                 for (const row of action.memberList) {
-                    console.log('state.has(row.userPK) : ', state.has(row.userPK));
                     state.has(row.userPK) &&
                         state.set(row.userPK, {
                             ...state.get(row.userPK),
