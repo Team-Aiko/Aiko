@@ -24,7 +24,10 @@ export default class MeetingController {
     async makeMeetingRoom(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         const { IS_ONLINE, ROOM_NAME, LOCATE } = req.body;
         const { COMPANY_PK, grants } = userPayload;
-        bodyChecker({ IS_ONLINE, ROOM_NAME, LOCATE }, { IS_ONLINE: 'boolean', ROOM_NAME: 'string', LOCATE: 'string' });
+        bodyChecker(
+            { IS_ONLINE, ROOM_NAME, LOCATE },
+            { IS_ONLINE: ['boolean'], ROOM_NAME: ['string'], LOCATE: ['string'] },
+        );
 
         const bundle: IMeetingRoomBundle = {
             IS_ONLINE,
@@ -47,7 +50,7 @@ export default class MeetingController {
         try {
             const { ROOM_PK } = req.body;
             const { grants } = userPayload;
-            bodyChecker({ ROOM_PK }, { ROOM_PK: 'number' });
+            bodyChecker({ ROOM_PK }, { ROOM_PK: ['number'] });
 
             const result = await this.meetingService.deleteMeetingRoom(ROOM_PK, grants);
             resExecutor(res, { result });
@@ -116,12 +119,12 @@ export default class MeetingController {
         bodyChecker(
             { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION },
             {
-                calledMemberList: 'number[]',
-                MAX_MEM_NUM: 'number',
-                ROOM_PK: 'number',
-                TITLE: 'string',
-                DATE: 'number',
-                DESCRIPTION: 'string',
+                calledMemberList: ['number[]'],
+                MAX_MEM_NUM: ['number'],
+                ROOM_PK: ['number'],
+                TITLE: ['string'],
+                DATE: ['number'],
+                DESCRIPTION: ['string'],
             },
         );
 
@@ -210,13 +213,13 @@ export default class MeetingController {
             bodyChecker(
                 { calledMemberList, MAX_MEM_NUM, ROOM_PK, TITLE, DATE, DESCRIPTION, MEET_PK },
                 {
-                    calledMemberList: 'number[]',
-                    MAX_MEM_NUM: 'number',
-                    ROOM_PK: 'number',
-                    TITLE: 'string',
-                    DATE: 'number',
-                    DESCRIPTION: 'string',
-                    MEET_PK: 'number',
+                    calledMemberList: ['number[]'],
+                    MAX_MEM_NUM: ['number'],
+                    ROOM_PK: ['number'],
+                    TITLE: ['string'],
+                    DATE: ['number'],
+                    DESCRIPTION: ['string'],
+                    MEET_PK: ['number'],
                 },
             );
 
@@ -243,7 +246,7 @@ export default class MeetingController {
         try {
             const { meetPK } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ meetPK }, { meetPK: 'number' });
+            bodyChecker({ meetPK }, { meetPK: ['number'] });
 
             const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
             resExecutor(res, { result });
@@ -258,7 +261,7 @@ export default class MeetingController {
         try {
             const { meetPK, finishFlag } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ meetPK, finishFlag }, { meetPK: 'number', finishFlag: 'boolean' });
+            bodyChecker({ meetPK, finishFlag }, { meetPK: ['number'], finishFlag: ['boolean'] });
 
             const result = await this.meetingService.finishMeeting(finishFlag, meetPK, COMPANY_PK);
             resExecutor(res, { result });

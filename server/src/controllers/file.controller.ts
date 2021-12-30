@@ -29,7 +29,7 @@ export default class FileController {
         try {
             const { chatRoomId } = req.body;
             const { filename, originalname, size } = file;
-            bodyChecker({ chatRoomId }, { chatRoomId: 'string' });
+            bodyChecker({ chatRoomId }, { chatRoomId: ['string'] });
 
             const bundle: IFileBundle = {
                 FILE_NAME: filename,

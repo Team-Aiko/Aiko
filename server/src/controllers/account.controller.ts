@@ -76,15 +76,15 @@ export default class AccountController {
         const data = JSON.parse(req.body.obj) as ISignup;
 
         bodyChecker(data, {
-            header: 'number',
-            firstName: 'string',
-            lastName: 'string',
-            nickname: 'string',
-            email: 'string',
-            tel: 'string',
-            countryPK: 'number',
-            pw: 'string',
-            position: 'number',
+            header: ['number'],
+            firstName: ['string'],
+            lastName: ['string'],
+            nickname: ['string'],
+            email: ['string'],
+            tel: ['string'],
+            countryPK: ['number'],
+            pw: ['string'],
+            position: ['number'],
         });
 
         try {
@@ -124,7 +124,7 @@ export default class AccountController {
                 NICKNAME: req.body.NICKNAME,
                 PASSWORD: req.body.PASSWORD,
             };
-            bodyChecker(data, { NICKNAME: 'string', PASSWORD: 'string' });
+            bodyChecker(data, { NICKNAME: ['string'], PASSWORD: ['string'] });
 
             let result = await this.accountService.login(data);
             if ('accessToken' in result) {
@@ -164,7 +164,7 @@ export default class AccountController {
     async requestResetPassword(@Req() req: Request, @Res() res: Response) {
         try {
             const { email } = req.body;
-            bodyChecker({ email }, { email: 'string' });
+            bodyChecker({ email }, { email: ['string'] });
 
             const result = await this.accountService.requestResetPassword(email);
             resExecutor(res, { result });
@@ -178,7 +178,7 @@ export default class AccountController {
     async resetPassword(@Req() req: Request, @Res() res: Response) {
         try {
             const { uuid, password }: IResetPw = req.body;
-            bodyChecker({ uuid, password }, { uuid: 'string', password: 'string' });
+            bodyChecker({ uuid, password }, { uuid: ['string'], password: ['string'] });
 
             const result = await this.accountService.resetPassword(uuid, password);
             resExecutor(res, { result });
@@ -194,7 +194,7 @@ export default class AccountController {
         try {
             const { nickname } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ nickname }, { nickname: 'string' });
+            bodyChecker({ nickname }, { nickname: ['string'] });
 
             const result = await this.accountService.getUserInfo(nickname, COMPANY_PK);
             resExecutor(res, { result });

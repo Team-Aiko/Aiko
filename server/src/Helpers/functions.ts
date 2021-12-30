@@ -26,6 +26,18 @@ const emailConfig = config.get<IMailConfig>('MAIL_CONFIG');
 const botEmailAddress = config.get<IMailBotConfig>('MAIL_BOT').botEmailAddress;
 const smtpTransporter = nodemailer.createTransport(smtpPool(emailConfig));
 
+type BodyKeyType =
+    | 'undefined'
+    | 'number'
+    | 'string'
+    | 'null'
+    | 'boolean'
+    | 'object'
+    | 'number[]'
+    | 'string[]'
+    | 'boolean[]'
+    | 'object[]';
+
 export const resExecutor: IGetResPacket = function (res: Response, pack: { result?: any; err?: AikoError | Error }) {
     const { result, err } = pack;
 
@@ -130,41 +142,53 @@ export function transformToLinkedList<T>(list: T[]) {
 export function bodyChecker<T extends { [idx: string]: any }>(
     body: T,
     sample: {
-        [idx: string]:
-            | 'undefined'
-            | 'number'
-            | 'string'
-            | 'boolean'
-            | 'object'
-            | 'number[]'
-            | 'string[]'
-            | 'boolean[]'
-            | 'object[]';
+        [idx: string]: BodyKeyType[];
     },
 ) {
     try {
         const requiredKeys = Object.keys(sample);
 
         const isInvalidDataType = requiredKeys.some((key) => {
-            const requiredType = sample[key];
+            const requiredTypes = sample[key];
             const bodyDataType = typeof body[key];
 
-            // array filter
-            if (requiredType.slice(-2) === '[]') {
-                const bodyData = body[key];
-                const isArray = Array.isArray(bodyData);
+            const flagArray = requiredTypes.map((requiredType) => {
+                // array filter
+                if (requiredType.slice(-2) === '[]') {
+                    const bodyData = body[key];
+                    const isArray = Array.isArray(bodyData);
 
-                if (isArray) {
-                    if (bodyData.length <= 0) return false;
-                    else {
-                        const validType = requiredType.slice(0, -2);
-                        return bodyData.some((item) => typeof item !== validType);
-                    }
-                } else return true;
-            }
+                    if (isArray) {
+                        if (bodyData.length <= 0) return false;
+                        else {
+                            const validType = requiredType.slice(0, -2);
+                            return bodyData.some((item) => typeof item !== validType);
+                        }
+                    } else return true;
+                }
 
-            // other data types
-            if (requiredType !== bodyDataType) return true;
+                // other data types
+                if (requiredType !== bodyDataType) return true;
+            });
+
+            return flagArray.reduce((prev, curr) => prev && curr, true);
+
+            // // array filter
+            // if (requiredType.slice(-2) === '[]') {
+            //     const bodyData = body[key];
+            //     const isArray = Array.isArray(bodyData);
+
+            //     if (isArray) {
+            //         if (bodyData.length <= 0) return false;
+            //         else {
+            //             const validType = requiredType.slice(0, -2);
+            //             return bodyData.some((item) => typeof item !== validType);
+            //         }
+            //     } else return true;
+            // }
+
+            // // other data types
+            // if (requiredType !== bodyDataType) return true;
         });
 
         if (isInvalidDataType) throw typeMismatchError;
