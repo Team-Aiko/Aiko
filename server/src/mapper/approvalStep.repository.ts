@@ -22,10 +22,11 @@ export default class ApprovalStepRepository extends Repository<ApprovalStep> {
 
     async needToDoList(afPk: number, stepLevel: number) {
         try {
-            const result = await this.createQueryBuilder()
-                .select()
-                .andWhere('AF_PK =:afPk', { afPk: `${afPk}` })
-                .andWhere('STEP_LEVEL =:stepLevel', { stepLevel: `${stepLevel}` })
+            const result = await this.createQueryBuilder('n')
+                .leftJoinAndSelect('n.afPk', 'afPk')
+                .andWhere('n.AF_PK =:afPk', { afPk: `${afPk}` })
+                .andWhere('n.STEP_LEVEL =:stepLevel', { stepLevel: `${stepLevel}` })
+                .andWhere('n.DECISION = 0')
                 .getOne();
             return result;
         } catch (err) {

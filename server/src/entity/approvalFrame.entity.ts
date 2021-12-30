@@ -1,5 +1,7 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { User } from '.';
+import ApprovalStep from './approvalStep.entity';
+
 @Entity({ name: 'APPROVAL_FRAME_TABLE' })
 export default class ApprovalFrame {
     @PrimaryGeneratedColumn()
@@ -35,4 +37,8 @@ export default class ApprovalFrame {
     @ManyToOne(() => User, (af) => af.afUser)
     @JoinColumn({ name: 'USER_PK' })
     afUser: User;
+
+    @OneToMany(() => ApprovalStep, (af) => af.afPk)
+    @JoinColumn({ name: 'AF_PK' })
+    afPk: ApprovalStep;
 }

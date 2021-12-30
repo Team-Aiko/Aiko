@@ -54,7 +54,6 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
     }
     // async needToDoList(infos: any) {
     //     try {
-            
     //         for (const info of infos) {
     //             console.log(info);
     //         }
