@@ -145,11 +145,11 @@ export default class MeetingService {
                 insertedId,
                 queryRunner.manager,
             );
-            queryRunner.commitTransaction();
+            await queryRunner.commitTransaction();
 
             return { MEET_PK: insertedId, calledPKList: calledList };
         } catch (err) {
-            queryRunner.rollbackTransaction();
+            await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
                 'MeetingService/makeMeeting',
@@ -157,7 +157,7 @@ export default class MeetingService {
                 headErrorCode.meet + meetingServiceError.makeMeeting,
             );
         } finally {
-            queryRunner.release();
+            await queryRunner.release();
         }
     }
 
