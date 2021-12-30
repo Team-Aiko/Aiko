@@ -18,7 +18,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import { get, post } from '../_axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
-import { setMemberChatRoomPK } from '../_redux/memberReducer';
+import { setMember, setMemberChatRoomPK } from '../_redux/memberReducer';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme) => ({
@@ -75,30 +75,22 @@ export default function ChatModal(props) {
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
-    const [status, setStatus] = useState(undefined);
+    const [socket, setSocket] = useState(undefined);
     const [selectedMember, setSelectedMember] = useState('');
     const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
     const [messages, setMessages] = useState([]);
     const [chatMember, setChatMember] = useState([]);
+    const messagesRef = useRef(null);
 
     useEffect(() => {
         if (open) {
-            const status = io('http://localhost:5001/private-chat');
-            setStatus(status);
+            console.log('membrList : ', memberList);
+            const socket = io('http://localhost:5001/private-chat', { withCredentials: true });
+            setSocket(socket);
 
-            const uri = '/api/account/raw-token';
-            get(uri)
-                .then((result) => {
-                    status.emit('handleConnection', result);
-                    // status.emit('server/temp/generateChatRooms', result);
-                })
-                .catch((err) => {
-                    console.error('chat-handleConnection-error : ', err);
-                });
-
-            status.on('client/private-chat/connected', (payload) => {
-                console.log('payload : ', payload);
+            socket.emit('handleConnection');
+            socket.on('client/private-chat/connected', (payload) => {
                 let newPayload = [];
                 if (payload.evenCase.length > 0) {
                     const evenCase = payload.evenCase.map((row) => {
@@ -118,30 +110,41 @@ export default function ChatModal(props) {
                     });
                     newPayload.push(...oddCase);
                 }
+
                 dispatch(setMemberChatRoomPK(newPayload));
             });
-            status.on('client/private-chat/receive-chatlog', (payload) => {
-                console.log('client/private-chat/receive-chatlog - payload : ', payload);
+            socket.on('client/private-chat/receive-chatlog', (payload) => {
                 setMessages(payload.chatlog ? payload.chatlog.messages : []);
-
-                const keys = Object.keys(payload);
-                keys.shift();
-                const chatMember = keys.map((key) => {
-                    return payload[key];
-                });
-                setChatMember(chatMember);
+                setChatMember(payload.info.userInfo);
             });
-        } else {
-            status && status.emit('handleDisconnect');
+
+            socket.on('client/private-chat/send', (payload) => {
+                console.log('client/private-chat/send');
+                setMessages((messages) => [...messages, payload]);
+                scrollToBottom();
+            });
         }
     }, [open]);
 
     useEffect(() => {
+        if (messages) {
+            scrollToBottom();
+        }
+    }, [messages]);
+
+    useEffect(() => {
         if (selectedMember) {
-            console.log('click@@@ : ', selectedMember);
-            status.emit('server/private-chat/call-chatLog', selectedMember.CR_PK);
+            socket.emit('server/private-chat/call-chatLog', selectedMember.CR_PK);
         }
     }, [selectedMember]);
+
+    const scrollToBottom = () => {
+        setTimeout(() => {
+            messagesRef.current?.scrollIntoView({
+                behavior: 'smooth',
+            });
+        }, 100);
+    };
 
     const statusList = [
         {
@@ -168,6 +171,7 @@ export default function ChatModal(props) {
 
     const send = () => {
         if (inputMessage) {
+            console.log('selectedMember : ', selectedMember);
             const data = {
                 roomId: selectedMember.CR_PK,
                 sender: userInfo.USER_PK,
@@ -175,9 +179,21 @@ export default function ChatModal(props) {
                 date: Number(moment().format('X')),
             };
 
-            status.emit('server/private-chat/send', data);
+            console.log('data : ', data);
+
+            socket.emit('server/private-chat/send', data);
             setInputMessage('');
         }
+    };
+
+    const handleClose = () => {
+        socket.emit('handleDisconnect');
+        socket.disconnect();
+        setSelectedMember('');
+        setMessages([]);
+        setChatMember([]);
+        setInputMessage('');
+        onClose();
     };
 
     return (
@@ -188,14 +204,15 @@ export default function ChatModal(props) {
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
                     <List component='nav'>
-                        {memberList &&
-                            memberList.map((member) => {
+                        {memberList.size > 0 &&
+                            [...memberList.values()].map((member) => {
                                 return (
                                     <ListItem
                                         button
                                         key={member.USER_PK}
                                         style={{ justifyContent: 'space-between' }}
                                         onClick={() => {
+                                            console.log('member : ', member);
                                             setSelectedMember(member);
                                         }}
                                     >
@@ -245,7 +262,7 @@ export default function ChatModal(props) {
                             </div>
                         )}
 
-                        <IconButton className={classes.closeButton} onClick={onClose}>
+                        <IconButton className={classes.closeButton} onClick={handleClose}>
                             <CloseIcon className={classes.closeIcon} />
                         </IconButton>
                     </Toolbar>
@@ -255,7 +272,11 @@ export default function ChatModal(props) {
                                 {messages &&
                                     messages.map((message, index) => {
                                         return (
-                                            <div key={message.date} className={styles['message-item']}>
+                                            <div
+                                                key={message.date}
+                                                className={styles['message-item']}
+                                                ref={messagesRef}
+                                            >
                                                 {index === 0 ||
                                                 (index > 0 &&
                                                     moment.unix(messages[index - 1].date).format('YYYY-MM-DD') !==
@@ -270,41 +291,60 @@ export default function ChatModal(props) {
                                                     </Typography>
                                                 ) : null}
                                                 <div
-                                                    className={
-                                                        message.sender !== userInfo.USER_PK
-                                                            ? styles['message-wrapper']
-                                                            : styles['message-wrapper-right']
-                                                    }
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection:
+                                                            message.sender !== userInfo.USER_PK ? 'row' : 'column',
+                                                    }}
                                                 >
-                                                    {message.sender !== userInfo.USER_PK ? (
-                                                        <Typography variant='body2'>
-                                                            {chatMember.map((memberInfo) => {
-                                                                if (memberInfo.USER_PK === message.sender)
-                                                                    return memberInfo.NICKNAME;
-                                                            })}
-                                                        </Typography>
-                                                    ) : null}
+                                                    {message.sender !== userInfo.USER_PK && (
+                                                        <Avatar
+                                                            style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                margin: '10px 8px 0 0',
+                                                            }}
+                                                            src={
+                                                                chatMember.USER_PROFILE_PK
+                                                                    ? `/api/store/download-profile-file?fileId=${chatMember.USER_PROFILE_PK}`
+                                                                    : null
+                                                            }
+                                                        />
+                                                    )}
                                                     <div
                                                         className={
                                                             message.sender !== userInfo.USER_PK
-                                                                ? styles.contents
-                                                                : styles['contents-right']
+                                                                ? styles['message-wrapper']
+                                                                : styles['message-wrapper-right']
                                                         }
                                                     >
-                                                        <Typography
-                                                            variant='body2'
+                                                        {message.sender === chatMember.USER_PK ? (
+                                                            <Typography variant='body2'>
+                                                                {chatMember.NICKNAME}
+                                                            </Typography>
+                                                        ) : null}
+                                                        <div
                                                             className={
                                                                 message.sender !== userInfo.USER_PK
-                                                                    ? classes.message
-                                                                    : classes['message-right']
+                                                                    ? styles.contents
+                                                                    : styles['contents-right']
                                                             }
-                                                            display='inline'
                                                         >
-                                                            {message.message}
-                                                        </Typography>
-                                                        <Typography variant='caption' className={classes.time}>
-                                                            {moment.unix(message.date).format('LT')}
-                                                        </Typography>
+                                                            <Typography
+                                                                variant='body2'
+                                                                className={
+                                                                    message.sender !== userInfo.USER_PK
+                                                                        ? classes.message
+                                                                        : classes['message-right']
+                                                                }
+                                                                display='inline'
+                                                            >
+                                                                {message.message}
+                                                            </Typography>
+                                                            <Typography variant='caption' className={classes.time}>
+                                                                {moment.unix(message.date).format('LT')}
+                                                            </Typography>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
