@@ -243,7 +243,7 @@ export default class MeetingController {
         try {
             const { meetPK } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ meetPK }, { meetPK: 'string' });
+            bodyChecker({ meetPK }, { meetPK: 'number' });
 
             const result = await this.meetingService.deleteMeeting(meetPK, COMPANY_PK);
             resExecutor(res, { result });
