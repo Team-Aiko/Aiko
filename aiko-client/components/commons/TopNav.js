@@ -135,7 +135,7 @@ export default function CComp() {
                 }
             });
             status.on('client/status/loginAlert', (payload) => {
-                dispatch(setMemberStatus(payload));
+                dispatch(setMemberStatus(payload.user));
             });
             status.on('client/status/logoutAlert', (payload) => {
                 dispatch(setMemberStatus(payload));

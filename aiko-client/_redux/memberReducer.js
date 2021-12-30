@@ -37,14 +37,11 @@ const memberReducer = (state = [], action) => {
         case SET_MEMBER_STATUS:
             if (state) {
                 const newState = state;
-
-                console.log('newState.has(action.user.userPK) : ', newState.has(action.user.userPK));
                 newState.has(action.user.userPK) &&
                     newState.set(action.user.userPK, {
                         ...newState.get(action.user.userPK),
                         status: action.user.status,
                     });
-                console.log('newState : ', newState);
                 return newState;
             }
 
