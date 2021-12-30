@@ -186,10 +186,11 @@ const innerPost = () => {
             content: editorToHtml,
             delFilePks: deletedFilePk,
         };
+        const file = {
+            files
+        }
         formData.append('obj', JSON.stringify(obj));
-        formData.append('file', files[0]);
-        formData.append('file', files[1]);
-        formData.append('file', files[2]);
+        formData.append('file', JSON.stringify(file));
         const config = {
             headers: {
                 'content-type': 'multipart/form-data',
@@ -205,6 +206,9 @@ const innerPost = () => {
                 alert('게시글 작성에 실패하셨습니다.');
             });
     };
+
+    console.log(deletedFilePk);
+    console.log(files);
 
     //게시글 삭제
     const deleteArticle = () => {

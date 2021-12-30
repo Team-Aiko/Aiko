@@ -110,7 +110,8 @@ const ActionItems = ({nickname}) => {
         return year.toString().substr(-2) + '-' + month.substr(-2) + '-' + day.substr(-2);
     }
 
-    const [userPk, setUserPk] = useState('');
+
+    const [userPk, setUserPk] = useState(0);
 
     const getUserInfo = () => {
         const url = '/api/account/user-info';
@@ -119,8 +120,11 @@ const ActionItems = ({nickname}) => {
         };
         post(url, data)
         .then((res) => {
-            console.log('^^'+res.USER_PK)
+            console.log(res)
             setUserPk(res.USER_PK)
+        })
+        .catch((error) => {
+            console.log(error);
         })
     };
 
@@ -144,17 +148,7 @@ const ActionItems = ({nickname}) => {
 
     useEffect(() => {
         getActionItems();
-    }, [userPk, rowsPerPage, currentPage]);
-
-    const nullPageAlert = () => {
-        if (actionItemArray.length == 0) {
-            setCurrentPage(1)
-        }
-    };
-
-    useEffect(() => {
-        nullPageAlert()
-    }, [actionItemArray]);
+    }, [userPk, rowsPerPage, currentPage, addActionItemModal, actionItemDetailModal]);
 
     const classes = useStyles();
 
@@ -202,7 +196,7 @@ const ActionItems = ({nickname}) => {
                     </TableHead>
 
                     <TableBody>
-                        {actionItemArray.map((row, key) => (
+                        {actionItemArray?.map((row, key) => (
                             <TableRow key={row.ACTION_PK}>
                                 <TableCell align='left'>{row.ACTION_PK}</TableCell>
                                 <TableCell component='th' scope='row' align='left'>
