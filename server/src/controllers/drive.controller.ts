@@ -21,7 +21,7 @@ export default class DriveController {
         try {
             const { folderName, parentPK } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker({ folderName }, { folderName: 'string' });
+            bodyChecker({ folderName, parentPK }, { folderName: ['string'], parentPK: ['number', 'undefined'] });
 
             const result = await this.driveService.createFolder(COMPANY_PK, folderName, parentPK);
             resExecutor(res, { result });
@@ -71,6 +71,8 @@ export default class DriveController {
             const { filePKs } = req.body;
             const { COMPANY_PK } = userPayload;
 
+            bodyChecker({ filePKs }, { filePKs: ['number', 'number[]'] });
+
             const result = await this.driveService.getFiles(filePKs, COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
@@ -83,6 +85,7 @@ export default class DriveController {
     async deleteFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { filePKs, folderPKs } = req.body;
+            bodyChecker({ filePKs, folderPKs }, { filePKs: ['number', 'number[]'], folderPKs: ['number', 'number[]'] });
             const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
                 filePKs: filePKs || -1,
                 folderPKs: folderPKs || -1,
@@ -104,7 +107,7 @@ export default class DriveController {
             const { COMPANY_PK } = userPayload;
             bodyChecker(
                 { fromFilePKs, fromFolderPKs, toFolderPK },
-                { fromFilePKs: 'number[]', fromFolderPKs: 'number[]', toFolderPK: 'number' },
+                { fromFilePKs: ['number[]'], fromFolderPKs: ['number[]'], toFolderPK: ['number'] },
             );
 
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
