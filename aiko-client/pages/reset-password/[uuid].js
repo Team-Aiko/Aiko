@@ -66,6 +66,9 @@ export default function ResetPassword() {
                             style={{ backgroundColor: '#FFFFFF', height: '50vh', width: '70vh' }}
                         >
                             <div className={styles.formDiv}>
+                            <Typography variant="h5" display="block" align='center' gutterBottom color='primary' style={{marginTop:10}}>
+                                Create a New Password
+                            </Typography>
                                 <TextField
                                     id='pw'
                                     label='Password'
@@ -82,9 +85,18 @@ export default function ResetPassword() {
                                     error={pwCfErr}
                                     onChange={checkValidationStrings}
                                 />
-                                <Button variant='contained' color='primary' onClick={handleSubmit}>
+                                <Button variant='contained' color='primary' onClick={handleSubmit} style={{marginTop:15}}>
                                     submit
                                 </Button>
+
+                                <div style={{marginTop:30}}>
+                                <Typography variant="button" display="block" align='center' color='error' gutterBottom>
+                                    Your password should be </Typography>
+                                <Typography variant="button" display="block" align='center' gutterBottom>
+                                    8 ~ 30 length, including special symbol,
+                                </Typography>
+                                    <Typography variant="button" display="block" align='center' gutterBottom> capital letter and number </Typography>
+                                </div>
                             </div>
                         </Typography>
                     </Container>
