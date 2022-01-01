@@ -33,7 +33,6 @@ const MyBlock = styled.div`
 `;
 
 const writePost = () => {
-
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
     const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
@@ -52,25 +51,25 @@ const writePost = () => {
     };
 
     const handleFile = (e) => {
-        setFiles((prev) => [...prev, ...Object.values(e.target.files)])
+        setFiles((prev) => [...prev, ...Object.values(e.target.files)]);
     };
-
-    const maxFileWarning = () => {
-        if(files.length > 3) {
-            alert('3개까지 전송 가능합니다.');
-            setFiles(files.splice(0,3))
-        }
-    }
-
-    useEffect(() => {
-        maxFileWarning()
-    }, [files])
-
-    console.log(files)
 
     const deleteSelectedFile = (name) => {
         setFiles(files.filter(file => file.name !== name))
     };
+
+    const maxFileWarning = () => {
+        if (files.length > 3) {
+            alert('3개까지 전송 가능합니다.');
+            setFiles(files.splice(0, 3));
+        }
+    };
+
+    useEffect(() => {
+        maxFileWarning();
+    }, [files]);
+
+    console.log(files);
 
     const getCurrentUserName = async () => {
         await axios
@@ -175,33 +174,37 @@ const writePost = () => {
                         />
                     </MyBlock>
 
-                        {files.map((file, index) => (
+                    {files.map((file, index) => (
                         <div className={styles.fileContainer}>
-                            <div key={index} style={{display:'flex'}}>
-                                <p className={styles.files}>
-                                    {file.name}
-                                </p>
-                                <Button size='small' onClick={() => {deleteSelectedFile(file.name)}}style={{color:'grey'}}>
-                                삭제
+                            <div key={index} style={{ display: 'flex' }}>
+                                <p className={styles.files}>{file.name}</p>
+                                <Button
+                                    size='small'
+                                    onClick={() => {
+                                        deleteSelectedFile(file.name);
+                                    }}
+                                    style={{ color: 'grey' }}
+                                >
+                                    삭제
                                 </Button>
                             </div>
                         </div>
-                        ))}
-                    
-                    {
-                        files.length == 0
-                        ? <div>
-                        <h5 style={{ color: '#3F51B5' }}>파일이 존재하지 않습니다.</h5>
-                        <p style={{ fontSize: '7px', color: '#848482' }}>
-                            * 파일은 한 번에 세개까지 첨부 가능합니다.
-                        </p>
-                    </div>
-                        : <></>
-                    }
+                    ))}
+
+                    {files.length == 0 ? (
+                        <div>
+                            <h5 style={{ color: '#3F51B5' }}>파일이 존재하지 않습니다.</h5>
+                            <p style={{ fontSize: '7px', color: '#848482' }}>
+                                * 파일은 한 번에 세개까지 첨부 가능합니다.
+                            </p>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
 
                     <div className={styles.fileSubmit}>
                         <label className={styles.fileLabel} onChange={handleFile}>
-                            <input type='file' multiple style={{ display: 'none' }}/>+ Attach File
+                            <input type='file' multiple style={{ display: 'none' }} />+ Attach File
                         </label>
                         <Button
                             variant='contained'

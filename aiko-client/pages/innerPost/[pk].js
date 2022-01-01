@@ -35,7 +35,7 @@ const MyBlock = styled.div`
         z-index: 10 !important;
     }
     .toolbarHidden {
-        display:none;
+        display: none;
     }
 `;
 
@@ -65,19 +65,22 @@ const useStyles = makeStyles((theme) => ({
         cursor: 'pointer',
     },
     modalDesc: {
-        width:'90%',
-        height:'30%',
+        width: '90%',
+        height: '30%',
         margin: '0 auto',
-        textAlign:'center'
-
+        textAlign: 'center',
     },
     modalButton: {
-        display:'flex',
+        display: 'flex',
         width: '80%',
         margin: '0 auto',
-        justifyContent:'space-around',
-        padding:'20px'
-    }
+        justifyContent: 'space-around',
+        padding: '20px',
+    },
+    fileLabel: {
+        cursor: 'pointer',
+        color: '#3f51b5',
+    },
 }));
 
 const innerPost = () => {
@@ -94,6 +97,25 @@ const innerPost = () => {
     const [date, setDate] = useState('');
     const [pkNum, setPkNum] = useState(undefined);
     const [files, setFiles] = useState([]);
+
+    console.log(files);
+    console.log(addedFile);
+
+    const [isAdmin, setIsAdmin] = useState(false);
+    const adminCheck = async () => {
+        const url = '/api/company/check-admin';
+        await get(url)
+        .then((res) => {
+            console.log('is this user Admin? =' + res)
+            setIsAdmin(res);
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    };
+    useEffect(() => {
+        adminCheck()   
+    },[])
 
     //페이지 이동에 필요한 변수
     const goNext = Number(pk) + 1;
@@ -126,7 +148,7 @@ const innerPost = () => {
 
     //Edit Authoirty Check
     const editCheck = () => {
-        if (writerPk == currentUserPk) {
+        if (writerPk == currentUserPk || isAdmin == true) {
             setDisabled(!disabled);
         }
     };
@@ -134,7 +156,7 @@ const innerPost = () => {
     //Post Detail 불러오기 (제목, 작성자, 작성 날짜, 게시글 내용 등)
     const getDetails = async () => {
         await get(`/api/notice-board/detail?num=${pk}`).then((res) => {
-            console.log(res);
+            console.log('res' + res);
             setInnerPosts([...innerPosts, res]);
             setTitle(res.TITLE);
             setContent(res.CONTENT);
@@ -142,7 +164,8 @@ const innerPost = () => {
             setDate(res.CREATE_DATE);
             setPkNum(res.NOTICE_BOARD_PK);
             setWriterPk(res.USER_PK);
-            setFiles(res.files);
+            const filtered = res.files.filter(file => file.IS_DELETE == 0);
+            setFiles(filtered);
         });
     };
 
@@ -151,17 +174,20 @@ const innerPost = () => {
     }, [pk]);
 
     const [nextPage, setNextPage] = useState('');
+
+    const next = Number(pk) + 1;
+
     const [previousPage, setPreviousPage] = useState('');
     //Post, Previous Post Title
     const getNextPage = async () => {
-        const next = Number(pk) + 1;
         await get(`/api/notice-board/detail?num=${next}`).then((res) => {
             setNextPage(res.TITLE);
         });
     };
 
+    const previous = Number(pk) - 1;
+
     const getPreviousPage = async () => {
-        const previous = Number(pk) - 1;
         await get(`/api/notice-board/detail?num=${previous}`).then((res) => {
             setPreviousPage(res.TITLE);
         });
@@ -170,6 +196,10 @@ const innerPost = () => {
     useEffect(() => {
         getNextPage();
         getPreviousPage();
+        if (previousPage == '') {
+            previous - 1;
+            getPreviousPage();
+        }
     }, [pk]);
 
     const handleTitle = (e) => {
@@ -186,16 +216,19 @@ const innerPost = () => {
             content: editorToHtml,
             delFilePks: deletedFilePk,
         };
+        if (deletedFilePk.length == 0) {
+            deletedFilePk.push(0);
+        }
         formData.append('obj', JSON.stringify(obj));
-        formData.append('file', files[0]);
-        formData.append('file', files[1]);
-        formData.append('file', files[2]);
+        formData.append('file', addedFile[0]);
+        formData.append('file', addedFile[1]);
+        formData.append('file', addedFile[2]);
         const config = {
             headers: {
                 'content-type': 'multipart/form-data',
             },
         };
-            post(url, formData, config)
+        post(url, formData, config)
             .then((response) => {
                 console.log(response);
                 router.push('/board');
@@ -246,6 +279,34 @@ const innerPost = () => {
     useEffect(() => {
         getCurrentUserInfo();
     }, []);
+
+    // 선택한 파일 삭제버튼 클릭시 배열에서 제거
+    const removeSelectedFile = (filePk) => {
+        setFiles(files.filter((file) => file.NBF_PK !== filePk));
+    };
+
+    //차례대로 추가된 파일, 파일 추가 함수, 파일 삭제 함수
+    const [addedFile, setAddedFile] = useState([]);
+
+    const handleAddedFile = (e) => {
+        setAddedFile((prev) => [...prev, ...e.target.files]);
+        console.log(addedFile);
+    };
+
+    const deleteAddedFile = (name) => {
+        setAddedFile(addedFile.filter((file) => file.name !== name));
+    };
+
+    //파일 제한
+    const maxFile = () => {
+        if(addedFile.length + files.length > 3) {
+            alert('파일은 최대 세개까지 전송 가능합니다.');
+        }
+    }
+
+    useEffect(() => {
+        maxFile()
+    }, [files, addedFile])
 
     //UnixTimeStamp 변경
     function getUnixTime(t) {
@@ -322,7 +383,31 @@ const innerPost = () => {
                     />
                 </MyBlock>
 
-                {files.map((file, key) => (
+                {disabled == false ? (
+                    <label className={classes.fileLabel} onChange={handleAddedFile}>
+                        <input type='file' multiple style={{ display: 'none' }} />+ Attach File
+                    </label>
+                ) : (
+                    <></>
+                )}
+
+                {addedFile?.map((file, key) => (
+                    <div className={styles.fileInput} key={file.name}>
+                        <div>
+                            <a className={styles.files}>{file.name}</a>
+                            <Button
+                                size='small'
+                                className={classes.margin}
+                                style={{ color: 'grey' }}
+                                onClick={() => deleteAddedFile(file.name)}
+                            >
+                                삭제
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+
+                {files?.map((file, key) => (
                     <div className={styles.fileInput} key={file.NBF_PK}>
                         <div>
                             <a
@@ -338,6 +423,7 @@ const innerPost = () => {
                                     style={{ color: 'grey' }}
                                     onClick={() => {
                                         setDeletedFilePk([...deletedFilePk, file.NBF_PK]);
+                                        removeSelectedFile(file.NBF_PK);
                                     }}
                                 >
                                     삭제
@@ -348,6 +434,7 @@ const innerPost = () => {
                         </div>
                     </div>
                 ))}
+
 
                 <div className={styles.reviseDelete}>
                     <div>
@@ -424,20 +511,27 @@ const innerPost = () => {
                     )}
                 </div>
 
-                {
-                    openModal == true
-                    ? <Modal open={openModal} onClose={() => {setOpenModal(false)}} Title='Delete Post'>
-                    
-                    <div className={classes.modalDesc}>
-                    <Typography variant="h6" gutterBottom>Are you sure to delete the post?</Typography>
-                    </div>
+                {openModal == true ? (
+                    <Modal
+                        open={openModal}
+                        onClose={() => {
+                            setOpenModal(false);
+                        }}
+                        Title='Delete Post'
+                    >
+                        <div className={classes.modalDesc}>
+                            <Typography variant='h6' gutterBottom>
+                                Are you sure to delete the post?
+                            </Typography>
+                        </div>
 
-                    <div className={classes.modalButton}>
-                    <Button onClick={deleteArticle}>Yes</Button>
-                    </div>
+                        <div className={classes.modalButton}>
+                            <Button onClick={deleteArticle}>Yes</Button>
+                        </div>
                     </Modal>
-                    : <></>
-                }
+                ) : (
+                    <></>
+                )}
 
                 <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
                     <Link
