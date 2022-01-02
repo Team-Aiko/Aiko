@@ -165,10 +165,9 @@ export default function CComp() {
             (async () => {
                 try {
                     const url = '/api/account/logout';
-                    const res = await axios.get(url);
-                    const flag = res.data;
+                    const result = await get(url);
 
-                    if (!flag) throw new Error('NO_SERVER_RESPONSE');
+                    if (!result) throw new Error('NO_SERVER_RESPONSE');
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
