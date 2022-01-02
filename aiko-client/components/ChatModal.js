@@ -115,6 +115,7 @@ export default function ChatModal(props) {
                 dispatch(setMemberChatRoomPK(newPayload));
             });
             socket.on('client/private-chat/receive-chatlog', (payload) => {
+                console.log('client/private-chat/receive-chatlog : ', payload);
                 setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
                 setChatMember(payload.info.userInfo);
             });
@@ -136,6 +137,8 @@ export default function ChatModal(props) {
     useEffect(() => {
         if (inputMember) {
             searchMember();
+        } else {
+            setSearchResults([]);
         }
     }, [inputMember]);
 
@@ -199,18 +202,14 @@ export default function ChatModal(props) {
     };
 
     const searchMember = () => {
-        console.log('searchMember');
-
-        const url = `/api/company/searching-members?str=${inputMember}`;
-
-        setSearchResults([]);
-
-        get(url).then((result) => {
-            const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
-            console.log('excludeMe : ', excludeMe);
-            console.log('memberList : ', memberList);
-            setSearchResults(excludeMe);
+        let filter = [];
+        memberList.forEach((value) => {
+            if (value.NICKNAME.includes(inputMember)) {
+                filter.push(value);
+            }
         });
+
+        setSearchResults(filter);
     };
 
     return (
@@ -231,39 +230,72 @@ export default function ChatModal(props) {
                         />
                     </div>
                     <List component='nav'>
-                        {memberList.size > 0 &&
-                            [...memberList.values()].map((member) => {
-                                return (
-                                    <ListItem
-                                        button
-                                        key={member.USER_PK}
-                                        style={{ justifyContent: 'space-between' }}
-                                        onClick={() => handleSelectMember(member)}
-                                    >
-                                        <div className={styles['member-user-wrapper']}>
-                                            <Avatar
-                                                src={
-                                                    member.USER_PROFILE_PK
-                                                        ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
-                                                        : null
-                                                }
-                                                style={{ width: '30px', height: '30px', marginRight: '4px' }}
-                                            />
-                                            <Typography>{member.NICKNAME}</Typography>
-                                        </div>
-                                        {statusList.map((row, index) => {
-                                            return member.status === row.status ? (
-                                                <div
-                                                    ref={statusEl}
-                                                    key={row.status}
-                                                    className={styles['member-status']}
-                                                    style={{ backgroundColor: row.color }}
-                                                ></div>
-                                            ) : null;
-                                        })}
-                                    </ListItem>
-                                );
-                            })}
+                        {searchResults.length > 0
+                            ? searchResults.map((member) => {
+                                  return (
+                                      <ListItem
+                                          button
+                                          key={member.USER_PK}
+                                          style={{ justifyContent: 'space-between' }}
+                                          onClick={() => handleSelectMember(member)}
+                                      >
+                                          <div className={styles['member-user-wrapper']}>
+                                              <Avatar
+                                                  src={
+                                                      member.USER_PROFILE_PK
+                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                          : null
+                                                  }
+                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                              />
+                                              <Typography>{member.NICKNAME}</Typography>
+                                          </div>
+                                          {statusList.map((row, index) => {
+                                              return member.status === row.status ? (
+                                                  <div
+                                                      ref={statusEl}
+                                                      key={row.status}
+                                                      className={styles['member-status']}
+                                                      style={{ backgroundColor: row.color }}
+                                                  ></div>
+                                              ) : null;
+                                          })}
+                                      </ListItem>
+                                  );
+                              })
+                            : memberList.size > 0 &&
+                              [...memberList.values()].map((member) => {
+                                  return (
+                                      <ListItem
+                                          button
+                                          key={member.USER_PK}
+                                          style={{ justifyContent: 'space-between' }}
+                                          onClick={() => handleSelectMember(member)}
+                                      >
+                                          <div className={styles['member-user-wrapper']}>
+                                              <Avatar
+                                                  src={
+                                                      member.USER_PROFILE_PK
+                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                          : null
+                                                  }
+                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                              />
+                                              <Typography>{member.NICKNAME}</Typography>
+                                          </div>
+                                          {statusList.map((row, index) => {
+                                              return member.status === row.status ? (
+                                                  <div
+                                                      ref={statusEl}
+                                                      key={row.status}
+                                                      className={styles['member-status']}
+                                                      style={{ backgroundColor: row.color }}
+                                                  ></div>
+                                              ) : null;
+                                          })}
+                                      </ListItem>
+                                  );
+                              })}
                     </List>
                 </div>
 
