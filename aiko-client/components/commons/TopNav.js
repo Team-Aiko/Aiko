@@ -116,75 +116,31 @@ export default function CComp() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        console.log('###### render ######');
-
-        const status = io('http://localhost:5001/status?params=1', { withCredentials: true });
-        setStatus(status);
-
-        status.emit('handleConnection');
-        status.on('client/status/getStatusList', (payload) => {
-            console.log('### getStatusList ### : ', payload);
-            dispatch(setMemberListStatus(payload));
-            for (const row of payload) {
-                if (row.userPK === userInfo.USER_PK) {
-                    dispatch(setUserInfo({ status: row.status }));
-                }
-            }
-        });
-        status.on('client/status/loginAlert', (payload) => {
-            dispatch(setMemberStatus(payload.user));
-        });
-        status.on('client/status/logoutAlert', (payload) => {
-            dispatch(setMemberStatus(payload));
-        });
-        status.on('client/status/error', (err) => {
-            console.error('status - error : ', err);
-        });
-        status.on('client/status/changeStatus', (payload) => {
-            dispatch(setMemberStatus(payload));
-        });
-        status.on('client/status/logoutEventExecuted', () => {
-            status.emit('handleDisconnect');
-        });
-    }, []);
-
-    useEffect(() => {
         if (userInfo.USER_PK) {
             console.log('###### render ######');
 
-            (async () => {
-                const loadMember = await loadMemberList();
+            const status = io('http://localhost:5001/status', { withCredentials: true });
+            setStatus(status);
+            status.emit('handleConnection');
 
-                if (loadMember) {
-                    // const status = io('http://localhost:5001/status?params=1', { withCredentials: true });
-                    // setStatus(status);
-                    // status.emit('handleConnection');
-                    // status.on('client/status/getStatusList', (payload) => {
-                    //     console.log('### getStatusList ### : ', payload);
-                    //     dispatch(setMemberListStatus(payload));
-                    //     for (const row of payload) {
-                    //         if (row.userPK === userInfo.USER_PK) {
-                    //             dispatch(setUserInfo({ status: row.status }));
-                    //         }
-                    //     }
-                    // });
-                    // status.on('client/status/loginAlert', (payload) => {
-                    //     dispatch(setMemberStatus(payload.user));
-                    // });
-                    // status.on('client/status/logoutAlert', (payload) => {
-                    //     dispatch(setMemberStatus(payload));
-                    // });
-                    // status.on('client/status/error', (err) => {
-                    //     console.error('status - error : ', err);
-                    // });
-                    // status.on('client/status/changeStatus', (payload) => {
-                    //     dispatch(setMemberStatus(payload));
-                    // });
-                    // status.on('client/status/logoutEventExecuted', () => {
-                    //     status.emit('handleDisconnect');
-                    // });
-                }
-            })();
+            status.on('client/status/loginAlert', (payload) => {
+                console.log('loginAlert : ', payload);
+                dispatch(setMemberStatus(payload.user));
+            });
+            status.on('client/status/logoutAlert', (payload) => {
+                console.log('logoutAlert : ', payload);
+                dispatch(setMemberStatus(payload));
+            });
+            status.on('client/status/error', (err) => {
+                console.error('status - error : ', err);
+            });
+            status.on('client/status/changeStatus', (payload) => {
+                console.log('changeStatus : ', payload);
+                dispatch(setMemberStatus(payload));
+            });
+            status.on('client/status/logoutEventExecuted', () => {
+                status.emit('handleDisconnect');
+            });
         }
     }, [userInfo.USER_PK]);
 
@@ -210,27 +166,6 @@ export default function CComp() {
                 }
             })();
         }
-    };
-
-    const loadMemberList = () => {
-        const url = '/api/company/member-list';
-
-        return get(url)
-            .then((result) => {
-                if (result === 2) {
-                    dispatch(resetUserInfo());
-
-                    return false;
-                }
-                const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
-                dispatch(setMember(excludeMe));
-
-                return true;
-            })
-            .catch((error) => {
-                console.error(error);
-                return false;
-            });
     };
 
     const statusList = [

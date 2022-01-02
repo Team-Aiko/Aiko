@@ -3,9 +3,10 @@ import Router from 'next/router';
 import Image from 'next/image';
 import PropTypes from 'prop-types';
 import io from 'socket.io-client';
-import { post } from 'axios';
+import { post } from '../_axios/index';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserInfo } from '../_redux/accountReducer';
+import { setMember, setMemberStatus, setMemberListStatus } from '../_redux/memberReducer';
 import styles from '../styles/login.module.css';
 import loginPic from '../public/images/image.png';
 import router from 'next/router';
@@ -13,10 +14,14 @@ import router from 'next/router';
 export default function CComp() {
     const dispatch = useDispatch();
     const setInfo = (userInfo) => {
-        console.log('### setInfo : ', userInfo);
         dispatch(setUserInfo(userInfo));
     };
-    return <Login setUserInfo={setInfo} />;
+
+    const setMemberInfo = (memberList) => {
+        dispatch(setMember(memberList));
+    };
+
+    return <Login setUserInfo={setInfo} setMemberInfo={setMemberInfo} />;
 }
 
 function Login(props) {
@@ -47,13 +52,16 @@ function Login(props) {
 
         (async () => {
             try {
-                const { data } = await post(url, packet, config);
-                const { result } = data;
-                console.log('🚀 ~ file: login.js ~ line 49 ~ data', data);
-                if (result.header /* login result : boolean */) {
-                    props.setUserInfo(result.userInfo);
-                    window.location.href = '/';
-                    // Router.push('/');
+                const { userInfo, statusList, memberList } = await post(url, packet, config);
+
+                console.log('🚀 ~ file: login.js ~ line 49 ~ data', userInfo);
+                if (userInfo.USER_PK) {
+                    props.setUserInfo({ ...userInfo, status: 1 });
+
+                    if (memberList.length > 0) {
+                        await setMemberList(userInfo, memberList, statusList);
+                    }
+                    Router.push('/');
                 } else {
                     alert('not valid user');
                 }
@@ -71,6 +79,26 @@ function Login(props) {
     const open = useCallback(() => {
         Router.push('/signup');
     }, []);
+
+    const setMemberList = (userInfo, memberList, statusList) => {
+        return new Promise(function (resolve, reject) {
+            const excludeMe = memberList.filter((row) => row.USER_PK !== userInfo.USER_PK);
+            const setStatus = [];
+
+            for (const status of statusList) {
+                for (const member of excludeMe) {
+                    if (member.USER_PK === status.userPK) {
+                        setStatus.push({
+                            ...member,
+                            status: status.status,
+                        });
+                    }
+                }
+            }
+            props.setMemberInfo(setStatus);
+            resolve(setStatus);
+        });
+    };
 
     return (
         <div>
