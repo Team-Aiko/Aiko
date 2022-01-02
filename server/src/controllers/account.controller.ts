@@ -23,6 +23,7 @@ import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import StatusService from 'src/services/status.service';
+import CompanyService from 'src/services/company.service';
 
 @Controller('account')
 @UseInterceptors(UserPayloadParserInterceptor)
@@ -31,6 +32,7 @@ export default class AccountController {
 
     constructor(
         private accountService: AccountService,
+        private companyService: CompanyService,
         private meetingService: MeetingService,
         private statusService: StatusService,
     ) {}
@@ -131,13 +133,15 @@ export default class AccountController {
             };
             bodyChecker(data, { NICKNAME: ['string'], PASSWORD: ['string'] });
 
-            let userInfo = await this.accountService.login(data);
-            const statusList = await this.statusService.getStatusList(userInfo.userInfo.USER_PK);
-            res.cookie('ACCESS_TOKEN', userInfo.accessToken, { httpOnly: true });
-            res.cookie('REFRESH_TOKEN', userInfo.refreshToken, { httpOnly: true });
+            // eslint-disable-next-line prefer-const
+            let { userInfo, accessToken, refreshToken } = await this.accountService.login(data);
+            const statusList = await this.statusService.getStatusList(userInfo.USER_PK);
+            const memberList = await this.companyService.getCompanyMemberList(userInfo.COMPANY_PK);
+            res.cookie('ACCESS_TOKEN', accessToken, { httpOnly: true });
+            res.cookie('REFRESH_TOKEN', refreshToken, { httpOnly: true });
             userInfo = propsRemover(userInfo, 'accessToken', 'refreshToken');
 
-            resExecutor(res, { result: { userInfo, statusList } });
+            resExecutor(res, { result: { userInfo, statusList, memberList } });
         } catch (err) {
             throw resExecutor(res, { err });
         }
