@@ -26,6 +26,7 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { get } from '../../_axios/index';
+import axios from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo, resetUserInfo } from '../../_redux/accountReducer';
 import { setMember, setMemberStatus, setMemberListStatus } from '../../_redux/memberReducer';
@@ -161,7 +162,7 @@ export default function CComp() {
             (async () => {
                 try {
                     const url = '/api/account/logout';
-                    const res = await get(url);
+                    const res = await axios.get(url);
                     const flag = res.data;
 
                     if (!flag) throw new Error('NO_SERVER_RESPONSE');
@@ -171,7 +172,7 @@ export default function CComp() {
 
                     Router.push('/');
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             })();
         }

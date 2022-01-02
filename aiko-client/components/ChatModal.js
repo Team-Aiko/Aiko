@@ -82,6 +82,8 @@ export default function ChatModal(props) {
     const [messages, setMessages] = useState([]);
     const [chatMember, setChatMember] = useState([]);
     const messagesRef = useRef(null);
+    const [inputMember, setInputMember] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
         if (open) {
@@ -130,6 +132,12 @@ export default function ChatModal(props) {
             scrollToBottom();
         }
     }, [messages]);
+
+    useEffect(() => {
+        if (inputMember) {
+            searchMember();
+        }
+    }, [inputMember]);
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -190,6 +198,21 @@ export default function ChatModal(props) {
         socket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
 
+    const searchMember = () => {
+        console.log('searchMember');
+
+        const url = `/api/company/searching-members?str=${inputMember}`;
+
+        setSearchResults([]);
+
+        get(url).then((result) => {
+            const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
+            console.log('excludeMe : ', excludeMe);
+            console.log('memberList : ', memberList);
+            setSearchResults(excludeMe);
+        });
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
@@ -197,6 +220,16 @@ export default function ChatModal(props) {
                     <Toolbar classes={{ root: classes.memberToolbar }}>
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
+                    <div className={styles['member-search']}>
+                        <TextField
+                            label='검색'
+                            variant='outlined'
+                            fullWidth
+                            size='small'
+                            value={inputMember}
+                            onChange={(e) => setInputMember(e.target.value)}
+                        />
+                    </div>
                     <List component='nav'>
                         {memberList.size > 0 &&
                             [...memberList.values()].map((member) => {
