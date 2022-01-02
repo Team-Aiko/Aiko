@@ -82,6 +82,8 @@ export default function ChatModal(props) {
     const [messages, setMessages] = useState([]);
     const [chatMember, setChatMember] = useState([]);
     const messagesRef = useRef(null);
+    const [inputMember, setInputMember] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
 
     useEffect(() => {
         if (open) {
@@ -113,6 +115,7 @@ export default function ChatModal(props) {
                 dispatch(setMemberChatRoomPK(newPayload));
             });
             socket.on('client/private-chat/receive-chatlog', (payload) => {
+                console.log('client/private-chat/receive-chatlog : ', payload);
                 setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
                 setChatMember(payload.info.userInfo);
             });
@@ -130,6 +133,14 @@ export default function ChatModal(props) {
             scrollToBottom();
         }
     }, [messages]);
+
+    useEffect(() => {
+        if (inputMember) {
+            searchMember();
+        } else {
+            setSearchResults([]);
+        }
+    }, [inputMember]);
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -190,6 +201,23 @@ export default function ChatModal(props) {
         socket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
 
+    const searchMember = () => {
+        let filter = [];
+        memberList.forEach((value) => {
+            if (value.NICKNAME.includes(inputMember)) {
+                filter.push(value);
+            }
+        });
+
+        setSearchResults(filter);
+    };
+
+    const handleKeyPress = (event) => {
+        if (event.target.value && event.key === 'Enter') {
+            send();
+        }
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
@@ -197,40 +225,83 @@ export default function ChatModal(props) {
                     <Toolbar classes={{ root: classes.memberToolbar }}>
                         <Typography className={classes.memberTitle}>Members</Typography>
                     </Toolbar>
+                    <div className={styles['member-search']}>
+                        <TextField
+                            label='검색'
+                            variant='outlined'
+                            fullWidth
+                            size='small'
+                            value={inputMember}
+                            onChange={(e) => setInputMember(e.target.value)}
+                        />
+                    </div>
                     <List component='nav'>
-                        {memberList.size > 0 &&
-                            [...memberList.values()].map((member) => {
-                                return (
-                                    <ListItem
-                                        button
-                                        key={member.USER_PK}
-                                        style={{ justifyContent: 'space-between' }}
-                                        onClick={() => handleSelectMember(member)}
-                                    >
-                                        <div className={styles['member-user-wrapper']}>
-                                            <Avatar
-                                                src={
-                                                    member.USER_PROFILE_PK
-                                                        ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
-                                                        : null
-                                                }
-                                                style={{ width: '30px', height: '30px', marginRight: '4px' }}
-                                            />
-                                            <Typography>{member.NICKNAME}</Typography>
-                                        </div>
-                                        {statusList.map((row, index) => {
-                                            return member.status === row.status ? (
-                                                <div
-                                                    ref={statusEl}
-                                                    key={row.status}
-                                                    className={styles['member-status']}
-                                                    style={{ backgroundColor: row.color }}
-                                                ></div>
-                                            ) : null;
-                                        })}
-                                    </ListItem>
-                                );
-                            })}
+                        {searchResults.length > 0
+                            ? searchResults.map((member) => {
+                                  return (
+                                      <ListItem
+                                          button
+                                          key={member.USER_PK}
+                                          style={{ justifyContent: 'space-between' }}
+                                          onClick={() => handleSelectMember(member)}
+                                      >
+                                          <div className={styles['member-user-wrapper']}>
+                                              <Avatar
+                                                  src={
+                                                      member.USER_PROFILE_PK
+                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                          : null
+                                                  }
+                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                              />
+                                              <Typography>{member.NICKNAME}</Typography>
+                                          </div>
+                                          {statusList.map((row, index) => {
+                                              return member.status === row.status ? (
+                                                  <div
+                                                      ref={statusEl}
+                                                      key={row.status}
+                                                      className={styles['member-status']}
+                                                      style={{ backgroundColor: row.color }}
+                                                  ></div>
+                                              ) : null;
+                                          })}
+                                      </ListItem>
+                                  );
+                              })
+                            : memberList.size > 0 &&
+                              [...memberList.values()].map((member) => {
+                                  return (
+                                      <ListItem
+                                          button
+                                          key={member.USER_PK}
+                                          style={{ justifyContent: 'space-between' }}
+                                          onClick={() => handleSelectMember(member)}
+                                      >
+                                          <div className={styles['member-user-wrapper']}>
+                                              <Avatar
+                                                  src={
+                                                      member.USER_PROFILE_PK
+                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                          : null
+                                                  }
+                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                              />
+                                              <Typography>{member.NICKNAME}</Typography>
+                                          </div>
+                                          {statusList.map((row, index) => {
+                                              return member.status === row.status ? (
+                                                  <div
+                                                      ref={statusEl}
+                                                      key={row.status}
+                                                      className={styles['member-status']}
+                                                      style={{ backgroundColor: row.color }}
+                                                  ></div>
+                                              ) : null;
+                                          })}
+                                      </ListItem>
+                                  );
+                              })}
                     </List>
                 </div>
 
@@ -349,6 +420,9 @@ export default function ChatModal(props) {
                                         setInputMessage(event.target.value);
                                     }}
                                     value={inputMessage}
+                                    onKeyPress={(event) => {
+                                        handleKeyPress(event);
+                                    }}
                                 />
                                 <Button variant='contained' color='primary' onClick={send}>
                                     보내기
