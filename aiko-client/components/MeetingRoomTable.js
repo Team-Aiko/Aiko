@@ -122,7 +122,7 @@ export default function MeetingRoomTable(props) {
         const url = '/api/meeting/finish-meeting';
         const data = {
             meetPK: selectedSchedule.MEET_PK,
-            finishFlag: 1,
+            finishFlag: true,
         };
 
         post(url, data).then(() => {
