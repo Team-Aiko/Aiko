@@ -11,9 +11,13 @@ export default function CComp() {
         }
     }, [userInfo.USER_PK]);
 
-    return <PComp userInfo={userInfo} />;
+    console.log(userInfo.USER_PK)
+
+    return <PComp userInfo={userInfo} />; 
 }
 
 function PComp(props) {
-    return <></>;
+
+    return <>이게.. 로구인?</>;
 }
+

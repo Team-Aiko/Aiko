@@ -127,12 +127,11 @@ export default class AccountController {
             bodyChecker(data, { NICKNAME: ['string'], PASSWORD: ['string'] });
 
             let result = await this.accountService.login(data);
-            if ('accessToken' in result) {
-                res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
-                res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
-                result = propsRemover(result, 'accessToken', 'refreshToken');
-                resExecutor(res, { result });
-            } else throw new Error('unknown error');
+            res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
+            res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
+            result = propsRemover(result, 'accessToken', 'refreshToken');
+
+            resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });
         }

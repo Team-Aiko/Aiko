@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setUserInfo } from '../_redux/accountReducer';
 import styles from '../styles/login.module.css';
 import loginPic from '../public/images/image.png';
+import router from 'next/router';
 
 export default function CComp() {
     const dispatch = useDispatch();
@@ -70,10 +71,6 @@ function Login(props) {
         Router.push('/signup');
     }, []);
 
-    const find = function () {
-        Router.push('/idpw');
-    };
-
     return (
         <div>
             <div className={styles.container}>
@@ -107,9 +104,12 @@ function Login(props) {
                                 <input className={styles.check} type='checkbox' />
                                 <p className={styles.remember}>Remember Me</p>
 
-                                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-                                <p onKeyDown={() => {}} onClick={find} className={styles.forgot}>
-                                    Forgot ID/PW?
+        
+                                <p onClick={()=> {router.push('/forgot-id')}} className={styles.forgot}>
+                                    Forgot ID?
+                                </p>
+                                <p onClick={()=> {router.push('/forgot-pw')}} className={styles.forgot}>
+                                    Forgot PW?
                                 </p>
                                 <div className={styles.clear} />
                             </div>
@@ -117,7 +117,7 @@ function Login(props) {
                     </div>
 
                     <div className={styles.lastcontainer}>
-                        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+
                         <p onKeyDown={() => {}} onClick={open} className={styles.create}>
                             Create an Account
                         </p>

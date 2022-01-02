@@ -93,10 +93,10 @@ export default class UserRepository extends Repository<User> {
         let returnVal = false;
 
         try {
-            await this.createQueryBuilder('U')
+            await this.createQueryBuilder()
                 .update(User)
                 .set({ PASSWORD: hash, SALT: salt })
-                .where('U.USER_PK = :USER_PK', { USER_PK: userPK })
+                .where('USER_PK = :USER_PK', { USER_PK: userPK })
                 .execute();
 
             returnVal = true;
