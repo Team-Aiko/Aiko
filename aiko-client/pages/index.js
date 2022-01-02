@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // * socket Test
 import { useSelector, useDispatch } from 'react-redux';
-import { sendGet } from '../_axios/util';
 
 export default function CComp() {
     const userInfo = useSelector((state) => state.accountReducer);

@@ -25,7 +25,7 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
-import { get } from 'axios';
+import { get } from '../../_axios/index';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo, resetUserInfo } from '../../_redux/accountReducer';
 import { setMember, setMemberStatus, setMemberListStatus } from '../../_redux/memberReducer';
@@ -117,7 +117,6 @@ export default function CComp() {
     useEffect(() => {
         if (userInfo.USER_PK) {
             console.log('###### render ######');
-
             loadMemberList();
 
             const status = io('http://localhost:5001/status', { withCredentials: true });
@@ -181,10 +180,17 @@ export default function CComp() {
     const loadMemberList = async () => {
         const url = '/api/company/member-list';
 
-        await get(url).then((response) => {
-            const excludeMe = response.data.result.filter((row) => row.USER_PK !== userInfo.USER_PK);
-            dispatch(setMember(excludeMe));
-        });
+        await get(url)
+            .then((result) => {
+                if (result === 2) {
+                    return dispatch(resetUserInfo());
+                }
+                const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
+                dispatch(setMember(excludeMe));
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     const statusList = [
