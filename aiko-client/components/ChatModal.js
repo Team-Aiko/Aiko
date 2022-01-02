@@ -212,6 +212,12 @@ export default function ChatModal(props) {
         setSearchResults(filter);
     };
 
+    const handleKeyPress = (event) => {
+        if (event.target.value && event.key === 'Enter') {
+            send();
+        }
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
@@ -414,6 +420,9 @@ export default function ChatModal(props) {
                                         setInputMessage(event.target.value);
                                     }}
                                     value={inputMessage}
+                                    onKeyPress={(event) => {
+                                        handleKeyPress(event);
+                                    }}
                                 />
                                 <Button variant='contained' color='primary' onClick={send}>
                                     보내기
