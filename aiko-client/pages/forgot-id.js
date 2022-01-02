@@ -34,7 +34,7 @@ const forgotId = () => {
 
     const appCodeCheck = () => {
         if(appCode == 100006) {
-            alert('올바른 이메일이 아닙니다.');
+            alert('입력한 이메일을 확인해주세요.');
             setAppCode(undefined);
             setEmail('');
         }

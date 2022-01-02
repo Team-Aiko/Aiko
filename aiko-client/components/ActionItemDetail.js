@@ -206,12 +206,12 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                     />
 
                     <Typography variant='caption' className={classes.assignTypo}>
-                        Assigned to{' '}
+                        Assigned by{' '}
                         {actionItemArray[activeRow].assigner.FIRST_NAME +
                             ' ' +
                             actionItemArray[activeRow].assigner.LAST_NAME +
                             ' '}
-                        by{' '}
+                        to{' '}
                         {actionItemArray[activeRow].owner.FIRST_NAME + ' ' + actionItemArray[activeRow].owner.LAST_NAME}
                     </Typography>
                 </div>

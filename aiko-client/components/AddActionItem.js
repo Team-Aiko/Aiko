@@ -59,6 +59,7 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
     const [startDate, setStartDate] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [description, setDescription] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
 
     //nickname으로 userInfo , assigner에 부여
     const getAssignerName = () => {
@@ -70,14 +71,18 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
         .then((res) => {
             setSelectedAssigner(res.FIRST_NAME + " " + res.LAST_NAME)
         })
+        .catch((error) => {
+            console.log(error)
+        })
     };
 
     useEffect(() => {
         getAssignerName()
-    }, []);
+    }, [nickname]);
 
     //member list modal로 정보 불러오기
     const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
+    const [openSearchMemberModalAssigner, setOpenSearchMemberModalAssigner] = useState(false);
     const [selectedOwner, setSelectedOwner] = useState('');
     const [selectedAssigner, setSelectedAssigner] = useState('');
 
@@ -106,7 +111,7 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
     const createActionItems = (user) => {
         const url = '/api/work/create-action-item';
         const data = {
-            OWNER_PK: user.USER_PK,
+            OWNER_PK: selectedOwner[0]?.USER_PK,
             TITLE: title,
             DESCRIPTION: description,
             DUE_DATE: dueDate,
@@ -114,6 +119,10 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
             P_PK: priority,
             STEP_PK: step,
         };
+        console.log(data.OWNER_PK)
+        if(data.OWNER_PK == undefined) {
+            data.OWNER_PK = null
+        }
         if (title.length < 1) {
             alert('제목을 입력해주세요.');
             return;
@@ -122,7 +131,6 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
             alert('상세 설명이 필요합니다.');
             return;
         }
-        console.log(data);
         post(url, data)
             .then((res) => {
                 console.log(res);
@@ -133,6 +141,26 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                 console.log(error);
             });
     };
+
+    const checkAdmin = async () => {
+        const url = '/api/company/check-admin';
+        await get(url)
+        .then((res) => {
+            console.log('he is' + res)
+            if(res == undefined) {
+                setIsAdmin(false)
+            } else {
+            setIsAdmin(res);
+            }
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+
+    useEffect(() => {
+        checkAdmin()
+    }, [])
 
     return (
         <div className={classes.root} ref={rootRef}>
@@ -240,15 +268,15 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                     <div style={{ marginTop: 10 }}>
                         <TextField id='standard-basic' label='Owner' style={{ margin: 3 }}
                         value={ selectedOwner == '' ? ''  :selectedOwner[0].FIRST_NAME + ' ' + selectedOwner[0].LAST_NAME}
+                        disabled={isAdmin == false}
                         onClick={() => {setOpenSearchMemberModal(true)}}/>
                         {
                             openSearchMemberModal
                             ? <SearchMemberModal
-                            open={openSearchMemberModal}
+                            open={openSearchMemberModal && isAdmin}
                             onClose={() => {setOpenSearchMemberModal(false)}}
                             onClickSelectedUserList={(user) => {
                                 setSelectedOwner(user);
-                                console.log(user)
                                 setOpenSearchMemberModal(false);
                             }}
                             multipleSelection={true}/>
@@ -258,9 +286,21 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                             id='standard-basic'
                             label='Assigner'
                             style={{ margin: 3 }}
-                            onClick={() => {setOpenSearchMemberModal(true)}}
+                            // onClick={() => {setOpenSearchMemberModalAssigner(true)}}
                             value={selectedAssigner}
                         />
+                        {/* {
+                            openSearchMemberModalAssigner
+                            ? <SearchMemberModal
+                            open={openSearchMemberModalAssigner}
+                            onClose={() => {setOpenSearchMemberModalAssigner(false)}}
+                            onClickSelectedUserList={(user) => {
+                                setSelectedAssigner(user);
+                                setOpenSearchMemberModalAssigner(false);
+                            }}
+                            multipleSelection={true}/>
+                            : <></>
+                        } */}
                     </div>
 
                     <div style={{ marginTop: 10 }}>
