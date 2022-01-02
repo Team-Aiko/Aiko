@@ -36,10 +36,12 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
+        console.log('queryString: ', client.handshake.query);
+        console.log('queryString: ', client.request.url);
         console.log('### status - handleConnection #### : ', client.id);
         console.log('status - cookies', client.request.headers.cookie);
         console.log('status - cookies', client.handshake.headers.cookie);
-        // if (!client.request.headers['guardPassed']) return;
+        if (!client.request.headers['guardPassed']) return;
 
         try {
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(client.request.headers['user-payload']);

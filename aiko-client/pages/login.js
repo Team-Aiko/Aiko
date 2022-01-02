@@ -52,7 +52,8 @@ function Login(props) {
                 console.log('🚀 ~ file: login.js ~ line 49 ~ data', data);
                 if (result.header /* login result : boolean */) {
                     props.setUserInfo(result.userInfo);
-                    Router.push('/');
+                    window.location.href = '/';
+                    // Router.push('/');
                 } else {
                     alert('not valid user');
                 }
@@ -104,11 +105,20 @@ function Login(props) {
                                 <input className={styles.check} type='checkbox' />
                                 <p className={styles.remember}>Remember Me</p>
 
-        
-                                <p onClick={()=> {router.push('/forgot-id')}} className={styles.forgot}>
+                                <p
+                                    onClick={() => {
+                                        router.push('/forgot-id');
+                                    }}
+                                    className={styles.forgot}
+                                >
                                     Forgot ID?
                                 </p>
-                                <p onClick={()=> {router.push('/forgot-pw')}} className={styles.forgot}>
+                                <p
+                                    onClick={() => {
+                                        router.push('/forgot-pw');
+                                    }}
+                                    className={styles.forgot}
+                                >
                                     Forgot PW?
                                 </p>
                                 <div className={styles.clear} />
@@ -117,7 +127,6 @@ function Login(props) {
                     </div>
 
                     <div className={styles.lastcontainer}>
-
                         <p onKeyDown={() => {}} onClick={open} className={styles.create}>
                             Create an Account
                         </p>
