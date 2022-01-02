@@ -116,44 +116,45 @@ export default function CComp() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        (async () => {
-            if (USER_PK) {
-                console.log('###### render ######');
-                await loadMemberList();
+        if (userInfo.USER_PK) {
+            console.log('###### render ######');
 
-                const status = io('http://localhost:5001/status', { withCredentials: true });
-                setStatus(status);
+            (async () => {
+                const loadMember = await loadMemberList();
 
-                status.on('client/status/getStatusList', (payload) => {
-                    console.log('### getStatusList ### : ', payload);
-                    dispatch(setMemberListStatus(payload));
-                    for (const row of payload) {
-                        if (row.userPK === userInfo.USER_PK) {
-                            dispatch(setUserInfo({ status: row.status }));
+                if (loadMember) {
+                    const status = io('http://localhost:5001/status', { withCredentials: true });
+                    setStatus(status);
+
+                    status.emit('handleConnection');
+                    status.on('client/status/getStatusList', (payload) => {
+                        console.log('### getStatusList ### : ', payload);
+                        dispatch(setMemberListStatus(payload));
+                        for (const row of payload) {
+                            if (row.userPK === userInfo.USER_PK) {
+                                dispatch(setUserInfo({ status: row.status }));
+                            }
                         }
-                    }
-                });
-                status.on('client/status/loginAlert', (payload) => {
-                    console.log('loginAlert : ', payload);
-                    dispatch(setMemberStatus(payload.user));
-                });
-                status.on('client/status/logoutAlert', (payload) => {
-                    dispatch(setMemberStatus(payload));
-                });
-                status.on('client/status/error', (err) => {
-                    console.error('status - error : ', err);
-                });
-                status.on('client/status/changeStatus', (payload) => {
-                    dispatch(setMemberStatus(payload));
-                });
-                status.on('client/status/logoutEventExecuted', () => {
-                    status.emit('handleDisconnect');
-                });
-
-                status.emit('handleConnection');
-            }
-        })();
-    }, [USER_PK]);
+                    });
+                    status.on('client/status/loginAlert', (payload) => {
+                        dispatch(setMemberStatus(payload.user));
+                    });
+                    status.on('client/status/logoutAlert', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/error', (err) => {
+                        console.error('status - error : ', err);
+                    });
+                    status.on('client/status/changeStatus', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/logoutEventExecuted', () => {
+                        status.emit('handleDisconnect');
+                    });
+                }
+            })();
+        }
+    }, [userInfo.USER_PK]);
 
     const handleLogout = () => {
         setAnchorEl(null);
@@ -179,19 +180,24 @@ export default function CComp() {
         }
     };
 
-    const loadMemberList = async () => {
+    const loadMemberList = () => {
         const url = '/api/company/member-list';
 
-        await get(url)
+        return get(url)
             .then((result) => {
                 if (result === 2) {
-                    return dispatch(resetUserInfo());
+                    dispatch(resetUserInfo());
+
+                    return false;
                 }
                 const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
                 dispatch(setMember(excludeMe));
+
+                return true;
             })
             .catch((error) => {
                 console.error(error);
+                return false;
             });
     };
 
