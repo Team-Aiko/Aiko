@@ -51,10 +51,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                     .to(`company:${COMPANY_PK}`)
                     .except(connResult.myClients.map((client) => client.clientId))
                     .emit(statusPath.CLIENT_LOGIN_ALERT, connResult);
-
-                const statusList = await this.statusService.getStatusList(USER_PK);
-                this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
             }
+
+            const statusList = await this.statusService.getStatusList(USER_PK);
+            this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
         } catch (err) {
             this.wss
                 .to(client.id)
