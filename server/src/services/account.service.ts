@@ -214,20 +214,13 @@ export default class AccountService {
         return flag;
     }
 
-    async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<BasePacket | SuccessPacket> {
+    async login(data: Pick<UserTable, 'NICKNAME' | 'PASSWORD'>): Promise<SuccessPacket> {
         winstonLogger.debug('login method executed');
         try {
             let result = await getRepo(UserRepository).getUserInfoWithNickname(data.NICKNAME, false, false);
             const flag = await checkPw(data.PASSWORD, result.SALT, result.PASSWORD);
-            let bundle: BasePacket | SuccessPacket;
 
-            if (!flag) {
-                bundle = {
-                    header: false,
-                };
-
-                return bundle;
-            }
+            if (!flag) throw new AikoError('accountService/NO_MEMBER_ERROR_OR_INVALID_PASSWORD', 500, -1);
 
             // get grant list
             const grantList = await getRepo(GrantRepository).getGrantList(result.USER_PK);
@@ -240,7 +233,7 @@ export default class AccountService {
             // refresh token update to database
             await getRepo(RefreshRepository).updateRefreshToken(result.USER_PK, token.refresh);
 
-            bundle = {
+            const bundle: SuccessPacket = {
                 header: flag,
                 userInfo: result,
                 accessToken: token.access,
