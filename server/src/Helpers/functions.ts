@@ -7,7 +7,7 @@ import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
-import { invalidTokenError, notAuthorizedUserError, typeMismatchError } from './instance';
+import { invalidTokenError, noCookieError, notAuthorizedUserError, typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -319,17 +319,22 @@ export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject'
 }
 
 export function parseCookieString<T extends { [idx: string]: string }>(cookie: string) {
-    const temp = cookie.split(';');
-    const cookieJson: { [idx: string]: string } = {};
+    try {
+        const temp = cookie.split(';');
 
-    temp.forEach((str) => {
-        const arr = str.split('=');
-        const key = arr[0].trim();
-        const value = arr[1].trim();
-        cookieJson[key] = value;
-    });
+        const cookieJson: { [idx: string]: string } = {};
 
-    return cookieJson as T;
+        temp.forEach((str) => {
+            const arr = str.split('=');
+            const key = arr[0].trim();
+            const value = arr[1].trim();
+            cookieJson[key] = value;
+        });
+
+        return cookieJson as T;
+    } catch (err) {
+        throw noCookieError;
+    }
 }
 
 export function parseUserPayloadString(stringifiedUserPayload: string | string[]) {

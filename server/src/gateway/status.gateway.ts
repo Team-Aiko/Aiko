@@ -36,7 +36,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket) {
-        if (!client.request.headers['guardPassed']) return;
+        console.log('### status - handleConnection #### : ', client.id);
+        console.log('status - cookies', client.request.headers.cookie);
+        console.log('status - cookies', client.handshake.headers.cookie);
+        // if (!client.request.headers['guardPassed']) return;
 
         try {
             const { USER_PK, COMPANY_PK } = parseUserPayloadString(client.request.headers['user-payload']);
@@ -55,6 +58,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
             const statusList = await this.statusService.getStatusList(USER_PK);
             this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
+            console.log(
+                '🚀 ~ file: status.gateway.ts ~ line 58 ~ StatusGateway ~ handleConnection ~ client.id',
+                client.id,
+            );
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -93,6 +100,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
     async changeStatus(client: Socket, stat: number) {
+        console.log('### status - changeStatus #### : ', client.id);
+        console.log('status - cookies', client.request.headers.cookie);
+        console.log('status - cookies', client.handshake.headers.cookie);
         if (!client.request.headers['guardPassed']) return;
 
         try {
