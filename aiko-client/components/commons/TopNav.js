@@ -115,42 +115,44 @@ export default function CComp() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        if (userInfo.USER_PK) {
-            console.log('###### render ######');
-            loadMemberList();
+        (async () => {
+            if (USER_PK) {
+                console.log('###### render ######');
+                await loadMemberList();
 
-            const status = io('http://localhost:5001/status', { withCredentials: true });
-            setStatus(status);
-            console.log('setStatus : ', status);
+                const status = io('http://localhost:5001/status', { withCredentials: true });
+                setStatus(status);
 
-            status.emit('handleConnection');
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('### getStatusList ### : ', payload);
-                dispatch(setMemberListStatus(payload));
-                for (const row of payload) {
-                    if (row.userPK === userInfo.USER_PK) {
-                        dispatch(setUserInfo({ status: row.status }));
+                status.on('client/status/getStatusList', (payload) => {
+                    console.log('### getStatusList ### : ', payload);
+                    dispatch(setMemberListStatus(payload));
+                    for (const row of payload) {
+                        if (row.userPK === userInfo.USER_PK) {
+                            dispatch(setUserInfo({ status: row.status }));
+                        }
                     }
-                }
-            });
-            status.on('client/status/loginAlert', (payload) => {
-                console.log('loginAlert : ', payload);
-                dispatch(setMemberStatus(payload.user));
-            });
-            status.on('client/status/logoutAlert', (payload) => {
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/error', (err) => {
-                console.error('status - error : ', err);
-            });
-            status.on('client/status/changeStatus', (payload) => {
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/logoutEventExecuted', () => {
-                status.emit('handleDisconnect');
-            });
-        }
-    }, [userInfo.USER_PK]);
+                });
+                status.on('client/status/loginAlert', (payload) => {
+                    console.log('loginAlert : ', payload);
+                    dispatch(setMemberStatus(payload.user));
+                });
+                status.on('client/status/logoutAlert', (payload) => {
+                    dispatch(setMemberStatus(payload));
+                });
+                status.on('client/status/error', (err) => {
+                    console.error('status - error : ', err);
+                });
+                status.on('client/status/changeStatus', (payload) => {
+                    dispatch(setMemberStatus(payload));
+                });
+                status.on('client/status/logoutEventExecuted', () => {
+                    status.emit('handleDisconnect');
+                });
+
+                status.emit('handleConnection');
+            }
+        })();
+    }, [USER_PK]);
 
     const handleLogout = () => {
         setAnchorEl(null);
@@ -161,10 +163,9 @@ export default function CComp() {
             (async () => {
                 try {
                     const url = '/api/account/logout';
-                    const res = await get(url);
-                    const flag = res.data;
+                    const result = await get(url);
 
-                    if (!flag) throw new Error('NO_SERVER_RESPONSE');
+                    if (!result) throw new Error('NO_SERVER_RESPONSE');
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
