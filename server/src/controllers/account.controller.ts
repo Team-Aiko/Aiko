@@ -22,13 +22,18 @@ import MeetingService from 'src/services/meeting.service';
 import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import StatusService from 'src/services/status.service';
 
 @Controller('account')
 @UseInterceptors(UserPayloadParserInterceptor)
 export default class AccountController {
     // private accountService: AccountService;
 
-    constructor(private accountService: AccountService, private meetingService: MeetingService) {}
+    constructor(
+        private accountService: AccountService,
+        private meetingService: MeetingService,
+        private statusService: StatusService,
+    ) {}
 
     // ! check complete - api doc
     @Get('checkDuplicateNickname')
@@ -126,12 +131,13 @@ export default class AccountController {
             };
             bodyChecker(data, { NICKNAME: ['string'], PASSWORD: ['string'] });
 
-            let result = await this.accountService.login(data);
-            res.cookie('ACCESS_TOKEN', result.accessToken, { httpOnly: true });
-            res.cookie('REFRESH_TOKEN', result.refreshToken, { httpOnly: true });
-            result = propsRemover(result, 'accessToken', 'refreshToken');
+            let userInfo = await this.accountService.login(data);
+            const statusList = await this.statusService.getStatusList(userInfo.userInfo.USER_PK);
+            res.cookie('ACCESS_TOKEN', userInfo.accessToken, { httpOnly: true });
+            res.cookie('REFRESH_TOKEN', userInfo.refreshToken, { httpOnly: true });
+            userInfo = propsRemover(userInfo, 'accessToken', 'refreshToken');
 
-            resExecutor(res, { result });
+            resExecutor(res, { result: { userInfo, statusList } });
         } catch (err) {
             throw resExecutor(res, { err });
         }
