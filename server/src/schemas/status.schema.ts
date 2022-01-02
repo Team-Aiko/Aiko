@@ -8,8 +8,6 @@ export class Status {
     @Prop({ required: true })
     companyPK: number;
     @Prop()
-    logoutPending: boolean;
-    @Prop()
     status: number;
 }
 

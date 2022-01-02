@@ -27,6 +27,7 @@ enum statusServiceError {
     getClientInfo = 15,
     allDeleteClientInfo = 16,
     deleteOneClientInfo = 17,
+    getClientInfoList = 18,
 }
 
 @Injectable()
@@ -41,7 +42,6 @@ export default class StatusService {
             const status = new Status();
             status.companyPK = companyPK;
             status.userPK = userPK;
-            status.logoutPending = false;
             status.status = -1;
             await this.setUserStatus(status);
         } catch (err) {
@@ -54,29 +54,21 @@ export default class StatusService {
         }
     }
 
-    async statusConnection(
-        userPK: number,
-        companyPK: number,
-        clientId: string,
-    ): Promise<{ isSendable: boolean; user?: Status; myClients: StatusClientStorage[] }> {
+    async statusConnection(userPK: number, companyPK: number, clientId: string) {
         try {
             const statusInfo = await this.getUserStatus(userPK);
-            console.log(
-                '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ statusInfo',
-                statusInfo,
-            );
+            const statusClientInfoList = await this.getClientInfoList(userPK);
+
             const statusDTO = new Status();
             statusDTO.userPK = userPK;
             statusDTO.companyPK = companyPK;
-            statusDTO.logoutPending = false;
-            statusDTO.status = !statusInfo ? 1 : statusInfo.status === -1 ? 1 : statusInfo.status;
+            statusDTO.status = statusClientInfoList.length > 0 ? statusDTO.status : 1;
 
             await this.updateStatus(statusDTO);
             await this.insertClientInfo(userPK, companyPK, clientId);
             const myClients = await this.selectClientInfos(userPK);
-            console.log('🚀 ~ file: status.service.ts ~ line 77 ~ StatusService ~ myClients', myClients);
 
-            const isSendable = !statusInfo.logoutPending;
+            const isSendable = statusClientInfoList.length <= 0;
 
             return { isSendable, user: statusDTO, myClients };
         } catch (err) {
@@ -96,52 +88,16 @@ export default class StatusService {
             const clientInfo = await this.getClientInfo(clientId);
             if (!clientInfo) return;
 
-            console.log(
-                '🚀 ~ file: status.service.ts ~ line 70 ~ StatusService ~ statusDisconnect ~ clientInfo',
-                clientInfo,
-            );
-            const clientInfos = await this.selectClientInfos(clientInfo.userPK);
-            console.log(
-                '🚀 ~ file: status.service.ts ~ line 75 ~ StatusService ~ statusDisconnect ~ clientInfos',
-                clientInfos,
-            );
+            const { userPK } = clientInfo;
+            const clientInfoList = await this.getClientInfoList(userPK);
 
-            if (clientInfos.length === 1) {
-                const { userPK } = clientInfo;
-                const statusInfo = await this.getUserStatus(userPK);
+            await this.deleteOneClientInfo(clientId);
+            if (clientInfoList.length <= 1) {
+                const user = await this.getUserStatus(userPK);
+                user.status = -1;
 
-                setTimeout(async () => {
-                    // delete process
-                    console.log('logout process executed');
-                    const user = await this.getUserStatus(userPK);
-
-                    console.log(
-                        '🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus',
-                        user,
-                    );
-
-                    if (user?.logoutPending) {
-                        console.log('안됨???');
-                        user.status = -1;
-                        user.logoutPending = false;
-
-                        await this.updateStatus(user);
-                        wss.to(`company:${user.companyPK}`).emit(statusPath.CLIENT_LOGOUT_ALERT, user);
-                    }
-
-                    await this.allDeleteClientInfo(user.userPK);
-                }, 1000 * 10); // 5분간격
-
-                await this.updateStatus({
-                    userPK: statusInfo.userPK,
-                    companyPK: statusInfo.companyPK,
-                    logoutPending: true,
-                    status: statusInfo.status,
-                });
-
-                await this.deleteOneClientInfo(clientId);
-            } else {
-                await this.deleteOneClientInfo(clientId);
+                await this.updateStatus(user);
+                wss.to(`company:${user.companyPK}`).emit(statusPath.CLIENT_LOGOUT_ALERT, user);
             }
         } catch (err) {
             throw stackAikoError(
@@ -240,7 +196,6 @@ export default class StatusService {
                     { userPK: userStatus.userPK, companyPK: userStatus.companyPK },
                     {
                         status: userStatus.status,
-                        logoutPending: userStatus.logoutPending,
                     },
                 )
                 .exec();
@@ -334,6 +289,23 @@ export default class StatusService {
                 'StatusService/getClientInfo',
                 500,
                 headErrorCode.status + statusServiceError.getClientInfo,
+            );
+        }
+    }
+
+    async getClientInfoList(userPK: number) {
+        try {
+            return (await this.statusClientStorageModel
+                .find()
+                .where('userPK')
+                .equals(userPK)
+                .select('userPK companyPK clientId')) as StatusClientStorage[];
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/getClientInfoList',
+                500,
+                headErrorCode.status + statusServiceError.getClientInfoList,
             );
         }
     }
