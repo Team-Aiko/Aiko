@@ -1,7 +1,7 @@
 import Action from 'src/entity/action.entity';
 import { AikoError, Pagination, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
-import { EntityRepository, Repository } from 'typeorm';
+import { Brackets, EntityRepository, Repository } from 'typeorm';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { Company, Department } from 'src/entity';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
@@ -14,6 +14,7 @@ enum actionErr {
     updateItem = 4,
     viewItems = 5,
     getItemCnt = 6,
+    todayAction = 7,
 }
 
 @EntityRepository(Action)
@@ -163,6 +164,22 @@ export default class ActionRepository extends Repository<Action> {
             return await fracture.getCount();
         } catch (err) {
             throw stackAikoError(err, 'action/getItemCnt', 500, headErrorCode.actionDB + actionErr.getItemCnt);
+        }
+    }
+
+    async todayAction(userPK: number, departmentPK: number, day: number) {
+        try {
+            return await this.createQueryBuilder()
+                .where(`USER_PK = ${userPK}`)
+                .andWhere(`DEPARTMENT_PK = ${departmentPK}`)
+                .andWhere(
+                    new Brackets((qb) => {
+                        qb.andWhere(`START_DATE <= ${day}`).andWhere(`DUE_DATE >= ${day}`).orWhere('IS_FINISHED = 0');
+                    }),
+                )
+                .getMany();
+        } catch (err) {
+            throw stackAikoError(err, 'action/todayAction', 500, headErrorCode.actionDB + actionErr.todayAction);
         }
     }
 }

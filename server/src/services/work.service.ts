@@ -15,6 +15,7 @@ enum workServiceError {
     deleteActionItem = 2,
     updateActionItem = 3,
     viewItems = 4,
+    todayAction = 5,
 }
 
 @Injectable()
@@ -117,6 +118,19 @@ export default class WorkService {
             return result;
         } catch (err) {
             throw stackAikoError(err, 'WorkService/viewItems', 500, headErrorCode.work + workServiceError.viewItems);
+        }
+    }
+
+    async todayAction(userPK: number, departmentPK: number, day: number) {
+        try {
+            return await getRepo(ActionRepository).todayAction(userPK, departmentPK, day);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'WorkService/todayAction',
+                500,
+                headErrorCode.work + workServiceError.todayAction,
+            );
         }
     }
 }

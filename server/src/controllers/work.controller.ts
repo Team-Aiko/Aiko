@@ -146,4 +146,18 @@ export default class WorkController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Get('today-action')
+    async todayAction(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { day } = req.query;
+            const { DEPARTMENT_PK, USER_PK } = userPayload;
+            bodyChecker({ day: Number(day) }, { day: ['number'] });
+            const result = await this.workService.todayAction(USER_PK, DEPARTMENT_PK, Number(day));
+            console.log('🚀 ~ file: work.controller.ts ~ line 157 ~ WorkController ~ todayAction ~ result', result);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }
