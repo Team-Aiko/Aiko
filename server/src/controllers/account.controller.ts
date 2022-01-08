@@ -24,9 +24,10 @@ import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.int
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import StatusService from 'src/services/status.service';
 import CompanyService from 'src/services/company.service';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @Controller('account')
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 export default class AccountController {
     // private accountService: AccountService;
 
