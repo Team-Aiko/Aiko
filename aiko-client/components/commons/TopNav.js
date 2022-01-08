@@ -115,6 +115,11 @@ export default function CComp() {
     const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
+    window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        status?.emit('handleDisconnect');
+    });
+
     useEffect(() => {
         if (userInfo.USER_PK) {
             console.log('###### render ######');
