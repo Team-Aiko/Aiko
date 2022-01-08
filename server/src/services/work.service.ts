@@ -121,9 +121,9 @@ export default class WorkService {
         }
     }
 
-    async todayAction(userPK: number, departmentPK: number, day: number) {
+    async todayAction(userPK: number, departmentPK: number, day: number, isAll: boolean) {
         try {
-            return await getRepo(ActionRepository).todayAction(userPK, departmentPK, day);
+            return await getRepo(ActionRepository).todayAction(userPK, departmentPK, day, isAll);
         } catch (err) {
             throw stackAikoError(
                 err,

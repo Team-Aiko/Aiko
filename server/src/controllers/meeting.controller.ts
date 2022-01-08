@@ -9,7 +9,7 @@ import {
     IMeetingPagination,
     IMeetingSchedulePagination,
 } from 'src/interfaces/MVC/meetingMVC';
-import { bodyChecker } from 'src/Helpers/functions';
+import { bodyChecker, getServerTime } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
@@ -264,6 +264,25 @@ export default class MeetingController {
             bodyChecker({ meetPK, finishFlag }, { meetPK: ['number'], finishFlag: ['boolean'] });
 
             const result = await this.meetingService.finishMeeting(finishFlag, meetPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Get('today-meeting')
+    async todayMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { day } = req.query;
+            let targetDay = Number(day);
+            const { USER_PK } = userPayload;
+            if (!day) targetDay = getServerTime(0);
+            console.log(
+                '🚀 ~ file: meeting.controller.ts ~ line 280 ~ MeetingController ~ todayMeeting ~ targetDay',
+                targetDay,
+            );
+
+            const result = await this.meetingService.todayMeeting(USER_PK, targetDay);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

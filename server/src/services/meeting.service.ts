@@ -29,6 +29,7 @@ enum meetingServiceError {
     deleteMeeting = 10,
     checkMeetScheduleForUserInfo = 11,
     finishMeeting = 12,
+    todayMeeting = 13,
 }
 
 @Injectable()
@@ -353,6 +354,19 @@ export default class MeetingService {
                 'MeetingService/finishMeeting',
                 500,
                 headErrorCode.meet + meetingServiceError.finishMeeting,
+            );
+        }
+    }
+
+    async todayMeeting(userPK: number, day: number) {
+        try {
+            return await getRepo(CalledMembersRepository).todayMeeting(userPK, day);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'MeetingService/todayMeeting',
+                500,
+                headErrorCode.meet + meetingServiceError.todayMeeting,
             );
         }
     }

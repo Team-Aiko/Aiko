@@ -167,17 +167,30 @@ export default class ActionRepository extends Repository<Action> {
         }
     }
 
-    async todayAction(userPK: number, departmentPK: number, day: number) {
+    async todayAction(userPK: number, departmentPK: number, day: number, isAll: boolean) {
         try {
-            return await this.createQueryBuilder()
-                .where(`USER_PK = ${userPK}`)
-                .andWhere(`DEPARTMENT_PK = ${departmentPK}`)
-                .andWhere(
-                    new Brackets((qb) => {
-                        qb.andWhere(`START_DATE <= ${day}`).andWhere(`DUE_DATE >= ${day}`).orWhere('IS_FINISHED = 0');
-                    }),
-                )
-                .getMany();
+            const criticalInfo = ['PASSWORD', 'IS_DELETED', 'SALT', 'IS_VERIFIED'];
+            const oneDayTimeInterval = 60 * 60 * 24;
+            const targetServerDay = Math.floor(day / oneDayTimeInterval) * oneDayTimeInterval;
+
+            let fraction = this.createQueryBuilder('a')
+                .leftJoinAndSelect('a.owner', 'owner')
+                .leftJoinAndSelect('a.assigner', 'assigner')
+                .leftJoinAndSelect('a.department', 'department1')
+                .leftJoinAndSelect('owner.department', 'department2')
+                .leftJoinAndSelect('assigner.department', 'department3')
+                .where(`a.USER_PK = ${userPK}`)
+                .andWhere(`a.DEPARTMENT_PK = ${departmentPK}`)
+                .andWhere(`a.START_DATE <= ${targetServerDay}`)
+                .andWhere(`a.DUE_DATE > ${targetServerDay + oneDayTimeInterval}`);
+            fraction = isAll ? fraction : fraction.andWhere(`a.IS_FINISHED = 0`);
+
+            return (await fraction.getMany()).map((action) => {
+                action.assigner = propsRemover(action.assigner, ...criticalInfo);
+                action.owner = propsRemover(action.owner, ...criticalInfo);
+
+                return action;
+            });
         } catch (err) {
             throw stackAikoError(err, 'action/todayAction', 500, headErrorCode.actionDB + actionErr.todayAction);
         }

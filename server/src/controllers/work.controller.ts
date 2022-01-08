@@ -150,11 +150,12 @@ export default class WorkController {
     @Get('today-action')
     async todayAction(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { day } = req.query;
+            const { day, allOption } = req.query;
             const { DEPARTMENT_PK, USER_PK } = userPayload;
-            bodyChecker({ day: Number(day) }, { day: ['number'] });
-            const result = await this.workService.todayAction(USER_PK, DEPARTMENT_PK, Number(day));
-            console.log('🚀 ~ file: work.controller.ts ~ line 157 ~ WorkController ~ todayAction ~ result', result);
+            bodyChecker({ day: Number(day), allOption: Number(allOption) }, { day: ['number'], allOption: ['number'] });
+
+            const isAll = Boolean(Number(allOption));
+            const result = await this.workService.todayAction(USER_PK, DEPARTMENT_PK, Number(day), isAll);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

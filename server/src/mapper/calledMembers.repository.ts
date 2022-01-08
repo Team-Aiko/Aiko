@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import { CalledMembers } from 'src/entity';
 import { getRepo, AikoError, Pagination, propsRemover } from 'src/Helpers';
-import { stackAikoError } from 'src/Helpers/functions';
+import { getServerTime, stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
 import { UserRepository } from '.';
@@ -15,6 +15,7 @@ enum calledMemberError {
     deleteMeetingMembers = 6,
     getMeetingScheduleCnt = 7,
     checkMeetScheduleForUserInfo = 8,
+    todayMeeting = 9,
 }
 
 @EntityRepository(CalledMembers)
@@ -251,6 +252,42 @@ export default class CalledMembersRepository extends Repository<CalledMembers> {
                 'calledMembers/checkMeetScheduleForUserInfo',
                 500,
                 headErrorCode.calledMembersDB + calledMemberError.checkMeetScheduleForUserInfo,
+            );
+        }
+    }
+
+    async todayMeeting(userPK: number, day: number) {
+        try {
+            const oneDayTimeInterval = 60 * 60 * 24;
+            const targetServerDay = Math.floor(day / oneDayTimeInterval) * oneDayTimeInterval;
+
+            const meetingList = (
+                await this.createQueryBuilder('cm')
+                    .leftJoinAndSelect('cm.meet', 'meet')
+                    .leftJoinAndSelect('meet.room', 'room')
+                    .leftJoinAndSelect('meet.members', 'members')
+                    .leftJoinAndSelect('members.user', 'user')
+                    .where(`cm.USER_PK = ${userPK}`)
+                    .andWhere(`meet.DATE >= ${targetServerDay}`)
+                    .andWhere(`meet.DATE < ${targetServerDay + oneDayTimeInterval}`)
+                    .getMany()
+            ).map((calledOne) => calledOne.meet);
+
+            const criticalInfo = ['PASSWORD', 'IS_DELETED', 'SALT', 'IS_VERIFIED'];
+            return meetingList.map((meet) => {
+                meet.members = meet.members.map((member) => {
+                    member.user = propsRemover(member.user, ...criticalInfo);
+                    return member;
+                });
+
+                return meet;
+            });
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'calledMembers/todayMeeting',
+                500,
+                headErrorCode.calledMembersDB + calledMemberError.todayMeeting,
             );
         }
     }
