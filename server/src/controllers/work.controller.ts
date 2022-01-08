@@ -4,7 +4,7 @@ import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor, usrPayloadParser } from 'src/Helpers';
 import WorkService from 'src/services/work.service';
 import { IItemBundle, IPaginationBundle } from 'src/interfaces/MVC/workMVC';
-import { bodyChecker } from 'src/Helpers/functions';
+import { bodyChecker, getServerTime } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 
@@ -151,8 +151,9 @@ export default class WorkController {
     async todayAction(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { day, allOption } = req.query;
+            const targetDay = !Number(day) ? getServerTime(0) : Number(day);
             const { DEPARTMENT_PK, USER_PK } = userPayload;
-            bodyChecker({ day: Number(day), allOption: Number(allOption) }, { day: ['number'], allOption: ['number'] });
+            bodyChecker({ targetDay, allOption: Number(allOption) }, { targetDay: ['number'], allOption: ['number'] });
 
             const isAll = Boolean(Number(allOption));
             const result = await this.workService.todayAction(USER_PK, DEPARTMENT_PK, Number(day), isAll);

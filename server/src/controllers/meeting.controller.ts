@@ -274,13 +274,9 @@ export default class MeetingController {
     async todayMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { day } = req.query;
-            let targetDay = Number(day);
+            const targetDay = !Number(day) ? getServerTime(0) : Number(day);
             const { USER_PK } = userPayload;
-            if (!day) targetDay = getServerTime(0);
-            console.log(
-                '🚀 ~ file: meeting.controller.ts ~ line 280 ~ MeetingController ~ todayMeeting ~ targetDay',
-                targetDay,
-            );
+            bodyChecker({ targetDay }, { targetDay: ['number'] });
 
             const result = await this.meetingService.todayMeeting(USER_PK, targetDay);
             resExecutor(res, { result });
