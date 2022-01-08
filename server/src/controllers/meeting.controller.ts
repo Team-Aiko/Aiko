@@ -12,9 +12,10 @@ import {
 import { bodyChecker, getServerTime } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @UseGuards(UserGuard)
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller('meeting')
 export default class MeetingController {
     constructor(private meetingService: MeetingService) {}

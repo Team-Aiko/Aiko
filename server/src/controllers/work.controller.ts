@@ -1,15 +1,16 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
-import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
 import WorkService from 'src/services/work.service';
 import { IItemBundle, IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { bodyChecker, getServerTime } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @UseGuards(UserGuard)
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller('work')
 export default class WorkController {
     constructor(private workService: WorkService) {}

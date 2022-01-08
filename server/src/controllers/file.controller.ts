@@ -8,9 +8,10 @@ import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
 import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @UseGuards(UserGuard)
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller() // /store
 export default class FileController {
     constructor(private fileService: FileService) {}

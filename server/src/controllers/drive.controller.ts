@@ -4,13 +4,14 @@ import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor } from 'src/Helpers';
 import { bodyChecker } from 'src/Helpers/functions';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { driveFileOption } from 'src/interfaces/MVC/fileMVC';
 import DriveService from 'src/services/drive.service';
 
 @UseGuards(UserGuard)
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller() // /store/drive
 export default class DriveController {
     constructor(private driveService: DriveService) {}
