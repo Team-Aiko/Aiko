@@ -70,9 +70,9 @@ export default class NoticeBoardController {
             await this.noticeboardService.updateArtcle(title, content, USER_PK, COMPANY_PK, num, delFilePks, files);
             resExecutor(res, { result: true });
         } catch (err) {
-            const uuid = files.map((file) => file.filename);
-            deleteFiles(files[0].destination, ...uuid);
-            console.log(err);
+            // const uuid = files.map((file) => file.filename);
+            // // deleteFiles(files[0].destination, ...uuid);
+            // // console.log(err);
             throw resExecutor(res, { err });
         }
     }
