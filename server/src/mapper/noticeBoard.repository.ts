@@ -45,7 +45,7 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .update(NoticeBoard)
                 .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time, UPDATE_USER_PK: userPk })
                 .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
-                .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
+                // .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .andWhere('IS_DELETE = 0')
                 .execute();
         } catch (err) {
