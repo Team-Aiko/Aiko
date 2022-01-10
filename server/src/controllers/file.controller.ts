@@ -1,27 +1,22 @@
-import {
-    Controller,
-    Post,
-    Req,
-    Res,
-    UseInterceptors,
-    UploadedFile,
-    Get,
-    Param,
-    UseGuards,
-    Query,
-} from '@nestjs/common';
+import { Controller, Post, Req, Res, UseInterceptors, Get, UseGuards, Query, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import FileService from 'src/services/file.service';
-import { resExecutor, usrPayloadParser } from 'src/Helpers';
+import { resExecutor } from 'src/Helpers';
 import { UserGuard } from 'src/guard/user.guard';
 import { filePath, IFileBundle } from 'src/interfaces/MVC/fileMVC';
+import { bodyChecker } from 'src/Helpers/functions';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
+import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @UseGuards(UserGuard)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller() // /store
 export default class FileController {
     constructor(private fileService: FileService) {}
 
+    // ! api doc
     /**
      * 챗에 파일을 전송할 때는 rdb에 저장한다. 그리고 pk를 반환하고 그것을 소켓에 전송한다.
      * 수신자는 file이라는 property가 존재할 경우 파일을 rdb로부터 조회하여 화면에 뿌려준다.
@@ -29,12 +24,14 @@ export default class FileController {
      * @param file
      * @param s
      */
-    @Post('files-on-chat-msg')
-    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }))
+    @Post('save-private-chat-file')
+    @UseInterceptors(FileInterceptor('file', { dest: filePath.CHAT }), UserPayloadParserInterceptor)
     async uploadFilesOnChatMsg(@Req() req: Request, file: Express.Multer.File, @Res() res: Response) {
         try {
             const { chatRoomId } = req.body;
             const { filename, originalname, size } = file;
+            bodyChecker({ chatRoomId }, { chatRoomId: ['string'] });
+
             const bundle: IFileBundle = {
                 FILE_NAME: filename,
                 ORIGINAL_NAME: originalname,
@@ -48,6 +45,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 파일 아이디를 이용해 채팅에 업로드 된 파일의 정보를 불러오는 메소드
      * @param req
@@ -63,6 +61,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 채팅에서 공유된 파일을 실제로 다운로드하는 api
      * @param fileId
@@ -78,6 +77,7 @@ export default class FileController {
         }
     }
 
+    // ! api doc
     /**
      * 유저의 프로필 이미지를 불러오기위해 사용하는 api
      * 용례: <img src='/api/store/download-profile-file?fileId=1' />
@@ -94,11 +94,17 @@ export default class FileController {
             throw resExecutor(res, { err });
         }
     }
+
+    // ! api doc
     // 파일 다운로드 s
     @Get('download-noticeboard-file')
-    async downloadNoticeBoardFile(@Query('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+    async downloadNoticeBoardFile(
+        @Query('fileId') fileId: string,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         try {
-            const userPayload = usrPayloadParser(req);
             const comPk = userPayload.COMPANY_PK;
             const { UUID, ORIGINAL_NAME } = await this.fileService.downloadNoticeBoardFile(Number(fileId), comPk);
             const target = filePath.NOTICE_BOARD + '/' + UUID;
@@ -106,5 +112,26 @@ export default class FileController {
         } catch (err) {
             throw resExecutor(res, { err });
         } //push
+    }
+
+    // ! api doc
+    @Get('download-drive-file')
+    async downloadDriveFiles(
+        @Query('fileId') fileId: string,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
+        try {
+            const { COMPANY_PK } = userPayload;
+            const { NAME, ORIGINAL_FILE_NAME } = await this.fileService.downloadDriveFiles(Number(fileId), COMPANY_PK);
+
+            res.download(`${filePath.DRIVE}${NAME}`, ORIGINAL_FILE_NAME, (err) => {
+                if (err) console.log(err);
+            });
+        } catch (err) {
+            console.error(err);
+            throw resExecutor(res, { err });
+        }
     }
 }

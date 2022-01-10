@@ -4,7 +4,6 @@ import Country from './country.entity';
 import ResetPw from './resetPw.entity';
 import Department from './department.entity';
 import Company from './company.entity';
-import Socket from './socket.entity';
 import ChatFile from './chatFile.entity';
 import PrivateChatRoom from './privateChatRoom.entity';
 import Refresh from './refresh.entity';
@@ -24,8 +23,16 @@ import FileKeys from './fileKeys.entity';
 import FileHistory from './fileHistory.entity';
 import FileFolder from './fileFolder.entity';
 import FileBin from './fileBin.entity';
+import FolderBin from './folderBin.entity';
+import ChatLogStorage from './chatLogStorage.entity';
+import GroupChatStorage from './groupChatStorage.entity';
+import GroupChatUserList from './groupChatUL.entity';
 
 export {
+    GroupChatUserList,
+    GroupChatStorage,
+    ChatLogStorage,
+    FolderBin,
     FileBin,
     FileKeys,
     FileHistory,
@@ -47,7 +54,6 @@ export {
     ResetPw,
     Department,
     Company,
-    Socket,
     ChatFile,
     NoticeBoard,
     Refresh,

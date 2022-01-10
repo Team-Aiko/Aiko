@@ -1,13 +1,32 @@
-import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
+import { EntityManager, EntityRepository, InsertResult, Repository, TransactionManager } from 'typeorm';
 import { NoticeBoard } from '../entity';
-import { unixTimeStamp, propsRemover } from 'src/Helpers/functions';
+import { unixTimeStamp, propsRemover, stackAikoError } from 'src/Helpers/functions';
+import { AikoError } from 'src/Helpers';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+
+enum noticeBoardError {
+    createArticle = 1,
+    deleteArticle = 2,
+    updateArticle = 3,
+    createBtnSize = 4,
+    getList = 5,
+    getDetail = 6,
+}
+
 @EntityRepository(NoticeBoard)
 export default class NoticeBoardRepository extends Repository<NoticeBoard> {
-    async createArticle(title: string, content: string, userPk: number, comPk: number) {
+    async createArticle(
+        title: string,
+        content: string,
+        userPk: number,
+        comPk: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         let insertResult: InsertResult;
         try {
             const time = unixTimeStamp();
-            insertResult = await this.createQueryBuilder()
+            insertResult = await manager
+                .createQueryBuilder()
                 .insert()
                 .into(NoticeBoard)
                 .values({
@@ -22,7 +41,12 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 })
                 .execute();
         } catch (err) {
-            return err;
+            throw stackAikoError(
+                err,
+                'NoticeBoardRepository/createArticle',
+                500,
+                headErrorCode.noticeBoardDB + noticeBoardError.createArticle,
+            );
         }
         return insertResult.raw.insertId;
     }
@@ -35,13 +59,25 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .andWhere('USER_PK like :userPk', { userPk: `${userPk}` })
                 .execute();
         } catch (err) {
-            return err;
+            throw stackAikoError(
+                err,
+                'NoticeBoardRepository/createArticle',
+                500,
+                headErrorCode.noticeBoardDB + noticeBoardError.deleteArticle,
+            );
         }
     }
-    async updateArticle(title: string, content: string, userPk: number, num: number) {
+    async updateArticle(
+        title: string,
+        content: string,
+        userPk: number,
+        num: number,
+        @TransactionManager() manager: EntityManager,
+    ) {
         try {
             const time = unixTimeStamp();
-            return await this.createQueryBuilder()
+            await manager
+                .createQueryBuilder()
                 .update(NoticeBoard)
                 .set({ TITLE: title, CONTENT: content, UPDATE_DATE: time, UPDATE_USER_PK: userPk })
                 .where('NOTICE_BOARD_PK like :num', { num: `${num}` })
@@ -49,7 +85,12 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
                 .andWhere('IS_DELETE = 0')
                 .execute();
         } catch (err) {
-            return err;
+            throw stackAikoError(
+                err,
+                'NoticeBoardRepository/createArticle',
+                500,
+                headErrorCode.noticeBoardDB + noticeBoardError.updateArticle,
+            );
         }
     }
     async createBtnSize(option: number, comPk: number) {
@@ -83,7 +124,12 @@ export default class NoticeBoardRepository extends Repository<NoticeBoard> {
             }
             return result;
         } catch (err) {
-            console.log(err);
+            throw stackAikoError(
+                err,
+                'NoticeBoardRepository/createArticle',
+                500,
+                headErrorCode.noticeBoardDB + noticeBoardError.getList,
+            );
         }
     }
     async getDetail(num: number, comPk: number) {

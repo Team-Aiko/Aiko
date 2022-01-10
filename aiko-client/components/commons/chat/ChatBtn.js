@@ -6,6 +6,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import ChatModal from '../../ChatModal';
+import { ThemeProvider, unstable_createMuiStrictModeTheme } from '@material-ui/core';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -24,6 +25,7 @@ export default function CComp() {
 
 // * Presentational Component
 function PComp(props) {
+    const theme = unstable_createMuiStrictModeTheme();
     const classes = useStyles();
     const { userInfo } = props;
     const { USER_PK } = userInfo;
@@ -35,7 +37,7 @@ function PComp(props) {
     };
 
     const handleSocket = useCallback(() => {
-        const socket = io('http://localhost:5000');
+        const socket = io('http://localhost:5001');
         socket.emit('handleConnection', USER_PK);
         socket.on('msgToClient', (message) => {
             console.log(message);
@@ -49,7 +51,7 @@ function PComp(props) {
     return (
         <>
             {userInfo.USER_PK ? (
-                <>
+                <ThemeProvider theme={theme}>
                     <Tooltip title='Add' aria-label='chat' onClick={handleChatModal}>
                         <Fab color='secondary' className={classes.absolute}>
                             <AddIcon />
@@ -61,7 +63,7 @@ function PComp(props) {
                             setOpenChatModal(false);
                         }}
                     />
-                </>
+                </ThemeProvider>
             ) : undefined}
         </>
     );

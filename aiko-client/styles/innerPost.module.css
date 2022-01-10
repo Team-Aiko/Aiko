@@ -1,93 +1,112 @@
-
 .reviseDelete {
-    display:flex;
-    justify-content:space-between;
-    width:70%;
-    margin:auto;
-    margin-top:2%;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: auto;
+    margin-top: 2%;
     margin-bottom: 5%;
 }
 
 .align {
-    display:flex;
+    display: flex;
 }
 
 .outerContainer {
-    display:block;
-    margin:30px auto;
-    width:90%;
-    height:100%;
-    background-color:white;
-    border-radius:10px;
+    display: block;
+    margin: 30px auto;
+    width: 70%;
+    height: 100%;
+    background-color: white;
+    border-radius: 10px;
 }
 
 .anotherPost {
-    display:flex;
-    flex-direction:column;
+    display: flex;
+    flex-direction: column;
 }
 
 .previousPost {
-    display:flex;
-    direction:row;
+    display: flex;
+    direction: row;
 }
 
 .nextPost {
-    display:flex;
-    direction:row;
+    display: flex;
+    direction: row;
 }
 
 .contentInput {
-    width:85%;
+    width: 85%;
     border: 2px solid #aaa;
-    border-radius:4px;
+    border-radius: 4px;
     outline: none;
     padding: 8px;
-    box-sizing:border-box;
-    transition:.3s;
-    resize:none;
-    height:300px;
-    font-size:15px;
+    box-sizing: border-box;
+    transition: 0.3s;
+    resize: none;
+    height: 300px;
+    font-size: 15px;
 }
 
 .contentInput:focus {
-    border-color:dodgerBlue;
+    border-color: dodgerBlue;
     box-shadow: 0 0 8px 0 dodgerBlue;
 }
 
 .titleName {
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    margin-top:50px;
-    margin-bottom:30px;
-    justify-content:center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 50px;
+    margin-bottom: 30px;
+    justify-content: center;
 }
 
 .contentArea {
-    text-align:center;
+    text-align: center;
 }
 
 .titleInput {
-    width:50%;
-    height:50px;
-    font-size:20px;
-    border:none;
-    background:transparent;
-    margin-right:10%;
+    width: 50%;
+    height: 50px;
+    font-size: 20px;
+    border: none;
+    background: transparent;
+    margin-right: 10%;
+}
+
+.titleInputOnChange {
+    width: 50%;
+    height: 50px;
+    font-size: 20px;
+    border: 2px solid #3f51b5;
+    background: transparent;
+    margin-right: 10%;
+    border-radius: 5px;
 }
 
 .fileInput {
-    width:85%;
-    display:block;
-    margin:0 auto;
-    display:flex;
-    flex-direction:column;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .files {
-    width:25%;
-    margin:2px 0px 2px 0px ;
-    cursor:pointer;
-    font-size:15px;
-    color: #3F51B5;
+    width: 25%;
+    margin: 2px 0px 2px 0px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #3f51b5;
+}
+
+.writeHr {
+    width: 70%;
+    height: 3px;
+    background-color: #3f51b5;
+    margin-top: 1%;
+    margin-bottom: 2%;
+    border-style: none;
+    border-radius: 10px;
 }

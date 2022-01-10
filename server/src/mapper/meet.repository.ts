@@ -1,10 +1,22 @@
 import { ResultSetHeader } from 'mysql2';
 import { Meet } from 'src/entity';
-import { AikoError, getRepo, Pagination, propsRemover, unixTimeStamp } from 'src/Helpers';
+import { AikoError, Pagination, propsRemover, unixTimeStamp } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
 import { unixTimeEnum } from 'src/interfaces';
-import { IMeetingBundle, meetingScheduleDTO } from 'src/interfaces/MVC/meetingMVC';
-import { EntityManager, EntityRepository, getConnection, Repository, Transaction, TransactionManager } from 'typeorm';
-import { UserRepository } from '.';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { IMeetingBundle } from 'src/interfaces/MVC/meetingMVC';
+import { EntityManager, EntityRepository, Repository, TransactionManager } from 'typeorm';
+
+enum meetError {
+    makeMeetingSchedule = 1,
+    getMeetings = 2,
+    getMeeting = 3,
+    updateMeeting = 4,
+    deleteMeeting = 5,
+    meetingCnt = 6,
+    getMeetingSchedules = 7,
+    finishMeeting = 8,
+}
 
 @EntityRepository(Meet)
 export default class MeetRepository extends Repository<Meet> {
@@ -35,8 +47,12 @@ export default class MeetRepository extends Repository<Meet> {
                 return (insertResult.raw as ResultSetHeader).insertId;
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/makeMeetingSchedule', 500, 859234);
+            throw stackAikoError(
+                err,
+                'meet/makeMeetingSchedule',
+                500,
+                headErrorCode.meetDB + meetError.makeMeetingSchedule,
+            );
         }
     }
 
@@ -52,8 +68,7 @@ export default class MeetRepository extends Repository<Meet> {
                 .andWhere('m.DATE > :DATE', { DATE: currentTime })
                 .getMany();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/getMeetings', 500, 459858);
+            throw stackAikoError(err, 'meet/getMeetings', 500, headErrorCode.meetDB + meetError.getMeetings);
         }
     }
 
@@ -61,8 +76,7 @@ export default class MeetRepository extends Repository<Meet> {
         try {
             return await this.findOneOrFail(MEET_PK, { relations: ['members'] });
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/getMeeting', 500, 584921);
+            throw stackAikoError(err, 'meet/getMeeting', 500, headErrorCode.meetDB + meetError.getMeeting);
         }
     }
 
@@ -86,8 +100,7 @@ export default class MeetRepository extends Repository<Meet> {
                 flag = true;
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/updateMeeting', 500, 589231);
+            throw stackAikoError(err, 'meet/updateMeeting', 500, headErrorCode.meetDB + meetError.updateMeeting);
         }
 
         return flag;
@@ -106,8 +119,7 @@ export default class MeetRepository extends Repository<Meet> {
 
             flag = true;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/deleteMeeting', 500, 859312);
+            throw stackAikoError(err, 'meet/deleteMeeting', 500, headErrorCode.meetDB + meetError.deleteMeeting);
         }
 
         return flag;
@@ -122,8 +134,7 @@ export default class MeetRepository extends Repository<Meet> {
         try {
             return await this.createQueryBuilder('m').where('m.ROOM_PK = :ROOM_PK', { ROOM_PK }).getCount();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/meetingCnt', 500, 494091);
+            throw stackAikoError(err, 'meet/meetingCnt', 500, headErrorCode.meetDB + meetError.meetingCnt);
         }
     }
 
@@ -162,8 +173,12 @@ export default class MeetRepository extends Repository<Meet> {
                 return schedule;
             });
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/getMeetingSchedules', 500, 292913);
+            throw stackAikoError(
+                err,
+                'meet/getMeetingSchedules',
+                500,
+                headErrorCode.meetDB + meetError.getMeetingSchedules,
+            );
         }
     }
 
@@ -186,8 +201,7 @@ export default class MeetRepository extends Repository<Meet> {
                 flag = true;
             }
         } catch (err) {
-            console.error(err);
-            throw new AikoError('meet/finishMeeting', 500, 292913);
+            throw stackAikoError(err, 'meet/finishMeeting', 500, headErrorCode.meetDB + meetError.finishMeeting);
         }
 
         return flag;

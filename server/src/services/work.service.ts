@@ -2,10 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { ResultSetHeader } from 'mysql2';
 import { Grant } from 'src/entity';
 import { AikoError, getRepo, isChiefAdmin, Pagination } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { notSameCompanyError, notSameDepartmentError } from 'src/Helpers/instance';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
-import { DepartmentRepository, UserRepository } from 'src/mapper';
+import { UserRepository } from 'src/mapper';
 import ActionRepository from 'src/mapper/action.repository';
+
+enum workServiceError {
+    createActionItem = 1,
+    deleteActionItem = 2,
+    updateActionItem = 3,
+    viewItems = 4,
+    todayAction = 5,
+}
 
 @Injectable()
 export default class WorkService {
@@ -24,7 +35,12 @@ export default class WorkService {
 
             return (result.raw as ResultSetHeader).insertId;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/createActionItem',
+                500,
+                headErrorCode.work + workServiceError.createActionItem,
+            );
         }
     }
 
@@ -34,13 +50,18 @@ export default class WorkService {
         try {
             const item = await getRepo(ActionRepository).findActionItem(ACTION_PK, DEPARTMENT_PK);
             // department filter
-            if (item.DEPARTMENT_PK !== DEPARTMENT_PK) throw new AikoError('not appropriate department', 500, 500909);
+            if (item.DEPARTMENT_PK !== DEPARTMENT_PK) throw notSameDepartmentError;
             // Chief admin filter
             if (item.ASSIGNER_PK !== item.USER_PK) isChiefAdmin(grants);
 
             flag = await getRepo(ActionRepository).deleteActionItem(ACTION_PK);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/deleteActionItem',
+                500,
+                headErrorCode.work + workServiceError.deleteActionItem,
+            );
         }
 
         return flag;
@@ -52,7 +73,7 @@ export default class WorkService {
         try {
             // company filter
             const owner = await getRepo(UserRepository).getUserInfoWithUserPK(bundle.USER_PK);
-            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw new AikoError('not same company', 500, 500129);
+            if (owner.COMPANY_PK !== bundle.COMPANY_PK) throw notSameCompanyError;
 
             // select original
             const item = await getRepo(ActionRepository).findActionItem(bundle.ACTION_PK, bundle.DEPARTMENT_PK);
@@ -77,7 +98,12 @@ export default class WorkService {
             // update item
             flag = await getRepo(ActionRepository).updateItem(item);
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(
+                err,
+                'WorkService/updateActionItem',
+                500,
+                headErrorCode.work + workServiceError.updateActionItem,
+            );
         }
 
         return flag;
@@ -91,7 +117,20 @@ export default class WorkService {
 
             return result;
         } catch (err) {
-            if (err instanceof AikoError) throw err;
+            throw stackAikoError(err, 'WorkService/viewItems', 500, headErrorCode.work + workServiceError.viewItems);
+        }
+    }
+
+    async todayAction(userPK: number, departmentPK: number, day: number, isAll: boolean) {
+        try {
+            return await getRepo(ActionRepository).todayAction(userPK, departmentPK, day, isAll);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'WorkService/todayAction',
+                500,
+                headErrorCode.work + workServiceError.todayAction,
+            );
         }
     }
 }

@@ -1,21 +1,18 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Modal, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
+import { Modal, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Tooltip, IconButton } from '@material-ui/core';
 import SaveIcon from '@material-ui/icons/Save';
 import { useState, useEffect } from 'react';
 import { get, post } from '../_axios';
+import {Close} from '@material-ui/icons';
+import SearchMemberModal from './SearchMemberModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        height: 530,
-        flexGrow: 1,
-        minWidth: 300,
-        transform: 'translateZ(0)',
-        // The position fixed scoping doesn't work in IE 11.
-        // Disable this demo to preserve the others.
-        '@media all and (-ms-high-contrast: none)': {
-            display: 'none',
-        },
+        top:0, bottom:0, left:0, right:0,
+        position:'fixed',
+        backgroundColor:'rgba(0,0,0,0.3)',
+        zIndex:100
     },
     modal: {
         display: 'flex',
@@ -46,9 +43,13 @@ const useStyles = makeStyles((theme) => ({
     titleIcon: {
         display: 'flex',
     },
+    titleButton : {
+        display:'flex',
+        justifyContent:'space-between'
+    }
 }));
 
-const AddActionItem = ({ setAddActionItemModal }) => {
+const AddActionItem = ({ setAddActionItemModal, nickname }) => {
     const classes = useStyles();
     const rootRef = React.useRef(null);
 
@@ -57,24 +58,34 @@ const AddActionItem = ({ setAddActionItemModal }) => {
     const [step, setStep] = useState(1);
     const [startDate, setStartDate] = useState('');
     const [dueDate, setDueDate] = useState('');
-    const [assigner, setAssigner] = useState('');
-    const [owner, setOwner] = useState('');
     const [description, setDescription] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
 
-    //할당자 PK 값
-    const [ownerPK, setOwnerPK] = useState(undefined);
-
-    const getOwnerPK = async () => {
-        const url = '/api/account/decoding-token';
-        const res = await get(url).then((res) => {
-            console.log(res);
-            setOwnerPK(res.USER_PK);
-        });
+    //nickname으로 userInfo , assigner에 부여
+    const getAssignerName = () => {
+        const url = '/api/account/user-info';
+        const data = {
+            nickname: nickname
+        };
+        post(url, data)
+        .then((res) => {
+            setSelectedAssigner(res.FIRST_NAME + " " + res.LAST_NAME)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     };
 
     useEffect(() => {
-        getOwnerPK();
-    }, []);
+        getAssignerName()
+    }, [nickname]);
+
+    //member list modal로 정보 불러오기
+    const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
+    const [openSearchMemberModalAssigner, setOpenSearchMemberModalAssigner] = useState(false);
+    const [selectedOwner, setSelectedOwner] = useState('');
+    const [selectedAssigner, setSelectedAssigner] = useState('');
+
 
     const titleChange = (e) => {
         setTitle(e.target.value);
@@ -91,24 +102,16 @@ const AddActionItem = ({ setAddActionItemModal }) => {
         console.log(dueDate);
     };
 
-    const assignerChange = (e) => {
-        setAssigner(e.target.value);
-    };
-
-    const ownerChange = (e) => {
-        setOwner(e.target.value);
-    };
-
     const descriptionChange = (e) => {
         setDescription(e.target.value);
         console.log(description);
     };
 
     //액션 아이템 생성 API
-    const createActionItems = () => {
+    const createActionItems = (user) => {
         const url = '/api/work/create-action-item';
         const data = {
-            OWNER_PK: ownerPK,
+            OWNER_PK: selectedOwner[0]?.USER_PK,
             TITLE: title,
             DESCRIPTION: description,
             DUE_DATE: dueDate,
@@ -116,6 +119,10 @@ const AddActionItem = ({ setAddActionItemModal }) => {
             P_PK: priority,
             STEP_PK: step,
         };
+        console.log(data.OWNER_PK)
+        if(data.OWNER_PK == undefined) {
+            data.OWNER_PK = null
+        }
         if (title.length < 1) {
             alert('제목을 입력해주세요.');
             return;
@@ -135,6 +142,26 @@ const AddActionItem = ({ setAddActionItemModal }) => {
             });
     };
 
+    const checkAdmin = async () => {
+        const url = '/api/company/check-admin';
+        await get(url)
+        .then((res) => {
+            console.log('he is' + res)
+            if(res == undefined) {
+                setIsAdmin(false)
+            } else {
+            setIsAdmin(res);
+            }
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+
+    useEffect(() => {
+        checkAdmin()
+    }, [])
+
     return (
         <div className={classes.root} ref={rootRef}>
             <Modal
@@ -148,7 +175,14 @@ const AddActionItem = ({ setAddActionItemModal }) => {
                 container={() => rootRef.current}
             >
                 <div className={classes.paper}>
+                    <div className={classes.titleButton}>
                     <h2 id='server-modal-title'>Add Action Item</h2>
+                    <Tooltip title='View details'>
+                        <IconButton>
+                            <Close onClick={() => {setAddActionItemModal(false)}}/>
+                        </IconButton>
+                    </Tooltip>
+                    </div>
                     <div>
                         <TextField id='standard-basic' label='Title' style={{ margin: 3 }} onChange={titleChange} />
                         <FormControl className={classes.formControl}>
@@ -232,13 +266,41 @@ const AddActionItem = ({ setAddActionItemModal }) => {
                     </div>
 
                     <div style={{ marginTop: 10 }}>
-                        <TextField id='standard-basic' label='Owner' style={{ margin: 3 }} onChange={ownerChange} />
+                        <TextField id='standard-basic' label='Owner' style={{ margin: 3 }}
+                        value={ selectedOwner == '' ? ''  :selectedOwner[0].FIRST_NAME + ' ' + selectedOwner[0].LAST_NAME}
+                        disabled={isAdmin == false}
+                        onClick={() => {setOpenSearchMemberModal(true)}}/>
+                        {
+                            openSearchMemberModal
+                            ? <SearchMemberModal
+                            open={openSearchMemberModal && isAdmin}
+                            onClose={() => {setOpenSearchMemberModal(false)}}
+                            onClickSelectedUserList={(user) => {
+                                setSelectedOwner(user);
+                                setOpenSearchMemberModal(false);
+                            }}
+                            multipleSelection={true}/>
+                            : <></>
+                        }
                         <TextField
                             id='standard-basic'
                             label='Assigner'
                             style={{ margin: 3 }}
-                            onChange={assignerChange}
+                            // onClick={() => {setOpenSearchMemberModalAssigner(true)}}
+                            value={selectedAssigner}
                         />
+                        {/* {
+                            openSearchMemberModalAssigner
+                            ? <SearchMemberModal
+                            open={openSearchMemberModalAssigner}
+                            onClose={() => {setOpenSearchMemberModalAssigner(false)}}
+                            onClickSelectedUserList={(user) => {
+                                setSelectedAssigner(user);
+                                setOpenSearchMemberModalAssigner(false);
+                            }}
+                            multipleSelection={true}/>
+                            : <></>
+                        } */}
                     </div>
 
                     <div style={{ marginTop: 10 }}>

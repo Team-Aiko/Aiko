@@ -5,7 +5,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { TextField, Typography, FormControl, Select, MenuItem, IconButton, Tooltip } from '@material-ui/core';
 import { Edit, Delete, Save, HighlightOff } from '@material-ui/icons';
 import { get, post } from '../_axios';
-import router from 'next/router';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -32,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
         fontSize: '10px',
     },
     date: {
-        width: 140,
+        width: 150,
     },
     assignTypo: {
         display: 'block',
@@ -207,12 +206,12 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                     />
 
                     <Typography variant='caption' className={classes.assignTypo}>
-                        Assigned to{' '}
+                        Assigned by{' '}
                         {actionItemArray[activeRow].assigner.FIRST_NAME +
                             ' ' +
                             actionItemArray[activeRow].assigner.LAST_NAME +
                             ' '}
-                        by{' '}
+                        to{' '}
                         {actionItemArray[activeRow].owner.FIRST_NAME + ' ' + actionItemArray[activeRow].owner.LAST_NAME}
                     </Typography>
                 </div>
@@ -223,7 +222,9 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                             Start Date
                         </Typography>
                         <TextField
+                            id='date'
                             className={classes.date}
+                            type='date'
                             style={{ margin: 3 }}
                             placeholder='YYYY-MM-DD'
                             value={detailStartDate}
@@ -238,7 +239,9 @@ const ActionItemDetail = ({ actionItemArray, activeRow, openDetailModal }) => {
                             Due Date
                         </Typography>
                         <TextField
+                            id='date'
                             className={classes.date}
+                            type='date'
                             style={{ margin: 3 }}
                             placeholder='YY-MM-DD'
                             value={detailDueDate}

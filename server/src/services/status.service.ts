@@ -1,137 +1,173 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Socket, Server } from 'socket.io';
-import { AikoError, getRepo } from 'src/Helpers';
-import { tokenParser } from 'src/Helpers/functions';
-import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import { Server } from 'socket.io';
+import { AikoError } from 'src/Helpers';
+import { stackAikoError } from 'src/Helpers/functions';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
-import { UserRepository } from 'src/mapper';
-import { Status, statusDocument } from 'src/schemas/status.schema';
+import { Status, StatusDocument } from 'src/schemas/status.schema';
+import { StatusClientStorage, StatusClientStorageDocument } from 'src/schemas/statusClientStorage.shcema';
+
+enum statusServiceError {
+    generateUserStatus = 1,
+    statusConnection = 2,
+    statusDisconnect = 3,
+    logoutEvent = 4,
+    getStatusList = 5,
+    changeStatus = 6,
+    getUserInfoStatus = 7,
+    setUserStatus = 8,
+    updateStatus = 9,
+    getUserStatus = 10,
+    getUserStatusWithSocketId = 11,
+    deleteUserStatus = 12,
+    insertClientInfo = 13,
+    selectClientInfos = 14,
+    getClientInfo = 15,
+    allDeleteClientInfo = 16,
+    deleteOneClientInfo = 17,
+    getClientInfoList = 18,
+}
 
 @Injectable()
 export default class StatusService {
-    constructor(@InjectModel(Status.name) private statusModel: Model<statusDocument>) {}
+    constructor(
+        @InjectModel(Status.name) private statusModel: Model<StatusDocument>,
+        @InjectModel(StatusClientStorage.name) private statusClientStorageModel: Model<StatusClientStorageDocument>,
+    ) {}
 
     async generateUserStatus(userPK: number, companyPK: number) {
         try {
             const status = new Status();
             status.companyPK = companyPK;
             status.userPK = userPK;
-            status.socketId = 'initialized';
-            status.logoutPending = false;
             status.status = -1;
             await this.setUserStatus(status);
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/generateUserStatus', 100, 193948);
-        }
-    }
-
-    async statusConnection(socketId: string, accessToken: string): Promise<{ isSendable: boolean; user?: Status }> {
-        const { USER_PK, COMPANY_PK } = tokenParser(accessToken);
-
-        try {
-            const userContainer = await this.getUserStatus(COMPANY_PK, USER_PK);
-            console.log(
-                '🚀 ~ file: socket.service.ts ~ line 93 ~ SocketService ~ statusConnection ~ userContainer',
-                userContainer,
+            throw stackAikoError(
+                err,
+                'StatusService/generateUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.generateUserStatus,
             );
-            const newUserContainer = new Status();
-            newUserContainer.userPK = USER_PK;
-            newUserContainer.companyPK = COMPANY_PK;
-            newUserContainer.socketId = socketId;
-            newUserContainer.logoutPending = false;
-            newUserContainer.status = !userContainer ? 1 : userContainer.status === -1 ? 1 : userContainer.status;
-
-            await this.updateStatus(newUserContainer);
-
-            const isSendable = !userContainer.logoutPending;
-
-            return { isSendable, user: newUserContainer };
-        } catch (err) {
-            if (err instanceof AikoError) throw err;
-            else throw new AikoError('socketService/statusConnection', 100, 1);
         }
     }
 
-    async statusDisconnect(socketClient: Socket, wss: Server) {
+    async statusConnection(userPK: number, companyPK: number, clientId: string) {
+        try {
+            const statusInfo = await this.getUserStatus(userPK);
+            const statusClientInfoList = await this.getClientInfoList(userPK);
+
+            const statusDTO = new Status();
+            statusDTO.userPK = userPK;
+            statusDTO.companyPK = companyPK;
+            statusDTO.status = statusClientInfoList.length > 0 ? statusDTO.status : 1;
+
+            await this.updateStatus(statusDTO);
+            await this.insertClientInfo(userPK, companyPK, clientId);
+            const myClients = await this.selectClientInfos(userPK);
+
+            const isSendable = statusClientInfoList.length <= 0;
+
+            return { isSendable, user: statusDTO, myClients };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/statusConnection',
+                500,
+                headErrorCode.status + statusServiceError.statusConnection,
+            );
+        }
+    }
+
+    async statusDisconnect(clientId: string, wss: Server) {
         console.log('socket/statusDisconnect start');
 
         try {
-            const userStatus = await this.getUserStatusWithSocketId(socketClient.id);
-            // early case split
-            if (!userStatus) return;
+            const clientInfo = await this.getClientInfo(clientId);
+            if (!clientInfo) return;
 
-            setTimeout(async () => {
-                // delete process
-                console.log('logout process executed');
-                const user = await this.getUserStatusWithSocketId(socketClient.id);
+            const { userPK } = clientInfo;
+            const clientInfoList = await this.getClientInfoList(userPK);
 
-                console.log('🚀 ~ file: socket.service.ts ~ line 191 ~ SocketService ~ setTimeout ~ userStatus', user);
+            await this.deleteOneClientInfo(clientId);
+            if (clientInfoList.length <= 1) {
+                const user = await this.getUserStatus(userPK);
+                user.status = -1;
 
-                if (user?.logoutPending) {
-                    console.log('안됨???');
-                    user.status = -1;
-                    user.logoutPending = false;
-
-                    await this.updateStatus(user);
-                    wss.to(`company:${user.companyPK}`)
-                        .except(socketClient.id)
-                        .emit(statusPath.CLIENT_LOGOUT_ALERT, user);
-                }
-            }, 1000 * 10); // 5분간격
-
-            await this.updateStatus({
-                userPK: userStatus.userPK,
-                companyPK: userStatus.companyPK,
-                socketId: socketClient.id,
-                logoutPending: true,
-                status: userStatus.status,
-            });
+                await this.updateStatus(user);
+                wss.to(`company:${user.companyPK}`).emit(statusPath.CLIENT_LOGOUT_ALERT, user);
+            }
         } catch (err) {
-            console.error(err);
-            if (err instanceof AikoError) throw err;
-            else throw new AikoError('socketService/statusDisconnect', 100, 2);
+            throw stackAikoError(
+                err,
+                'StatusService/statusDisconnect',
+                500,
+                headErrorCode.status + statusServiceError.statusDisconnect,
+            );
         }
     }
 
-    async getStatusList(clientId: string) {
+    async logoutEvent(userPK: number, companyPK: number, id: string) {
         try {
-            const { companyPK } = await this.getUserInfoStatus(clientId);
+            await this.allDeleteClientInfo(userPK);
+            await this.insertClientInfo(userPK, companyPK, id);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/logoutEvent',
+                500,
+                headErrorCode.status + statusServiceError.logoutEvent,
+            );
+        }
+    }
+
+    async getStatusList(userPK: number) {
+        try {
+            const { companyPK } = await this.getUserInfoStatus(userPK);
             return (await this.statusModel.find({ companyPK }).exec()) as Status[];
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'StatusService/getStatusList',
+                500,
+                headErrorCode.status + statusServiceError.getStatusList,
+            );
         }
     }
 
-    async changeStatus(socketId: string, stat: number) {
-        console.log('🚀 ~ file: socket.service.ts ~ line 175 ~ SocketService ~ changeStatus ~ status', status);
+    async changeStatus(clientId: string, stat: number) {
         try {
-            const userStatus = await this.getUserStatusWithSocketId(socketId);
-            console.log('🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ socketId', socketId);
-            console.log(
-                '🚀 ~ file: socket.service.ts ~ line 219 ~ SocketService ~ changeStatus ~ userStatus',
-                userStatus,
-            );
+            const { userPK } = await this.getClientInfo(clientId);
+            const userStatus = await this.getUserStatus(userPK);
+
             userStatus.status = stat;
             await this.updateStatus(userStatus);
 
             return userStatus;
         } catch (err) {
-            console.error(err);
-            if (err instanceof AikoError) throw err;
+            if (err instanceof AikoError)
+                throw stackAikoError(
+                    err,
+                    'StatusService/changeStatus',
+                    500,
+                    headErrorCode.status + statusServiceError.changeStatus,
+                );
         }
     }
 
-    async getUserInfoStatus(socketId: string) {
+    async getUserInfoStatus(userPK: number) {
         try {
-            const userStatus = await this.getUserStatusWithSocketId(socketId);
+            const userStatus = await this.getUserStatus(userPK);
             return userStatus;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getUserInfoStataus', 0, 4);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserInfoStatus',
+                500,
+                headErrorCode.status + statusServiceError.getUserInfoStatus,
+            );
         }
     }
 
@@ -143,8 +179,12 @@ export default class StatusService {
             const dto = new this.statusModel(container);
             return await dto.save();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/setUsrCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/setUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.setUserStatus,
+            );
         }
     }
 
@@ -156,23 +196,29 @@ export default class StatusService {
                     { userPK: userStatus.userPK, companyPK: userStatus.companyPK },
                     {
                         status: userStatus.status,
-                        socketId: userStatus.socketId,
-                        logoutPending: userStatus.logoutPending,
                     },
                 )
                 .exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socket/Service/updateStatus', 100, 2039483);
+            throw stackAikoError(
+                err,
+                'StatusService/updateStatus',
+                500,
+                headErrorCode.status + statusServiceError.updateStatus,
+            );
         }
     }
 
-    async getUserStatus(companyPK: number, userPK: number) {
+    async getUserStatus(userPK: number) {
         try {
-            return (await this.statusModel.findOne({ userPK, companyPK }).exec()) as Status;
+            return (await this.statusModel.findOne({ userPK }).exec()) as Status;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getUsrCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.getUserStatus,
+            );
         }
     }
 
@@ -180,8 +226,12 @@ export default class StatusService {
         try {
             return (await this.statusModel.findOne({ socketId })) as Status;
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService/getSocketCont', 100, 5091282);
+            throw stackAikoError(
+                err,
+                'StatusService/getUserStatusWithSocketId',
+                500,
+                headErrorCode.status + statusServiceError.getUserStatusWithSocketId,
+            );
         }
     }
 
@@ -189,8 +239,102 @@ export default class StatusService {
         try {
             return await this.statusModel.findOneAndRemove({ userPK }).exec();
         } catch (err) {
-            console.error(err);
-            throw new AikoError('socketService', 100, 5028123);
+            throw stackAikoError(
+                err,
+                'StatusService/deleteUserStatus',
+                500,
+                headErrorCode.status + statusServiceError.deleteUserStatus,
+            );
+        }
+    }
+
+    async insertClientInfo(userPK: number, companyPK: number, clientId: string) {
+        try {
+            const pac = new StatusClientStorage();
+            pac.clientId = clientId;
+            pac.companyPK = companyPK;
+            pac.userPK = userPK;
+
+            const dto = new this.statusClientStorageModel(pac);
+            await dto.save();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/insertClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.insertClientInfo,
+            );
+        }
+    }
+
+    async selectClientInfos(userPK: number) {
+        try {
+            return (await this.statusClientStorageModel.find({ userPK })) as StatusClientStorage[];
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/selectClientInfos',
+                500,
+                headErrorCode.status + statusServiceError.selectClientInfos,
+            );
+        }
+    }
+
+    async getClientInfo(clientId: string) {
+        try {
+            return (await this.statusClientStorageModel.findOne({ clientId })) as StatusClientStorage;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/getClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.getClientInfo,
+            );
+        }
+    }
+
+    async getClientInfoList(userPK: number) {
+        try {
+            return (await this.statusClientStorageModel
+                .find()
+                .where('userPK')
+                .equals(userPK)
+                .select('userPK companyPK clientId')) as StatusClientStorage[];
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/getClientInfoList',
+                500,
+                headErrorCode.status + statusServiceError.getClientInfoList,
+            );
+        }
+    }
+
+    async allDeleteClientInfo(userPK: number) {
+        console.log('🚀 ~ file: status.service.ts ~ line 251 ~ StatusService ~ allDeleteClientInfo ~ userPK', userPK);
+
+        try {
+            await this.statusClientStorageModel.deleteMany({ userPK }).exec();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/allDeleteClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.allDeleteClientInfo,
+            );
+        }
+    }
+
+    async deleteOneClientInfo(clientId: string) {
+        try {
+            await this.statusClientStorageModel.deleteOne({ clientId }).exec();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/deleteOneClientInfo',
+                500,
+                headErrorCode.status + statusServiceError.deleteOneClientInfo,
+            );
         }
     }
 }

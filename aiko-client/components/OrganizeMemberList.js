@@ -18,7 +18,7 @@ export default function OrganizeMemberList(props) {
     const [memberModal, setMemberModal] = useState(false);
     const [memberList, setMemberList] = useState([]);
 
-    useEffect(async () => {
+    useEffect(() => {
         if (department.DEPARTMENT_PK) {
             loadMemberList();
         }

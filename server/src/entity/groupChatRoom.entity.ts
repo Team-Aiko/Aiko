@@ -1,6 +1,6 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '.';
-import GroupChatUserList from './groupChatUserList.entity';
+import GroupChatUserList from './groupChatUL.entity';
 
 @Entity({ name: 'GROUP_CHAT_ROOM_TABLE' })
 export default class GroupChatRoom {

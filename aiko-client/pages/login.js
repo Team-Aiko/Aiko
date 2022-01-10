@@ -8,10 +8,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setUserInfo } from '../_redux/accountReducer';
 import styles from '../styles/login.module.css';
 import loginPic from '../public/images/image.png';
+import router from 'next/router';
 
 export default function CComp() {
     const dispatch = useDispatch();
     const setInfo = (userInfo) => {
+        console.log('### setInfo : ', userInfo);
         dispatch(setUserInfo(userInfo));
     };
     return <Login setUserInfo={setInfo} />;
@@ -50,9 +52,8 @@ function Login(props) {
                 console.log('🚀 ~ file: login.js ~ line 49 ~ data', data);
                 if (result.header /* login result : boolean */) {
                     props.setUserInfo(result.userInfo);
-                    console.log(result.userInfo);
-
-                    Router.push('/');
+                    window.location.href = '/';
+                    // Router.push('/');
                 } else {
                     alert('not valid user');
                 }
@@ -70,10 +71,6 @@ function Login(props) {
     const open = useCallback(() => {
         Router.push('/signup');
     }, []);
-
-    const find = function () {
-        Router.push('/forgot');
-    };
 
     return (
         <div>
@@ -108,9 +105,21 @@ function Login(props) {
                                 <input className={styles.check} type='checkbox' />
                                 <p className={styles.remember}>Remember Me</p>
 
-                                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-                                <p onKeyDown={() => {}} onClick={find} className={styles.forgot}>
-                                    Forgot ID/PW?
+                                <p
+                                    onClick={() => {
+                                        router.push('/forgot-id');
+                                    }}
+                                    className={styles.forgot}
+                                >
+                                    Forgot ID?
+                                </p>
+                                <p
+                                    onClick={() => {
+                                        router.push('/forgot-pw');
+                                    }}
+                                    className={styles.forgot}
+                                >
+                                    Forgot PW?
                                 </p>
                                 <div className={styles.clear} />
                             </div>
@@ -118,7 +127,6 @@ function Login(props) {
                     </div>
 
                     <div className={styles.lastcontainer}>
-                        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
                         <p onKeyDown={() => {}} onClick={open} className={styles.create}>
                             Create an Account
                         </p>

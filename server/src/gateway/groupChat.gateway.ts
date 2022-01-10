@@ -8,16 +8,13 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { User } from 'src/entity';
-import { UserGuard } from 'src/guard/user.guard';
-import { AikoError, getRepo } from 'src/Helpers';
-import { getSocketErrorPacket, tokenParser } from 'src/Helpers/functions';
-import { groupChatPath, IErrorPacket } from 'src/interfaces/MVC/socketMVC';
-import { UserRepository } from 'src/mapper';
-import { GroupChatClientInfo } from 'src/schemas/groupChatClientInfo.schema';
+import { SocketGuard } from 'src/guard/socket.guard';
+import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
+import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
 
-@WebSocketGateway({ cors: true, namespace: 'group-chat' })
+@UseGuards(SocketGuard)
+@WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     private readonly wss: Server;
@@ -37,16 +34,20 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * @returns
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, accessToken: string) {
-        try {
-            if (!accessToken) return;
+    async handleConnection(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
 
-            const userPayload = tokenParser(accessToken);
+        try {
+            const payloadStr = client.request.headers['user-payload'];
+            const userPayload = parseUserPayloadString(payloadStr);
 
             console.log('groupChat connection clientId : ', client.id);
-            const clientInfo = await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            // * add client info
+            await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            // * find group chat room infos
             const groupChatRooms = await this.groupChatService.findChatRooms(userPayload);
 
+            // * join group chat
             groupChatRooms.forEach(({ GC_PK }) => {
                 client.join(`company:${userPayload.COMPANY_PK}-${GC_PK}`);
             });
@@ -57,7 +58,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, accessToken),
+                    getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, undefined),
                 );
         }
     }
@@ -68,8 +69,12 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             console.log('groupChat disconnect clientId : ', client.id);
+            await this.groupChatService.deleteClientInfo(client.id);
+            client.disconnect(true);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -83,34 +88,33 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
     /**
      * 그룹챗방을 생성하는 이벤트
      */
-    @SubscribeMessage(groupChatPath.CREATE_GROUP_CHAT_ROOM)
+    @SubscribeMessage(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM)
     async createGroupChatRoom(
         client: Socket,
-        {
-            userList,
-            admin,
-            roomTitle,
-            maxNum,
-            accessToken,
-        }: { userList: number[]; admin: number; roomTitle: string; maxNum: number; accessToken: string },
+        { userList, roomTitle, maxNum }: { userList: number[]; roomTitle: string; maxNum: number },
     ) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
-            if (!admin) return;
+            const payloadStr = client.request.headers['user-payload'];
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
+
+            if (!roomTitle) return;
 
             console.log('createGroupChatRoom clientId : ', client.id);
-            const { GC_PK, memberList, COMPANY_PK } = await this.groupChatService.createGroupChatRoom({
+            const { GC_PK, memberList } = await this.groupChatService.createGroupChatRoom({
                 userList,
-                admin,
                 roomTitle,
                 maxNum,
-                accessToken,
+                USER_PK,
+                COMPANY_PK,
             });
 
             memberList.forEach((member) => {
                 this.wss.to(member.clientId).emit(groupChatPath.CLIENT_JOIN_ROOM_NOTICE, {
                     GC_PK,
                     memberList,
-                    admin,
+                    admin: USER_PK,
                     roomTitle,
                     maxNum,
                 });
@@ -118,12 +122,10 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         } catch (err) {
             this.wss.to(client.id).emit(
                 groupChatPath.CLIENT_ERROR_ALERT,
-                getSocketErrorPacket(groupChatPath.CREATE_GROUP_CHAT_ROOM, err, {
+                getSocketErrorPacket(groupChatPath.SERVER_CREATE_GROUP_CHAT_ROOM, err, {
                     userList,
-                    admin,
                     roomTitle,
                     maxNum,
-                    accessToken,
                 }),
             );
         }
@@ -133,10 +135,14 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 새로 생성된 방에 추가로 조인하는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
-    async joinGroupChatRoom(client: Socket, { GC_PK, accessToken }: { GC_PK: number; accessToken: string }) {
+    async joinGroupChatRoom(client: Socket, GC_PK: number) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             if (!GC_PK) return;
-            const { COMPANY_PK } = tokenParser(accessToken);
+
+            const payloadStr = client.request.headers['user-payload'];
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
 
             // 해당 채팅룸에 조인하는 프로세스
             client.join(`company:${COMPANY_PK}-${GC_PK}`);
@@ -147,7 +153,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM, err, { GC_PK, accessToken }),
+                    getSocketErrorPacket(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM, err, GC_PK),
                 );
         }
     }
@@ -156,14 +162,16 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 특정 그룹챗방에 메세지를 보내는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
-    async sendMessageToGroup(
-        client: Socket,
-        payload: { GC_PK: number; accessToken: string; file: number; message: string },
-    ) {
+    async sendMessageToGroup(client: Socket, payload: { GC_PK: number; file: number; message: string; date: number }) {
+        if (!client.request.headers['guardPassed']) return;
+
         try {
             if (!payload) return;
 
-            await this.groupChatService.sendMessageToGroup(payload, this.wss);
+            const payloadStr = client.request.headers['user-payload'];
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
+
+            await this.groupChatService.sendMessageToGroup({ ...payload, USER_PK, COMPANY_PK }, this.wss);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -178,36 +186,24 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * 특정 그룹채팅방의 챗로그를 불러오는 이벤트
      */
     @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
-    async readChatLogs(client: Socket, payload: { GC_PK: number; accessToken: string }) {
-        try {
-            if (!payload) return;
-            const { COMPANY_PK } = tokenParser(payload.accessToken);
+    async readChatLogs(client: Socket, GC_PK: number) {
+        if (!client.request.headers['guardPassed']) return;
 
-            const chatLogs = await this.groupChatService.readChatLogs(payload.GC_PK, COMPANY_PK);
-            this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, chatLogs);
+        try {
+            if (!GC_PK) return;
+
+            const payloadStr = client.request.headers['user-payload'];
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
+
+            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, COMPANY_PK);
+            const userMap = await this.groupChatService.getUserInfos(GC_PK, COMPANY_PK, USER_PK);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userMap });
         } catch (err) {
             this.wss
                 .to(client.id)
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, payload),
-                );
-        }
-    }
-
-    // * test reactors
-    @SubscribeMessage(groupChatPath.TEST_ADD_NEW_CLIENT)
-    async addNewClientForGroupChat(client: Socket, userPK: number) {
-        try {
-            if (!userPK) return;
-
-            this.groupChatService.addNewClientForGroupChat(userPK);
-        } catch (err) {
-            this.wss
-                .to(client.id)
-                .emit(
-                    groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.TEST_ADD_NEW_CLIENT, err, userPK),
+                    getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, GC_PK),
                 );
         }
     }

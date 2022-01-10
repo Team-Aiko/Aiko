@@ -1,9 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import SocketController from 'src/controllers/socket.controller';
 import StatusGateway from 'src/gateway/status.gateway';
-// import SocketService from 'src/services/socket.service';
 import { PrivateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
 import PrivateChatGateway from 'src/gateway/privateChat.gateway';
 import GroupChatGateway from 'src/gateway/groupChat.gateway';
@@ -13,12 +10,14 @@ import { GroupChatLog, groupChatLogSchema } from 'src/schemas/groupChatlog.schem
 import PrivateChatService from 'src/services/privateChat.service';
 import GroupChatService from 'src/services/groupChat.service';
 import StatusService from 'src/services/status.service';
+import { StatusClientStorage, statusClientStorageSchema } from 'src/schemas/statusClientStorage.shcema';
 
 const mongoModule = MongooseModule.forFeature([
     { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
     { name: Status.name, schema: StatusSchema },
     { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
     { name: GroupChatLog.name, schema: groupChatLogSchema },
+    { name: StatusClientStorage.name, schema: statusClientStorageSchema },
 ]);
 
 @Module({

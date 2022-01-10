@@ -1,11 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AikoError, getRepo } from 'src/Helpers';
+import { getServerTime, stackAikoError } from 'src/Helpers/functions';
+import { getRepo } from 'src/Helpers';
 import { IMessagePayload } from 'src/interfaces/MVC/socketMVC';
-import { PrivateChatRoomRepository, UserRepository } from 'src/mapper';
+import { CompanyRepository, PrivateChatRoomRepository, UserRepository } from 'src/mapper';
+import ChatLogStorageRepository from 'src/mapper/chatLogStorage.repository';
 import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.schema';
 import { EntityManager, TransactionManager } from 'typeorm';
+import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import { User } from 'src/entity';
+
+enum privateChatServiceError {
+    makePrivateChatRoomList = 1,
+    connectPrivateChat = 2,
+    sendMessage = 3,
+    getChalog = 4,
+    getUserInfo = 5,
+    updateChatlog = 6,
+    storePrivateChatLogsToRDB = 7,
+}
 
 @Injectable()
 export default class PrivateChatService {
@@ -18,16 +32,24 @@ export default class PrivateChatService {
     ): Promise<boolean> {
         try {
             const userList = await getRepo(UserRepository).getMembers(companyPK);
-            await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(manager, userPK, userList, companyPK);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
+            const roomList = await getRepo(PrivateChatRoomRepository).makePrivateChatRoomList(
+                manager,
+                userPK,
+                userList,
+                companyPK,
+            );
 
             await Promise.all(
-                roomList.map(async (room) => {
-                    const dto = new PrivateChatlog();
-                    dto.roomId = room.CR_PK;
-                    dto.messages = [];
-                    await this.chatlogModel.create(dto);
+                roomList.map(async (id) => {
+                    const item = new PrivateChatlog();
+                    item.roomId = id;
+                    item.messages = [];
+                    console.log(
+                        '🚀 ~ file: privateChat.service.ts ~ line 36 ~ PrivateChatService ~ roomList.map ~ item',
+                        item,
+                    );
+                    const dto = new this.chatlogModel({ roomId: id, messages: [] });
+                    await dto.save();
 
                     return true;
                 }),
@@ -35,26 +57,27 @@ export default class PrivateChatService {
 
             return true;
         } catch (err) {
-            throw new AikoError('testError', 451, 500000);
+            throw stackAikoError(
+                err,
+                'PrivateChatService/makePrivateChatRoomList',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.makePrivateChatRoomList,
+            );
         }
     }
 
-    async connectPrivateChat(socketId: string, { userPK, companyPK }: { userPK: number; companyPK: number }) {
+    async connectPrivateChat(userPK: number, companyPK: number) {
         try {
-            const user = await getRepo(UserRepository).getUserInfoWithUserPK(userPK);
-
-            if (user.COMPANY_PK !== companyPK || user.USER_PK !== userPK)
-                throw new AikoError('socketService/invalid user information', 100, 49921);
-
-            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(
-                user.USER_PK,
-                user.COMPANY_PK,
-            );
+            const roomList = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomList(userPK, companyPK);
 
             return roomList;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/connectPrivateChat',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.connectPrivateChat,
+            );
         }
     }
 
@@ -62,7 +85,12 @@ export default class PrivateChatService {
         try {
             await this.updateChatlog(payload);
         } catch (err) {
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/sendMessage',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.sendMessage,
+            );
         }
     }
 
@@ -70,8 +98,31 @@ export default class PrivateChatService {
         try {
             return (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
         } catch (err) {
-            console.error(err);
-            throw err;
+            throw stackAikoError(
+                err,
+                'PrivateChatService/getChalog',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.getChalog,
+            );
+        }
+    }
+
+    async getUserInfo(roomId: string, companyPK: number, userPK: number) {
+        try {
+            const roomInfo = await getRepo(PrivateChatRoomRepository).getChatRoomInfo(roomId, companyPK);
+            let userInfo: User = undefined;
+
+            if (roomInfo.user1.USER_PK !== userPK) userInfo = roomInfo.user1;
+            else userInfo = roomInfo.user2;
+
+            return { roomInfo, userInfo };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/getUserInfo',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.getUserInfo,
+            );
         }
     }
 
@@ -88,7 +139,60 @@ export default class PrivateChatService {
 
             await this.chatlogModel.findOneAndUpdate({ roomId }, chatlog).exec();
         } catch (err) {
-            console.error(err);
+            throw stackAikoError(
+                err,
+                'PrivateChatService/updateChatlog',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.updateChatlog,
+            );
+        }
+    }
+
+    /**
+     * 로그 저장 스케줄링 함수
+     */
+    async storePrivateChatLogsToRDB(serverHour: number) {
+        try {
+            const allCompanies = await getRepo(CompanyRepository).getAllCompanies();
+
+            let totalRooms: string[] = [];
+            const roomsRooms = await Promise.all(
+                allCompanies.map(async (company) => {
+                    const companyId = company.COMPANY_PK;
+                    const rooms = await getRepo(PrivateChatRoomRepository).getPrivateChatRoomListForScheduler(
+                        companyId,
+                    );
+                    return rooms;
+                }),
+            );
+
+            roomsRooms.forEach((rooms) => {
+                const oneCompanyRoomIds = rooms.map((room) => room.CR_PK);
+                totalRooms = totalRooms.concat(oneCompanyRoomIds);
+            });
+
+            const serverTime = getServerTime(serverHour);
+
+            Promise.all(
+                totalRooms.map(async (roomId) => {
+                    const limitTime = serverTime - 604800;
+
+                    const chatLog = (await this.chatlogModel.findOne({ roomId })) as PrivateChatlog;
+                    const moveLog = chatLog.messages.filter((message) => message.date <= limitTime);
+                    const notYetLog = chatLog.messages.filter((message) => message.date > limitTime);
+                    chatLog.messages = notYetLog;
+
+                    await getRepo(ChatLogStorageRepository).saveChatLogs(moveLog, roomId);
+                    await this.chatlogModel.findOneAndUpdate({ roomId: roomId }, chatLog);
+                }),
+            );
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/storePrivateChatLogsToRDB',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.storePrivateChatLogsToRDB,
+            );
         }
     }
 }

@@ -39,9 +39,26 @@ server2/yarn.lock
 .yarnrc
 yarn.lock
 
+# Logs
+logs
+*.log
+*.log.gz
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
 # if you are NOT using Zero-installs, then:
 # comment the following lines
 .yarn/cache
 
 # and uncomment the following lines
 # .pnp.*
+
+
+#files
+/files/noticeboard/*
+/files/chatFles/*
+/files/profile/*
+/files/drive/*

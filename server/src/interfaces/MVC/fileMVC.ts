@@ -7,10 +7,10 @@ export interface IFileBundle {
 }
 
 export enum filePath {
-    PROFILE = './files/profile/',
-    CHAT = './files/chatFiles/',
-    NOTICE_BOARD = './files/noticeboard',
-    DRIVE = './files/drive',
+    PROFILE = '../files/profile/',
+    CHAT = '../files/chatFiles/',
+    NOTICE_BOARD = '../files/noticeboard',
+    DRIVE = '../files/drive/',
 }
 
 export const NoticeBoardFileOption: MulterOptions = {
@@ -19,6 +19,7 @@ export const NoticeBoardFileOption: MulterOptions = {
     },
     storage: diskStorage({
         destination: function (req, files, callback) {
+            console.log('🚀 ~ file: fileMVC.ts ~ line 22 ~ files', files);
             const dest = filePath.NOTICE_BOARD;
             callback(null, dest);
         }, // 저장위치

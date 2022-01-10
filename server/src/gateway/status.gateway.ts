@@ -6,13 +6,16 @@ import {
     OnGatewayDisconnect,
     WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
-import { getSocketErrorPacket } from 'src/Helpers/functions';
+import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
+import { SocketGuard } from 'src/guard/socket.guard';
+import { invalidTokenError } from 'src/Helpers/instance';
 
-@WebSocketGateway({ cors: true, namespace: 'status' })
+@UseGuards(SocketGuard)
+@WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private statusService: StatusService) {}
 
@@ -32,34 +35,39 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * 5. 이를 통해 해당 유저의 접속 상태를 확인 가능하다.
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket, accessToken: string) {
-        console.log('handleConnection method', accessToken);
+    async handleConnection(client: Socket) {
+        console.log('queryString: ', client.handshake.query);
+        console.log('queryString: ', client.request.url);
+        console.log('### status - handleConnection #### : ', client.id);
+        console.log('status - cookies', client.request.headers.cookie);
+        console.log('status - cookies', client.handshake.headers.cookie);
+        if (!client.request.headers['guardPassed']) return;
 
         try {
-            if (!accessToken) return;
-
-            console.log('client ID = ', client.id, ' accessToken = ', accessToken);
-            const { id } = client;
+            const { USER_PK, COMPANY_PK } = parseUserPayloadString(client.request.headers['user-payload']);
 
             // connection check and select user info
-            const connResult = await this.statusService.statusConnection(id, accessToken);
+            const connResult = await this.statusService.statusConnection(USER_PK, COMPANY_PK, client.id);
 
             // join company
-            client.join(`company:${connResult.user.companyPK}`);
-
+            client.join(`company:${COMPANY_PK}`);
             if (connResult.isSendable) {
                 this.wss
-                    .to(`company:${connResult.user.companyPK}`)
-                    .except(client.id) // 자기자신을 제외한다 이 부분을 주석처리하면 자기한테도 접속사실이 전달됨.
+                    .to(`company:${COMPANY_PK}`)
+                    .except(connResult.myClients.map((client) => client.clientId))
                     .emit(statusPath.CLIENT_LOGIN_ALERT, connResult);
-
-                const statusList = await this.statusService.getStatusList(client.id);
-                this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
             }
+
+            const statusList = await this.statusService.getStatusList(USER_PK);
+            this.wss.to(client.id).emit(statusPath.CLIENT_GET_STATUS_LIST, statusList);
+            console.log(
+                '🚀 ~ file: status.gateway.ts ~ line 58 ~ StatusGateway ~ handleConnection ~ client.id',
+                client.id,
+            );
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, accessToken));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, undefined));
         }
     }
 
@@ -74,11 +82,12 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
-        console.log('handleDisconnect method');
+        if (!client.request.headers['guardPassed']) return;
 
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
-            this.statusService.statusDisconnect(client, this.wss);
+            this.statusService.statusDisconnect(client.id, this.wss);
+            client.disconnect(true);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -92,24 +101,38 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      * @param userStatus
      */
     @SubscribeMessage(statusPath.SERVER_CHANGE_STATUS)
-    async changeStatus(client: Socket, userStatus: number) {
-        console.log('changeStatus method');
+    async changeStatus(client: Socket, stat: number) {
+        console.log('### status - changeStatus #### : ', client.id);
+        console.log('status - cookies', client.request.headers.cookie);
+        console.log('status - cookies', client.handshake.headers.cookie);
+        if (!client.request.headers['guardPassed']) return;
 
         try {
-            if (!userStatus) return;
+            if (!stat) return;
 
-            const socketId = client.id;
-            const container = await this.statusService.getUserInfoStatus(socketId);
-            console.log('🚀 ~ file: status.gateway.ts ~ line 85 ~ StatusGateway ~ changeStatus ~ container', container);
-            const result = await this.statusService.changeStatus(socketId, userStatus);
-            this.wss
-                .to(`company:${container.companyPK}`)
-                .except(client.id)
-                .emit(statusPath.CLIENT_CHANGE_STATUS, result);
+            const status = await this.statusService.changeStatus(client.id, stat);
+            const clientInfos = await this.statusService.selectClientInfos(status.userPK);
+
+            this.wss.to(`company:${status.companyPK}`).emit(statusPath.CLIENT_CHANGE_STATUS, status);
         } catch (err) {
             this.wss
                 .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, userStatus));
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, stat));
+        }
+    }
+
+    @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
+    async logoutEvent(client: Socket) {
+        if (!client.request.headers['guardPassed']) return;
+
+        try {
+            const { COMPANY_PK, USER_PK } = parseUserPayloadString(client.request.headers['user-payload']);
+            await this.statusService.logoutEvent(USER_PK, COMPANY_PK, client.id);
+            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+        } catch (err) {
+            this.wss
+                .to(client.id)
+                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.SERVER_CHANGE_STATUS, err, undefined));
         }
     }
 }

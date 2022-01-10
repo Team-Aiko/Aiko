@@ -13,6 +13,8 @@ export enum statusPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
     SERVER_CHANGE_STATUS = 'server/status/changeStatus',
+    SERVER_LOGOUT_EVENT = 'server/status/logoutEvent',
+    CLIENT_LOGOUT_EVENT_EXECUTED = 'client/status/logoutEventExecuted',
     CLIENT_GET_STATUS_LIST = 'client/status/getStatusList',
     CLIENT_CHANGE_STATUS = 'client/status/changeStatus',
     CLIENT_ERROR = 'client/status/error',
@@ -23,13 +25,13 @@ export enum statusPath {
 export enum groupChatPath {
     HANDLE_CONNECTION = 'handleConnection',
     HANDLE_DISCONNECT = 'handleDisconnect',
-    CREATE_GROUP_CHAT_ROOM = 'create-group-chat-room',
     CLIENT_CONNECTED = 'client/gc/connected',
     CLIENT_JOIN_ROOM_NOTICE = 'client/gc/join-room-notice',
     CLIENT_JOINED_GCR = 'client/gc/joined_gcr',
     CLIENT_READ_CHAT_LOGS = 'client/gc/read-chat-logs',
     CLIENT_SEND_MESSAGE = 'client/gc/send-message',
     CLIENT_ERROR_ALERT = 'client/gc/errorAlert',
+    SERVER_CREATE_GROUP_CHAT_ROOM = 'server/gc/create-group-chat-room',
     SERVER_JOIN_GROUP_CHAT_ROOM = 'server/gc/join-group-chat-room',
     SERVER_SEND_MESSAGE = 'server/gc/send-message',
     SERVER_READ_CHAT_LOGS = 'server/gc/read-chat-logs',
@@ -56,4 +58,5 @@ export interface IErrorPacket<T> {
     path: string;
     err: Error;
     originalData: T;
+    tokenError: boolean;
 }
