@@ -50,31 +50,63 @@ export default class ApprovalService {
         // const result = await getRepo(ApprovalStepRepository).list(userPk, comPk, departmentPk, view);
         // 결제 전체보기 => 내가 결제 해야할 건 + 이미 결제가 완료난 건들 + 진행중인 결제
         // 대기중인 결제 => 내가 결제 해야할 건
-        // 진행중인 결제 => 내가 올린 결제건 - 내가 결제해야할 건
+        // 진행중인 결제 => 내가 올린 결제건
         // 완료난 건 => 이미 결제 완료된 건
+
+        const framePks = []; // 결제 프레임 Pk
         if (view === 'done') {
             const result = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
             return result;
         } // 완료된 결제
+        //////////////////////
         else if (view === 'wait') {
-            const infos = await getRepo(ApprovalFrameRepository).myRelatedList(userPk, comPk, departmentPk);
-            let result;
-            for (const info of infos) {
-                result = await getRepo(ApprovalStepRepository).needToDoList(info.AF_PK, info.CURRENT_STEP_LEVEL);
-                console.log(result);
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const result = await getRepo(ApprovalStepRepository).needToDoPks(
+                    userPk,
+                    info.AF_PK,
+                    info.CURRENT_STEP_LEVEL,
+                );
+                framePks.push(result?.AF_PK);
             }
-            return result;
         } // 대기중인 결제
-        else if (view === 'all') {
-            const done = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
-            const infos = await getRepo(ApprovalFrameRepository).myRelatedList(userPk, comPk, departmentPk);
-            for (const info of infos) {
-                const result = await getRepo(ApprovalStepRepository).needToDoList(info.AF_PK, info.CURRENT_STEP_LEVEL);
-                console.log(result);
+        /////////////////////
+        else if (view === 'process') {
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const doingPks = await getRepo(ApprovalFrameRepository).doingPks(
+                    userPk,
+                    info.AF_PK,
+                    comPk,
+                    departmentPk,
+                );
+                framePks.push(doingPks?.AF_PK);
             }
-            return done;
-        } // 전체보기 건
-
-        // process
+        } // 내가올린 결제
+        /////////////////////
+        else if (view === 'all') {
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const needPks = await getRepo(ApprovalStepRepository).needToDoPks(
+                    userPk,
+                    info.AF_PK,
+                    info.CURRENT_STEP_LEVEL,
+                );
+                const donePks = await getRepo(ApprovalFrameRepository).donePks(info.AF_PK, comPk, departmentPk);
+                const doingPks = await getRepo(ApprovalFrameRepository).doingPks(
+                    userPk,
+                    info.AF_PK,
+                    comPk,
+                    departmentPk,
+                );
+                console.log(donePks);
+                framePks.push(needPks?.AF_PK);
+                framePks.push(donePks?.AF_PK);
+                framePks.push(doingPks?.AF_PK);
+            }
+        } // 전체 결제
+        //////////////
+        const result = await getRepo(ApprovalFrameRepository).generateList(framePks);
+        return result; /// 결과반환
     }
 }

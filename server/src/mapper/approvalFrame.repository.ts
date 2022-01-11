@@ -26,9 +26,13 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         });
         return result.identifiers[0];
     }
+    async generateList(pks: number[]) {
+        const result = await this.createQueryBuilder('n').select(['n.TITLE', 'n.CONTENT']).whereInIds(pks).getMany();
+        return result;
+    }
     async doneList(comPk: number, departmentPk: number) {
         try {
-            const result = await this.createQueryBuilder('af')
+            const result = await this.createQueryBuilder()
                 .select()
                 .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
                 .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
@@ -39,13 +43,42 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             console.log(err);
         }
     }
-    async myRelatedList(userPk: number, comPk: number, departmentPk: number) {
+    async donePks(afPk: number, comPk: number, departmentPk: number) {
+        try {
+            const result = await this.createQueryBuilder('n')
+                .select(['n.AF_PK'])
+                .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+                .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+                .andWhere('AF_PK =:afPk', { afPk: `${afPk}` })
+                .andWhere('END_DATE is not null')
+                .getOne();
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    async doingPks(userPk: number, afPk: number, comPk: number, departmentPk: number) {
+        try {
+            const result = await this.createQueryBuilder('n')
+                .select(['n.AF_PK'])
+                .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+                .andWhere('USER_PK =:userPk', { userPk: `${userPk}` })
+                .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+                .andWhere('AF_PK =:afPk', { afPk: `${afPk}` })
+                .getOne();
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    async generateStepLevels(userPk: number, comPk: number, departmentPk: number) {
         try {
             const result = await this.createQueryBuilder('af')
                 .select(['af.CURRENT_STEP_LEVEL', 'af.AF_PK'])
                 .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
                 .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
                 .andWhere('USER_PK =:userPk', { userPk: `${userPk}` })
+                .distinct()
                 .getMany();
             return result;
         } catch (err) {

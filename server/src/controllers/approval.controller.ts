@@ -42,7 +42,6 @@ export default class ApprovalController {
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
             const result = await this.approvalService.viewApproval(userPk, departmentPk, comPk, view);
-            // const cnt = new Pagination(currentPage, )
             resExecutor(res, { result: result });
         } catch (err) {
             throw resExecutor(res, { err });
