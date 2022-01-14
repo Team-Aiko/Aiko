@@ -9,3 +9,4 @@ export const typeMismatchError = new AikoError('paramMismatch', 0, 3);
 export const notAuthorizedUserError = new AikoError('NO_AUTHORIZATION', 0, 4);
 export const notSameCompanyError = new AikoError('NOT_SAME_COMPANY_ERROR', 0, 5);
 export const notSameDepartmentError = new AikoError('not appropriate department', 0, 6);
+export const noCookieError = new AikoError('NO_COOKIE_ERROR', 0, 6);

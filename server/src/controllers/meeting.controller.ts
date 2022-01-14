@@ -9,12 +9,13 @@ import {
     IMeetingPagination,
     IMeetingSchedulePagination,
 } from 'src/interfaces/MVC/meetingMVC';
-import { bodyChecker } from 'src/Helpers/functions';
+import { bodyChecker, getServerTime } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @UseGuards(UserGuard)
-@UseInterceptors(UserPayloadParserInterceptor)
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 @Controller('meeting')
 export default class MeetingController {
     constructor(private meetingService: MeetingService) {}
@@ -264,6 +265,21 @@ export default class MeetingController {
             bodyChecker({ meetPK, finishFlag }, { meetPK: ['number'], finishFlag: ['boolean'] });
 
             const result = await this.meetingService.finishMeeting(finishFlag, meetPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Get('today-meeting')
+    async todayMeeting(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { day } = req.query;
+            const targetDay = !Number(day) ? getServerTime(0) : Number(day);
+            const { USER_PK } = userPayload;
+            bodyChecker({ targetDay }, { targetDay: ['number'] });
+
+            const result = await this.meetingService.todayMeeting(USER_PK, targetDay);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

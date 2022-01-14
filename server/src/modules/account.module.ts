@@ -7,6 +7,7 @@ import MeetingModule from './meeting.module';
 import WorkModule from './work.module';
 import SocketModule from './socket.module';
 import DriveModule from './driver.module';
+import CompanyService from 'src/services/company.service';
 
 @Module({
     imports: [
@@ -21,7 +22,7 @@ import DriveModule from './driver.module';
         DriveModule,
     ],
     controllers: [AccountController],
-    providers: [AccountService],
+    providers: [CompanyService, AccountService],
     exports: [AccountService],
 })
 export default class AccountModule {}

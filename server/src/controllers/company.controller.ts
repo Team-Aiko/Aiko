@@ -7,8 +7,10 @@ import { INewDepartment, IPermissionBundle } from 'src/interfaces/MVC/companyMVC
 import { bodyChecker } from 'src/Helpers/functions';
 import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
 
 @Controller('company')
+@UseInterceptors(RequestLoggerInterceptor)
 export default class CompanyController {
     constructor(private companyService: CompanyService) {}
 

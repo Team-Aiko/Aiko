@@ -75,3 +75,8 @@
     align-items: flex-end;
     flex-direction: row-reverse;
 }
+
+.member-search {
+    display: flex;
+    margin: 20px 20px 0;
+}

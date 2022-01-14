@@ -7,7 +7,7 @@ import { Grant, User } from 'src/entity';
 import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import * as fs from 'fs';
 import { success, unknownError } from '.';
-import { invalidTokenError, notAuthorizedUserError, typeMismatchError } from './instance';
+import { invalidTokenError, noCookieError, notAuthorizedUserError, typeMismatchError } from './instance';
 import * as jwt from 'jsonwebtoken';
 import { accessTokenBluePrint, refreshTokenBluePrint } from 'src/interfaces/jwt/secretKey';
 import { IErrorPacket } from 'src/interfaces/MVC/socketMVC';
@@ -52,7 +52,6 @@ export const resExecutor: IGetResPacket = function (res: Response, pack: { resul
     if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);
     else {
         packet.result = result;
-
         res.send(packet);
     }
 };
@@ -238,10 +237,9 @@ export function getUnixTime(date: Date) {
 export function getServerTime(serverHour: number) {
     const today = new Date();
     const hour = serverHour < 10 ? `0${serverHour}` : serverHour.toString();
+    const timeStamp = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${hour}:00:00`;
 
-    const serverTime = Math.floor(
-        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${hour}:00:00`).getTime() / 1000,
-    );
+    const serverTime = Math.floor(new Date(timeStamp).getTime() / 1000);
 
     return serverTime;
 }
@@ -319,17 +317,22 @@ export async function sendMail(mailOpt: Pick<SendMailOptions, 'text' | 'subject'
 }
 
 export function parseCookieString<T extends { [idx: string]: string }>(cookie: string) {
-    const temp = cookie.split(';');
-    const cookieJson: { [idx: string]: string } = {};
+    try {
+        const temp = cookie.split(';');
 
-    temp.forEach((str) => {
-        const arr = str.split('=');
-        const key = arr[0].trim();
-        const value = arr[1].trim();
-        cookieJson[key] = value;
-    });
+        const cookieJson: { [idx: string]: string } = {};
 
-    return cookieJson as T;
+        temp.forEach((str) => {
+            const arr = str.split('=');
+            const key = arr[0].trim();
+            const value = arr[1].trim();
+            cookieJson[key] = value;
+        });
+
+        return cookieJson as T;
+    } catch (err) {
+        throw noCookieError;
+    }
 }
 
 export function parseUserPayloadString(stringifiedUserPayload: string | string[]) {

@@ -26,6 +26,7 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { get } from '../../_axios/index';
+import axios from 'axios';
 import { handleSideNav } from '../../_redux/popupReducer';
 import { setUserInfo, resetUserInfo } from '../../_redux/accountReducer';
 import { setMember, setMemberStatus, setMemberListStatus } from '../../_redux/memberReducer';
@@ -114,36 +115,32 @@ export default function CComp() {
     const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
+    window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        status?.emit('handleDisconnect');
+    });
+
     useEffect(() => {
         if (userInfo.USER_PK) {
             console.log('###### render ######');
-            loadMemberList();
 
             const status = io('http://localhost:5001/status', { withCredentials: true });
             setStatus(status);
-            console.log('setStatus : ', status);
-
             status.emit('handleConnection');
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('### getStatusList ### : ', payload);
-                dispatch(setMemberListStatus(payload));
-                for (const row of payload) {
-                    if (row.userPK === userInfo.USER_PK) {
-                        dispatch(setUserInfo({ status: row.status }));
-                    }
-                }
-            });
+
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
                 dispatch(setMemberStatus(payload.user));
             });
             status.on('client/status/logoutAlert', (payload) => {
+                console.log('logoutAlert : ', payload);
                 dispatch(setMemberStatus(payload));
             });
             status.on('client/status/error', (err) => {
                 console.error('status - error : ', err);
             });
             status.on('client/status/changeStatus', (payload) => {
+                console.log('changeStatus : ', payload);
                 dispatch(setMemberStatus(payload));
             });
             status.on('client/status/logoutEventExecuted', () => {
@@ -161,36 +158,19 @@ export default function CComp() {
             (async () => {
                 try {
                     const url = '/api/account/logout';
-                    const res = await get(url);
-                    const flag = res.data;
+                    const result = await get(url);
 
-                    if (!flag) throw new Error('NO_SERVER_RESPONSE');
+                    if (!result) throw new Error('NO_SERVER_RESPONSE');
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
 
                     Router.push('/');
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             })();
         }
-    };
-
-    const loadMemberList = async () => {
-        const url = '/api/company/member-list';
-
-        await get(url)
-            .then((result) => {
-                if (result === 2) {
-                    return dispatch(resetUserInfo());
-                }
-                const excludeMe = result.filter((row) => row.USER_PK !== userInfo.USER_PK);
-                dispatch(setMember(excludeMe));
-            })
-            .catch((error) => {
-                console.error(error);
-            });
     };
 
     const statusList = [

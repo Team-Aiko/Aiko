@@ -14,7 +14,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import WorkModule from './modules/work.module';
 import TestModule from './modules/test.module';
+
+// import GroupChatUserList from './entity/groupChatUserList.entity';
+import ApprovalFrame from './entity/approvalFrame.entity';
+import ApprovalStep from './entity/approvalStep.entity';
+
 // import  from './entity/groupChatUL.entity';
+
 import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
 import ChatModule from './modules/chat.module';

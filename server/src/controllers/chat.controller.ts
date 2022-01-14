@@ -1,10 +1,13 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
+import { Controller, Post, Req, Res, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { resExecutor } from 'src/Helpers';
 import { bodyChecker } from 'src/Helpers/functions';
+import RequestLoggerInterceptor from 'src/interceptors/requestLogger.Interceptor';
+import UserPayloadParserInterceptor from 'src/interceptors/userPayloadParser.interceptor';
 import ChatService from 'src/services/chat.service';
 
 @Controller('/chat')
+@UseInterceptors(UserPayloadParserInterceptor, RequestLoggerInterceptor)
 export default class ChatController {
     constructor(private readonly chatService: ChatService) {}
 
