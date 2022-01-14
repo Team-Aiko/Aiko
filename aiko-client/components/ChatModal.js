@@ -187,8 +187,6 @@ export default function ChatModal(props) {
     };
 
     const handleClose = () => {
-        socket.emit('handleDisconnect');
-        socket.disconnect();
         setSelectedMember('');
         setMessages([]);
         setChatMember([]);
@@ -269,8 +267,8 @@ export default function ChatModal(props) {
                                       </ListItem>
                                   );
                               })
-                            : memberList.size > 0 &&
-                              [...memberList.values()].map((member) => {
+                            : memberList &&
+                              memberList.map((member) => {
                                   return (
                                       <ListItem
                                           button
