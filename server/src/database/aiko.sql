@@ -300,7 +300,6 @@ COMPANY_PK int not null,
 AC_PK int not null,	
 DEPARTMENT_PK int not null,
 CURRENT_STEP_LEVEL int not null,
-AS_PK int not null,
 START_DATE int not null,
 END_DATE int,
 primary key(AF_PK)
@@ -308,10 +307,12 @@ primary key(AF_PK)
 
 create table APPROVAL_STEP_TABLE (
 AS_PK int auto_increment,
+AF_PK int not null,
 USER_PK int not null,
 STEP_LEVEL int not null,
 DECISION int not null,
 SIGN_DATE int,
+STEP_STATUS int not null,
 primary key(AS_PK)
 );
 

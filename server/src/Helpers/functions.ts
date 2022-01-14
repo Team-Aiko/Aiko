@@ -52,7 +52,6 @@ export const resExecutor: IGetResPacket = function (res: Response, pack: { resul
     if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);
     else {
         packet.result = result;
-
         res.send(packet);
     }
 };
