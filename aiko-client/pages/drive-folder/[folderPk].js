@@ -97,7 +97,7 @@ const drivefolder = () => {
                 <input type='file'onChange={uploadFile}/><button onClick={saveFile}>파일 추가</button>
                 <div>
                     {
-                        subFolder.map((sub, key) => (
+                        subFolder?.map((sub, key) => (
                             <Grid container spacing={1}>
                                 <Grid item xs={5}>
                                     <Paper className={classes.paper}>{sub.FOLDER_NAME}</Paper>
