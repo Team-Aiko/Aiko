@@ -82,7 +82,6 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
 
     //member list modal로 정보 불러오기
     const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
-    const [openSearchMemberModalAssigner, setOpenSearchMemberModalAssigner] = useState(false);
     const [selectedOwner, setSelectedOwner] = useState('');
     const [selectedAssigner, setSelectedAssigner] = useState('');
 
@@ -265,7 +264,7 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 10 }}>
+                    <div style={{ marginTop: 10, display:'flex' }}>
                         <TextField id='standard-basic' label='Owner' style={{ margin: 3 }}
                         value={ selectedOwner == '' ? ''  :selectedOwner[0].FIRST_NAME + ' ' + selectedOwner[0].LAST_NAME}
                         disabled={isAdmin == false}
@@ -282,25 +281,13 @@ const AddActionItem = ({ setAddActionItemModal, nickname }) => {
                             multipleSelection={true}/>
                             : <></>
                         }
-                        <TextField
+                        {/* <TextField
                             id='standard-basic'
                             label='Assigner'
                             style={{ margin: 3 }}
-                            // onClick={() => {setOpenSearchMemberModalAssigner(true)}}
                             value={selectedAssigner}
-                        />
-                        {/* {
-                            openSearchMemberModalAssigner
-                            ? <SearchMemberModal
-                            open={openSearchMemberModalAssigner}
-                            onClose={() => {setOpenSearchMemberModalAssigner(false)}}
-                            onClickSelectedUserList={(user) => {
-                                setSelectedAssigner(user);
-                                setOpenSearchMemberModalAssigner(false);
-                            }}
-                            multipleSelection={true}/>
-                            : <></>
-                        } */}
+                        /> */}
+                        <Typography variant="caption" color='textSecondary'>* Only admin can select owner</Typography>
                     </div>
 
                     <div style={{ marginTop: 10 }}>
