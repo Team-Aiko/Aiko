@@ -1,6 +1,20 @@
+/* [companyPk].js */
 .mainContainer {
-    width: 80%;
-    height: 500px;
-    border:1px solid grey;
-    margin: 0 auto;
+    width:80%;
+    height:80%;
+    display:flex;
+}
+
+/* DriveFolder.js */
+.folderContainer {
+    width: 20%;
+    height:100%;
+    border:1px solid black;
+}
+
+/* DriveFile.js */
+.fileContainer {
+    width:80%;
+    height:100%;
+    border: 1px solid black;
 }
