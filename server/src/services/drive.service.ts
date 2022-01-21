@@ -132,6 +132,17 @@ export default class DriveService {
             let folderPKList: number[] = [];
 
             if (folderPKs !== -1) {
+                // * root folder check
+                const folderList = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                let isRootFolder = false;
+                const isArr = Array.isArray(folderList);
+
+                if (isArr)
+                    isRootFolder = folderList.some(
+                        (folder) => folder.PARENT_PK === undefined || folder.PARENT_PK === null,
+                    );
+                else isRootFolder = folderList.PARENT_PK === undefined || folderList.PARENT_PK === null;
+                if (isRootFolder) throw new AikoError('DriveService/deleteFiles/rootFolderError', 0, -1);
                 const folders = await getRepo(FileFolderRepository).getAllChildrenWithMyself(folderPKs, companyPK);
 
                 folderPKList = folders?.map((folder) => folder.FOLDER_PK);
