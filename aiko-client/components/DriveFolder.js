@@ -2,47 +2,89 @@ import React from 'react';
 import styles from '../styles/Drive.module.css';
 import { useState, useEffect } from 'react';
 import { get, post } from '../_axios';
+import { makeStyles } from '@material-ui/core/styles';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Collapse from '@material-ui/core/Collapse';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
+import DraftsIcon from '@material-ui/icons/Drafts';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import StarBorder from '@material-ui/icons/StarBorder';
+import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+import DeleteIcon from '@material-ui/icons/Delete';
+import StarIcon from '@material-ui/icons/Star';
 
-const DriveFolder = ( {getFolderPk} ) => {
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        maxWidth: 360,
+        backgroundColor: theme.palette.background.paper,
+    },
+    nested: {
+        paddingLeft: theme.spacing(4),
+    },
+}));
 
-    //사용자가 지정한 폴더 이름
-    const [folderName, setFolderName] = useState('');
+const DriveFolder = ({ getFolderPk }) => {
 
-    //폴더 이름 변경시 필요한 함수
-    const changeFolderName = (e) => {
-        setFolderName(e.target.value)
-    };
+    const classes = useStyles();
+    const [open, setOpen] = React.useState(true);
 
-    //폴더 생성 API, 최상단 폴더 생성 API기 때문에 parentPK 프로퍼티 값 1로 고정
-    const createFolder = () => {
-        const url = `/api/store/drive/create-folder`;
-        const data = {
-            folderName: folderName,
-            parentPK: 1
-        };
-        post(url, data)
-        .then((res) => {
-            console.log('Make Root Folder', res);
-            setFolderName('');
-        })
-        .catch((error) => {
-            console.log(error)
-        })
+    const handleClick = () => {
+        setOpen(!open);
     };
 
     return (
         <div className={styles.folderContainer}>
-            <input value={folderName} onChange={changeFolderName} /> <button onClick={createFolder}>파일 추가</button>
+            <List
+                component='nav'
+                aria-labelledby='nested-list-subheader'
+                subheader={
+                    <ListSubheader component='div' id='nested-list-subheader'>
+                        Aiko Drive System
+                    </ListSubheader>
+                }
+                className={classes.root}
+            >
+                <ListItem button onClick={() => {
+                        getFolderPk(1);
+                    }}>
+                    <ListItemIcon>
+                        <FolderOpenIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='Folders' />
+                </ListItem>
+                <ListItem button onClick={handleClick}>
+                    <ListItemIcon>
+                        <StarIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='Starred' />
+                    {open ? <ExpandLess /> : <ExpandMore />}
+                </ListItem>
+                <Collapse in={open} timeout='auto' unmountOnExit>
+                    <List component='div' disablePadding>
+                        <ListItem button className={classes.nested}>
+                            <ListItemIcon>
+                                <StarBorder />
+                            </ListItemIcon>
+                            <ListItemText primary='Important' />
+                        </ListItem>
+                    </List>
+                </Collapse>
+                <ListItem button>
+                    <ListItemIcon>
+                        <DeleteIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='Bin' />
+                </ListItem>
+            </List>
 
-            <div>
-                <div onClick={ () => { getFolderPk(1) } }>파일함</div>
-            </div>
-
-            <div>
-                <div>휴지통</div>
-            </div>
         </div>
-    )
-}
+    );
+};
 
-export default DriveFolder
+export default DriveFolder;

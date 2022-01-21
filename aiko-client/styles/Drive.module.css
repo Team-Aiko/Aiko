@@ -1,20 +1,50 @@
 /* [companyPk].js */
 .mainContainer {
     width:80%;
-    height:80%;
+    height:88%;
     display:flex;
+    margin: auto;
+    margin-top: 2px;
 }
 
 /* DriveFolder.js */
 .folderContainer {
-    width: 20%;
+    width: 25%;
     height:100%;
-    border:1px solid black;
+    border:2px dotted grey;
+    overflow: hidden;
 }
 
 /* DriveFile.js */
 .fileContainer {
     width:80%;
     height:100%;
-    border: 1px solid black;
+    border: 2px dotted grey;
+    margin-left:10px;
+}
+
+.modalDiv {
+    display:flex;
+    padding:20px;
+}
+
+.folderDiv {
+    width:100%;
+    height:30%;
+    display:flex;
+    flex-wrap: wrap;
+    overflow: auto;
+}
+
+.fileDiv {
+    margin-left:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    overflow: auto;
+}
+
+.fileModal {
+    width:50vw;
+    height:50vh;
 }
