@@ -167,7 +167,7 @@ export default class DriveService {
             await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/deleteFiles',
                 500,
                 headErrorCode.drive + driveServiceError.deleteFiles,
             );
@@ -187,7 +187,7 @@ export default class DriveService {
         } catch (err) {
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/viewFolder',
                 500,
                 headErrorCode.drive + driveServiceError.viewFolder,
             );
@@ -271,7 +271,7 @@ export default class DriveService {
             await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/deleteBinFiles',
                 500,
                 headErrorCode.drive + driveServiceError.deleteBinFiles,
             );

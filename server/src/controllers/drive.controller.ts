@@ -86,7 +86,10 @@ export default class DriveController {
     async deleteFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { filePKs, folderPKs } = req.body;
-            bodyChecker({ filePKs, folderPKs }, { filePKs: ['number', 'number[]'], folderPKs: ['number', 'number[]'] });
+            bodyChecker(
+                { filePKs, folderPKs },
+                { filePKs: ['number', 'number[]', 'undefined', 'null'], folderPKs: ['number', 'number[]'] },
+            );
             const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
                 filePKs: filePKs || -1,
                 folderPKs: folderPKs || -1,

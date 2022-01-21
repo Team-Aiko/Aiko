@@ -152,7 +152,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                     await obj.updateDeleteFlag(validFolders, manager);
                     let filePKs: number[] = [];
 
-                    Promise.all(
+                    await Promise.all(
                         validFolders.map(async (folderPK) => {
                             const result = await getRepo(FileKeysRepository).selectFilesInFolder(folderPK);
                             filePKs = filePKs.concat(result.map((file) => file.FILE_KEY_PK));
