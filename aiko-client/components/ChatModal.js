@@ -216,6 +216,8 @@ export default function ChatModal(props) {
         }
     };
 
+    console.log('^1^', memberList);
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>

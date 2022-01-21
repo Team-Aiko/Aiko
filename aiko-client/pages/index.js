@@ -16,5 +16,6 @@ export default function CComp() {
 }
 
 function PComp(props) {
-    return <>이게.. 로구인?</>;
+
+    return <></>;
 }
