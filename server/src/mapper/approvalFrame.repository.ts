@@ -85,6 +85,9 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             console.log(err);
         }
     }
+    async detailFrame(userPk: number, departmentPk: number, comPk: number, framePk: number) {
+        const reulst = await await this.createQueryBuilder().select(['']).andWhere('');
+    }
     // async needToDoList(infos: any) {
     //     try {
     //         for (const info of infos) {

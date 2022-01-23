@@ -109,4 +109,7 @@ export default class ApprovalService {
         const result = await getRepo(ApprovalFrameRepository).generateList(framePks);
         return result; /// 결과반환
     }
+    async detailApproval(userPk: number, departmentPk: number, comPk: number, framePk: number) {
+        const frame = await getRepo(ApprovalFrameRepository).detailFrame(userPk, departmentPk, comPk, framePk);
+    }
 }

@@ -15,10 +15,10 @@ export default class ApprovalController {
 
     // ! api doc
     @Post('write')
-    async createApproval(@Req() req: Request, @Res() res: Response) {
+    @UseInterceptors(UserPayloadParserInterceptor)
+    async createApproval(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
         try {
             const { title, content, approverPks, agreerPks, approvalInfo } = req.body;
-            const userPayload = usrPayloadParser(req);
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
@@ -33,15 +33,30 @@ export default class ApprovalController {
     }
 
     @Get('list')
-    async viewApproval(@Req() req: Request, @Res() res: Response) {
+    @UseInterceptors(UserPayloadParserInterceptor)
+    async viewApproval(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
         try {
             const { currentPage, feedsPerPage, groupCnt } = req.query;
             const view = req.query.view.toString();
-            const userPayload = usrPayloadParser(req);
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
             const result = await this.approvalService.viewApproval(userPk, departmentPk, comPk, view);
+            resExecutor(res, { result: result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+    @Get('detail')
+    @UseInterceptors(UserPayloadParserInterceptor)
+    async detailApproval(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
+        try {
+            const userPayload = usrPayloadParser(req);
+            const departmentPk = userPayload.DEPARTMENT_PK;
+            const comPk = userPayload.COMPANY_PK;
+            const userPk = userPayload.USER_PK;
+            const framePk = parseInt(req.query.AF_PK.toString());
+            const result = await this.approvalService.detailApproval(userPk, departmentPk, comPk, framePk);
             resExecutor(res, { result: result });
         } catch (err) {
             throw resExecutor(res, { err });
