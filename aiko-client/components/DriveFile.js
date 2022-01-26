@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from '../styles/Drive.module.css';
+import DriveUpload from './DriveUpload';
 import { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { get, post } from '../_axios';
@@ -17,6 +18,7 @@ import {
 } from '@material-ui/core';
 import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
 import Modal from './Modal.js';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -83,7 +85,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     const deleteItem = () => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs: deletingFolderPk,
+            "folderPKs": deletingFolderPk,
         };
         post(url, data)
             .then((res) => {
@@ -98,35 +100,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     useEffect(() => {
         deleteItem()
     }, [deletingFolderPk])
-
-
-    //파일 업로드에 필요한 파일 배열
-    const [file, setFile] = useState([]);
-
-    //파일 업로드에 필요한 함수
-    const fileToUpload = (e) => {
-        setFile((prev) => [...prev, ...Object.values(e.target.files)]);
-    };
-
-    //파일 업로드 API
-    const uploadFile = () => {
-        const formData = new FormData();
-        const url = '/api/store/drive/save-files';
-        formData.append('files', file);
-        formData.append('folderPK', selectedFolderPk);
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data',
-            },
-        };
-        post(url, formData, config)
-            .then((res) => {
-                console.log('File Upload', res);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
 
     return (
         <div className={styles.fileContainer}>
@@ -226,18 +199,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
                 </Button>
             </div>
             <Divider />
-            <input type='file' multiple onChange={fileToUpload} />
-            <button onClick={uploadFile}>파일 추가</button>
+
             {fileModalOpen ? (
-                <Modal
-                    title='Upload New Files'
-                    open={fileModalOpen}
-                    onClose={() => {
-                        setFileModalOpen(false);
-                    }}
-                >
-                    <div className={styles.fileModal}></div>
-                </Modal>
+                <DriveUpload fileModalOpen={fileModalOpen} setFileModalOpen={setFileModalOpen}
+                selectedFolderPk={selectedFolderPk}>
+                </DriveUpload>
             ) : (
                 <></>
             )}

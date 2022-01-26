@@ -4,7 +4,7 @@
     height:88%;
     display:flex;
     margin: auto;
-    margin-top: 2px;
+    margin-top: 10px;
 }
 
 /* DriveFolder.js */
@@ -47,4 +47,11 @@
 .fileModal {
     width:50vw;
     height:50vh;
+}
+
+/* DriveUpload.js */
+.dragDropDiv {
+    border: 3px dotted grey;
+    margin: 10px;
+    padding: 15px;
 }
