@@ -88,7 +88,10 @@ export default class DriveController {
             const { filePKs, folderPKs } = req.body;
             bodyChecker(
                 { filePKs, folderPKs },
-                { filePKs: ['number', 'number[]', 'undefined', 'null'], folderPKs: ['number', 'number[]'] },
+                {
+                    filePKs: ['number', 'number[]', 'undefined', 'null'],
+                    folderPKs: ['number', 'number[]', 'undefined', 'null'],
+                },
             );
             const primaryKeys: { filePKs: number | number[]; folderPKs: number | number[] } = {
                 filePKs: filePKs || -1,
