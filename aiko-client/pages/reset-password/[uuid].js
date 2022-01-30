@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useRouter, push } from 'next/router';
+import React, { useState, useEffect } from 'react';
+import { useRouter, push, router } from 'next/router';
 import { CssBaseline, Button, Container, TextField, Typography } from '@material-ui/core';
 import { account } from 'web-snippets';
 import { post } from 'axios';
@@ -12,6 +12,25 @@ export default function ResetPassword() {
     const [pwCf, setPwCf] = useState('');
     const [pwErr, setPwErr] = useState(false);
     const [pwCfErr, setPwCfErr] = useState(false);
+
+    const [isChanged, setIsChanged] = useState(false);
+    const [isCl, setIsCl] = useState(false);
+    const [timeoutId, setTimeoutId] = useState(0)
+
+    useEffect(() => {
+        if(isCl) {
+            let timeIdx = setTimeout(() => {
+                setIsCl(false);
+                clearTimeout(timeIdx);
+                setTimeoutId(false);
+            }, 2000)
+        }
+    }, [isCl])
+
+    const onKeyDownHandler = (e) => {
+        let isCapsLock = e.getModifierState('CapsLock');
+        setIsCl(isCapsLock)
+    }
 
     const checkValidationStrings = e => {
         const id = e.target.id;
@@ -46,13 +65,27 @@ export default function ResetPassword() {
                 .then(res => {
                     const data = res.data;
                     console.log('🚀 ~ file: [uuid].js ~ line 48 ~ handleSubmit ~ data', data);
-                    data ? push('/') : undefined;
+                    setIsChanged(res.data.result);
+                    setPw('');
+                    setPwCf('')
                 })
                 .catch(err => console.log(err));
         } else {
-            alert('invalid password settings');
+            alert('비밀번호를 다시 설정해주세요.');
         }
     };
+
+    const completeChange = () => {
+        if(isChanged == true) {
+            alert('비밀번호가 변경되었습니다. 다시 로그인 해주세요.');
+            router.push('/login');
+        }
+    }
+
+    useEffect(() => {
+        completeChange()
+    }, [isChanged])
+
 
     return (
         <React.Fragment>
@@ -63,34 +96,47 @@ export default function ResetPassword() {
                     <Container maxWidth='sm'>
                         <Typography
                             component='div'
-                            style={{ backgroundColor: '#FFFFFF', height: '50vh', width: '70vh' }}
+                            style={{ backgroundColor: '#FFFFFF', height: '50vh', width: '70vh', borderRadius:'10px' }}
                         >
                             <div className={styles.formDiv}>
-                            <Typography variant="h5" display="block" align='center' gutterBottom color='primary' style={{marginTop:10}}>
-                                Create a New Password
+
+                                <div style={{display:'flex', alignItems:'center', width:'50%', height:'40px', justifyContent:'space-around'}}>
+                                <h3 style={{color:'#3f51b5'}}>Aiko</h3>
+                            <Typography color='textSecondary'>
+                            New Password
                             </Typography>
+                                </div>
+                            
                                 <TextField
                                     id='pw'
                                     label='Password'
                                     variant='outlined'
                                     size='small'
                                     error={pwErr}
+                                    type='password'
                                     onChange={checkValidationStrings}
+                                    onKeyDown={onKeyDownHandler}
                                 />
                                 <TextField
                                     id='pwCf'
                                     label='Password Confirmation'
                                     variant='outlined'
                                     size='small'
+                                    type='password'
                                     error={pwCfErr}
                                     onChange={checkValidationStrings}
+                                    onKeyDown={onKeyDownHandler}
                                 />
-                                <Button variant='contained' color='primary' onClick={handleSubmit} style={{marginTop:15}}>
+                                {
+                                    isCl ? <Typography variant="button" display="block" align='center' type='caption' color='textSecondary'>CapsLock키가 활성화되어있습니다.</Typography>: <></>
+                                }
+                                <Button variant='contained' color='primary' onClick={handleSubmit}>
                                     submit
                                 </Button>
 
-                                <div style={{marginTop:30}}>
-                                <Typography variant="button" display="block" align='center' color='error' gutterBottom>
+                                <div style={{marginTop:20}}>
+                                <Typography variant="button" display="block" align='center' gutterBottom
+                                className={!pwErr && !pwCfErr ? styles.noWarn : styles.warn}>
                                     Your password should be </Typography>
                                 <Typography variant="button" display="block" align='center' gutterBottom>
                                     8 ~ 30 length, including special symbol,

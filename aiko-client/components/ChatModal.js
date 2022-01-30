@@ -295,6 +295,7 @@ export default function ChatModal(props) {
         setSelectedGroup(group);
         groupSocket.emit('server/gc/read-chat-logs', group.GC_PK);
     };
+    console.log('^1^', memberList);
 
     return (
         <ThemeProvider theme={theme}>

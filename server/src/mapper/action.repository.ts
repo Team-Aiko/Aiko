@@ -1,7 +1,7 @@
 import Action from 'src/entity/action.entity';
 import { AikoError, Pagination, propsRemover } from 'src/Helpers';
 import { IItemBundle } from 'src/interfaces/MVC/workMVC';
-import { EntityRepository, Repository } from 'typeorm';
+import { Brackets, EntityRepository, Repository } from 'typeorm';
 import { IPaginationBundle } from 'src/interfaces/MVC/workMVC';
 import { Company, Department } from 'src/entity';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
@@ -14,6 +14,7 @@ enum actionErr {
     updateItem = 4,
     viewItems = 5,
     getItemCnt = 6,
+    todayAction = 7,
 }
 
 @EntityRepository(Action)
@@ -163,6 +164,35 @@ export default class ActionRepository extends Repository<Action> {
             return await fracture.getCount();
         } catch (err) {
             throw stackAikoError(err, 'action/getItemCnt', 500, headErrorCode.actionDB + actionErr.getItemCnt);
+        }
+    }
+
+    async todayAction(userPK: number, departmentPK: number, day: number, isAll: boolean) {
+        try {
+            const criticalInfo = ['PASSWORD', 'IS_DELETED', 'SALT', 'IS_VERIFIED'];
+            const oneDayTimeInterval = 60 * 60 * 24;
+            const targetServerDay = Math.floor(day / oneDayTimeInterval) * oneDayTimeInterval;
+
+            let fraction = this.createQueryBuilder('a')
+                .leftJoinAndSelect('a.owner', 'owner')
+                .leftJoinAndSelect('a.assigner', 'assigner')
+                .leftJoinAndSelect('a.department', 'department1')
+                .leftJoinAndSelect('owner.department', 'department2')
+                .leftJoinAndSelect('assigner.department', 'department3')
+                .where(`a.USER_PK = ${userPK}`)
+                .andWhere(`a.DEPARTMENT_PK = ${departmentPK}`)
+                .andWhere(`a.START_DATE <= ${targetServerDay}`)
+                .andWhere(`a.DUE_DATE > ${targetServerDay + oneDayTimeInterval}`);
+            fraction = isAll ? fraction : fraction.andWhere(`a.IS_FINISHED = 0`);
+
+            return (await fraction.getMany()).map((action) => {
+                action.assigner = propsRemover(action.assigner, ...criticalInfo);
+                action.owner = propsRemover(action.owner, ...criticalInfo);
+
+                return action;
+            });
+        } catch (err) {
+            throw stackAikoError(err, 'action/todayAction', 500, headErrorCode.actionDB + actionErr.todayAction);
         }
     }
 }

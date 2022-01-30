@@ -1,0 +1,6 @@
+.mainContainer {
+    width: 80%;
+    height: 500px;
+    border:1px solid grey;
+    margin: 0 auto;
+}

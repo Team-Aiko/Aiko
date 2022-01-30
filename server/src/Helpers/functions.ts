@@ -52,7 +52,6 @@ export const resExecutor: IGetResPacket = function (res: Response, pack: { resul
     if (result === undefined || result === null) return new HttpException(packet, packet.httpCode);
     else {
         packet.result = result;
-
         res.send(packet);
     }
 };
@@ -238,10 +237,9 @@ export function getUnixTime(date: Date) {
 export function getServerTime(serverHour: number) {
     const today = new Date();
     const hour = serverHour < 10 ? `0${serverHour}` : serverHour.toString();
+    const timeStamp = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()} ${hour}:00:00`;
 
-    const serverTime = Math.floor(
-        new Date(`${today.getFullYear()}-${today.getMonth()}-${today.getDate()} ${hour}:00:00`).getTime() / 1000,
-    );
+    const serverTime = Math.floor(new Date(timeStamp).getTime() / 1000);
 
     return serverTime;
 }
