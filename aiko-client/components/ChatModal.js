@@ -13,6 +13,10 @@ import {
     Avatar,
     List,
     ListItem,
+    Tab,
+    Tabs,
+    Icon,
+    Grid,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { get, post } from '../_axios';
@@ -20,16 +24,24 @@ import { useSelector, useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
 import { setMember, setMemberChatRoomPK } from '../_redux/memberReducer';
 import moment from 'moment';
+import PersonIcon from '@material-ui/icons/Person';
+import PeopleIcon from '@material-ui/icons/PeopleAlt';
+import AddIcon from '@material-ui/icons/Add';
+import SearchMemberModal from './SearchMemberModal';
+import Modal from './Modal';
 
 const useStyles = makeStyles((theme) => ({
     dialogPaper: {
-        width: '700px',
+        maxWidth: '800px',
+        width: '800px',
         height: '600px',
         display: 'flex',
         flexDirection: 'row',
     },
     memberToolbar: {
         background: '#5c6bc0',
+        display: 'flex',
+        justifyContent: 'space-between',
     },
     toolbar: {
         display: 'flex',
@@ -84,49 +96,79 @@ export default function ChatModal(props) {
     const messagesRef = useRef(null);
     const [inputMember, setInputMember] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [tabValue, setTabValue] = useState(0);
+    const [openSearchMemberModal, setOpenSearchMemberModal] = useState(false);
+    const [groupChatMember, setGroupChatMember] = useState([]);
+    const [openAddGroup, setOpenAddGroup] = useState(false);
+    const [groupChatTitle, setGroupChatTitle] = useState('');
+    const [groupChatList, setGroupChatList] = useState([]);
+    const [groupSocket, setGroupSocket] = useState(undefined);
+    const [selectedGroup, setSelectedGroup] = useState('');
 
     useEffect(() => {
-        if (open) {
-            const socket = io('http://localhost:5001/private-chat', { withCredentials: true });
-            setSocket(socket);
+        socket && socket.emit('handleDisconnect');
+        groupSocket && groupSocket.emit('handleDisconnect');
 
-            socket.emit('handleConnection');
-            socket.on('client/private-chat/connected', (payload) => {
-                let newPayload = [];
-                if (payload.evenCase.length > 0) {
-                    const evenCase = payload.evenCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_1',
-                        };
-                    });
-                    newPayload.push(...evenCase);
-                }
-                if (payload.oddCase.length > 0) {
-                    const oddCase = payload.oddCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_2',
-                        };
-                    });
-                    newPayload.push(...oddCase);
-                }
+        console.log('privateChat');
+        const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
+        setSocket(privateChat);
 
-                dispatch(setMemberChatRoomPK(newPayload));
-            });
-            socket.on('client/private-chat/receive-chatlog', (payload) => {
-                console.log('client/private-chat/receive-chatlog : ', payload);
-                setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
-                setChatMember(payload.info.userInfo);
-            });
+        privateChat.emit('handleConnection');
+        privateChat.on('client/private-chat/connected', (payload) => {
+            let newPayload = [];
+            if (payload.evenCase.length > 0) {
+                const evenCase = payload.evenCase.map((row) => {
+                    return {
+                        ...row,
+                        member: 'USER_1',
+                    };
+                });
+                newPayload.push(...evenCase);
+            }
+            if (payload.oddCase.length > 0) {
+                const oddCase = payload.oddCase.map((row) => {
+                    return {
+                        ...row,
+                        member: 'USER_2',
+                    };
+                });
+                newPayload.push(...oddCase);
+            }
 
-            socket.on('client/private-chat/send', (payload) => {
-                console.log('client/private-chat/send');
-                setMessages((messages) => [...messages, payload]);
-                scrollToBottom();
-            });
-        }
-    }, [open]);
+            dispatch(setMemberChatRoomPK(newPayload));
+        });
+        privateChat.on('client/private-chat/receive-chatlog', (payload) => {
+            console.log('client/private-chat/receive-chatlog : ', payload);
+            setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
+            setChatMember(payload.info.userInfo);
+        });
+
+        privateChat.on('client/private-chat/send', (payload) => {
+            console.log('client/private-chat/send');
+            setMessages((messages) => [...messages, payload]);
+            scrollToBottom();
+        });
+
+        console.log('groupChat');
+        const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
+        setGroupSocket(groupChat);
+
+        groupChat.emit('handleConnection');
+        groupChat.on('client/gc/connected', (payload) => {
+            console.log('/client/gc/connected : ', payload);
+            setGroupChatList(payload);
+        });
+        groupChat.on('client/gc/join-room-notice', (payload) => {
+            console.log('/client/gc/join-room-notice : ', payload);
+        });
+        groupChat.on('client/gc/read-chat-logs', (payload) => {
+            console.log('/client/gc/read-chat-logs : ', payload);
+        });
+    }, []);
+
+    useEffect(() => {
+        setSelectedMember('');
+    }, [tabValue]);
 
     useEffect(() => {
         if (messages) {
@@ -216,92 +258,238 @@ export default function ChatModal(props) {
         }
     };
 
+    const handleTab = (event, value) => {
+        setTabValue(value);
+    };
+
+    const handleAddGroup = () => {
+        setOpenAddGroup(true);
+    };
+
+    const removeMember = (index) => {
+        const memberList = [...groupChatMember];
+        memberList.splice(index, 1);
+        setGroupChatMember(memberList);
+    };
+
+    const handleCreateGroupChat = () => {
+        if (!groupChatTitle) {
+            return alert('룸 제목을 입력하세요.');
+        }
+        if (groupChatMember.length === 0) {
+            return alert('참여 멤버를 추가하세요.');
+        }
+        const memberList = groupChatMember.map((user) => user.USER_PK);
+        const data = {
+            userList: [userInfo.USER_PK, ...memberList],
+            admin: userInfo.USER_PK,
+            roomTitle: groupChatTitle,
+            maxNum: groupChatMember.length + 1,
+        };
+        console.log('data : ', data);
+        socket.emit('server/gc/create-group-chat-room', data);
+        setOpenAddGroup(false);
+    };
+
+    const handleSelectGroup = (group) => {
+        setSelectedGroup(group);
+        groupSocket.emit('server/gc/read-chat-logs', group.GC_PK);
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={open} classes={{ paper: classes.dialogPaper }}>
-                <div className={styles['member-container']}>
-                    <Toolbar classes={{ root: classes.memberToolbar }}>
-                        <Typography className={classes.memberTitle}>Members</Typography>
-                    </Toolbar>
-                    <div className={styles['member-search']}>
-                        <TextField
-                            label='검색'
-                            variant='outlined'
-                            fullWidth
-                            size='small'
-                            value={inputMember}
-                            onChange={(e) => setInputMember(e.target.value)}
+                <div className={styles.tabs}>
+                    <Tabs orientation='vertical' style={{ marginTop: '64px' }} value={tabValue} onChange={handleTab}>
+                        <Tab label={<PersonIcon style={{ fill: '#FFFFFF' }} />} style={{ minWidth: 0 }} />
+                        <Tab label={<PeopleIcon style={{ fill: '#FFFFFF' }} />} style={{ minWidth: 0 }} />
+                    </Tabs>
+                </div>
+                {tabValue === 0 ? (
+                    <div className={styles['member-container']}>
+                        <Toolbar classes={{ root: classes.memberToolbar }}>
+                            <Typography className={classes.memberTitle}>Members</Typography>
+                        </Toolbar>
+                        <div className={styles['member-search']}>
+                            <TextField
+                                label='검색'
+                                variant='outlined'
+                                fullWidth
+                                size='small'
+                                value={inputMember}
+                                onChange={(e) => setInputMember(e.target.value)}
+                            />
+                        </div>
+                        <List component='nav'>
+                            {searchResults.length > 0
+                                ? searchResults.map((member) => {
+                                      return (
+                                          <ListItem
+                                              button
+                                              key={member.USER_PK}
+                                              style={{ justifyContent: 'space-between' }}
+                                              onClick={() => handleSelectMember(member)}
+                                          >
+                                              <div className={styles['member-user-wrapper']}>
+                                                  <Avatar
+                                                      src={
+                                                          member.USER_PROFILE_PK
+                                                              ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                              : null
+                                                      }
+                                                      style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                                  />
+                                                  <Typography>{member.NICKNAME}</Typography>
+                                              </div>
+                                              {statusList.map((row, index) => {
+                                                  return member.status === row.status ? (
+                                                      <div
+                                                          ref={statusEl}
+                                                          key={row.status}
+                                                          className={styles['member-status']}
+                                                          style={{ backgroundColor: row.color }}
+                                                      ></div>
+                                                  ) : null;
+                                              })}
+                                          </ListItem>
+                                      );
+                                  })
+                                : memberList &&
+                                  memberList.map((member) => {
+                                      return (
+                                          <ListItem
+                                              button
+                                              key={member.USER_PK}
+                                              style={{ justifyContent: 'space-between' }}
+                                              onClick={() => handleSelectMember(member)}
+                                          >
+                                              <div className={styles['member-user-wrapper']}>
+                                                  <Avatar
+                                                      src={
+                                                          member.USER_PROFILE_PK
+                                                              ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
+                                                              : null
+                                                      }
+                                                      style={{ width: '30px', height: '30px', marginRight: '4px' }}
+                                                  />
+                                                  <Typography>{member.NICKNAME}</Typography>
+                                              </div>
+                                              {statusList.map((row, index) => {
+                                                  return member.status === row.status ? (
+                                                      <div
+                                                          ref={statusEl}
+                                                          key={row.status}
+                                                          className={styles['member-status']}
+                                                          style={{ backgroundColor: row.color }}
+                                                      ></div>
+                                                  ) : null;
+                                              })}
+                                          </ListItem>
+                                      );
+                                  })}
+                        </List>
+                    </div>
+                ) : (
+                    <div className={styles['member-container']}>
+                        <Toolbar classes={{ root: classes.memberToolbar }}>
+                            <Typography className={classes.memberTitle}>Groups</Typography>
+                            <IconButton onClick={handleAddGroup}>
+                                <AddIcon style={{ fill: '#FFFFFF' }} />
+                            </IconButton>
+                        </Toolbar>
+                        <List component='nav'>
+                            {groupChatList.length > 0
+                                ? groupChatList.map((groupChat) => {
+                                      return (
+                                          <ListItem
+                                              button
+                                              key={groupChat.GC_PK}
+                                              onClick={() => handleSelectGroup(groupChat)}
+                                          >
+                                              <Typography>{groupChat.ROOM_TITLE}</Typography>
+                                          </ListItem>
+                                      );
+                                  })
+                                : null}
+                        </List>
+                        <Modal
+                            open={openAddGroup}
+                            onClose={() => {
+                                setOpenAddGroup(false);
+                            }}
+                            title='그룹 채팅룸 만들기'
+                        >
+                            <Grid container spacing={2} style={{ padding: '20px', maxWidth: '460px', width: '100%' }}>
+                                <Grid item xs={3}>
+                                    <Typography>룸 제목</Typography>
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <TextField
+                                        variant='outlined'
+                                        fullWidth
+                                        size='small'
+                                        onChange={(e) => {
+                                            setGroupChatTitle(e.target.value);
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Typography>참여 멤버</Typography>
+                                </Grid>
+                                <Grid item xs={9} style={{ display: 'flex', alignItems: 'center' }}>
+                                    {groupChatMember.length > 0 ? (
+                                        <div className={styles['selected-user-list']}>
+                                            {groupChatMember.map((member, index) => {
+                                                return (
+                                                    <div
+                                                        className={styles['user-wrapper']}
+                                                        key={member.user ? member.user.USER_PK : member.USER_PK}
+                                                    >
+                                                        <Typography variant='body2'>
+                                                            {member.user ? member.user.NICKNAME : member.NICKNAME}
+                                                        </Typography>
+                                                        <IconButton
+                                                            style={{ width: '20px', height: '20px', marginLeft: '8px' }}
+                                                            onClick={() => removeMember(index)}
+                                                        >
+                                                            <CloseIcon />
+                                                        </IconButton>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : null}
+                                    <Button
+                                        variant='contained'
+                                        color='primary'
+                                        onClick={() => {
+                                            setOpenSearchMemberModal(true);
+                                        }}
+                                    >
+                                        추가
+                                    </Button>
+                                </Grid>
+                                <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <Button variant='contained' color='primary' onClick={handleCreateGroupChat}>
+                                        만들기
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Modal>
+                        <SearchMemberModal
+                            open={openSearchMemberModal}
+                            onClose={() => {
+                                setOpenSearchMemberModal(false);
+                            }}
+                            onClickSelectedUserList={(user) => {
+                                setGroupChatMember((groupChatMember) => [...groupChatMember, ...user]);
+                                setOpenSearchMemberModal(false);
+                            }}
+                            title='그룹 채팅 멤버 선택'
+                            multipleSelection={true}
                         />
                     </div>
-                    <List component='nav'>
-                        {searchResults.length > 0
-                            ? searchResults.map((member) => {
-                                  return (
-                                      <ListItem
-                                          button
-                                          key={member.USER_PK}
-                                          style={{ justifyContent: 'space-between' }}
-                                          onClick={() => handleSelectMember(member)}
-                                      >
-                                          <div className={styles['member-user-wrapper']}>
-                                              <Avatar
-                                                  src={
-                                                      member.USER_PROFILE_PK
-                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
-                                                          : null
-                                                  }
-                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
-                                              />
-                                              <Typography>{member.NICKNAME}</Typography>
-                                          </div>
-                                          {statusList.map((row, index) => {
-                                              return member.status === row.status ? (
-                                                  <div
-                                                      ref={statusEl}
-                                                      key={row.status}
-                                                      className={styles['member-status']}
-                                                      style={{ backgroundColor: row.color }}
-                                                  ></div>
-                                              ) : null;
-                                          })}
-                                      </ListItem>
-                                  );
-                              })
-                            : memberList &&
-                              memberList.map((member) => {
-                                  return (
-                                      <ListItem
-                                          button
-                                          key={member.USER_PK}
-                                          style={{ justifyContent: 'space-between' }}
-                                          onClick={() => handleSelectMember(member)}
-                                      >
-                                          <div className={styles['member-user-wrapper']}>
-                                              <Avatar
-                                                  src={
-                                                      member.USER_PROFILE_PK
-                                                          ? `/api/store/download-profile-file?fileId=${member.USER_PROFILE_PK}`
-                                                          : null
-                                                  }
-                                                  style={{ width: '30px', height: '30px', marginRight: '4px' }}
-                                              />
-                                              <Typography>{member.NICKNAME}</Typography>
-                                          </div>
-                                          {statusList.map((row, index) => {
-                                              return member.status === row.status ? (
-                                                  <div
-                                                      ref={statusEl}
-                                                      key={row.status}
-                                                      className={styles['member-status']}
-                                                      style={{ backgroundColor: row.color }}
-                                                  ></div>
-                                              ) : null;
-                                          })}
-                                      </ListItem>
-                                  );
-                              })}
-                    </List>
-                </div>
+                )}
 
                 <div className={styles['message-container']}>
                     <Toolbar

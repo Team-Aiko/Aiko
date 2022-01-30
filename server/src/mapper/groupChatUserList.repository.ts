@@ -55,7 +55,7 @@ export default class GroupChatUserListRepository extends Repository<GroupChatUse
                 .leftJoinAndSelect('gcr.user', 'user')
                 .leftJoinAndSelect('user.department', 'department')
                 .where('gcr.GC_PK = :GC_PK', { GC_PK })
-                .andWhere('gcr.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                // .andWhere('gcr.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
                 .getMany();
 
             return list.map((item) => propsRemover(item.user, ...criticalInfos));
