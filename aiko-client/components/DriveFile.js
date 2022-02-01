@@ -82,24 +82,29 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     const [deletingFolderPk, setDeletingFolderPk] = useState(0);
 
     //폴더 삭제 API
-    const deleteItem = () => {
+    const deleteItem = (folderPk) => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            "folderPKs": deletingFolderPk,
+            folderPKs: folderPk,
         };
-        post(url, data)
+        const config = {
+            header: {
+                'content-type': 'application/json',
+            },
+        };
+        post(url, data, config)
             .then((res) => {
                 console.log('Delete Items', res);
                 handleClose();
             })
             .catch((error) => {
-                console.log(error);
+                console.log('delete Items', error);
             });
     };
 
-    useEffect(() => {
-        deleteItem()
-    }, [deletingFolderPk])
+    // useEffect(() => {
+    //     deleteItem()
+    // }, [deletingFolderPk])
 
     return (
         <div className={styles.fileContainer}>
@@ -169,8 +174,9 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
                                     border:'1px dotted grey'
                                     },
                                 }}
+                                key={root.FOLDER_PK}
                             >
-                            <MenuItem onClick={() => {setDeletingFolderPk(root.FOLDER_PK)}}>삭제</MenuItem>
+                            <MenuItem onClick={() => {deleteItem(root.FOLDER_PK)}}>삭제</MenuItem>
                             <MenuItem>이동</MenuItem>
                             </Menu>
                         </ListItem>
