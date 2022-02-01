@@ -4,7 +4,7 @@ import Router from 'next/router';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { ListItemText, ListItemIcon, Drawer, Button, List, ListItem } from '@material-ui/core';
-import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment} from '@material-ui/icons';
+import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment, Folder} from '@material-ui/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { handleSideNav } from '../../_redux/popupReducer';
 import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes';
@@ -58,6 +58,10 @@ function PComp(props) {
         Router.push('/board');
     };
 
+    const goToDrive = () => {
+        Router.push('/drive')
+    }
+
     return (
         <>
             <Drawer open={sideNavIsOpen} onClose={closeDrawer}>
@@ -94,7 +98,13 @@ function PComp(props) {
                             </ListItemIcon>
                             <ListItemText primary='게시판' />
                         </ListItem>
-                        <ListItem button>
+                        <ListItem button onClick={goToDrive}>
+                            <ListItemIcon>
+                                <Folder />
+                            </ListItemIcon>
+                            <ListItemText primary='드라이브' />
+                        </ListItem>
+                        <ListItem>
                             <ListItemIcon>
                                 <Settings />
                             </ListItemIcon>
