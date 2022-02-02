@@ -1,78 +1,49 @@
-export const SET_MEMBER = 'SET_MEMBER';
-export const SET_MEMBER_STATUS = 'SET_MEMBER_STATUS';
-export const SET_MEMBER_LIST_STATUS = 'SET_MEMBER_LIST_STATUS';
-export const SET_MEMBER_CHAT_ROOM_PK = 'SET_MEMBER_CHAT_ROOM_PK';
+import { createSlice } from '@reduxjs/toolkit';
 
-export const setMember = (member) => ({
-    type: SET_MEMBER,
-    member,
-});
+const initialState = [];
 
-export const setMemberStatus = (user) => ({
-    type: SET_MEMBER_STATUS,
-    user,
-});
-
-export const setMemberListStatus = (memberList) => ({
-    type: SET_MEMBER_LIST_STATUS,
-    memberList,
-});
-
-export const setMemberChatRoomPK = (roomList) => ({
-    type: SET_MEMBER_CHAT_ROOM_PK,
-    roomList,
-});
-
-const memberReducer = (state = [], action) => {
-    switch (action.type) {
-        case SET_MEMBER:
+const memberSlice = createSlice({
+    name: 'memberReducer',
+    initialState,
+    reducers: {
+        setMember(state, action) {
+            return action.payload;
+        },
+        setMemberStatus(state, action) {
             if (state) {
-                const memberMap = action.member.reduce((map, obj) => {
-                    map.set(obj.USER_PK, { ...obj });
-                    return map;
-                }, new Map());
-                return memberMap;
+                const updateMember = state.map((row) => {
+                    if (row.USER_PK === action.payload.userPK) {
+                        return {
+                            ...row,
+                            status: action.payload.status,
+                        };
+                    } else {
+                        return {
+                            ...row,
+                        };
+                    }
+                });
+                return updateMember;
             }
-
-        case SET_MEMBER_STATUS:
+        },
+        setMemberChatRoomPK(state, action) {
             if (state) {
-                const newState = new Map(state);
-                newState.has(action.user.userPK) &&
-                    newState.set(action.user.userPK, {
-                        ...newState.get(action.user.userPK),
-                        status: action.user.status,
-                    });
-                return newState;
-            }
-
-        case SET_MEMBER_LIST_STATUS:
-            if (state) {
-                const newState = new Map(state);
-                for (const row of action.memberList) {
-                    newState.has(row.userPK) &&
-                        newState.set(row.userPK, {
-                            ...newState.get(row.userPK),
-                            status: row.status,
-                        });
+                const updateMember = [];
+                for (const member of state) {
+                    for (const room of action.payload) {
+                        if (member.USER_PK === room[room.member]) {
+                            updateMember.push({
+                                ...member,
+                                CR_PK: room.CR_PK,
+                            });
+                        }
+                    }
                 }
-                return newState;
+                return updateMember;
             }
+        },
+    },
+});
 
-        case SET_MEMBER_CHAT_ROOM_PK:
-            if (state) {
-                const newState = new Map(state);
-                for (const room of action.roomList) {
-                    newState.has(room[room.member]) &&
-                        newState.set(room[room.member], {
-                            ...newState.get(room[room.member]),
-                            CR_PK: room.CR_PK,
-                        });
-                }
-                return newState;
-            }
-        default:
-            return state;
-    }
-};
-
-export default memberReducer;
+export const { setMember, setMemberStatus, setMemberChatRoomPK } = memberSlice.actions;
+export default memberSlice.reducer;

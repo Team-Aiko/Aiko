@@ -132,6 +132,17 @@ export default class DriveService {
             let folderPKList: number[] = [];
 
             if (folderPKs !== -1) {
+                // * root folder check
+                const folderList = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                let isRootFolder = false;
+                const isArr = Array.isArray(folderList);
+
+                if (isArr)
+                    isRootFolder = folderList.some(
+                        (folder) => folder.PARENT_PK === undefined || folder.PARENT_PK === null,
+                    );
+                else isRootFolder = folderList.PARENT_PK === undefined || folderList.PARENT_PK === null;
+                if (isRootFolder) throw new AikoError('DriveService/deleteFiles/rootFolderError', 0, -1);
                 const folders = await getRepo(FileFolderRepository).getAllChildrenWithMyself(folderPKs, companyPK);
 
                 folderPKList = folders?.map((folder) => folder.FOLDER_PK);
@@ -167,7 +178,7 @@ export default class DriveService {
             await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/deleteFiles',
                 500,
                 headErrorCode.drive + driveServiceError.deleteFiles,
             );
@@ -187,7 +198,7 @@ export default class DriveService {
         } catch (err) {
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/viewFolder',
                 500,
                 headErrorCode.drive + driveServiceError.viewFolder,
             );
@@ -271,7 +282,7 @@ export default class DriveService {
             await queryRunner.rollbackTransaction();
             throw stackAikoError(
                 err,
-                'DriveService/getDepartmentMembers',
+                'DriveService/deleteBinFiles',
                 500,
                 headErrorCode.drive + driveServiceError.deleteBinFiles,
             );

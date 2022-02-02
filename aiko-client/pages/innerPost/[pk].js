@@ -81,6 +81,10 @@ const useStyles = makeStyles((theme) => ({
         cursor: 'pointer',
         color: '#3f51b5',
     },
+    postedUpdated : {
+        display:'flex',
+        flexDirection:'column'
+    }
 }));
 
 const innerPost = () => {
@@ -97,6 +101,9 @@ const innerPost = () => {
     const [date, setDate] = useState('');
     const [pkNum, setPkNum] = useState(undefined);
     const [files, setFiles] = useState([]);
+
+    const [updatedTime, setUpdatedTime] = useState('');
+    const [updateUserPk, setUpdateUserPk] = useState('');
 
     console.log(files);
     console.log(addedFile);
@@ -166,12 +173,18 @@ const innerPost = () => {
             setWriterPk(res.USER_PK);
             const filtered = res.files.filter(file => file.IS_DELETE == 0);
             setFiles(filtered);
-        });
+            setUpdatedTime(res.UPDATE_DATE)
+            setUpdateUserPk(res.UPDATE_USER_PK)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     };
 
     useEffect(() => {
         getDetails();
     }, [pk]);
+
 
     const [nextPage, setNextPage] = useState('');
 
@@ -301,6 +314,7 @@ const innerPost = () => {
     const maxFile = () => {
         if(addedFile.length + files.length > 3) {
             alert('파일은 최대 세개까지 전송 가능합니다.');
+            setAddedFile([]);
         }
     }
 
@@ -314,11 +328,22 @@ const innerPost = () => {
         const year = date.getFullYear();
         const month = '0' + (date.getMonth() + 1);
         const day = '0' + date.getDate();
-        const hour = '0' + date.getHours();
-        const minute = '0' + date.getMinutes();
+        const hour = '0' + (date.getHours() +2);
+        const minute = '0' + (date.getMinutes());
         const second = '0' + date.getSeconds();
-        return year + '-' + month.substr(-2) + '-' + day.substr(-2) + ' ' + hour.substr(-2) + ':' + second.substr(-2);
+        return year + '-' + month.substr(-2) + '-' + day.substr(-2) + ' ' + hour.substr(-2) + ':' + minute.substr(-2);
     }
+
+    const updateCheck = () => {
+        if(getUnixTime(updatedTime) == getUnixTime(date)) {
+            setUpdateUserPk('');
+            setUpdatedTime (0);
+        }
+    };
+
+    useEffect(() => {
+        updateCheck()
+    }, [updatedTime]);
 
     //rendering editor states
     const htmlToEditor = content;
@@ -344,13 +369,24 @@ const innerPost = () => {
                     <input
                         className={disabled ? styles.titleInput : styles.titleInputOnChange}
                         value={title}
-                        disabled={writerPk !== currentUserPk}
+                        disabled={writerPk !== currentUserPk || isAdmin}
                         onChange={handleTitle}
                         disabled={disabled}
                     />
+
+                    <div className={classes.postedUpdated}>
                     <p style={{ fontSize: '13px', color: '#6F6A6A' }}>
                         Posted by {name}, {getUnixTime(date)}
                     </p>
+
+                    {
+                        updatedTime !== 0
+                        ? <p style={{ fontSize: '13px', color: '#6F6A6A' }}>
+                        Updated by {updateUserPk}, {getUnixTime(updatedTime)}
+                    </p>
+                        : <></>
+                    }
+                    </div>
                 </div>
 
                 <MyBlock>
@@ -416,7 +452,7 @@ const innerPost = () => {
                             >
                                 {file.ORIGINAL_NAME}
                             </a>
-                            {writerPk == currentUserPk && disabled == false ? (
+                            {disabled == false ? (
                                 <Button
                                     size='small'
                                     className={classes.margin}
@@ -454,7 +490,7 @@ const innerPost = () => {
                             <List />
                         </Button>
 
-                        {writerPk == currentUserPk ? (
+                        {writerPk == currentUserPk || isAdmin? (
                             <Button
                                 variant='contained'
                                 color='primary'
@@ -474,7 +510,7 @@ const innerPost = () => {
                         )}
                     </div>
 
-                    {writerPk == currentUserPk ? (
+                    {writerPk == currentUserPk || isAdmin ? (
                         <div className={styles.align}>
                             <Button
                                 onClick={updateArticle}
