@@ -23,11 +23,16 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             DEPARTMENT_PK: departmentPk,
             CURRENT_STEP_LEVEL: 0,
             START_DATE: time,
+            IS_DELETED: 0,
         });
         return result.identifiers[0];
     }
     async generateList(pks: number[]) {
-        const result = await this.createQueryBuilder('n').select(['n.TITLE', 'n.CONTENT']).whereInIds(pks).getMany();
+        const result = await this.createQueryBuilder('n')
+            .select(['n.TITLE', 'n.CONTENT'])
+            .whereInIds(pks)
+            .andWhere('IS_DELETED =:num', { num: 0 })
+            .getMany();
         return result;
     }
     async doneList(comPk: number, departmentPk: number) {
@@ -37,6 +42,7 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
                 .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
                 .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
                 .andWhere('END_DATE is not null')
+                .andWhere('IS_DELETED =:num', { num: 0 })
                 .getMany();
             return result;
         } catch (err) {
@@ -85,32 +91,17 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             console.log(err);
         }
     }
-    async detailFrame(userPk: number, departmentPk: number, comPk: number, framePk: number) {
-        const result = await await this.createQueryBuilder().select(['']).andWhere('');
-    }
-    // async needToDoList(infos: any) {
-    //     try {
-    //         for (const info of infos) {
-    //             console.log(info);
-    //         }
-    //         // const result = await this.createQueryBuilder('as')
-    //         //     .select(['as.AF_PK', 'as.STEP_LEVEL'])
-    //         //     // .where('USER_PK =:userPk', { userPk: `${userPk}` })
-    //         //     .orWhere('END_DATE is not null')
-    //         //     .getMany();
-    //         // return result;
-    //     } catch (err) {
-    //         console.log(err);
-    //     }
-    //     // result = propsRemover(result, 'user');
-    //     // result = Object.assign(result, name);
-    // }
-}
-
-/* .select()
-            .andWhere('COMPANY_PK =:comPk', { comPk: `${comPk}` })
+    async detailFrame(departmentPk: number, comPk: number, framePk: number) {
+        const result = await await this.createQueryBuilder()
+            .select()
+            .andWhere('AF_PK =:framePk', { framePk: `${framePk}` })
+            .andWhere('IS_DELETED =:num', { num: 0 })
+            .andWhere('COMPANY_PK=:comPk', { comPk: `${comPk}` })
             .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
-            .orWhere('USER_PK =:userPk', { userPk: `${userPk}` })
-            .orWhere('END_DATE is not null')
-            .getMany();
-*/
+            .getOne();
+        return result;
+    }
+    async updateFrame(userPk: number, departmentPk: number, comPk: number, framePk: number) {
+        const result = await await this.createQueryBuilder().select().andWhere('');
+    }
+}

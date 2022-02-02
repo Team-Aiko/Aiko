@@ -302,6 +302,7 @@ DEPARTMENT_PK int not null,
 CURRENT_STEP_LEVEL int not null,
 START_DATE int not null,
 END_DATE int,
+IS_DELETED int,
 primary key(AF_PK)
 );
 

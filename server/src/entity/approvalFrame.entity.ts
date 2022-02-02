@@ -34,6 +34,9 @@ export default class ApprovalFrame {
     @Column()
     END_DATE: number;
 
+    @Column()
+    IS_DELETED: number;
+
     @ManyToOne(() => User, (af) => af.afUser)
     @JoinColumn({ name: 'USER_PK' })
     afUser: User;

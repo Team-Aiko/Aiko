@@ -107,9 +107,21 @@ export default class ApprovalService {
         } // 전체 결제
         //////////////
         const result = await getRepo(ApprovalFrameRepository).generateList(framePks);
+        console.log(result);
         return result; /// 결과반환
     }
-    async detailApproval(userPk: number, departmentPk: number, comPk: number, framePk: number) {
-        const frame = await getRepo(ApprovalFrameRepository).detailFrame(userPk, departmentPk, comPk, framePk);
+    async detailApproval(departmentPk: number, comPk: number, framePk: number) {
+        const frame = await getRepo(ApprovalFrameRepository).detailFrame(departmentPk, comPk, framePk);
+        return frame;
+    }
+    async updateApproval(
+        userPk: number,
+        departmentPk: number,
+        comPk: number,
+        framePk: number,
+        title: string,
+        content: string,
+    ) {
+        const frame = await getRepo(ApprovalFrameRepository).updateFrame(userPk, departmentPk, comPk, framePk);
     }
 }
