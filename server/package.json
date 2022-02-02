@@ -50,7 +50,8 @@
         "typeorm": "^0.2.41",
         "uuid": "^8.3.2",
         "winston": "^3.3.3",
-        "winston-daily-rotate-file": "^4.5.5"
+        "winston-daily-rotate-file": "^4.5.5",
+        "yarn": "^1.22.17"
     },
     "devDependencies": {
         "@nestjs/cli": "^8.1.6",
