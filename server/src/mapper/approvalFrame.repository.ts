@@ -28,12 +28,18 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         return result.identifiers[0];
     }
     async generateList(pks: number[]) {
-        const result = await this.createQueryBuilder('n')
-            .select(['n.TITLE', 'n.CONTENT'])
-            .whereInIds(pks)
-            .andWhere('IS_DELETED =:num', { num: 0 })
-            .getMany();
-        return result;
+        try {
+            const result = await this.createQueryBuilder('n')
+                .select(['n.TITLE', 'n.CONTENT'])
+                .leftJoinAndSelect('n.afUser', 'afUser')
+                .whereInIds(pks)
+                .andWhere('n.IS_DELETED =:num', { num: 0 })
+                .getMany();
+            return result;
+        } catch (err){
+            console.log(err);
+        }
+       
     }
     async doneList(comPk: number, departmentPk: number) {
         try {

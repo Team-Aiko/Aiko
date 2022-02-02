@@ -372,3 +372,10 @@ export function stackAikoError(err: Error, description: string, httpCode: number
 
     return returnErr;
 }
+
+// export function editObjectArray(extractList: string[], objectName: string, ...data: string[]) {
+//     for (let _data of data) {
+//         _data.
+//     }
+//     let objectN = 'objectName' {}
+// }
