@@ -243,7 +243,7 @@ create table NOTICE_BOARD_TABLE (
 	UPDATE_USER_PK int,
 	IS_DELETE int,
 	primary key (NOTICE_BOARD_PK)
-); -- 수정자 추가
+);
 
 
 -- 공지 게시판 파일 테이블 생성 
