@@ -64,9 +64,9 @@ const DriveUpload = ({fileModalOpen, setFileModalOpen, selectedFolderPk}) => {
         <Modal title='Upload New Files' open={fileModalOpen} onClose={() => {setFileModalOpen(false)}}>
             <section className="container">
                 <div {...getRootProps()}>
-                    <input {...getInputProps()} />
+                <input {...getInputProps()} />
                     <div className={styles.dragDropDiv}>
-                    <Typography variant='overline' gutterBottom style={{margin:20}}>Drag and drop some files here, or click to select files</Typography>
+                    <Typography variant='overline' gutterBottom style={{margin:20}}>Drag and drop some files here</Typography>
                     </div>
                 </div>
                 <aside>

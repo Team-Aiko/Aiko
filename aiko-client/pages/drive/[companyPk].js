@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '../../styles/Drive.module.css';
 import DriveFolder from '../../components/DriveFolder';
 import DriveFile from '../../components/DriveFile';
+import DriveBin from '../../components/DriveBin';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { get, post } from '../../_axios';
@@ -42,7 +43,18 @@ const drive = () => {
     return (
         <div className={styles.mainContainer}>
             <DriveFolder getFolderPk={getFolderPk}/>
-            <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}/>
+
+            {
+                selectedFolderPk !== 0
+                ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}/>
+                : <></>
+            }
+
+            {
+                selectedFolderPk == 0
+                ? <DriveBin></DriveBin>
+                : <></>
+            }
         </div>
     )
 }

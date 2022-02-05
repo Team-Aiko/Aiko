@@ -58,14 +58,14 @@ const DriveFolder = ({ getFolderPk }) => {
                     </ListItemIcon>
                     <ListItemText primary='Folders' />
                 </ListItem>
-                <ListItem button onClick={handleClick}>
+                {/* <ListItem button onClick={handleClick}>
                     <ListItemIcon>
                         <StarIcon />
                     </ListItemIcon>
                     <ListItemText primary='Starred' />
                     {open ? <ExpandLess /> : <ExpandMore />}
-                </ListItem>
-                <Collapse in={open} timeout='auto' unmountOnExit>
+                </ListItem> */}
+                {/* <Collapse in={open} timeout='auto' unmountOnExit>
                     <List component='div' disablePadding>
                         <ListItem button className={classes.nested}>
                             <ListItemIcon>
@@ -74,8 +74,10 @@ const DriveFolder = ({ getFolderPk }) => {
                             <ListItemText primary='Important' />
                         </ListItem>
                     </List>
-                </Collapse>
-                <ListItem button>
+                </Collapse> */}
+                <ListItem button onClick={() => {
+                        getFolderPk(0);
+                    }}> 
                     <ListItemIcon>
                         <DeleteIcon />
                     </ListItemIcon>

@@ -36,18 +36,6 @@ const useStyles = makeStyles((theme) => ({
 const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     const classes = useStyles();
 
-    //Menu Item에 필요한 변수 & 함수
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const open = Boolean(anchorEl);
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
     // Folder Modal Open
     const [openModal, setOpenModal] = useState(false);
 
@@ -79,13 +67,13 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     };
 
     //지우려하는 폴더 PK 값
-    const [deletingFolderPk, setDeletingFolderPk] = useState(0);
+    const [deletingFolderPk, setDeletingFolderPk] = useState(undefined);
 
     //폴더 삭제 API
-    const deleteItem = (folderPk) => {
+    const deleteItem = () => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs: folderPk,
+            folderPKs: deletingFolderPk,
         };
         const config = {
             header: {
@@ -102,9 +90,9 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
             });
     };
 
-    // useEffect(() => {
-    //     deleteItem()
-    // }, [deletingFolderPk])
+    useEffect(() => {
+        deleteItem()
+    }, [deletingFolderPk])
 
     return (
         <div className={styles.fileContainer}>
@@ -159,26 +147,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
                                     getFolderPk(root.FOLDER_PK);
                                 }}
                             />
-                            <IconButton
-                                onClick={handleClick}
-                            >
-                                <MoreVert />
-                            </IconButton>
-                            <Menu
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleClose}
-                                PaperProps={{
-                                    style: {
-                                    boxShadow:'none',
-                                    border:'1px dotted grey'
-                                    },
-                                }}
-                                key={root.FOLDER_PK}
-                            >
-                            <MenuItem onClick={() => {deleteItem(root.FOLDER_PK)}}>삭제</MenuItem>
-                            <MenuItem>이동</MenuItem>
-                            </Menu>
                         </ListItem>
                     </div>
                 ))}
