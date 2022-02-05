@@ -1,6 +1,6 @@
 import ApprovalStep from 'src/entity/approvalStep.entity';
 import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
-import { AikoError, unixTimeStamp } from 'src/Helpers';
+import { AikoError, unixTimeStamp, propsRemover } from 'src/Helpers';
 
 @EntityRepository(ApprovalStep)
 export default class ApprovalStepRepository extends Repository<ApprovalStep> {
@@ -35,5 +35,26 @@ export default class ApprovalStepRepository extends Repository<ApprovalStep> {
         }
         // result = propsRemover(result, 'user');
         // result = Object.assign(result, name);
+    }
+    async detailStep(departmentPk: number, comPk: number, framePk: number) {
+        try {
+            const result = await this.createQueryBuilder('n')
+                .select(['n.AF_PK', 'n.STEP_LEVEL', 'n.DECISION', 'n.SIGN_DATE', 'n.STEP_STATUS'])
+                .leftJoinAndSelect('n.asUser', 'asUser')
+                .andWhere('n.AF_PK =:afPk', { afPk: `${framePk}` })
+                .getMany();
+            for (const num in result) {
+                const name = {
+                    USER_NAME: result[num].asUser?.FIRST_NAME + ' ' + result[num].asUser?.LAST_NAME,
+                };
+                const props = ['asUser'];
+                result[num] = propsRemover(result[num], ...props);
+                result[num] = Object.assign(result[num], name);
+            }
+            console.log(result);
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
     }
 }

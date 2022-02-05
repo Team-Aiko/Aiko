@@ -1,6 +1,6 @@
 import { EntityRepository, InsertResult, Repository, TransactionManager, EntityManager } from 'typeorm';
 import ApprovalFrame from 'src/entity/approvalFrame.entity';
-import { unixTimeStamp } from 'src/Helpers';
+import { unixTimeStamp, propsRemover } from 'src/Helpers';
 
 @EntityRepository(ApprovalFrame)
 export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
@@ -36,10 +36,9 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
                 .andWhere('n.IS_DELETED =:num', { num: 0 })
                 .getMany();
             return result;
-        } catch (err){
+        } catch (err) {
             console.log(err);
         }
-       
     }
     async doneList(comPk: number, departmentPk: number) {
         try {
@@ -98,14 +97,27 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         }
     }
     async detailFrame(departmentPk: number, comPk: number, framePk: number) {
-        const result = await await this.createQueryBuilder()
-            .select()
-            .andWhere('AF_PK =:framePk', { framePk: `${framePk}` })
-            .andWhere('IS_DELETED =:num', { num: 0 })
-            .andWhere('COMPANY_PK=:comPk', { comPk: `${comPk}` })
-            .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
-            .getOne();
-        return result;
+        try {
+            const result = await await this.createQueryBuilder('af')
+                .select(['af.AF_PK', 'af.TITLE', 'af.CONTENT', 'af.START_DATE', 'af.END_DATE'])
+                .leftJoinAndSelect('af.afUser', 'afUser')
+                .andWhere('af.AF_PK =:framePk', { framePk: `${framePk}` })
+                .andWhere('af.IS_DELETED =:num', { num: 0 }) //삭제? 회신?
+                .andWhere('af.COMPANY_PK=:comPk', { comPk: `${comPk}` })
+                .andWhere('af.DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+                .getMany();
+            for (const num in result) {
+                const name = {
+                    USER_NAME: result[num].afUser?.FIRST_NAME + ' ' + result[num].afUser?.LAST_NAME,
+                };
+                const props = ['afUser'];
+                result[num] = propsRemover(result[num], ...props);
+                result[num] = Object.assign(result[num], name);
+            }
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
     }
     async updateFrame(userPk: number, departmentPk: number, comPk: number, framePk: number) {
         const result = await await this.createQueryBuilder().select().andWhere('');

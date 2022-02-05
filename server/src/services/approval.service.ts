@@ -112,6 +112,17 @@ export default class ApprovalService {
     }
     async detailApproval(departmentPk: number, comPk: number, framePk: number) {
         const frame = await getRepo(ApprovalFrameRepository).detailFrame(departmentPk, comPk, framePk);
+        const step = await getRepo(ApprovalStepRepository).detailStep(departmentPk, comPk, framePk);
+        for (const num1 in frame) {
+            const arr = [];
+            for (const num2 in step) {
+                if (frame[num1].AF_PK === step[num2].AF_PK) {
+                    arr.push(step[num2]);
+                }
+            }
+            const obj2 = { step: arr };
+            frame[num1] = Object.assign(frame[num1], obj2);
+        }
         return frame;
     }
     async updateApproval(

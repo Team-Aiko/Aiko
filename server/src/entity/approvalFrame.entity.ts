@@ -44,4 +44,8 @@ export default class ApprovalFrame {
     @OneToMany(() => ApprovalStep, (af) => af.afPk)
     @JoinColumn({ name: 'AF_PK' })
     afPk: ApprovalStep;
+
+    // @OneToMany(() => ApprovalStep, (af) => af.afPk) //카테고리 테이블 조인
+    // @JoinColumn({ name: 'AF_PK' })
+    // afPk: ApprovalStep;
 }
