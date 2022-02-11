@@ -3,61 +3,66 @@ import { useState, useEffect } from 'react';
 import styles from '../styles/Drive.module.css';
 import { Typography, Divider, ListItem, ListItemIcon, ListItemText, Button } from '@material-ui/core';
 import { DeleteForever, Description } from '@material-ui/icons';
-import { makeStyles, createTheme, ThemeProvider } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
+import Modal from './Modal';
 
-    const useStyles = makeStyles((theme) => ({
-        root: {
-            width: '30%',
-            height: '28%',
-            margin: 10,
-            overflow: 'auto',
-        },
-        pageDesc : {
-            display:'flex',
-            padding: 15,
-            alignItems:'center',
-            justifyContent:'space-between'
-        }
-    }));
-
-    const theme = createTheme();
-
-    theme.typography.h3 = {
-    fontSize: '0.8rem',
-    marginLeft:15,
-    '@media (min-width:600px)': {
-        fontSize: '1.2rem',
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '30%',
+        height: '28%',
+        margin: 10,
+        overflow: 'auto',
     },
-    [theme.breakpoints.up('md')]: {
-        fontSize: '1.7rem',
+    pageDesc: {
+        display: 'flex',
+        padding: 15,
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
-    };
+    confirmDiv : {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems:'center',
+        textAlign:'center',
+        padding: 20
+    }
+}));
+
 
 const DriveBin = () => {
-
     const classes = useStyles();
+
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
 
     return (
         <div className={styles.fileContainer}>
-
             <div className={classes.pageDesc}>
-            
-            <div style={{display:'flex', alignItems:'center'}}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <DeleteForever fontSize='large' />
 
-            <DeleteForever fontSize='large' />
+                    <Typography>Recycle Bin</Typography>
+                </div>
 
-            <ThemeProvider theme={theme}>
-                <Typography variant='h3'>Recycle Bin</Typography>
-            </ThemeProvider>
+                <div>
+                    <Button color='primary' variant='outlined' onClick={() => {setDeleteConfirmModal(true)}}>
+                        Emptying
+                    </Button>
+                </div>
 
+                {
+                    deleteConfirmModal
+                    ? <Modal title='Emptying Bin' open={deleteConfirmModal}
+                    onClose={() => {setDeleteConfirmModal(false)}}>
+                        <div className={classes.confirmDiv}>
+                        <Typography variant='overline'>Are you sure you want to <span style={{color:'tomato'}}>empty recycle bin?</span></Typography>
+                        <Button style={{margin:20}} color='primary' variant='contained'>YES</Button>
+                        </div>
+                    </Modal>
+                    : <></>
+                }
             </div>
 
-            <div>
-                <Button color='primary' variant='outlined'>Emptying</Button>
-            </div>
-            </div>
-
-            <Divider/>
+            <Divider />
 
             <div className={styles.folderDiv}>
                 <div className={classes.root}>
@@ -65,12 +70,12 @@ const DriveBin = () => {
                         <ListItemIcon>
                             <Description />
                         </ListItemIcon>
-                        <ListItemText/>
+                        <ListItemText />
                     </ListItem>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default DriveBin
+export default DriveBin;

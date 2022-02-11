@@ -14,11 +14,10 @@ import {
     Typography,
     IconButton,
     Menu,
-    MenuItem
+    MenuItem,
 } from '@material-ui/core';
 import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
 import Modal from './Modal.js';
-
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -39,8 +38,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     // Folder Modal Open
     const [openModal, setOpenModal] = useState(false);
 
-    // File Modal Open
+    // File Upload Modal Open
     const [fileModalOpen, setFileModalOpen] = useState(false);
+
+    // File Detail Modal Open
+    const [fileDetailModalOpen, setFileDetailModalOpen] = useState(false);
 
     //하위 폴더 생성
     const [folderName, setFolderName] = useState('');
@@ -73,29 +75,26 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     const deleteItem = () => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs: deletingFolderPk,
+            folderPKs : 26
         };
-        const config = {
-            header: {
-                'content-type': 'application/json',
-            },
-        };
-        post(url, data, config)
+        post(url, data)
             .then((res) => {
                 console.log('Delete Items', res);
-                handleClose();
             })
             .catch((error) => {
                 console.log('delete Items', error);
             });
     };
 
-    useEffect(() => {
-        deleteItem()
-    }, [deletingFolderPk])
+    // useEffect(() => {
+    //     deleteItem();
+    // }, []);
 
     return (
         <div className={styles.fileContainer}>
+
+            <button onClick={deleteItem}> 삭제 </button>
+
             <Button
                 variant='contained'
                 color='primary'
@@ -175,9 +174,43 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
             <Divider />
 
             {fileModalOpen ? (
-                <DriveUpload fileModalOpen={fileModalOpen} setFileModalOpen={setFileModalOpen}
-                selectedFolderPk={selectedFolderPk}>
-                </DriveUpload>
+                <DriveUpload
+                    fileModalOpen={fileModalOpen}
+                    setFileModalOpen={setFileModalOpen}
+                    selectedFolderPk={selectedFolderPk}
+                ></DriveUpload>
+            ) : (
+                <></>
+            )}
+
+            <button
+                onClick={() => {
+                    setFileDetailModalOpen(true);
+                }}
+            >CHECK FILE DETAILS</button>
+
+            {fileDetailModalOpen == true ? (
+                <Modal
+                    title='File Detail'
+                    open={fileDetailModalOpen}
+                    onClose={() => {
+                        setFileDetailModalOpen(false);
+                    }}
+                >
+                    <div className={styles.fileDetailDiv}>
+                        <div className={styles.fileHistory}>
+                            HISTORY
+                        </div>
+
+                        <div className={styles.filePreview}>
+                            미리보기
+                        </div>
+                    </div>
+
+                    <div style={{textAlign:'center', margin:10}}>
+                        <Button variant='contained' color='primary' fontSize='small'>Download</Button>
+                    </div>
+                </Modal>
             ) : (
                 <></>
             )}

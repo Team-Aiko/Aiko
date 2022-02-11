@@ -49,6 +49,28 @@
     height:50vh;
 }
 
+.fileDetailDiv {
+    width: 70vw;
+    height: 60vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.fileHistory {
+    width: 40%;
+    height: 85%;
+    border: 2px dotted grey;
+    margin:5px;
+}
+
+.filePreview {
+    width: 40%;
+    height: 85%;
+    border: 2px dotted grey;
+    margin:5px;
+}
+
 /* DriveUpload.js */
 .dragDropDiv {
     border: 3px dotted grey;

@@ -1,4 +1,4 @@
-import React, {useState, useEffect}from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Modal from './Modal.js';
 import styles from '../styles/Drive.module.css';
@@ -8,32 +8,38 @@ import { makeStyles } from '@material-ui/core/styles';
 import { post, get } from '../_axios';
 
 const useStyles = makeStyles((theme) => ({
-        button: {
+    button: {
         margin: theme.spacing(1),
-        float:'right'
-        },
-    }));
+        float: 'right',
+    },
+}));
 
-const DriveUpload = ({fileModalOpen, setFileModalOpen, selectedFolderPk}) => {
-
+const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
     const [files, setFiles] = useState([]);
 
-    const {getRootProps, getInputProps} = useDropzone({
-        accept: "image/*",
+    const { getRootProps, getInputProps } = useDropzone({
+        accept: 'image/*',
         onDrop: (acceptedFiles) => {
-            setFiles( (prev) => [...prev, ...Object.values(acceptedFiles)] )
-        }
-    })
+            setFiles((prev) => [...prev, ...Object.values(acceptedFiles)]);
+        },
+    });
 
     const removeItem = (name) => {
-        setFiles(files.filter(file => file.name !== name))
+        setFiles(files.filter((file) => file.name !== name));
     };
 
     const fileName = files.map((file) => (
         <div key={file.name}>
-            <Typography variant='caption' gutterBottom>{file.name}</Typography>
+            <Typography variant='caption' gutterBottom>
+                {file.name}
+            </Typography>
             <IconButton>
-                <ClearSharp fontSize='small' onClick={() => { removeItem(file.name)}} />
+                <ClearSharp
+                    fontSize='small'
+                    onClick={() => {
+                        removeItem(file.name);
+                    }}
+                />
             </IconButton>
         </div>
     ));
@@ -61,29 +67,37 @@ const DriveUpload = ({fileModalOpen, setFileModalOpen, selectedFolderPk}) => {
     const classes = useStyles();
 
     return (
-        <Modal title='Upload New Files' open={fileModalOpen} onClose={() => {setFileModalOpen(false)}}>
-            <section className="container">
+        <Modal
+            title='Upload New Files'
+            open={fileModalOpen}
+            onClose={() => {
+                setFileModalOpen(false);
+            }}
+        >
+            <section className='container'>
                 <div {...getRootProps()}>
-                <input {...getInputProps()} />
+                    <input {...getInputProps()} />
                     <div className={styles.dragDropDiv}>
-                    <Typography variant='overline' gutterBottom style={{margin:20}}>Drag and drop some files here</Typography>
+                        <Typography variant='overline' gutterBottom style={{ margin: 20 }}>
+                            Drag and drop some files here
+                        </Typography>
                     </div>
                 </div>
                 <aside>
                     <ul>{fileName}</ul>
                 </aside>
                 <Button
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<CloudUpload />}
-                onClick={uploadFile}
+                    variant='contained'
+                    color='primary'
+                    className={classes.button}
+                    startIcon={<CloudUpload />}
+                    onClick={uploadFile}
                 >
                     Upload
                 </Button>
             </section>
         </Modal>
-    )
-}
+    );
+};
 
-export default DriveUpload
+export default DriveUpload;
