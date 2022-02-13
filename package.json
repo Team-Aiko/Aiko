@@ -1,13 +1,13 @@
 {
     "scripts": {
-        "update:deps": "yarn install && cd aiko-client && yarn install",
-        "install:client": "cd aiko-client && yarn install",
-        "install:server": "cd server && yarn install",
-        "client": "cd aiko-client && yarn run dev",
-        "server": "cd server && yarn run start:dev",
-        "dev": "concurrently --kill-others-on-fail \"yarn run install:client\" \"yarn run install:server \" \"yarn run server \" \"yarn run client\"",
+        "update:deps": "npm install && cd aiko-client && npm install",
+        "install:client": "cd aiko-client && npm install",
+        "install:server": "cd server && npm install",
+        "client": "cd aiko-client && npm run dev",
+        "server": "cd server && npm run start:dev",
+        "dev": "concurrently --kill-others-on-fail \"npm run install:client\" \"npm run install:server \" \"npm run server \" \"npm run client\"",
         "lint": "eslint **/*.ts --quiet",
-        "start": "concurrently --kill-others-on-fail \"yarn run install:client\" \"yarn run install:server \" \"yarn run server \" \"yarn run client\""
+        "start": "concurrently --kill-others-on-fail \"npm run install:client\" \"npm run install:server \" \"npm run server \" \"npm run client\""
     },
     "dependencies": {
         "concurrently": "^6.2.1",
