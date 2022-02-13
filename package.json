@@ -6,7 +6,8 @@
         "client": "cd aiko-client && yarn run dev",
         "server": "cd server && yarn run start:dev",
         "dev": "concurrently --kill-others-on-fail \"yarn run install:client\" \"yarn run install:server \" \"yarn run server \" \"yarn run client\"",
-        "lint": "eslint **/*.ts --quiet"
+        "lint": "eslint **/*.ts --quiet",
+        "start": "concurrently --kill-others-on-fail \"yarn run install:client\" \"yarn run install:server \" \"yarn run server \" \"yarn run client\""
     },
     "dependencies": {
         "concurrently": "^6.2.1",
