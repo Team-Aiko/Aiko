@@ -121,11 +121,14 @@ export default function CComp() {
     });
 
     useEffect(() => {
-        if (userInfo.USER_PK) {
+        const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
+        setStatus(status);
+    }, []);
+
+    useEffect(() => {
+        if (userInfo.USER_PK && status) {
             console.log('###### render ######');
 
-            const status = io('http://localhost:5001/status', { withCredentials: true });
-            setStatus(status);
             status.emit('handleConnection');
 
             status.on('client/status/loginAlert', (payload) => {

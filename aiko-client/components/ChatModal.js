@@ -83,11 +83,10 @@ const useStyles = makeStyles((theme) => ({
 export default function ChatModal(props) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const { open, onClose } = props;
+    const { open, onClose, privateSocket, groupSocket } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
-    const [socket, setSocket] = useState(undefined);
     const [selectedMember, setSelectedMember] = useState('');
     const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
@@ -102,69 +101,56 @@ export default function ChatModal(props) {
     const [openAddGroup, setOpenAddGroup] = useState(false);
     const [groupChatTitle, setGroupChatTitle] = useState('');
     const [groupChatList, setGroupChatList] = useState([]);
-    const [groupSocket, setGroupSocket] = useState(undefined);
     const [selectedGroup, setSelectedGroup] = useState('');
 
     useEffect(() => {
-        socket && socket.emit('handleDisconnect');
-        groupSocket && groupSocket.emit('handleDisconnect');
+        if (privateSocket && groupSocket)
+            privateSocket.on('client/private-chat/connected', (payload) => {
+                let newPayload = [];
+                if (payload.evenCase.length > 0) {
+                    const evenCase = payload.evenCase.map((row) => {
+                        return {
+                            ...row,
+                            member: 'USER_1',
+                        };
+                    });
+                    newPayload.push(...evenCase);
+                }
+                if (payload.oddCase.length > 0) {
+                    const oddCase = payload.oddCase.map((row) => {
+                        return {
+                            ...row,
+                            member: 'USER_2',
+                        };
+                    });
+                    newPayload.push(...oddCase);
+                }
 
-        console.log('privateChat');
-        const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
-        setSocket(privateChat);
-
-        privateChat.emit('handleConnection');
-        privateChat.on('client/private-chat/connected', (payload) => {
-            let newPayload = [];
-            if (payload.evenCase.length > 0) {
-                const evenCase = payload.evenCase.map((row) => {
-                    return {
-                        ...row,
-                        member: 'USER_1',
-                    };
-                });
-                newPayload.push(...evenCase);
-            }
-            if (payload.oddCase.length > 0) {
-                const oddCase = payload.oddCase.map((row) => {
-                    return {
-                        ...row,
-                        member: 'USER_2',
-                    };
-                });
-                newPayload.push(...oddCase);
-            }
-
-            dispatch(setMemberChatRoomPK(newPayload));
-        });
-        privateChat.on('client/private-chat/receive-chatlog', (payload) => {
+                dispatch(setMemberChatRoomPK(newPayload));
+            });
+        privateSocket.on('client/private-chat/receive-chatlog', (payload) => {
             console.log('client/private-chat/receive-chatlog : ', payload);
             setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
             setChatMember(payload.info.userInfo);
         });
 
-        privateChat.on('client/private-chat/send', (payload) => {
+        privateSocket.on('client/private-chat/send', (payload) => {
             console.log('client/private-chat/send');
             setMessages((messages) => [...messages, payload]);
             scrollToBottom();
         });
 
-        console.log('groupChat');
-        const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
-        setGroupSocket(groupChat);
-
-        groupChat.emit('handleConnection');
-        groupChat.on('client/gc/connected', (payload) => {
+        groupSocket.on('client/gc/connected', (payload) => {
             console.log('/client/gc/connected : ', payload);
             setGroupChatList(payload);
         });
-        groupChat.on('client/gc/join-room-notice', (payload) => {
+        groupSocket.on('client/gc/join-room-notice', (payload) => {
             console.log('/client/gc/join-room-notice : ', payload);
         });
-        groupChat.on('client/gc/read-chat-logs', (payload) => {
+        groupSocket.on('client/gc/read-chat-logs', (payload) => {
             console.log('/client/gc/read-chat-logs : ', payload);
         });
-    }, []);
+    }, [privateSocket, groupSocket]);
 
     useEffect(() => {
         setSelectedMember('');
@@ -295,7 +281,6 @@ export default function ChatModal(props) {
         setSelectedGroup(group);
         groupSocket.emit('server/gc/read-chat-logs', group.GC_PK);
     };
-    console.log('^1^', memberList);
 
     return (
         <ThemeProvider theme={theme}>

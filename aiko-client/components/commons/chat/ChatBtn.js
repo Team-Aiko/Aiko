@@ -18,53 +18,58 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // * Container Component
-export default function CComp() {
+export default function ChatBtn(props) {
     const userInfo = useSelector((state) => state.accountReducer);
-    return <PComp userInfo={userInfo} />;
-}
-
-// * Presentational Component
-function PComp(props) {
     const theme = unstable_createMuiStrictModeTheme();
     const classes = useStyles();
-    const { userInfo } = props;
+    const { privateSocket, groupSocket } = props;
     const { USER_PK } = userInfo;
-    const [visibility, setVisibility] = useState(false);
     const [openChatModal, setOpenChatModal] = useState(false);
+
+    useEffect(() => {
+        if (USER_PK && privateSocket && groupSocket) {
+            console.log('###ChatBtn : socket O');
+
+            privateSocket.emit('handleConnection');
+            groupSocket.emit('handleConnection');
+        }
+    }, [USER_PK]);
 
     const handleChatModal = () => {
         setOpenChatModal(true);
     };
 
-    const handleSocket = useCallback(() => {
-        const socket = io('http://localhost:5001');
-        socket.emit('handleConnection', USER_PK);
-        socket.on('msgToClient', (message) => {
-            console.log(message);
-        });
-    }, [USER_PK]);
+    // const handleSocket = useCallback(() => {
+    //     const socket = io('http://localhost:5001');
+    //     socket.emit('handleConnection', USER_PK);
+    //     socket.on('msgToClient', (message) => {
+    //         console.log('message : ', message);
+    //     });
+    // }, [USER_PK]);
 
-    useEffect(() => {
-        handleSocket();
-    }, [USER_PK]);
+    // useEffect(() => {
+    //     handleSocket();
+    // }, [USER_PK]);
 
-    return (
+    return USER_PK ? (
         <>
-            {userInfo.USER_PK ? (
-                <ThemeProvider theme={theme}>
-                    <Tooltip title='Add' aria-label='chat' onClick={handleChatModal}>
-                        <Fab color='secondary' className={classes.absolute}>
-                            <AddIcon />
-                        </Fab>
-                    </Tooltip>
-                    <ChatModal
-                        open={openChatModal}
-                        onClose={() => {
-                            setOpenChatModal(false);
-                        }}
-                    />
-                </ThemeProvider>
-            ) : undefined}
+            <ThemeProvider theme={theme}>
+                <Tooltip title='Add' aria-label='chat' onClick={handleChatModal}>
+                    <Fab color='secondary' className={classes.absolute}>
+                        <AddIcon />
+                    </Fab>
+                </Tooltip>
+                <ChatModal
+                    open={openChatModal}
+                    onClose={() => {
+                        setOpenChatModal(false);
+                    }}
+                    privateSocket={privateSocket}
+                    groupSocket={groupSocket}
+                />
+            </ThemeProvider>
         </>
+    ) : (
+        <></>
     );
 }
