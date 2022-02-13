@@ -24,7 +24,8 @@ const useStyles = makeStyles((theme) => ({
 
 const DriveFolder = ({ getFolderPk }) => {
     const classes = useStyles();
-    const [open, setOpen] = React.useState(true);
+    
+    // const [open, setOpen] = React.useState(true);
 
     // const handleClick = () => {
     //     setOpen(!open);

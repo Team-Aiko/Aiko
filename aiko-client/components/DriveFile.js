@@ -12,11 +12,8 @@ import {
     ListItemIcon,
     ListItemText,
     Typography,
-    IconButton,
-    Menu,
-    MenuItem,
 } from '@material-ui/core';
-import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
+import { CreateNewFolder, Folder, NoteAdd } from '@material-ui/icons';
 import Modal from './Modal.js';
 
 const useStyles = makeStyles((theme) => ({
@@ -75,7 +72,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
     const deleteItem = () => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs : 26
+            folderPKs : deletingFolderPk
         };
         post(url, data)
             .then((res) => {
@@ -86,14 +83,8 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
             });
     };
 
-    // useEffect(() => {
-    //     deleteItem();
-    // }, []);
-
     return (
         <div className={styles.fileContainer}>
-
-            <button onClick={deleteItem}> 삭제 </button>
 
             <Button
                 variant='contained'

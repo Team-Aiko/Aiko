@@ -5,7 +5,7 @@ import styles from '../styles/Drive.module.css';
 import { Typography, IconButton, Button } from '@material-ui/core';
 import { ClearSharp, CloudUpload } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import { post, get } from '../_axios';
+import { post, get, sendPost } from '../_axios';
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -25,7 +25,7 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
     });
 
     const removeItem = (name) => {
-        setFiles(files.filter((file) => file.name !== name));
+        setFiles(files.filter(file => file.name !== name));
     };
 
     const fileName = files.map((file) => (
@@ -44,24 +44,13 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
         </div>
     ));
 
-    //파일 업로드 API
     const uploadFile = () => {
-        const formData = new FormData();
         const url = '/api/store/drive/save-files';
-        formData.append('files', files);
-        formData.append('folderPK', selectedFolderPk);
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data',
-            },
-        };
-        post(url, formData, config)
-            .then((res) => {
-                console.log('File Upload', res);
+        sendPost(url, 'multipart', { file: files[0], folderPK: selectedFolderPk })
+            .then((data) => {
+                console.log(data);
             })
-            .catch((error) => {
-                console.log(error);
-            });
+            .catch((err) => console.error(err));
     };
 
     const classes = useStyles();
