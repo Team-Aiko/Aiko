@@ -111,8 +111,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
             const whereCondition = `FILE_KEY_PK ${isArray ? 'IN (:...filePKs)' : '= :filePKs'}`;
 
             await manager
-                .createQueryBuilder(FileKeys, 'fk')
-                .update()
+                .createQueryBuilder()
+                .update(FileKeys)
                 .set({ IS_DELETED: 1 })
                 .where(whereCondition, { filePKs })
                 .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
