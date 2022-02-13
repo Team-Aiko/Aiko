@@ -246,4 +246,16 @@ export default class AccountController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Get('temp-socket-token')
+    async getTempToken(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { USER_PK, COMPANY_PK } = userPayload;
+            const result = await this.accountService.getTempToken(USER_PK, COMPANY_PK);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }

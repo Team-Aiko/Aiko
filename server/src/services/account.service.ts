@@ -39,6 +39,7 @@ import DriveService from './drive.service';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { unknownError } from 'src/Helpers';
 import winstonLogger from 'src/logger/logger';
+import SocketTokenRepository from 'src/mapper/socketToken.repository';
 
 enum accountServiceError {
     checkDuplicateEmail = 1,
@@ -53,6 +54,7 @@ enum accountServiceError {
     getGrantList = 10,
     getAccessToken = 11,
     getUserInfo = 12,
+    getTempToken = 13,
 }
 
 @Injectable()
@@ -405,6 +407,22 @@ export default class AccountService {
                 'AccountService/getUserInfo',
                 500,
                 headErrorCode.account + accountServiceError.getUserInfo,
+            );
+        }
+    }
+
+    async getTempToken(userPK: number, companyPK: number) {
+        try {
+            const uuid = v1();
+            await getRepo(SocketTokenRepository).insertSocketToken(userPK, companyPK, uuid);
+
+            return uuid;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'AccountService/getTempToken',
+                500,
+                headErrorCode.account + accountServiceError.getTempToken,
             );
         }
     }
