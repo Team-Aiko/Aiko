@@ -28,8 +28,8 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-//rootFolder, getFolderPk, selectedFolderPk는 [companyPk].js 폴더와 상호작용, 자세한건 [companyPk].js 페이지 참조
-const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
+//rootFolder, getFolderPk, selectedFolderPk, folderFile는 [companyPk].js 폴더와 상호작용, 자세한건 [companyPk].js 페이지 참조
+const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) => {
     const classes = useStyles();
 
     // Folder Modal Open
@@ -43,6 +43,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
 
     //하위 폴더 생성
     const [folderName, setFolderName] = useState('');
+
 
     //하위 폴더 이름
     const changeFolderName = (e) => {
@@ -163,6 +164,21 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk }) => {
                 </Button>
             </div>
             <Divider />
+
+            <div className={styles.folderDiv}>
+                {folderFile?.map((file) => (
+                    <div className={classes.root}>
+                        <ListItem button dense divider selected>
+                            <ListItemIcon>
+                                <Folder />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
+                            />
+                        </ListItem>
+                    </div>
+                ))}
+            </div>
 
             {fileModalOpen ? (
                 <DriveUpload

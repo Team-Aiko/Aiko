@@ -17,6 +17,9 @@ const drive = () => {
     const [rootFolder, setRootFolder] = useState([]);
     //현재 사용자가 선택한 Folder_PK 값 추적
     const [selectedFolderPk, setSelectedFolderPk] = useState(0);
+    //현재 클릭한 folder의 하위 파일들
+    const [folderFile, setFolderFile] = useState([]);
+
 
     // DriveFile 컴포넌트에서 사용자가 선택한 Folder_Pk 값 추적시 필요한 함수 (부모 <--> 자식)
     const getFolderPk = (number) => {
@@ -29,16 +32,20 @@ const drive = () => {
         get(url)
         .then((res) => {
             console.log('Get Root Folders', res);
-            setRootFolder(res.directChildrenFolders)
+            setRootFolder(res.directChildrenFolders);
+            setFolderFile(res.filesInFolder);
         })
         .catch((error) => {
             console.log(error)
         })
     };
 
+
     useEffect(() => {
         viewFolder()
     }, [selectedFolderPk])
+
+    console.log('folderFile', folderFile)
 
     return (
         <div className={styles.mainContainer}>
@@ -46,7 +53,8 @@ const drive = () => {
 
             {
                 selectedFolderPk !== 0
-                ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}/>
+                ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}
+                    folderFile={folderFile}/>
                 : <></>
             }
 

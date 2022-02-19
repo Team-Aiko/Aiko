@@ -68,7 +68,7 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
                     <input {...getInputProps()} />
                     <div className={styles.dragDropDiv}>
                         <Typography variant='overline' gutterBottom style={{ margin: 20 }}>
-                            Drag and drop some files here
+                            Drag and drop some files here or click here to upload manually.
                         </Typography>
                     </div>
                 </div>
