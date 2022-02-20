@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Server } from 'socket.io';
-import { AikoError } from 'src/Helpers';
+import { AikoError, getRepo } from 'src/Helpers';
 import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { statusPath } from 'src/interfaces/MVC/socketMVC';
+import SocketTokenRepository from 'src/mapper/socketToken.repository';
 import { Status, StatusDocument } from 'src/schemas/status.schema';
 import { StatusClientStorage, StatusClientStorageDocument } from 'src/schemas/statusClientStorage.shcema';
 
@@ -28,6 +29,7 @@ enum statusServiceError {
     allDeleteClientInfo = 16,
     deleteOneClientInfo = 17,
     getClientInfoList = 18,
+    decodeSocketToken = 19,
 }
 
 @Injectable()
@@ -334,6 +336,21 @@ export default class StatusService {
                 'StatusService/deleteOneClientInfo',
                 500,
                 headErrorCode.status + statusServiceError.deleteOneClientInfo,
+            );
+        }
+    }
+
+    async decodeSocketToken(socketToken: string) {
+        try {
+            const { COMPANY_PK, USER_PK } = await getRepo(SocketTokenRepository).decodeSocketToken(socketToken);
+
+            return { COMPANY_PK, USER_PK };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'StatusService/decodeSocketToken',
+                500,
+                headErrorCode.status + statusServiceError.decodeSocketToken,
             );
         }
     }

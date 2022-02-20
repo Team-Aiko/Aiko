@@ -247,12 +247,25 @@ export default class AccountController {
         }
     }
 
+    @UseGuards(UserGuard)
     @Get('temp-socket-token')
     async getTempToken(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
             const { USER_PK, COMPANY_PK } = userPayload;
             const result = await this.accountService.getTempToken(USER_PK, COMPANY_PK);
 
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    // ! test api
+    @Get('test_decode_socket_token')
+    async decodeSocketToken(@Req() req: Request, @Res() res: Response) {
+        try {
+            const { token } = req.query;
+            const result = await this.accountService.decodeSocketToken(token as string);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

@@ -55,6 +55,7 @@ enum accountServiceError {
     getAccessToken = 11,
     getUserInfo = 12,
     getTempToken = 13,
+    decodeSocketToken = 14,
 }
 
 @Injectable()
@@ -423,6 +424,21 @@ export default class AccountService {
                 'AccountService/getTempToken',
                 500,
                 headErrorCode.account + accountServiceError.getTempToken,
+            );
+        }
+    }
+
+    async decodeSocketToken(socketToken: string) {
+        try {
+            const { COMPANY_PK, USER_PK } = await getRepo(SocketTokenRepository).decodeSocketToken(socketToken);
+
+            return { COMPANY_PK, USER_PK };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'AccountService/decodeSocketToken',
+                500,
+                headErrorCode.account + accountServiceError.decodeSocketToken,
             );
         }
     }

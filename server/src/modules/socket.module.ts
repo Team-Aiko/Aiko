@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import StatusGateway from 'src/gateway/status.gateway';
 import { PrivateChatlog, PrivateChatlogSchema } from 'src/schemas/chatlog.schema';
@@ -11,6 +11,8 @@ import PrivateChatService from 'src/services/privateChat.service';
 import GroupChatService from 'src/services/groupChat.service';
 import StatusService from 'src/services/status.service';
 import { StatusClientStorage, statusClientStorageSchema } from 'src/schemas/statusClientStorage.shcema';
+import AccountService from 'src/services/account.service';
+import { AccountModule } from '.';
 
 const mongoModule = MongooseModule.forFeature([
     { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
