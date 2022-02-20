@@ -23,6 +23,7 @@ enum driveServiceError {
     moveFolder = 7,
     deleteBinFiles = 8,
     updateFile = 9,
+    getFileHistory = 10,
 }
 
 @Injectable()
@@ -313,6 +314,21 @@ export default class DriveService {
                 'DriveService/updateFile',
                 500,
                 headErrorCode.drive + driveServiceError.updateFile,
+            );
+        }
+    }
+
+    async getFileHistory(fileKey: number, companyPK: number) {
+        try {
+            const histories = await getRepo(FileHistoryRepository).getFileHistory(fileKey, companyPK);
+
+            return histories;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'DriveService/getFileHistory',
+                500,
+                headErrorCode.drive + driveServiceError.getFileHistory,
             );
         }
     }

@@ -153,4 +153,17 @@ export default class DriveController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Get('file-history')
+    async getFileHistory(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { COMPANY_PK, USER_PK } = userPayload;
+            const { fileKey } = req.query;
+
+            const result = await this.driveService.getFileHistory(Number(fileKey), COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }

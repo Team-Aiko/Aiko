@@ -2,13 +2,14 @@ import { FileHistory } from 'src/entity';
 import { AikoError } from 'src/Helpers';
 import { stackAikoError, unixTimeStamp } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
-import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
+import { EntityRepository, Repository, TransactionManager, EntityManager, Brackets } from 'typeorm';
 
 enum fileHistoryError {
     createFileHistory = 1,
     downloadDriveFiles = 2,
     deletedFlagFiles = 3,
     updateHistory = 4,
+    getFileHistory = 5,
 }
 
 @EntityRepository(FileHistory)
@@ -94,6 +95,31 @@ export default class FileHistoryRepository extends Repository<FileHistory> {
                 'FileHistoryRepository/updateHistory',
                 500,
                 headErrorCode.fileHistoryDB + fileHistoryError.updateHistory,
+            );
+        }
+    }
+
+    async getFileHistory(fileKey: number, companyPK: number) {
+        try {
+            return await this.createQueryBuilder('history')
+                .innerJoinAndSelect('history.fileKey', 'fileKey')
+                .where(`fileKey.FILE_KEY_PK = ${fileKey}`)
+                .andWhere(`fileKey.COMPANY_PK = ${companyPK}`)
+                .andWhere('fileKey.IS_DELETED = 0')
+                .getMany();
+
+            // (qb) =>
+            // qb
+            //     .where(`FILE_KEY_PK = ${fileKey}`)
+            //     .andWhere(`COMPANY_PK = ${companyPK}`)
+            //     .andWhere('IS_DELETED = 0'),
+            // 'history.file',
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileHistoryRepository/getFileHistory',
+                500,
+                headErrorCode.fileHistoryDB + fileHistoryError.getFileHistory,
             );
         }
     }
