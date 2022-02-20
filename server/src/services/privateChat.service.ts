@@ -10,6 +10,8 @@ import { PrivateChatlog, PrivateChatlogDocument } from 'src/schemas/chatlog.sche
 import { EntityManager, TransactionManager } from 'typeorm';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { User } from 'src/entity';
+import StatusService from './status.service';
+import { PrivateChatClientInfo, PrivateChatClientInfoDocument } from 'src/schemas/privateChatClientInfo.schema';
 
 enum privateChatServiceError {
     makePrivateChatRoomList = 1,
@@ -19,11 +21,18 @@ enum privateChatServiceError {
     getUserInfo = 5,
     updateChatlog = 6,
     storePrivateChatLogsToRDB = 7,
+    addClient = 8,
+    getClientInfo = 9,
 }
 
 @Injectable()
 export default class PrivateChatService {
-    constructor(@InjectModel(PrivateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>) {}
+    constructor(
+        @InjectModel(PrivateChatlog.name) private chatlogModel: Model<PrivateChatlogDocument>,
+        @InjectModel(PrivateChatClientInfo.name)
+        private privateClientStorageModel: Model<PrivateChatClientInfoDocument>,
+        private statusService: StatusService,
+    ) {}
 
     async makePrivateChatRoomList(
         @TransactionManager() manager: EntityManager,
@@ -126,6 +135,47 @@ export default class PrivateChatService {
         }
     }
 
+    async decodeSocketToken(socketToken: string) {
+        try {
+            return await this.statusService.decodeSocketToken(socketToken);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async addClient(clientId: string, userPK: number, companyPK: number) {
+        try {
+            const dto = new this.privateClientStorageModel({ clientId, userPK, companyPK });
+            await dto.save();
+
+            return true;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/addClient',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.addClient,
+            );
+        }
+    }
+
+    async getClientInfo(clientId: string) {
+        try {
+            const { userPK, companyPK } = (await this.privateClientStorageModel
+                .findOne({ clientId })
+                .exec()) as PrivateChatClientInfo;
+
+            return { userPK, companyPK };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/getClientInfo',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.getClientInfo,
+            );
+        }
+    }
+
     // * util functions
     async updateChatlog({ date, message, roomId, sender, file }: IMessagePayload) {
         try {
@@ -173,7 +223,7 @@ export default class PrivateChatService {
 
             const serverTime = getServerTime(serverHour);
 
-            Promise.all(
+            await Promise.all(
                 totalRooms.map(async (roomId) => {
                     const limitTime = serverTime - 604800;
 

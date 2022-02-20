@@ -13,6 +13,7 @@ import StatusService from 'src/services/status.service';
 import { StatusClientStorage, statusClientStorageSchema } from 'src/schemas/statusClientStorage.shcema';
 import AccountService from 'src/services/account.service';
 import { AccountModule } from '.';
+import { PrivateChatClientInfo, PrivateChatClientInfoSchema } from 'src/schemas/privateChatClientInfo.schema';
 
 const mongoModule = MongooseModule.forFeature([
     { name: PrivateChatlog.name, schema: PrivateChatlogSchema },
@@ -20,6 +21,7 @@ const mongoModule = MongooseModule.forFeature([
     { name: GroupChatClientInfo.name, schema: GroupChatClientInfoSchema },
     { name: GroupChatLog.name, schema: groupChatLogSchema },
     { name: StatusClientStorage.name, schema: statusClientStorageSchema },
+    { name: PrivateChatClientInfo.name, schema: PrivateChatClientInfoSchema },
 ]);
 
 @Module({
