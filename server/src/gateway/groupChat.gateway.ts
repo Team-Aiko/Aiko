@@ -1,4 +1,4 @@
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
     OnGatewayConnection,
     OnGatewayDisconnect,
@@ -8,19 +8,18 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { SocketGuard } from 'src/guard/socket.guard';
-import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
+import { getSocketErrorPacket } from 'src/Helpers/functions';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
+import StatusService from 'src/services/status.service';
 
-@UseGuards(SocketGuard)
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'group-chat' })
 export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     private readonly wss: Server;
     private readonly logger = new Logger('group-chat gateway');
 
-    constructor(private readonly groupChatService: GroupChatService) {}
+    constructor(private readonly groupChatService: GroupChatService, private readonly statusService: StatusService) {}
 
     afterInit(server: any) {
         this.logger.log('group-chat gateway initialized');
@@ -34,22 +33,19 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      * @returns
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
-    async handleConnection(client: Socket) {
-        if (!client.request.headers['guardPassed']) return;
-
+    async handleConnection(client: Socket, socketToken: string) {
         try {
-            const payloadStr = client.request.headers['user-payload'];
-            const userPayload = parseUserPayloadString(payloadStr);
-
             console.log('groupChat connection clientId : ', client.id);
+
+            const { USER_PK, COMPANY_PK } = await this.groupChatService.decodeSocketToken(socketToken);
             // * add client info
-            await this.groupChatService.addClientForGroupChat(client.id, userPayload);
+            await this.groupChatService.addClientForGroupChat(client.id, USER_PK, COMPANY_PK);
             // * find group chat room infos
-            const groupChatRooms = await this.groupChatService.findChatRooms(userPayload);
+            const groupChatRooms = await this.groupChatService.findChatRooms(USER_PK, COMPANY_PK);
 
             // * join group chat
             groupChatRooms.forEach(({ GC_PK }) => {
-                client.join(`company:${userPayload.COMPANY_PK}-${GC_PK}`);
+                client.join(`company:${COMPANY_PK}-${GC_PK}`);
             });
 
             this.wss.to(client.id).emit(groupChatPath.CLIENT_CONNECTED, groupChatRooms);
@@ -69,8 +65,6 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
-        if (!client.request.headers['guardPassed']) return;
-
         try {
             console.log('groupChat disconnect clientId : ', client.id);
             await this.groupChatService.deleteClientInfo(client.id);
@@ -93,28 +87,25 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         client: Socket,
         { userList, roomTitle, maxNum }: { userList: number[]; roomTitle: string; maxNum: number },
     ) {
-        if (!client.request.headers['guardPassed']) return;
-
         try {
-            const payloadStr = client.request.headers['user-payload'];
-            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
-
             if (!roomTitle) return;
+
+            const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
             console.log('createGroupChatRoom clientId : ', client.id);
             const { GC_PK, memberList } = await this.groupChatService.createGroupChatRoom({
                 userList,
                 roomTitle,
                 maxNum,
-                USER_PK,
-                COMPANY_PK,
+                userPK,
+                companyPK,
             });
 
             memberList.forEach((member) => {
                 this.wss.to(member.clientId).emit(groupChatPath.CLIENT_JOIN_ROOM_NOTICE, {
                     GC_PK,
                     memberList,
-                    admin: USER_PK,
+                    admin: userPK,
                     roomTitle,
                     maxNum,
                 });
@@ -136,16 +127,12 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_JOIN_GROUP_CHAT_ROOM)
     async joinGroupChatRoom(client: Socket, GC_PK: number) {
-        if (!client.request.headers['guardPassed']) return;
-
         try {
             if (!GC_PK) return;
-
-            const payloadStr = client.request.headers['user-payload'];
-            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
+            const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
             // 해당 채팅룸에 조인하는 프로세스
-            client.join(`company:${COMPANY_PK}-${GC_PK}`);
+            client.join(`company:${companyPK}-${GC_PK}`);
             // 조인이 완료됨을 보냄.
             this.wss.to(client.id).emit(groupChatPath.CLIENT_JOINED_GCR, true);
         } catch (err) {
@@ -163,15 +150,11 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_SEND_MESSAGE)
     async sendMessageToGroup(client: Socket, payload: { GC_PK: number; file: number; message: string; date: number }) {
-        if (!client.request.headers['guardPassed']) return;
-
         try {
             if (!payload) return;
+            const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
-            const payloadStr = client.request.headers['user-payload'];
-            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
-
-            await this.groupChatService.sendMessageToGroup({ ...payload, USER_PK, COMPANY_PK }, this.wss);
+            await this.groupChatService.sendMessageToGroup({ ...payload, userPK, companyPK }, this.wss);
         } catch (err) {
             this.wss
                 .to(client.id)
@@ -187,16 +170,12 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.SERVER_READ_CHAT_LOGS)
     async readChatLogs(client: Socket, GC_PK: number) {
-        if (!client.request.headers['guardPassed']) return;
-
         try {
             if (!GC_PK) return;
+            const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
-            const payloadStr = client.request.headers['user-payload'];
-            const { USER_PK, COMPANY_PK } = parseUserPayloadString(payloadStr);
-
-            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, COMPANY_PK);
-            const userMap = await this.groupChatService.getUserInfos(GC_PK, COMPANY_PK, USER_PK);
+            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, 1);
+            const userMap = await this.groupChatService.getUserInfos(GC_PK, companyPK, userPK);
             this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userMap });
         } catch (err) {
             this.wss

@@ -14,6 +14,7 @@ import { IUserPayload } from 'src/interfaces/jwt/jwtPayloadInterface';
 import { getServerTime, stackAikoError } from 'src/Helpers/functions';
 import GroupChatStorageRepository from 'src/mapper/groupChatStorage.repository';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
+import StatusService from './status.service';
 
 // mongoose의 dto.save()와 model.create()의 차이: save는 만들거나 업데이트 / create는 만들기만 함.
 
@@ -34,6 +35,7 @@ enum groupChatService {
     getChatLog = 14,
     updateChatLog = 15,
     deleteClientInfo = 16,
+    getOneClientInfo = 17,
 }
 
 /**
@@ -42,13 +44,15 @@ enum groupChatService {
 @Injectable()
 export default class GroupChatService {
     constructor(
-        @InjectModel(GroupChatClientInfo.name) private groupChatClientModel: Model<GroupChatClientInfoDocument>,
-        @InjectModel(GroupChatLog.name) private groupChatLogModel: Model<GroupChatLogDocument>,
+        @InjectModel(GroupChatClientInfo.name)
+        private readonly groupChatClientModel: Model<GroupChatClientInfoDocument>,
+        @InjectModel(GroupChatLog.name) private readonly groupChatLogModel: Model<GroupChatLogDocument>,
+        private readonly statusService: StatusService,
     ) {}
 
-    async addClientForGroupChat(clientId: string, { USER_PK, COMPANY_PK }: IUserPayload) {
+    async addClientForGroupChat(clientId: string, userPK: number, companyPK: number) {
         try {
-            await this.insertGroupChatClientInfo(USER_PK, COMPANY_PK, clientId);
+            await this.insertGroupChatClientInfo(userPK, companyPK, clientId);
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -66,14 +70,14 @@ export default class GroupChatService {
         userList,
         roomTitle,
         maxNum,
-        USER_PK,
-        COMPANY_PK,
+        userPK,
+        companyPK,
     }: {
         userList: number[];
         roomTitle: string;
         maxNum: number;
-        USER_PK: number;
-        COMPANY_PK: number;
+        userPK: number;
+        companyPK: number;
     }) {
         let GC_PK = 0;
         const connection = getConnection();
@@ -86,18 +90,18 @@ export default class GroupChatService {
             const verifiedList = await connection
                 .createQueryBuilder(User, 'u')
                 .where('u.USER_PK IN (:...userList)', { userList })
-                .andWhere('u.COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .andWhere('u.COMPANY_PK = :COMPANY_PK', { companyPK })
                 .getMany();
 
             // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
             GC_PK = await getRepo(GroupChatRoomRepository).createGroupChatRoom(
-                COMPANY_PK,
-                USER_PK,
+                companyPK,
+                userPK,
                 roomTitle,
                 maxNum,
                 queryRunner.manager,
             );
-            await this.createChatRoom(GC_PK, COMPANY_PK);
+            await this.createChatRoom(GC_PK, companyPK);
 
             // 생성된 그룹챗룸에 적합한 유저를 초대 (rdb에 추가)
             await getRepo(GroupChatUserListRepository).insertUserListInNewGroupChatRoom(
@@ -112,7 +116,7 @@ export default class GroupChatService {
                 .in(verifiedList)
                 .select('clientId userPK companyPK')) as GroupChatClientInfo[];
 
-            return { memberList, GC_PK, COMPANY_PK, USER_PK };
+            return { memberList, GC_PK, companyPK, userPK };
         } catch (err) {
             await this.deleteChatRoom(GC_PK);
             await queryRunner.rollbackTransaction();
@@ -127,7 +131,7 @@ export default class GroupChatService {
         }
     }
 
-    async findChatRooms({ USER_PK }: IUserPayload) {
+    async findChatRooms(USER_PK: number, COMPANY_PK: number) {
         try {
             const groupChatRooms = await getRepo(GroupChatUserListRepository).findChatRooms(USER_PK);
             return groupChatRooms;
@@ -147,22 +151,22 @@ export default class GroupChatService {
             file,
             message,
             date,
-            USER_PK,
-            COMPANY_PK,
-        }: { GC_PK: number; USER_PK: number; COMPANY_PK: number; file: number; message: string; date: number },
+            userPK,
+            companyPK,
+        }: { GC_PK: number; userPK: number; companyPK: number; file: number; message: string; date: number },
         wss: Server,
     ) {
         try {
-            const chatLog = await this.getChatLog(GC_PK, COMPANY_PK);
+            const chatLog = await this.getChatLog(GC_PK, companyPK);
 
-            chatLog.chatLog.push({ sender: USER_PK, file, message, date });
+            chatLog.chatLog.push({ sender: userPK, file, message, date });
             await this.updateChatLog(chatLog);
 
-            wss.to(`company:${COMPANY_PK}-${GC_PK}`).emit(groupChatPath.CLIENT_SEND_MESSAGE, {
+            wss.to(`company:${companyPK}-${GC_PK}`).emit(groupChatPath.CLIENT_SEND_MESSAGE, {
                 GC_PK,
                 file,
                 message,
-                sender: USER_PK,
+                sender: userPK,
                 date,
             });
         } catch (err) {
@@ -290,6 +294,23 @@ export default class GroupChatService {
         }
     }
 
+    async getOneClientInfo(clientId: string) {
+        try {
+            const { companyPK, userPK } = (await this.groupChatClientModel
+                .findOne({ clientId })
+                .exec()) as GroupChatClientInfo;
+
+            return { userPK, companyPK };
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'GroupChatService/getOneClientInfo',
+                500,
+                headErrorCode.groupChat + groupChatService.getOneClientInfo,
+            );
+        }
+    }
+
     async findGroupChatLogs(GC_PK: number, companyPK: number) {
         try {
             return (await this.groupChatLogModel.findOne({ GC_PK, companyPK }).exec()) as GroupChatLog;
@@ -366,6 +387,14 @@ export default class GroupChatService {
                 500,
                 headErrorCode.groupChat + groupChatService.deleteClientInfo,
             );
+        }
+    }
+
+    async decodeSocketToken(socketToken: string) {
+        try {
+            return await this.statusService.decodeSocketToken(socketToken);
+        } catch (err) {
+            throw err;
         }
     }
 }
