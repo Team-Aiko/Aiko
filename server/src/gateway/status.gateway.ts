@@ -78,7 +78,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     async handleDisconnect(client: Socket) {
         try {
             console.log('client ID = ', client.id, 'status socket disconnection');
-            this.statusService.statusDisconnect(client.id, this.wss);
+            await this.statusService.statusDisconnect(client.id, this.wss);
             client.disconnect(true);
         } catch (err) {
             this.wss
@@ -111,8 +111,8 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
         try {
-            const { COMPANY_PK, USER_PK } = parseUserPayloadString(client.request.headers['user-payload']);
-            await this.statusService.logoutEvent(USER_PK, COMPANY_PK, client.id);
+            const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
+            await this.statusService.logoutEvent(userPK, companyPK, client.id);
             this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
         } catch (err) {
             this.wss

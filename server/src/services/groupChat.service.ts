@@ -90,7 +90,7 @@ export default class GroupChatService {
             const verifiedList = await connection
                 .createQueryBuilder(User, 'u')
                 .where('u.USER_PK IN (:...userList)', { userList })
-                .andWhere('u.COMPANY_PK = :COMPANY_PK', { companyPK })
+                .andWhere('u.COMPANY_PK = :companyPK', { companyPK })
                 .getMany();
 
             // 그룹챗 룸생성 (rdb에 추가 및 mongodb 로그 데이터 추가)
