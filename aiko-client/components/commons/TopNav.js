@@ -115,21 +115,40 @@ export default function CComp() {
     const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
-    window.addEventListener('beforeunload', (e) => {
-        e.preventDefault();
-        status?.emit('handleDisconnect');
-    });
+    // window.addEventListener('beforeunload', (e) => {
+    //     e.preventDefault();
+    //     status?.emit('handleDisconnect');
+    // });
+
+    // useEffect(() => {
+    //     status?.emit('handleDisconnect');
+    //     setStatus(undefined);
+
+    //     console.log('### first render ###');
+    //     const status = io('http://localhost:5001/status', { withCredentials: true });
+    //     setStatus(status);
+    // }, []);
 
     useEffect(() => {
-        const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
-        setStatus(status);
-    }, []);
-
-    useEffect(() => {
-        if (userInfo.USER_PK && status) {
+        if (userInfo.USER_PK) {
             console.log('###### render ######');
 
-            status.emit('handleConnection');
+            status?.emit('handleDisconnect');
+            setStatus(undefined);
+
+            const status = io('http://localhost:5001/status', { withCredentials: true });
+            setStatus(status);
+
+            const uri = '/api/account/temp-socket-token';
+            get(uri)
+                .then((result) => {
+                    console.log('### result : ', result);
+                    console.log('status : ', status);
+                    status.emit('handleConnection', result);
+                })
+                .catch((err) => {
+                    console.error('handleConnection - error : ', err);
+                });
 
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
@@ -143,6 +162,7 @@ export default function CComp() {
                 console.error('status - error : ', err);
             });
             status.on('client/status/changeStatus', (payload) => {
+                console.log('@@');
                 console.log('changeStatus : ', payload);
                 dispatch(setMemberStatus(payload));
             });
@@ -168,6 +188,9 @@ export default function CComp() {
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
 
+                    status?.emit('handleDisconnect');
+                    setStatus(undefined);
+
                     Router.push('/');
                 } catch (e) {
                     console.error(e);
@@ -180,6 +203,7 @@ export default function CComp() {
         {
             status: 1,
             onClick: () => {
+                console.log('### 온라인 status : ', status);
                 status.emit('server/status/changeStatus', 1);
                 dispatch(setUserInfo({ status: 1 }));
                 setStatusMenuOpen(false);
@@ -190,6 +214,7 @@ export default function CComp() {
         {
             status: 2,
             onClick: () => {
+                console.log('### 부재중 status : ', status);
                 status.emit('server/status/changeStatus', 2);
                 dispatch(setUserInfo({ status: 2 }));
                 setStatusMenuOpen(false);
@@ -200,6 +225,7 @@ export default function CComp() {
         {
             status: 3,
             onClick: () => {
+                console.log('### 바쁨 status : ', status);
                 status.emit('server/status/changeStatus', 3);
                 dispatch(setUserInfo({ status: 3 }));
                 setStatusMenuOpen(false);
@@ -210,6 +236,7 @@ export default function CComp() {
         {
             status: 4,
             onClick: () => {
+                console.log('### 회의중 status : ', status);
                 status.emit('server/status/changeStatus', 4);
                 dispatch(setUserInfo({ status: 4 }));
                 setStatusMenuOpen(false);
