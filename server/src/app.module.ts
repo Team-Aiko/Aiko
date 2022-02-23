@@ -25,8 +25,9 @@ import { RouterModule } from '@nestjs/core';
 import DriverModule from './modules/driver.module';
 import ChatModule from './modules/chat.module';
 import SchedulerModule from './modules/scheduler.module';
+import { mongoDBProfile } from './Helpers/instance';
 
-const MongoDBModule = MongooseModule.forRoot('mongodb://127.0.0.1:27017/nest');
+const MongoDBModule = MongooseModule.forRoot(mongoDBProfile);
 
 @Module({
     imports: [

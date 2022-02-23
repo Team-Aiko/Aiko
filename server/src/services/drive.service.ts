@@ -22,6 +22,8 @@ enum driveServiceError {
     viewFolder = 6,
     moveFolder = 7,
     deleteBinFiles = 8,
+    updateFile = 9,
+    getFileHistory = 10,
 }
 
 @Injectable()
@@ -288,6 +290,46 @@ export default class DriveService {
             );
         } finally {
             await queryRunner.release();
+        }
+    }
+
+    async updateFile(filePK: number, file: Express.Multer.File, companyPK: number, userPK: number) {
+        try {
+            console.log('되고 있음?', filePK, companyPK);
+            const dbFile = (await this.getFiles(filePK, companyPK)) as FileKeys;
+            console.log(dbFile);
+            const { folder } = dbFile;
+            console.log('되는중3');
+            await getRepo(FileHistoryRepository).updateHistory(
+                folder.FOLDER_PK,
+                dbFile.FILE_KEY_PK,
+                file,
+                companyPK,
+                userPK,
+            );
+            console.log('되는중4');
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'DriveService/updateFile',
+                500,
+                headErrorCode.drive + driveServiceError.updateFile,
+            );
+        }
+    }
+
+    async getFileHistory(fileKey: number, companyPK: number) {
+        try {
+            const histories = await getRepo(FileHistoryRepository).getFileHistory(fileKey, companyPK);
+
+            return histories;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'DriveService/getFileHistory',
+                500,
+                headErrorCode.drive + driveServiceError.getFileHistory,
+            );
         }
     }
 }

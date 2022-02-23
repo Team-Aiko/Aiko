@@ -30,5 +30,8 @@
         },
         "maxConnections": 5,
         "maxMessage": 10
+    },
+    "MONGO_DB": {
+        "uri": "몽고디비 접속주소"
     }
 }
