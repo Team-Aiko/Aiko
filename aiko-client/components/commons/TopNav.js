@@ -115,21 +115,24 @@ export default function CComp() {
     const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
-    window.addEventListener('beforeunload', (e) => {
-        e.preventDefault();
+    useEffect(() => {
         status?.emit('handleDisconnect');
-    });
+        setStatus(undefined);
 
-    useEffect(() => {
-        const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
+        const status = io('http://localhost:5001/status', { withCredentials: true });
         setStatus(status);
-    }, []);
 
-    useEffect(() => {
-        if (userInfo.USER_PK && status) {
+        if (userInfo.USER_PK) {
             console.log('###### render ######');
 
-            status.emit('handleConnection');
+            const uri = '/api/account/temp-socket-token';
+            get(uri)
+                .then((result) => {
+                    status.emit('handleConnection', result);
+                })
+                .catch((err) => {
+                    console.error('handleConnection - error : ', err);
+                });
 
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
@@ -167,6 +170,9 @@ export default function CComp() {
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
+
+                    status.emit('handleDisconnect');
+                    setStatus(undefined);
 
                     Router.push('/');
                 } catch (e) {
