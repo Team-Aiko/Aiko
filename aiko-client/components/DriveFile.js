@@ -73,7 +73,8 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
     const deleteItem = () => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs : deletingFolderPk
+            filePKs: 4,
+            folderPKs : 2
         };
         post(url, data)
             .then((res) => {
@@ -86,6 +87,8 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
 
     return (
         <div className={styles.fileContainer}>
+
+            <button onClick={deleteItem}>파일 삭제 test</button>
 
             <Button
                 variant='contained'
@@ -168,8 +171,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             <div className={styles.folderDiv}>
                 {folderFile?.map((file) => (
                     <div className={classes.root}>
-                        <ListItem button dense divider selected>
-                            <ListItemIcon>
+                        <ListItem button dense divider selected onClick={() => {
+                            setFileDetailModalOpen(true);
+                        }}>
+                            <ListItemIcon >
                                 <Folder />
                             </ListItemIcon>
                             <ListItemText
@@ -189,12 +194,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             ) : (
                 <></>
             )}
-
-            <button
-                onClick={() => {
-                    setFileDetailModalOpen(true);
-                }}
-            >CHECK FILE DETAILS</button>
 
             {fileDetailModalOpen == true ? (
                 <Modal

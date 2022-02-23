@@ -5,6 +5,7 @@ import { Typography, Divider, ListItem, ListItemIcon, ListItemText, Button } fro
 import { DeleteForever, Description } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from './Modal';
+import { get, post } from '../_axios';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -29,13 +30,41 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const DriveBin = () => {
+const DriveBin = ({deletedFile}) => {
     const classes = useStyles();
 
     const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
 
+    const [deleted, setDeleted] = useState({});
+
+    const getDeletedFiles = () => {
+        const url = '/api/store/drive/get-files';
+        const data = {
+            filePKs : 4
+        }
+        get(url, data)
+        .then((res) => {
+            setDeleted(res);
+            console.log('getDeletedFiles?', res);
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
+
+    useEffect(() => {
+        getDeletedFiles()
+    },[])
+
+    console.log('deleted', deleted)
+
     return (
         <div className={styles.fileContainer}>
+
+            <button onClick={getDeletedFiles}>
+            아오 getFiles
+            </button>
+
             <div className={classes.pageDesc}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <DeleteForever fontSize='large' />
@@ -65,14 +94,16 @@ const DriveBin = () => {
             <Divider />
 
             <div className={styles.folderDiv}>
-                <div className={classes.root}>
-                    <ListItem button dense divider selected>
-                        <ListItemIcon>
-                            <Description />
-                        </ListItemIcon>
-                        <ListItemText />
-                    </ListItem>
-                </div>
+                {deletedFile?.map((file) => (
+                    <div className={classes.root}>
+                        <ListItem button dense divider selected>
+                            <ListItemIcon>
+                                <Description />
+                            </ListItemIcon>
+                            <ListItemText primary={file.FOLDER_NAME}/>
+                        </ListItem>
+                    </div>
+                ))}
             </div>
         </div>
     );
