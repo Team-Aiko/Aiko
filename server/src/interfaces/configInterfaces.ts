@@ -26,3 +26,7 @@ export interface IMailConfig {
 export interface IMailBotConfig {
     botEmailAddress: string;
 }
+
+export interface IMongoDBConfig {
+    uri: string;
+}

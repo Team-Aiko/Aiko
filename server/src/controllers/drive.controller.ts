@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Req,
+    Res,
+    UploadedFile,
+    UploadedFiles,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
@@ -81,6 +92,25 @@ export default class DriveController {
         }
     }
 
+    @Post('update-file')
+    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    async updateFile(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        try {
+            const { COMPANY_PK, USER_PK } = userPayload;
+            const { filePK } = req.body;
+            await this.driveService.updateFile(filePK, file, COMPANY_PK, USER_PK);
+
+            resExecutor(res, { result: true });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
     // ! api doc
     @Post('delete-files')
     async deleteFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
@@ -118,6 +148,19 @@ export default class DriveController {
             );
 
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Get('file-history')
+    async getFileHistory(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { COMPANY_PK, USER_PK } = userPayload;
+            const { fileKey } = req.query;
+
+            const result = await this.driveService.getFileHistory(Number(fileKey), COMPANY_PK);
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

@@ -3,6 +3,7 @@ import { AikoError, getRepo } from 'src/Helpers';
 import { stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, InsertResult, Repository, getManager, TransactionManager, EntityManager } from 'typeorm';
+import FileBinRepository from './fileBin.repository';
 import FileKeysRepository from './fileKeys.repository';
 import FolderBinRepository from './folderBin.repository';
 
@@ -137,10 +138,10 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         try {
             // get folder PK list
             const isArray = Array.isArray(folderPKs);
-            if (isArray) await deleteProcess(folderPKs, this);
-            else await deleteProcess([folderPKs], this);
+            if (isArray) await deleteProcess(folderPKs, userPK, this);
+            else await deleteProcess([folderPKs], userPK, this);
 
-            async function deleteProcess(folders: number[], obj: FileFolderRepository) {
+            async function deleteProcess(folders: number[], userPK: number, obj: FileFolderRepository) {
                 // delete folders
                 if (folders.length > 0) {
                     const validFolders = await getRepo(FolderBinRepository).deleteFolder(
@@ -160,6 +161,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                     );
 
                     await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
+                    await getRepo(FileBinRepository).deleteFiles(filePKs, companyPK, userPK, manager);
                 }
             }
         } catch (err) {
