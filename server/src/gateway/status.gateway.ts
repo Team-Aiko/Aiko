@@ -12,6 +12,7 @@ import { statusPath } from 'src/interfaces/MVC/socketMVC';
 import StatusService from 'src/services/status.service';
 import { getSocketErrorPacket, parseUserPayloadString } from 'src/Helpers/functions';
 import { invalidTokenError } from 'src/Helpers/instance';
+import { AikoError } from 'src/Helpers';
 
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'status' })
 export default class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -59,9 +60,14 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
                 client.id,
             );
         } catch (err) {
-            this.wss
-                .to(client.id)
-                .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, undefined));
+            if ((err as AikoError).appCode === 4000000 + 19) {
+                console.log('no socketToken');
+                client.disconnect(true);
+            } else {
+                this.wss
+                    .to(client.id)
+                    .emit(statusPath.CLIENT_ERROR, getSocketErrorPacket(statusPath.HANDLE_CONNECTION, err, undefined));
+            }
         }
     }
 

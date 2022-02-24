@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { IMessagePayload, privateChatPath } from 'src/interfaces/MVC/socketMVC';
 import PrivateChatService from 'src/services/privateChat.service';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
+import { AikoError } from 'src/Helpers';
 
 @WebSocketGateway({ cors: { credentials: true, origin: 'http://localhost:3000' }, namespace: 'private-chat' })
 export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -36,12 +37,17 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
             this.wss.to(client.id).emit(privateChatPath.CLIENT_CONNECTED, { oddCase, evenCase });
         } catch (err) {
-            this.wss
-                .to(client.id)
-                .emit(
-                    privateChatPath.CLIENT_ERROR,
-                    getSocketErrorPacket(privateChatPath.HANDLE_CONNECTION, err, undefined),
-                );
+            if ((err as AikoError).appCode === 4000000 + 19) {
+                console.log('no socketToken');
+                client.disconnect(true);
+            } else {
+                this.wss
+                    .to(client.id)
+                    .emit(
+                        privateChatPath.CLIENT_ERROR,
+                        getSocketErrorPacket(privateChatPath.HANDLE_CONNECTION, err, undefined),
+                    );
+            }
         }
     }
 
@@ -88,6 +94,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
     @SubscribeMessage(privateChatPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         this.logger.log(`disconnect client: ${client.id}`);
+        await this.privateChatService.deleteClientInfo(client.id);
         client.disconnect(true);
     }
 }

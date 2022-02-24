@@ -23,6 +23,7 @@ enum privateChatServiceError {
     storePrivateChatLogsToRDB = 7,
     addClient = 8,
     getClientInfo = 9,
+    deleteClientInfo = 10,
 }
 
 @Injectable()
@@ -242,6 +243,19 @@ export default class PrivateChatService {
                 'PrivateChatService/storePrivateChatLogsToRDB',
                 500,
                 headErrorCode.privateChat + privateChatServiceError.storePrivateChatLogsToRDB,
+            );
+        }
+    }
+
+    async deleteClientInfo(clientId: string) {
+        try {
+            await this.privateClientStorageModel.findOneAndDelete({ clientId }).exec();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/deleteClientInfo',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.deleteClientInfo,
             );
         }
     }
