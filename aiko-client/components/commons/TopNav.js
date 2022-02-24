@@ -34,6 +34,7 @@ import SideNav from './SideNav';
 import router from 'next/router';
 import { io } from 'socket.io-client';
 import { ExpandLess, ExpandMore, StarBorder } from '@material-ui/icons';
+import ExitToApp from '@material-ui/icons/ExitToApp';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -134,6 +135,15 @@ export default function CComp() {
                     console.error('handleConnection - error : ', err);
                 });
 
+            status.on('client/status/getStatusList', (payload) => {
+                console.log('### getStatusList ### : ', payload);
+                for (const row of payload) {
+                    if (row.userPK === userInfo.USER_PK) {
+                        dispatch(setUserInfo({ status: row.status }));
+                    }
+                }
+            });
+
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
                 dispatch(setMemberStatus(payload.user));
@@ -152,6 +162,7 @@ export default function CComp() {
             status.on('client/status/logoutEventExecuted', () => {
                 status.emit('handleDisconnect');
             });
+            status.on('');
         }
     }, [userInfo.USER_PK]);
 
@@ -395,6 +406,17 @@ export default function CComp() {
                     <p>Profile</p>
                 </MenuItem>
             ) : null}
+            <MenuItem onClick={handleLogout}>
+                <IconButton
+                    aria-label='account of current user'
+                    aria-controls='primary-search-account-menu'
+                    aria-haspopup='true'
+                    color='inherit'
+                >
+                    <ExitToApp />
+                </IconButton>
+                <p>Logout</p>
+            </MenuItem>
         </Menu>
     );
     const accountBtns = (
