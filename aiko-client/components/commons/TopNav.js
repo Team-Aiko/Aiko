@@ -135,6 +135,15 @@ export default function CComp() {
                     console.error('handleConnection - error : ', err);
                 });
 
+            status.on('client/status/getStatusList', (payload) => {
+                console.log('### getStatusList ### : ', payload);
+                for (const row of payload) {
+                    if (row.userPK === userInfo.USER_PK) {
+                        dispatch(setUserInfo({ status: row.status }));
+                    }
+                }
+            });
+
             status.on('client/status/loginAlert', (payload) => {
                 console.log('loginAlert : ', payload);
                 dispatch(setMemberStatus(payload.user));
@@ -153,6 +162,7 @@ export default function CComp() {
             status.on('client/status/logoutEventExecuted', () => {
                 status.emit('handleDisconnect');
             });
+            status.on('');
         }
     }, [userInfo.USER_PK]);
 
