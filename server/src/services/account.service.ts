@@ -159,7 +159,7 @@ export default class AccountService {
             }
 
             // * generate status database (mongodb)
-            this.statusService.generateUserStatus(userPK, data.companyPK);
+            await this.statusService.generateUserStatus(userPK, data.companyPK);
 
             // * email auth
             const uuid = v1();
