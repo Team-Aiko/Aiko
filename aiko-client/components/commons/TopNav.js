@@ -34,6 +34,7 @@ import SideNav from './SideNav';
 import router from 'next/router';
 import { io } from 'socket.io-client';
 import { ExpandLess, ExpandMore, StarBorder } from '@material-ui/icons';
+import ExitToApp from '@material-ui/icons/ExitToApp';
 
 // * CSS Styles
 const useStyles = makeStyles((theme) => ({
@@ -395,6 +396,17 @@ export default function CComp() {
                     <p>Profile</p>
                 </MenuItem>
             ) : null}
+            <MenuItem onClick={handleLogout}>
+                <IconButton
+                    aria-label='account of current user'
+                    aria-controls='primary-search-account-menu'
+                    aria-haspopup='true'
+                    color='inherit'
+                >
+                    <ExitToApp />
+                </IconButton>
+                <p>Logout</p>
+            </MenuItem>
         </Menu>
     );
     const accountBtns = (
