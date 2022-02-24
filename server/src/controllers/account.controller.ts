@@ -79,7 +79,7 @@ export default class AccountController {
 
     // ! check Complete - api doc
     @Post('signup')
-    @UseInterceptors(FileInterceptor('file', { dest: filePath.PROFILE }), UserPayloadParserInterceptor)
+    @UseInterceptors(FileInterceptor('image', { dest: filePath.PROFILE }))
     async signup(@Req() req: Request, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
         const data = JSON.parse(req.body.obj) as ISignup;
 
