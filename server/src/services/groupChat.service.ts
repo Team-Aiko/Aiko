@@ -36,6 +36,7 @@ enum groupChatService {
     updateChatLog = 15,
     deleteClientInfo = 16,
     getOneClientInfo = 17,
+    logoutEvent = 18,
 }
 
 /**
@@ -395,6 +396,20 @@ export default class GroupChatService {
             return await this.statusService.decodeSocketToken(socketToken);
         } catch (err) {
             throw err;
+        }
+    }
+
+    async logoutEvent(userPK: number, companyPK: number, clientId: string) {
+        try {
+            await this.groupChatClientModel.deleteMany({ userPK, companyPK }).exec();
+            await this.addClientForGroupChat(clientId, userPK, companyPK);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'GroupChatService/logoutEvent',
+                500,
+                headErrorCode.groupChat + groupChatService.logoutEvent,
+            );
         }
     }
 }

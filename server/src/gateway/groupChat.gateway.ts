@@ -8,6 +8,7 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AikoError } from 'src/Helpers';
 import { getSocketErrorPacket } from 'src/Helpers/functions';
 import { groupChatPath } from 'src/interfaces/MVC/socketMVC';
 import GroupChatService from 'src/services/groupChat.service';
@@ -50,12 +51,17 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
 
             this.wss.to(client.id).emit(groupChatPath.CLIENT_CONNECTED, groupChatRooms);
         } catch (err) {
-            this.wss
-                .to(client.id)
-                .emit(
-                    groupChatPath.CLIENT_ERROR_ALERT,
-                    getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, undefined),
-                );
+            if ((err as AikoError).appCode === 4000000 + 19) {
+                console.log('no socketToken');
+                client.disconnect(true);
+            } else {
+                this.wss
+                    .to(client.id)
+                    .emit(
+                        groupChatPath.CLIENT_ERROR_ALERT,
+                        getSocketErrorPacket(groupChatPath.CLIENT_ERROR_ALERT, err, undefined),
+                    );
+            }
         }
     }
 
@@ -183,6 +189,22 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
                 .emit(
                     groupChatPath.CLIENT_ERROR_ALERT,
                     getSocketErrorPacket(groupChatPath.SERVER_READ_CHAT_LOGS, err, GC_PK),
+                );
+        }
+    }
+
+    @SubscribeMessage(groupChatPath.SERVER_LOGOUT_EVENT)
+    async logoutEvent(client: Socket) {
+        try {
+            const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
+            await this.groupChatService.logoutEvent(userPK, companyPK, client.id);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+        } catch (err) {
+            this.wss
+                .to(client.id)
+                .emit(
+                    groupChatPath.CLIENT_ERROR_ALERT,
+                    getSocketErrorPacket(groupChatPath.SERVER_LOGOUT_EVENT, err, undefined),
                 );
         }
     }

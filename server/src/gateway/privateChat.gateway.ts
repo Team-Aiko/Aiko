@@ -97,4 +97,20 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
         await this.privateChatService.deleteClientInfo(client.id);
         client.disconnect(true);
     }
+
+    @SubscribeMessage(privateChatPath.SERVER_LOGOUT_EVENT)
+    async logoutEvent(client: Socket) {
+        try {
+            const { userPK, companyPK } = await this.privateChatService.getClientInfo(client.id);
+            await this.privateChatService.logoutEvent(userPK, companyPK, client.id);
+            this.wss.to(client.id).emit(privateChatPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+        } catch (err) {
+            this.wss
+                .to(client.id)
+                .emit(
+                    privateChatPath.CLIENT_ERROR,
+                    getSocketErrorPacket(privateChatPath.SERVER_LOGOUT_EVENT, err, undefined),
+                );
+        }
+    }
 }

@@ -5,8 +5,10 @@ export enum privateChatPath {
     CLIENT_ERROR = 'client/private-chat/error',
     CLIENT_SEND = 'client/private-chat/send',
     CLIENT_RECEIVE_CHAT_LOG = 'client/private-chat/receive-chatlog',
+    CLIENT_LOGOUT_EVENT_EXECUTED = 'client/private-chat/logoutEventExecuted',
     SERVER_SEND = 'server/private-chat/send',
     SERVER_CALL_CHAT_LOG = 'server/private-chat/call-chatLog',
+    SERVER_LOGOUT_EVENT = 'server/private-chat/logoutEvent',
 }
 
 export enum statusPath {
@@ -31,10 +33,12 @@ export enum groupChatPath {
     CLIENT_READ_CHAT_LOGS = 'client/gc/read-chat-logs',
     CLIENT_SEND_MESSAGE = 'client/gc/send-message',
     CLIENT_ERROR_ALERT = 'client/gc/errorAlert',
+    CLIENT_LOGOUT_EVENT_EXECUTED = 'client/gc/logoutEventExecuted',
     SERVER_CREATE_GROUP_CHAT_ROOM = 'server/gc/create-group-chat-room',
     SERVER_JOIN_GROUP_CHAT_ROOM = 'server/gc/join-group-chat-room',
     SERVER_SEND_MESSAGE = 'server/gc/send-message',
     SERVER_READ_CHAT_LOGS = 'server/gc/read-chat-logs',
+    SERVER_LOGOUT_EVENT = 'server/gc/logoutEvent',
     TEST_ADD_NEW_CLIENT = 'test/gc/add-new-client',
 }
 

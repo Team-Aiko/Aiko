@@ -24,6 +24,7 @@ enum privateChatServiceError {
     addClient = 8,
     getClientInfo = 9,
     deleteClientInfo = 10,
+    logoutEvent = 11,
 }
 
 @Injectable()
@@ -256,6 +257,20 @@ export default class PrivateChatService {
                 'PrivateChatService/deleteClientInfo',
                 500,
                 headErrorCode.privateChat + privateChatServiceError.deleteClientInfo,
+            );
+        }
+    }
+
+    async logoutEvent(userPK: number, companyPK: number, clientId: string) {
+        try {
+            await this.privateClientStorageModel.deleteMany({ userPK, companyPK });
+            await this.addClient(clientId, userPK, companyPK);
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'PrivateChatService/logoutEvent',
+                500,
+                headErrorCode.privateChat + privateChatServiceError.logoutEvent,
             );
         }
     }
