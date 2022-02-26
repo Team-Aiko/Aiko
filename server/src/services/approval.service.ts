@@ -125,14 +125,35 @@ export default class ApprovalService {
         }
         return frame;
     }
-    async updateApproval(
+    async assignApproval(
         userPk: number,
         departmentPk: number,
         comPk: number,
         framePk: number,
-        title: string,
-        content: string,
+        stepStatus: number,
+        decision: number,
     ) {
-        const frame = await getRepo(ApprovalFrameRepository).updateFrame(userPk, departmentPk, comPk, framePk);
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            const query1 = await getRepo(ApprovalStepRepository).assignApproval(); // 결재 진행
+            const query2 = await getRepo(ApprovalStepRepository).checkApprovalStep(); // 현재 결재 단계 확인
+            const query3 = await getRepo(ApprovalFrameRepository).updateCurrentStep( 
+                queryRunner.manager,
+                departmentPk,
+                comPk,
+                framePk,
+            ); // 결제 다음단계 진행
+
+            const query4 = await getRepo(ApprovalFrameRepository).frameFinish(); // 결제 단계가 모두 완료 컬럼 DONE =1
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            console.log(err);
+            throw new AikoError(err.message, 451, 500000);
+        } finally {
+            queryRunner.release();
+        }
     }
 }

@@ -60,21 +60,21 @@ export default class ApprovalController {
             throw resExecutor(res, { err });
         }
     }
-    @Post('update')
+    @Post('assign')
     @UseInterceptors(UserPayloadParserInterceptor)
-    async updateApproval(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
+    async assignApproval(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
         try {
             const departmentPk = userPayload.DEPARTMENT_PK;
             const comPk = userPayload.COMPANY_PK;
             const userPk = userPayload.USER_PK;
-            const { title, content, framePk } = req.body;
-            const result = await this.approvalService.updateApproval(
+            const { framePk, stepStatus, decision } = req.body;
+            const result = await this.approvalService.assignApproval(
                 userPk,
                 departmentPk,
                 comPk,
                 framePk,
-                title,
-                content,
+                stepStatus,
+                decision,
             );
             resExecutor(res, { result: result });
         } catch (err) {

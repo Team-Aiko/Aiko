@@ -119,7 +119,23 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             console.log(err);
         }
     }
-    async updateFrame(userPk: number, departmentPk: number, comPk: number, framePk: number) {
-        const result = await await this.createQueryBuilder().select().andWhere('');
+    async updateCurrentStep(
+        @TransactionManager() manager: EntityManager,
+        departmentPk: number,
+        comPk: number,
+        framePk: number,
+    ) {
+        console.log(departmentPk);
+        console.log(comPk);
+        console.log(framePk);
+        const currentStepLevel = await await this.createQueryBuilder('af')
+            .select(['af.CURRENT_STEP_LEVEL'])
+            .andWhere('AF_PK =:framePk', { framePk: `${framePk}` })
+            .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
+            .andWhere('COMPANY_PK=:comPk', { comPk: `${comPk}` })
+            .getOne();
+        const upStepLevel = currentStepLevel.CURRENT_STEP_LEVEL + 1;
+        const result = await manager.update(ApprovalFrame, { AF_PK: framePk }, { CURRENT_STEP_LEVEL: upStepLevel });
+        return result;
     }
 }
