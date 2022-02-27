@@ -88,37 +88,74 @@ export default class FileFolderRepository extends Repository<FileFolder> {
     async getAllChildrenWithMyself(folderPKs: number | number[], companyPK: number) {
         try {
             const isArray = Array.isArray(folderPKs);
-            let result: FileFolder[] = [];
+            const result: FileFolder[] = [];
 
             if (isArray) {
                 await Promise.all(
                     folderPKs.map(async (folderPK) => {
-                        result = result.concat((await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]);
+                        await bootstrap(folderPK, companyPK, this, result);
                     }),
                 );
             } else {
-                result = (await getManager().query(getSQL(folderPKs, companyPK))) as FileFolder[];
+                bootstrap(folderPKs, companyPK, this, result);
             }
 
             return result;
 
-            function getSQL(folderPK: number, companyPK: number) {
-                const sql = `with recursive GET_ALL_CHILDREN as (
-                    select
-                        *
-                    from FILE_FOLDER_TABLE
-                    where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
-                    union all
-                    select
-                        FF1.*
-                    from
-                        FILE_FOLDER_TABLE as FF1, GET_ALL_CHILDREN as FF2
-                    where
-                        FF1.PARENT_PK = FF2.FOLDER_PK
-                 ) select * from GET_ALL_CHILDREN`;
+            async function bootstrap(
+                primaryKey: number,
+                companyKey: number,
+                obj: FileFolderRepository,
+                list: FileFolder[],
+            ) {
+                const children = await obj
+                    .createQueryBuilder()
+                    .where('PARENT_PK = :primaryKey', { primaryKey })
+                    .andWhere('COMPANY_PK = :companyKey', { companyKey })
+                    .andWhere('IS_DELETED = 0')
+                    .getMany();
+                if (children.length > 1) {
+                    await Promise.all(
+                        children.map(async (folder) => {
+                            await bootstrap(folder.FOLDER_PK, companyKey, obj, list);
+                        }),
+                    );
 
-                return sql;
+                    list = list.concat(children);
+                }
             }
+
+            /* MySQL v 8.x (Our cloud server use MySQL v5.6 so we can't use CTE syntax)
+                if (isArray) {
+                    await Promise.all(
+                        folderPKs.map(async (folderPK) => {
+                            result = result.concat((await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]);
+                        }),
+                    );
+                } else {
+                    result = (await getManager().query(getSQL(folderPKs, companyPK))) as FileFolder[];
+                }
+
+                return result;
+
+                function getSQL(folderPK: number, companyPK: number) {
+                    const sql = `with recursive GET_ALL_CHILDREN as (
+                        select
+                            *
+                        from FILE_FOLDER_TABLE
+                        where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
+                        union all
+                        select
+                            FF1.*
+                        from
+                            FILE_FOLDER_TABLE as FF1, GET_ALL_CHILDREN as FF2
+                        where
+                            FF1.PARENT_PK = FF2.FOLDER_PK
+                    ) select * from GET_ALL_CHILDREN`;
+
+                    return sql;
+                }
+            */
         } catch (err) {
             throw stackAikoError(
                 err,
