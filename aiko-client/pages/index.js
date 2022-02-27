@@ -17,5 +17,5 @@ export default function CComp() {
 
 function PComp(props) {
 
-    return <></>;
+    return <> </>;
 }
