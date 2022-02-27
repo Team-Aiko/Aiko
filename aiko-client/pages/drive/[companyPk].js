@@ -16,29 +16,25 @@ const drive = () => {
     //폴더들, DriveFile.js의 Props
     const [rootFolder, setRootFolder] = useState([]);
     //현재 사용자가 선택한 Folder_PK 값 추적
-    const [selectedFolderPk, setSelectedFolderPk] = useState(1);
+    const [selectedFolderPk, setSelectedFolderPk] = useState(0);
     //현재 클릭한 folder의 하위 파일들
     const [folderFile, setFolderFile] = useState([]);
-    //삭제된 파일 값
-    const [deletedFile, setDeletedFile] = useState([]);
-
 
     // DriveFile 컴포넌트에서 사용자가 선택한 Folder_Pk 값 추적시 필요한 함수 (부모 <--> 자식)
     const getFolderPk = (number) => {
         setSelectedFolderPk(number)
     };
 
-    // 만들어진 폴더 가져오기, 의존값은 selectedFolderPk
+    // 만들어진 폴더 가져오기, 의존값은 selectedFolderPk 삭제된 폴더와 파일 구분함 (휴지통)
     const viewFolder = () => {
         const url = `/api/store/drive/view-folder?folderId=${selectedFolderPk}`;
         get(url)
         .then((res) => {
             console.log('Get Root Folders', res);
-            setRootFolder(res.directChildrenFolders);
+            const notDeletedFolder = res.directChildrenFolders.filter(folder => folder.IS_DELETED === 0);
+            setRootFolder(notDeletedFolder);
             const notDeletedFile = res.filesInFolder.filter(file => file.IS_DELETED === 0);
             setFolderFile(notDeletedFile);
-            const deletedFile = res.filesInFolder.filter(file => file.IS_DELETED === 1);
-            setDeletedFile(deletedFile);
         })
         .catch((error) => {
             console.log(error)
@@ -49,22 +45,27 @@ const drive = () => {
         viewFolder()
     }, [selectedFolderPk])
 
-    console.log('folderFile', folderFile)
+    const [openBin, setOpenBin] = useState(false);
+
+    const openPasteBin = (boolean) => {
+        setOpenBin(boolean);
+    };
+
 
     return (
         <div className={styles.mainContainer}>
-            <DriveFolder getFolderPk={getFolderPk}/>
+            <DriveFolder getFolderPk={getFolderPk} openPasteBin={openPasteBin} />
 
             {
-                selectedFolderPk !== 0
+                openBin == false
                 ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}
                     folderFile={folderFile}/>
                 : <></>
             }
 
             {
-                selectedFolderPk == 0
-                ? <DriveBin deletedFile={deletedFile}></DriveBin>
+                openBin == true
+                ? <DriveBin></DriveBin>
                 : <></>
             }
         </div>

@@ -58,14 +58,19 @@
 }
 
 .fileHistory {
-    width: 40%;
+    width: 30%;
     height: 85%;
     border: 2px dotted grey;
     margin:5px;
+    display:flex;
+    flex-direction:column;
+    text-align:center;
+    align-items:center;
+    padding:10px;
 }
 
 .filePreview {
-    width: 40%;
+    width: 50%;
     height: 85%;
     border: 2px dotted grey;
     margin:5px;
@@ -76,4 +81,10 @@
     border: 3px dotted grey;
     margin: 10px;
     padding: 15px;
+}
+
+/* DriveFileMove.js */
+.moveFileModalContainer {
+    width: 500px;
+    height: 100%;
 }
