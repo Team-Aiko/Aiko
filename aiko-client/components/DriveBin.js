@@ -20,50 +20,43 @@ const useStyles = makeStyles((theme) => ({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
-    confirmDiv : {
+    confirmDiv: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems:'center',
-        textAlign:'center',
-        padding: 20
-    }
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: 20,
+    },
 }));
 
-
-const DriveBin = ({deletedFile}) => {
+const DriveBin = () => {
     const classes = useStyles();
 
-    const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
+        const [deletedFile, setDeletedFile] = useState([]);
+        const [deletedRootFolder, setDeletedRootFolder] = useState([]);
+        const [selectedFolderPk, setSelectedFolderPk] = useState(1);
 
-    const [deleted, setDeleted] = useState({});
-
-    const getDeletedFiles = () => {
-        const url = '/api/store/drive/get-files';
-        const data = {
-            filePKs : 4
-        }
-        get(url, data)
-        .then((res) => {
-            setDeleted(res);
-            console.log('getDeletedFiles?', res);
-        })
-        .catch((error) => {
-            console.log(error);
-        })
-    }
-
-    useEffect(() => {
-        getDeletedFiles()
-    },[])
-
-    console.log('deleted', deleted)
+        // 만들어진 폴더 가져오기, 의존값은 selectedFolderPk 삭제된 폴더와 파일 구분함 (휴지통)
+        const viewFolder = () => {
+            const url = `/api/store/drive/view-folder?folderId=${selectedFolderPk}`;
+            get(url)
+            .then((res) => {
+                const deletedFolder = res.directChildrenFolders.filter(folder => folder.IS_DELETED === 1);
+                setDeletedRootFolder(deletedFolder);
+                const deletedFile = res.filesInFolder.filter(file => file.IS_DELETED === 1);
+                setDeletedFile(deletedFile);
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+        };
+    
+        useEffect(() => {
+            viewFolder()
+        }, [])
 
     return (
         <div className={styles.fileContainer}>
-
-            <button onClick={getDeletedFiles}>
-            아오 getFiles
-            </button>
 
             <div className={classes.pageDesc}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -71,24 +64,6 @@ const DriveBin = ({deletedFile}) => {
 
                     <Typography>Recycle Bin</Typography>
                 </div>
-
-                <div>
-                    <Button color='primary' variant='outlined' onClick={() => {setDeleteConfirmModal(true)}}>
-                        Emptying
-                    </Button>
-                </div>
-
-                {
-                    deleteConfirmModal
-                    ? <Modal title='Emptying Bin' open={deleteConfirmModal}
-                    onClose={() => {setDeleteConfirmModal(false)}}>
-                        <div className={classes.confirmDiv}>
-                        <Typography variant='overline'>Are you sure you want to <span style={{color:'tomato'}}>empty recycle bin?</span></Typography>
-                        <Button style={{margin:20}} color='primary' variant='contained'>YES</Button>
-                        </div>
-                    </Modal>
-                    : <></>
-                }
             </div>
 
             <Divider />
@@ -100,11 +75,23 @@ const DriveBin = ({deletedFile}) => {
                             <ListItemIcon>
                                 <Description />
                             </ListItemIcon>
-                            <ListItemText primary={file.FOLDER_NAME}/>
+                            <ListItemText primary={file.FOLDER_NAME} />
+                        </ListItem>
+                    </div>
+                ))}
+
+                {deletedRootFolder?.map((folder) => (
+                    <div className={classes.root}>
+                        <ListItem button dense divider selected>
+                            <ListItemIcon>
+                                <Description />
+                            </ListItemIcon>
+                            <ListItemText primary={folder.FOLDER_NAME} />
                         </ListItem>
                     </div>
                 ))}
             </div>
+
         </div>
     );
 };

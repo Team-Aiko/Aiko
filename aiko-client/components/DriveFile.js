@@ -12,9 +12,13 @@ import {
     ListItemIcon,
     ListItemText,
     Typography,
+    IconButton,
+    Menu,
+    MenuItem,
 } from '@material-ui/core';
-import { CreateNewFolder, Folder, NoteAdd } from '@material-ui/icons';
+import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
 import Modal from './Modal.js';
+import DriveFileMove from './DriveFileMove';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -32,6 +36,58 @@ const useStyles = makeStyles((theme) => ({
 const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) => {
     const classes = useStyles();
 
+    //FOLDER Menu Item 조작
+    const ThreeDotsMenu = ({ root }) => {
+        const [anchorEl, setAnchorEl] = React.useState(null);
+        const handleClick = (e) => {
+            setAnchorEl(e.currentTarget);
+        };
+        const handleClose = () => {
+            setAnchorEl(null);
+        };
+
+        return (
+            <React.Fragment>
+                <Button onClick={handleClick}>
+                    <MoreVert />
+                </Button>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                    <MenuItem onClick={()=>{setDeleteFolderPk(root)}}>Delete</MenuItem>
+                    <MenuItem onClick={openMoveModal}>Move</MenuItem>
+                </Menu>
+            </React.Fragment>
+        );
+    };
+
+    const [deleteFolderPk, setDeleteFolderPk] = useState(undefined);
+
+    const [fileMoveModalOpen, setFileMoveModalOpen] = useState(false);
+    const openMoveModal = () => {
+        setFileMoveModalOpen(true);
+    }
+    const closeMoveModal = () => {
+        setFileMoveModalOpen(false);
+    }
+
+    //폴더 삭제 API
+    const deleteItem = () => {
+        const url = '/api/store/drive/delete-files';
+        const data = {
+            folderPKs: deleteFolderPk
+        };
+        post(url, data)
+            .then((res) => {
+                console.log('Delete Items', res);
+            })
+            .catch((error) => {
+                console.log('delete Items', error);
+            });
+    };
+
+    useEffect(() => {
+        deleteItem();
+    }, [deleteFolderPk])
+
     // Folder Modal Open
     const [openModal, setOpenModal] = useState(false);
 
@@ -44,7 +100,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
     //하위 폴더 생성
     const [folderName, setFolderName] = useState('');
 
-
     //하위 폴더 이름
     const changeFolderName = (e) => {
         setFolderName(e.target.value);
@@ -56,39 +111,23 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             folderName: folderName,
             parentPK: selectedFolderPk,
         };
+        if(folderName.length == 0){
+            alert('폴더명을 입력해주세요.')
+            return;
+        }
         post(url, data)
             .then((res) => {
                 console.log('Make Subfolder API', res);
                 setFolderName('');
+                setOpenModal(false);
             })
             .catch((error) => {
                 console.log(error);
             });
     };
 
-    //지우려하는 폴더 PK 값
-    const [deletingFolderPk, setDeletingFolderPk] = useState(undefined);
-
-    //폴더 삭제 API
-    const deleteItem = () => {
-        const url = '/api/store/drive/delete-files';
-        const data = {
-            filePKs: 4,
-            folderPKs : 2
-        };
-        post(url, data)
-            .then((res) => {
-                console.log('Delete Items', res);
-            })
-            .catch((error) => {
-                console.log('delete Items', error);
-            });
-    };
-
     return (
         <div className={styles.fileContainer}>
-
-            <button onClick={deleteItem}>파일 삭제 test</button>
 
             <Button
                 variant='contained'
@@ -141,6 +180,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                                     getFolderPk(root.FOLDER_PK);
                                 }}
                             />
+                            <ThreeDotsMenu root={root.FOLDER_PK} />
                         </ListItem>
                     </div>
                 ))}
@@ -171,15 +211,20 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             <div className={styles.folderDiv}>
                 {folderFile?.map((file) => (
                     <div className={classes.root}>
-                        <ListItem button dense divider selected onClick={() => {
-                            setFileDetailModalOpen(true);
-                        }}>
-                            <ListItemIcon >
+                        <ListItem
+                            button
+                            dense
+                            divider
+                            selected
+                        >
+                            <ListItemIcon>
                                 <Folder />
                             </ListItemIcon>
-                            <ListItemText
-                                primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
-                            />
+                            <ListItemText primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
+                            onClick={() => {
+                                setFileDetailModalOpen(true);
+                            }}/>
+                            <ThreeDotsMenu />
                         </ListItem>
                     </div>
                 ))}
@@ -204,22 +249,26 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                     }}
                 >
                     <div className={styles.fileDetailDiv}>
-                        <div className={styles.fileHistory}>
-                            HISTORY
-                        </div>
+                        <div className={styles.fileHistory}>Detail</div>
 
-                        <div className={styles.filePreview}>
-                            미리보기
-                        </div>
+                        <div className={styles.filePreview}>Image Preview</div>
                     </div>
 
-                    <div style={{textAlign:'center', margin:10}}>
-                        <Button variant='contained' color='primary' fontSize='small'>Download</Button>
+                    <div style={{ textAlign: 'center', margin: 10 }}>
+                        <Button variant='contained' color='primary' fontSize='small'>
+                            Download
+                        </Button>
                     </div>
                 </Modal>
             ) : (
                 <></>
             )}
+
+            {
+                fileMoveModalOpen == true
+                ? <DriveFileMove closeMoveModal={closeMoveModal} openMoveModal={openMoveModal}></DriveFileMove>
+                : <></>
+            }
         </div>
     );
 };

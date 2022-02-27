@@ -25,7 +25,7 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
     });
 
     const removeItem = (name) => {
-        setFiles(files.filter(file => file.name !== name));
+        setFiles(files.filter((file) => file.name !== name));
     };
 
     const fileName = files.map((file) => (

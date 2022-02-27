@@ -22,9 +22,9 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const DriveFolder = ({ getFolderPk }) => {
+const DriveFolder = ({ getFolderPk, openPasteBin }) => {
     const classes = useStyles();
-    
+
     // const [open, setOpen] = React.useState(true);
 
     // const handleClick = () => {
@@ -46,6 +46,7 @@ const DriveFolder = ({ getFolderPk }) => {
                 <ListItem
                     button
                     onClick={() => {
+                        openPasteBin(false);
                         getFolderPk(1);
                     }}
                 >
@@ -74,7 +75,7 @@ const DriveFolder = ({ getFolderPk }) => {
                 <ListItem
                     button
                     onClick={() => {
-                        getFolderPk(0);
+                        openPasteBin(true);
                     }}
                 >
                     <ListItemIcon>
