@@ -163,14 +163,20 @@ export default class DriveService {
             if (filePKs !== -1) {
                 // * check valid deletes
                 const selectedFiles = await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
-                const filesInFolder = await getRepo(FileKeysRepository).getFilesInFolder(folderPKList, companyPK);
+                let filesInFolder: FileKeys[] = [];
+                if (folderPKList.length >= 1) {
+                    filesInFolder = await getRepo(FileKeysRepository).getFilesInFolder(folderPKList, companyPK);
+                }
                 const isArray = Array.isArray(selectedFiles);
                 if (isArray) filePKs = selectedFiles.map((file) => file.FILE_KEY_PK);
                 else filePKs = [selectedFiles.FILE_KEY_PK];
-                filePKs.concat(filesInFolder.map((file) => file.FILE_KEY_PK));
+                filePKs = filePKs.concat(filesInFolder.map((file) => file.FILE_KEY_PK));
+                console.log('🚀 ~ file: drive.service.ts ~ line 174 ~ DriveService ~ filePKs', filePKs);
 
                 // * delete process
-                await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
+                if (filePKs.length >= 1) {
+                    await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, queryRunner.manager);
+                }
             }
 
             console.log('file delete is completed');
