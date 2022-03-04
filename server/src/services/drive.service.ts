@@ -136,6 +136,7 @@ export default class DriveService {
             if (folderPKs !== -1) {
                 // * root folder check
                 const folderList = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                console.log('🚀 ~ file: drive.service.ts ~ line 139 ~ DriveService ~ folderList', folderList);
                 let isRootFolder = false;
                 const isArr = Array.isArray(folderList);
 
@@ -143,15 +144,17 @@ export default class DriveService {
                     isRootFolder = folderList.some(
                         (folder) => folder.PARENT_PK === undefined || folder.PARENT_PK === null,
                     );
-                    folderList.map((folder) => folder.FOLDER_PK);
+                    folderPKList.concat(folderList.map((folder) => folder.FOLDER_PK));
                 } else {
+                    console.log('여기로 가야해요');
                     isRootFolder = folderList.PARENT_PK === undefined || folderList.PARENT_PK === null;
                     folderPKList.push(folderList.FOLDER_PK);
                 }
                 if (isRootFolder) throw new AikoError('DriveService/deleteFiles/rootFolderError', 0, -1);
                 const folders = await getRepo(FileFolderRepository).getAllChildrenWithMyself(folderPKs, companyPK);
 
-                folderPKList = folders?.map((folder) => folder.FOLDER_PK);
+                const tempPks = folders?.map((folder) => folder.FOLDER_PK);
+                if (folderPKs) folderPKList.concat(tempPks);
                 console.log('🚀 ~ file: drive.service.ts ~ line 98 ~ DriveService ~ folderPKList', folderPKList);
 
                 await getRepo(FileFolderRepository).deleteFolderAndFiles(
