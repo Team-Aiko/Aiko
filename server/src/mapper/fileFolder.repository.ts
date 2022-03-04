@@ -268,13 +268,21 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         @TransactionManager() manager: EntityManager,
     ) {
         try {
-            const folderList = await this.getAllParentWithMyself(FOLDER_PK, COMPANY_PK);
-            await Promise.all(
-                folderList.map(async (folder) => {
-                    folder.SIZE += fileSize;
-                    await manager.update(FileFolder, { FOLDER_PK: folder.FOLDER_PK }, { SIZE: folder.SIZE });
-                }),
-            );
+            const myself = await this.createQueryBuilder()
+                .where('FOLDER_PK = :FOLDER_PK', { FOLDER_PK })
+                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getOne();
+            const parentList: FileFolder[] = [];
+
+            if (myself) {
+                await this.getAllParentWithMyself(FOLDER_PK, COMPANY_PK, parentList);
+                await Promise.all(
+                    parentList.map(async (folder) => {
+                        folder.SIZE += fileSize;
+                        await manager.update(FileFolder, { FOLDER_PK: folder.FOLDER_PK }, { SIZE: folder.SIZE });
+                    }),
+                );
+            }
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -285,9 +293,21 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getAllParentWithMyself(FOLDER_PK: number, COMPANY_PK: number) {
+    async getAllParentWithMyself(PARENT_PK: number, COMPANY_PK: number, parentList: FileFolder[]) {
         try {
-            return (await getManager().query(`with recursive GET_ALL_PARENT as (
+            const parent = await this.createQueryBuilder()
+                .where(`FOLDER_PK = ${PARENT_PK}`)
+                .andWhere(`COMPANY_PK = ${COMPANY_PK}`)
+                .getOne();
+
+            if (parent) {
+                parentList.push(parent);
+                if (parent.PARENT_PK) await this.getAllParentWithMyself(parent.PARENT_PK, COMPANY_PK, parentList);
+            }
+
+            /*  MySQL v 8.x (Our cloud server use MySQL v5.6 so we can't use CTE syntax)
+
+                return (await getManager().query(`with recursive GET_ALL_PARENT as (
                 select
                     *
                 from FILE_FOLDER_TABLE
@@ -300,6 +320,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 where
                     FF1.FOLDER_PK = FF2.PARENT_PK
              ) select * from GET_ALL_PARENT`)) as FileFolder[];
+            
+            */
         } catch (err) {
             throw stackAikoError(
                 err,
