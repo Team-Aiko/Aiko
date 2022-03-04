@@ -129,7 +129,9 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 if (isArray) {
                     await Promise.all(
                         folderPKs.map(async (folderPK) => {
-                            result = result.concat((await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]);
+                            result = result.concat(
+                                (await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]
+                            );
                         }),
                     );
                 } else {
