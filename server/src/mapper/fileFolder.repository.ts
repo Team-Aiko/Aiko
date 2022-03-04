@@ -19,6 +19,7 @@ enum fileFolderError {
     updateDeleteFlag = 9,
     checkValidDeleteFolder = 10,
     getDirectChildren = 11,
+    getRootFolder = 12,
 }
 
 @EntityRepository(FileFolder)
@@ -368,6 +369,23 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 'FileFolderRepository/deleteFolderForScheduler',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.deleteFolderForScheduler,
+            );
+        }
+    }
+
+    async getRootFolder(companyPK: number) {
+        try {
+            return await this.createQueryBuilder('f')
+                .leftJoinAndSelect('f.fileKeys', 'fileKeys')
+                .where(`f.PARENT_PK IS NULL`)
+                .andWhere(`f.COMPANY_PK = ${companyPK}`)
+                .getOneOrFail();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileFolderRepository/getRootFolder',
+                500,
+                headErrorCode.fileFolderDB + fileFolderError.getRootFolder,
             );
         }
     }

@@ -24,6 +24,7 @@ enum driveServiceError {
     deleteBinFiles = 8,
     updateFile = 9,
     getFileHistory = 10,
+    showBin = 11,
 }
 
 @Injectable()
@@ -131,7 +132,7 @@ export default class DriveService {
 
         try {
             // * folder delete process
-            let folderPKList: number[] = [];
+            const folderPKList: number[] = [];
 
             if (folderPKs !== -1) {
                 // * root folder check
@@ -343,6 +344,19 @@ export default class DriveService {
                 500,
                 headErrorCode.drive + driveServiceError.getFileHistory,
             );
+        }
+    }
+
+    async showBin(companyPK: number) {
+        try {
+            const rootFolder = await getRepo(FileFolderRepository).getRootFolder(companyPK);
+            const rootFileKeys = rootFolder.fileKeys;
+
+            const deletedFolder = await getRepo(FolderBinRepository).getDeletedFolders(companyPK);
+
+            return { rootFolder, deletedFolder, rootFileKeys };
+        } catch (err) {
+            throw stackAikoError(err, 'DriveService/showBin', 500, headErrorCode.drive + driveServiceError.showBin);
         }
     }
 }

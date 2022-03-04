@@ -9,6 +9,7 @@ enum folderBinError {
     deleteFolder = 1,
     deleteFolderForScheduler = 2,
     getDeleteFlagFolder = 3,
+    getDeletedFolders = 4,
 }
 
 @EntityRepository(FolderBin)
@@ -73,6 +74,22 @@ export default class FolderBinRepository extends Repository<FolderBin> {
                 'FolderBinRepository/getDeleteFlagFolder',
                 500,
                 headErrorCode.folderBinDB + folderBinError.getDeleteFlagFolder,
+            );
+        }
+    }
+
+    async getDeletedFolders(companyPK: number) {
+        try {
+            return await this.createQueryBuilder('b')
+                .leftJoinAndSelect('b.folder', 'folder')
+                .where(`b.COMPANY_PK = ${companyPK}`)
+                .getMany();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FolderBinRepository/getDeletedFolders',
+                500,
+                headErrorCode.folderBinDB + folderBinError.getDeletedFolders,
             );
         }
     }

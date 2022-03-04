@@ -166,4 +166,16 @@ export default class DriveController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Get('bin')
+    async showBin(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { COMPANY_PK, USER_PK } = userPayload;
+            const result = await this.driveService.showBin(COMPANY_PK);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }
