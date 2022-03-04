@@ -199,8 +199,10 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                         }),
                     );
 
-                    await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
-                    await getRepo(FileBinRepository).deleteFiles(filePKs, companyPK, userPK, manager);
+                    if (filePKs && filePKs.length > 0) {
+                        await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
+                        await getRepo(FileBinRepository).deleteFiles(filePKs, companyPK, userPK, manager);
+                    }
                 }
             }
         } catch (err) {
