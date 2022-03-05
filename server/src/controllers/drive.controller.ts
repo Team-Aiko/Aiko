@@ -140,12 +140,20 @@ export default class DriveController {
     @Post('move-folder')
     async moveFolder(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
+            // eslint-disable-next-line prefer-const
+            let { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
             const { COMPANY_PK } = userPayload;
             bodyChecker(
                 { fromFilePKs, fromFolderPKs, toFolderPK },
-                { fromFilePKs: ['number[]'], fromFolderPKs: ['number[]'], toFolderPK: ['number'] },
+                {
+                    fromFilePKs: ['number[]', 'undefined', 'null'],
+                    fromFolderPKs: ['number[]', 'undefined', 'null'],
+                    toFolderPK: ['number'],
+                },
             );
+
+            if (!fromFilePKs) fromFilePKs = [];
+            if (!fromFolderPKs) fromFolderPKs = [];
 
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
             resExecutor(res, { result });

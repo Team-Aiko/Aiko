@@ -57,14 +57,14 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getFolderInfo(folderPKs: number | number[]) {
+    async getFolderInfo(folderPKs: number | number[], companyPK: number) {
         console.log(
             '🚀 ~ file: fileFolder.repository.ts ~ line 48 ~ FileFolderRepository ~ getFolderInfo ~ folderPKs',
             folderPKs,
         );
         try {
             const isArray = Array.isArray(folderPKs);
-            const whereCondition = `FOLDER_PK ${isArray ? 'IN (...:folderPKs)' : '= :folderPKs'}`;
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN (:...folderPKs)' : '= :folderPKs'}`;
             let result: FileFolder[] | FileFolder;
 
             const fraction = this.createQueryBuilder()
@@ -77,7 +77,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         } catch (err) {
             throw stackAikoError(
                 err,
-                'FileFolderRepository/createFolder',
+                'FileFolderRepository/getFolderInfo',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getFolderInfo,
             );
