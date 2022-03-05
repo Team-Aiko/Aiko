@@ -76,6 +76,25 @@ export default class DriveController {
         }
     }
 
+    @Post('add-history')
+    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    async addHistory(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        try {
+            const { USER_PK, COMPANY_PK } = userPayload;
+            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, file);
+
+            resExecutor(res, { result });
+        } catch (err) {
+            console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
+            throw resExecutor(res, { err });
+        }
+    }
+
     // ! api doc
     @Get('get-files')
     async getFiles(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {

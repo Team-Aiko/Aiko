@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FileFolder } from 'src/entity';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
-import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
+import { AikoError, getRepo, unixTimeStamp, unknownError } from 'src/Helpers';
 import { deleteFiles, getServerTime, stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
@@ -25,6 +25,7 @@ enum driveServiceError {
     updateFile = 9,
     getFileHistory = 10,
     showBin = 11,
+    addHistory = 12,
 }
 
 @Injectable()
@@ -75,6 +76,32 @@ export default class DriveService {
             throw stackAikoError(err, 'DriveService/saveFiles', 500, headErrorCode.drive + driveServiceError.saveFiles);
         } finally {
             await queryRunner.release();
+        }
+    }
+
+    async addHistory(filePK: number, USER_PK: number, COMPANY_PK: number, file: Express.Multer.File) {
+        try {
+            if (!filePK) throw unknownError;
+
+            const dto: Omit<FileHistory, 'FH_PK' | 'fileKey' | 'user'> = {
+                DATE: unixTimeStamp(),
+                FILE_KEY_PK: filePK,
+                NAME: file.filename,
+                ORIGINAL_FILE_NAME: file.originalname,
+                SIZE: file.size,
+                USER_PK,
+            };
+
+            await getRepo(FileHistoryRepository).createFileHistory([dto]);
+
+            return true;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'DriveService/addHistory',
+                500,
+                headErrorCode.drive + driveServiceError.addHistory,
+            );
         }
     }
 
