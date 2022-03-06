@@ -10,17 +10,18 @@
 /* DriveFolder.js */
 .folderContainer {
     width: 25%;
-    height:100%;
+    height: auto;
     border:2px dotted grey;
-    overflow: hidden;
+    overflow:hidden;
 }
 
 /* DriveFile.js */
 .fileContainer {
     width:80%;
-    height:100%;
+    height:auto;
     border: 2px dotted grey;
     margin-left:10px;
+    overflow:scroll;
 }
 
 .modalDiv {
@@ -30,7 +31,7 @@
 
 .folderDiv {
     width:100%;
-    height:30%;
+    height:auto;
     display:flex;
     flex-wrap: wrap;
     overflow: auto;
@@ -50,28 +51,16 @@
 }
 
 .fileDetailDiv {
-    width: 70vw;
+    width: 50vw;
     height: 60vh;
     display:flex;
     align-items:center;
     justify-content:center;
 }
 
-.fileHistory {
-    width: 30%;
-    height: 85%;
-    border: 2px dotted grey;
-    margin:5px;
-    display:flex;
-    flex-direction:column;
-    text-align:center;
-    align-items:center;
-    padding:10px;
-}
-
 .filePreview {
     width: 50%;
-    height: 85%;
+    height: 90%;
     border: 2px dotted grey;
     margin:5px;
 }
@@ -85,6 +74,24 @@
 
 /* DriveFileMove.js */
 .moveFileModalContainer {
-    width: 500px;
-    height: 100%;
+    width: 50vw;
+    height: 50vh;
+}
+
+.moveFileModalInnerContainer{
+    width: 90%;
+    height: 70%;
+    border: 2px dotted grey;
+    align-items:center;
+    text-align:center;
+    margin: auto;
+}
+
+/* DriveBin.js */
+.folderBinDiv {
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-wrap: wrap;
+    overflow: hidden;
 }

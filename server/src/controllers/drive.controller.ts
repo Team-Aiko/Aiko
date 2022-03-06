@@ -142,10 +142,10 @@ export default class DriveController {
         try {
             const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
             const { COMPANY_PK } = userPayload;
-            bodyChecker(
-                { fromFilePKs, fromFolderPKs, toFolderPK },
-                { fromFilePKs: ['number[]'], fromFolderPKs: ['number[]'], toFolderPK: ['number'] },
-            );
+            // bodyChecker(
+            //     { fromFilePKs, fromFolderPKs, toFolderPK },
+            //     { fromFilePKs: ['number[]'], fromFolderPKs: ['number[]'], toFolderPK: ['number'] },
+            // );
 
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
             resExecutor(res, { result });

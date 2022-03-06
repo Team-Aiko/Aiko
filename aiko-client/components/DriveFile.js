@@ -19,13 +19,14 @@ import {
 import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
 import Modal from './Modal.js';
 import DriveFileMove from './DriveFileMove';
+import DriveFileDetailModal from './DriveFileDetailModal';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        width: '30%',
-        height: '28%',
+        width: 'auto',
+        height: 'auto',
         margin: 10,
-        overflow: 'auto',
+        overflow: 'hidden',
     },
     button: {
         margin: theme.spacing(1),
@@ -37,7 +38,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
     const classes = useStyles();
 
     //FOLDER Menu Item 조작
-    const ThreeDotsMenu = ({ root }) => {
+    const ThreeDotsMenu = ({ file, root }) => {
         const [anchorEl, setAnchorEl] = React.useState(null);
         const handleClick = (e) => {
             setAnchorEl(e.currentTarget);
@@ -52,15 +53,14 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                     <MoreVert />
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                    <MenuItem onClick={()=>{setDeleteFolderPk(root)}}>Delete</MenuItem>
+                    <MenuItem onClick={ ()=>{ deleteItem(file, root) } }>Delete</MenuItem>
                     <MenuItem onClick={openMoveModal}>Move</MenuItem>
                 </Menu>
             </React.Fragment>
         );
     };
 
-    const [deleteFolderPk, setDeleteFolderPk] = useState(undefined);
-
+    //파일, 폴더 이동 모달에 필요한 state값, 함수
     const [fileMoveModalOpen, setFileMoveModalOpen] = useState(false);
     const openMoveModal = () => {
         setFileMoveModalOpen(true);
@@ -68,25 +68,40 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
     const closeMoveModal = () => {
         setFileMoveModalOpen(false);
     }
+    
+    //파일 정보 API
+    const getFileDetail = () => {
+        const url = '/api/store/drive/get-files';
+        const data = {
+            filePKs : 1
+        };
+        get(url, data)
+        .then((res) => {
+            console.log('get file detail', res)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
 
-    //폴더 삭제 API
-    const deleteItem = () => {
+    //폴더 삭제 API props는 Folder의 ThreeDotsMenu에서 받음.
+    const deleteItem = (filePk, folderPk) => {
         const url = '/api/store/drive/delete-files';
         const data = {
-            folderPKs: deleteFolderPk
+            filePKs: filePk,
+            folderPKs: folderPk
         };
         post(url, data)
             .then((res) => {
                 console.log('Delete Items', res);
+                alert('삭제되었습니다.')
             })
             .catch((error) => {
                 console.log('delete Items', error);
             });
     };
 
-    useEffect(() => {
-        deleteItem();
-    }, [deleteFolderPk])
+    console.log(folderFile);
 
     // Folder Modal Open
     const [openModal, setOpenModal] = useState(false);
@@ -125,6 +140,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                 console.log(error);
             });
     };
+
+    //파일 디테일 모달 boolean 조작, props 전달 함수
+    const openFileDetailModal = () => {
+        setFileDetailModalOpen(true);
+    }
 
     return (
         <div className={styles.fileContainer}>
@@ -224,7 +244,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                             onClick={() => {
                                 setFileDetailModalOpen(true);
                             }}/>
-                            <ThreeDotsMenu />
+                            <ThreeDotsMenu file={file.FILE_KEY_PK}/>
                         </ListItem>
                     </div>
                 ))}
@@ -240,29 +260,9 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                 <></>
             )}
 
-            {fileDetailModalOpen == true ? (
-                <Modal
-                    title='File Detail'
-                    open={fileDetailModalOpen}
-                    onClose={() => {
-                        setFileDetailModalOpen(false);
-                    }}
-                >
-                    <div className={styles.fileDetailDiv}>
-                        <div className={styles.fileHistory}>Detail</div>
-
-                        <div className={styles.filePreview}>Image Preview</div>
-                    </div>
-
-                    <div style={{ textAlign: 'center', margin: 10 }}>
-                        <Button variant='contained' color='primary' fontSize='small'>
-                            Download
-                        </Button>
-                    </div>
-                </Modal>
-            ) : (
-                <></>
-            )}
+            <DriveFileDetailModal open={fileDetailModalOpen}
+            onClose={() => {setFileDetailModalOpen(false);}}
+            />
 
             {
                 fileMoveModalOpen == true
