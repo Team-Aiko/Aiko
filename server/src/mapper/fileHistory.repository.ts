@@ -16,10 +16,14 @@ enum fileHistoryError {
 export default class FileHistoryRepository extends Repository<FileHistory> {
     async createFileHistory(
         files: Omit<FileHistory, 'FH_PK' | 'fileKey' | 'user'>[],
-        @TransactionManager() manager: EntityManager,
+        @TransactionManager() manager?: EntityManager,
     ) {
         try {
-            return (await manager.insert(FileHistory, files)).identifiers as Pick<FileHistory, 'FH_PK'>[];
+            if (manager) {
+                return (await manager.insert(FileHistory, files)).identifiers as Pick<FileHistory, 'FH_PK'>[];
+            } else {
+                return (await this.insert(files)).identifiers as Pick<FileHistory, 'FH_PK'>[];
+            }
         } catch (err) {
             throw stackAikoError(
                 err,

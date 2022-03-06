@@ -19,6 +19,7 @@ enum fileFolderError {
     updateDeleteFlag = 9,
     checkValidDeleteFolder = 10,
     getDirectChildren = 11,
+    getRootFolder = 12,
 }
 
 @EntityRepository(FileFolder)
@@ -56,17 +57,19 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getFolderInfo(folderPKs: number | number[]) {
+    async getFolderInfo(folderPKs: number | number[], companyPK: number) {
         console.log(
             '🚀 ~ file: fileFolder.repository.ts ~ line 48 ~ FileFolderRepository ~ getFolderInfo ~ folderPKs',
             folderPKs,
         );
         try {
             const isArray = Array.isArray(folderPKs);
-            const whereCondition = `FOLDER_PK ${isArray ? 'IN (...:folderPKs)' : '= :folderPKs'}`;
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN (:...folderPKs)' : '= :folderPKs'}`;
             let result: FileFolder[] | FileFolder;
 
-            const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs });
+            const fraction = this.createQueryBuilder()
+                .where(whereCondition, { folderPKs })
+                .orderBy('FOLDER_NAME', 'ASC');
             if (isArray) result = await fraction.getMany();
             else result = await fraction.getOneOrFail();
 
@@ -74,7 +77,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         } catch (err) {
             throw stackAikoError(
                 err,
-                'FileFolderRepository/createFolder',
+                'FileFolderRepository/getFolderInfo',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getFolderInfo,
             );
@@ -254,7 +257,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
     async getDirectChildren(FOLDER_PK: number, COMPANY_PK: number) {
         try {
-            return await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
+            const result = await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
+            return result.sort((a, b) => a.FOLDER_NAME.localeCompare(b.FOLDER_NAME));
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -368,6 +372,25 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 'FileFolderRepository/deleteFolderForScheduler',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.deleteFolderForScheduler,
+            );
+        }
+    }
+
+    async getRootFolder(companyPK: number) {
+        try {
+            return await this.createQueryBuilder('f')
+                .leftJoinAndSelect('f.fileKeys', 'fileKeys')
+                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
+                .where(`f.PARENT_PK IS NULL`)
+                .andWhere(`f.COMPANY_PK = ${companyPK}`)
+                .orderBy('fileHistories.DATE', 'DESC')
+                .getOneOrFail();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileFolderRepository/getRootFolder',
+                500,
+                headErrorCode.fileFolderDB + fileFolderError.getRootFolder,
             );
         }
     }
