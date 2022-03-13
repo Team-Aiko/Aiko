@@ -1,3 +1,4 @@
+import { FileFolder } from 'src/entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError } from 'src/Helpers';
 import { stackAikoError, propsRemover } from 'src/Helpers/functions';
@@ -14,6 +15,7 @@ enum fileKeysError {
     getFilesInfoInFolder = 7,
     moveFile = 8,
     deleteFlagFiles = 9,
+    moveFolder = 10,
 }
 
 type FileOrFiles = Express.Multer.File | Express.Multer.File[];
@@ -188,9 +190,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         try {
             await manager
                 .createQueryBuilder()
-                .update(FileKeys)
-                .set({ FOLDER_PK: toFolderPK })
-                .where('FILE_KEY_PK IN (...:fromFilePKs)', { fromFilePKs })
+                .update(FileKeys, { FOLDER_PK: toFolderPK })
+                .where('FILE_KEY_PK IN (:...fromFilePKs)', { fromFilePKs })
                 .execute();
         } catch (err) {
             throw stackAikoError(
@@ -198,6 +199,24 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 'FileKeysRepository/moveFile',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.moveFile,
+            );
+        }
+    }
+
+    async moveFolder(toFolderPK: number, fromFolderPKs: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .update(FileFolder)
+                .set({ PARENT_PK: toFolderPK })
+                .where('FOLDER_PK IN (:...fromFolderPKs)', { fromFolderPKs })
+                .execute();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileKeysRepository/moveFolder',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.moveFolder,
             );
         }
     }

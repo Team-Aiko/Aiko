@@ -14,6 +14,9 @@ const useStyles = makeStyles({
 export default function Report(props) {
     const { mode, containerStyles } = props;
     const classes = useStyles();
+
+
+
     return (
         <div className={styles['report']} style={containerStyles}>
             <div className={styles['top-container']}>

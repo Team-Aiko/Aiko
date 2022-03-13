@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FileFolder } from 'src/entity';
 import FileHistory from 'src/entity/fileHistory.entity';
 import FileKeys from 'src/entity/fileKeys.entity';
-import { AikoError, getRepo, unixTimeStamp } from 'src/Helpers';
+import { AikoError, getRepo, unixTimeStamp, unknownError } from 'src/Helpers';
 import { deleteFiles, getServerTime, stackAikoError } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { filePath } from 'src/interfaces/MVC/fileMVC';
@@ -25,6 +25,7 @@ enum driveServiceError {
     updateFile = 9,
     getFileHistory = 10,
     showBin = 11,
+    addHistory = 12,
 }
 
 @Injectable()
@@ -78,6 +79,32 @@ export default class DriveService {
         }
     }
 
+    async addHistory(filePK: number, USER_PK: number, COMPANY_PK: number, file: Express.Multer.File) {
+        try {
+            if (!filePK) throw unknownError;
+
+            const dto: Omit<FileHistory, 'FH_PK' | 'fileKey' | 'user'> = {
+                DATE: unixTimeStamp(),
+                FILE_KEY_PK: filePK,
+                NAME: file.filename,
+                ORIGINAL_FILE_NAME: file.originalname,
+                SIZE: file.size,
+                USER_PK,
+            };
+
+            await getRepo(FileHistoryRepository).createFileHistory([dto]);
+
+            return true;
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'DriveService/addHistory',
+                500,
+                headErrorCode.drive + driveServiceError.addHistory,
+            );
+        }
+    }
+
     async getFiles(filePKs: number | number[], companyPK: number) {
         try {
             return await getRepo(FileKeysRepository).getFiles(filePKs, companyPK);
@@ -91,7 +118,7 @@ export default class DriveService {
             if (!parentPK) throw new AikoError('DriveService/createFolder/no-parent-pk', 500, 239181);
 
             // invalid user filter
-            const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(parentPK);
+            const folderInfo = await getRepo(FileFolderRepository).getFolderInfo(parentPK, companyPK);
             console.log('🚀 ~ file: drive.service.ts ~ line 68 ~ DriveService ~ createFolder ~ folderInfo', folderInfo);
 
             if (!Array.isArray(folderInfo) && folderInfo.COMPANY_PK !== companyPK)
@@ -136,7 +163,7 @@ export default class DriveService {
 
             if (folderPKs !== -1) {
                 // * root folder check
-                const folderList = await getRepo(FileFolderRepository).getFolderInfo(folderPKs);
+                const folderList = await getRepo(FileFolderRepository).getFolderInfo(folderPKs, companyPK);
                 console.log('🚀 ~ file: drive.service.ts ~ line 139 ~ DriveService ~ folderList', folderList);
                 let isRootFolder = false;
                 const isArr = Array.isArray(folderList);
@@ -225,26 +252,37 @@ export default class DriveService {
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.startTransaction();
         try {
+            const toFolder = (await getRepo(FileFolderRepository).getFolderInfo(toFolderPK, companyPK)) as FileFolder;
+            console.log('🚀 ~ file: drive.service.ts ~ line 229 ~ DriveService ~ moveFolder ~ toFolder', toFolder);
+
             if (fromFilePKs.length > 0) {
-                const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo([
-                    ...fromFolderPKs,
-                    toFolderPK,
-                ])) as FileFolder[];
-
-                // * company validation check
-                const isInValidAccess = folderInfos.some((info) => info.COMPANY_PK !== companyPK);
-                if (isInValidAccess) throw new AikoError('DriveService/moveFolder/invalid-access', 500, 1928421);
-
-                await getRepo(FileFolderRepository).moveFolder(toFolderPK, fromFolderPKs, queryRunner.manager);
-            } else {
-                const folderInfos = (await getRepo(FileFolderRepository).getFolderInfo(toFolderPK)) as FileFolder;
-
-                // * company validation check
-                if (folderInfos.COMPANY_PK !== companyPK)
-                    throw new AikoError('DriveService/moveFolder/invalid-access', 500, -1);
+                const fromFiles = (await getRepo(FileKeysRepository).getFiles(fromFilePKs)) as FileKeys[];
+                console.log(
+                    '🚀 ~ file: drive.service.ts ~ line 233 ~ DriveService ~ moveFolder ~ fromFiles',
+                    fromFiles,
+                );
+                await getRepo(FileKeysRepository).moveFile(
+                    toFolder.FOLDER_PK,
+                    fromFiles.map((file) => file.FILE_KEY_PK),
+                    queryRunner.manager,
+                );
             }
 
-            await getRepo(FileKeysRepository).moveFile(toFolderPK, fromFilePKs, queryRunner.manager);
+            if (fromFolderPKs.length > 0) {
+                const fromFolders = (await getRepo(FileFolderRepository).getFolderInfo(
+                    fromFolderPKs,
+                    companyPK,
+                )) as FileFolder[];
+                console.log(
+                    '🚀 ~ file: drive.service.ts ~ line 249 ~ DriveService ~ moveFolder ~ fromFolders',
+                    fromFolders,
+                );
+                await getRepo(FileKeysRepository).moveFolder(
+                    toFolder.FOLDER_PK,
+                    fromFolders.map((folder) => folder.FOLDER_PK),
+                    queryRunner.manager,
+                );
+            }
 
             await queryRunner.commitTransaction();
             return true;
