@@ -16,10 +16,11 @@ import {
     Menu,
     MenuItem,
 } from '@material-ui/core';
-import { CreateNewFolder, Folder, NoteAdd, MoreVert } from '@material-ui/icons';
+import { CreateNewFolder, Folder, NoteAdd, MoreVert, Description } from '@material-ui/icons';
 import Modal from './Modal.js';
 import DriveFileMove from './DriveFileMove';
 import DriveFileDetailModal from './DriveFileDetailModal';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -54,7 +55,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                     <MenuItem onClick={ ()=>{ deleteItem(file, root) } }>Delete</MenuItem>
-                    <MenuItem onClick={openMoveModal}>Move</MenuItem>
+                    <MenuItem onClick={ () => { openMoveModal(file, root) }  }>Move</MenuItem>
                 </Menu>
             </React.Fragment>
         );
@@ -62,26 +63,17 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
 
     //파일, 폴더 이동 모달에 필요한 state값, 함수
     const [fileMoveModalOpen, setFileMoveModalOpen] = useState(false);
-    const openMoveModal = () => {
+    const [fileKeyPk, setFileKeyPk] = useState(undefined);
+    const [folderKeyPk, setFolderKeyPk] = useState(undefined);
+
+    const openMoveModal = (file, root) => {
         setFileMoveModalOpen(true);
+        setFileKeyPk(file);
+        setFolderKeyPk(root);
+        console.log('filekey?, folderKey?', file, root)
     }
     const closeMoveModal = () => {
         setFileMoveModalOpen(false);
-    }
-    
-    //파일 정보 API
-    const getFileDetail = () => {
-        const url = '/api/store/drive/get-files';
-        const data = {
-            filePKs : 1
-        };
-        get(url, data)
-        .then((res) => {
-            console.log('get file detail', res)
-        })
-        .catch((error) => {
-            console.log(error)
-        })
     }
 
     //폴더 삭제 API props는 Folder의 ThreeDotsMenu에서 받음.
@@ -101,8 +93,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             });
     };
 
-    console.log(folderFile);
-
     // Folder Modal Open
     const [openModal, setOpenModal] = useState(false);
 
@@ -119,6 +109,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
     const changeFolderName = (e) => {
         setFolderName(e.target.value);
     };
+
     //폴더 생성 API
     const createFolder = () => {
         const url = '/api/store/drive/create-folder';
@@ -141,10 +132,18 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             });
     };
 
+    const [selectedFilePk, setSelectedFilePk] = useState(undefined);
+
     //파일 디테일 모달 boolean 조작, props 전달 함수
-    const openFileDetailModal = () => {
+    const openFileDetailModal = (filePkNum) => {
         setFileDetailModalOpen(true);
-    }
+        setSelectedFilePk(filePkNum);
+
+    };
+    
+    console.log('folderFile', folderFile);
+
+    console.log(selectedFilePk);
 
     return (
         <div className={styles.fileContainer}>
@@ -229,21 +228,20 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             <Divider />
 
             <div className={styles.folderDiv}>
-                {folderFile?.map((file) => (
+                {folderFile?.map((file, index) => (
                     <div className={classes.root}>
                         <ListItem
                             button
                             dense
                             divider
                             selected
+                            
                         >
-                            <ListItemIcon>
-                                <Folder />
+                            <ListItemIcon onClick={() => {openFileDetailModal(file.FILE_KEY_PK)}}>
+                                <Description />
                             </ListItemIcon>
                             <ListItemText primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
-                            onClick={() => {
-                                setFileDetailModalOpen(true);
-                            }}/>
+                            onClick={() => {openFileDetailModal(file.FILE_KEY_PK)} } />
                             <ThreeDotsMenu file={file.FILE_KEY_PK}/>
                         </ListItem>
                     </div>
@@ -262,13 +260,16 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
 
             <DriveFileDetailModal open={fileDetailModalOpen}
             onClose={() => {setFileDetailModalOpen(false);}}
+            selectedFilePk={selectedFilePk}
             />
 
             {
                 fileMoveModalOpen == true
-                ? <DriveFileMove closeMoveModal={closeMoveModal} openMoveModal={openMoveModal}></DriveFileMove>
+                ? <DriveFileMove closeMoveModal={closeMoveModal} openMoveModal={openMoveModal}
+                fileKeyPk={fileKeyPk} folderKeyPk={folderKeyPk} />
                 : <></>
             }
+
         </div>
     );
 };
