@@ -80,11 +80,12 @@
 
 .moveFileModalInnerContainer{
     width: 90%;
-    height: 70%;
+    height: 80%;
     border: 2px dotted grey;
     align-items:center;
     text-align:center;
     margin: auto;
+    overflow:auto;
 }
 
 /* DriveBin.js */

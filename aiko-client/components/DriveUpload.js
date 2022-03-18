@@ -46,10 +46,11 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
 
     const uploadFile = () => {
         const url = '/api/store/drive/save-files';
-        sendPost(url, 'multipart', { file: files[0], folderPK: selectedFolderPk })
-            .then((data) => {
+        sendPost(url, 'multipart', { files: files[0], folderPK: selectedFolderPk })
+            .then((res) => {
                 alert('파일 업로드를 완료했습니다.');
                 setFileModalOpen(false);
+                console.log(res);
             })
             .catch((err) => console.error(err));
     };
@@ -64,6 +65,8 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
     useEffect(() => {
         maxFileNumWarning();
     }, [setFiles]);
+
+    console.log('files?', files);
 
     const classes = useStyles();
 
