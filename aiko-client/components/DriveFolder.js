@@ -31,8 +31,19 @@ const DriveFolder = ({ getFolderPk, openPasteBin }) => {
     //     setOpen(!open);
     // };
 
+    const refs = [
+        {
+            name:'chiho'
+        },
+        {
+            name:'sanghee'
+        }
+    ]
+
     return (
         <div className={styles.folderContainer}>
+
+
             <List
                 component='nav'
                 aria-labelledby='nested-list-subheader'

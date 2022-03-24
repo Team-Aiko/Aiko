@@ -55,19 +55,6 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
             .catch((err) => console.error(err));
     };
 
-    const maxFileNumWarning = () => {
-        if (files.length > 3) {
-            alert('파일은 한 번에 한개만 업로드 가능합니다');
-            setFiles(files[0]);
-        }
-    };
-
-    useEffect(() => {
-        maxFileNumWarning();
-    }, [setFiles]);
-
-    console.log('files?', files);
-
     const classes = useStyles();
 
     return (
