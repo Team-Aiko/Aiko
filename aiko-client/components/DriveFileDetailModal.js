@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import Modal from './Modal.js';
 import styles from '../styles/Drive.module.css';
-import { Button, ListItem, ListItemText, Checkbox } from '@material-ui/core';
+import { Button, ListItem, ListItemText, Checkbox, Typography, IconButton} from '@material-ui/core';
 import { get, post, sendPost } from '../_axios';
 import { makeStyles } from '@material-ui/core/styles';
+import { ClearSharp } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
     listItemText:{
@@ -12,16 +13,33 @@ const useStyles = makeStyles(theme => ({
     button: {
         fontSize:'1.2vw',
         margin:5,
+    },
+    historyModalDiv: {
+        width: '40vw',
+        height: '20vh',
+        display:'flex',
+        flexDirection:'column',
+        textAlign:'center',
+        alignItems:'center',
+    },
+    hideButton : {
+        display:'none'
+    },
+    historyUploadButton: {
+        margin: 1
+    },
+    fileName: {
+        margin: 10,
+        fontSize: '1.2vw'
     }
 }));
-
 
 const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
 
     const classes = useStyles();
 
     //파일 히스토리에 필요한 state값
-    const [file, setFile] = useState(undefined);
+    const [file, setFile] = useState([]);
 
     const addFileHistory = () => {
         const url = '/api/store/drive/add-history';
@@ -36,11 +54,13 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
     }
 
     const fileUpload = (e) => {
-        setFile(e.target.files)
+        setFile(Object.values(e.target.files))
     }
 
+    //map으로 렌더링해줄 파일 이름, 버튼 클릭하면 Pk 값을 useState에 저장, 다운로드에 이용
     const [fileHistoryName, setFileHistoryName] = useState([])
 
+    //selectedFilePk값이 넘어오면 작동.
     useEffect(() => {
         if(selectedFilePk){
             const getHistory = () => {
@@ -58,18 +78,19 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
         }
     },[selectedFilePk])
 
-    console.log('filehistory?', fileHistoryName)
-    
-    
-
+    //oversee individual checkbox!
     const [isChecked, setIsChecked] = useState(false);
+
+    //history modal 
+    const [openHistoryModal, setOpenHistoryModal] = useState(false);
+
+    const deleteFile = (name) => {
+        setFile(file.filter((file) => file.name !== name));
+    }
 
 
     return (
         <Modal title='File Detail' open={open} onClose={onClose}>
-
-            <input label='file upload' type='file' onChange={fileUpload}/>
-            <button onClick={addFileHistory}>업로드</button>
 
             <div className={styles.fileDetailDiv}>
                 <div className={styles.filePreview}>
@@ -101,14 +122,57 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
                     className={classes.button}>
                         Download
                     </Button>
-                    <Button variant='contained' color='default' fontSize='small'
-                    className={classes.button}>
-                        Add version
-                    </Button>
                 </a>
+                <Button variant='contained' color='default' fontSize='small'
+                    className={classes.button} onClick={() => {setOpenHistoryModal(true)}}>
+                        Add version
+                </Button>
             </div>
+
+            {
+            openHistoryModal
+            ?
+            <Modal open={openHistoryModal} onClose={()=>{setOpenHistoryModal(false)}}
+            title='Add Another History'>
+                <div className={classes.historyModalDiv}>
+                    <Button variant="contained" color='primary' component="label">
+                    Select File
+                    <input type="file" hidden onChange={fileUpload}/>
+                    </Button>
+
+                    {
+                        file.map((uploaded) => (
+                            <div key={uploaded.name}>
+                                <Typography variant='caption' gutterBottom
+                                className={classes.fileName}>
+                                {uploaded.name}
+                                </Typography>
+
+                                <IconButton>
+                                <ClearSharp
+                                    fontSize='small'
+                                    onClick={() => {
+                                        deleteFile(uploaded.name);
+                                    }}
+                                />
+                                </IconButton>
+                            </div>
+                        ))
+                    }
+
+                    <Button variant="contained" color='primary' component="label"
+                    className={file.length > 0 ? classes.historyUploadButton : classes.hideButton}>
+                    Upload
+                    </Button>
+                </div>
+
+            </Modal>
+            : <></>
+            }
         </Modal>
+
     );
 };
+
 
 export default DriveFileDetailModal;
