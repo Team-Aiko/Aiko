@@ -41,18 +41,6 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
     //파일 히스토리에 필요한 state값
     const [file, setFile] = useState([]);
 
-    const addFileHistory = () => {
-        const url = '/api/store/drive/add-history';
-        sendPost(url, 'multipart', {file: file[0], filePK: selectedFilePk })
-        .then((res) => {
-            alert('파일 히스토리 추가 완료');
-            console.log(res)
-        })
-        .catch((error) => {
-            console.log(error)
-        })
-    }
-
     const fileUpload = (e) => {
         setFile(Object.values(e.target.files))
     }
@@ -78,14 +66,38 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
         }
     },[selectedFilePk])
 
-    //oversee individual checkbox!
-    const [isChecked, setIsChecked] = useState(false);
 
     //history modal 
     const [openHistoryModal, setOpenHistoryModal] = useState(false);
 
     const deleteFile = (name) => {
         setFile(file.filter((file) => file.name !== name));
+    };
+
+    //Checkbox oversee
+    const [isChecked, setIsChecked] = useState(false);
+
+    const handleCheckButton = () => {
+        setIsChecked(true);
+    };
+
+    const [selectedCheckboxIndex, setSelectedCheckboxIndex] = useState(undefined);
+
+    const getCheckboxIndexNum = (index) => {
+        setSelectedCheckboxIndex(index);
+        setSelectedFilePkNum()
+    };
+
+    const addFileHistory = () => {
+        const url = '/api/store/drive/add-history';
+        sendPost(url, 'multipart', {file: file[0], filePK: selectedFilePk })
+        .then((res) => {
+            alert('파일 히스토리 추가 완료');
+            console.log(res)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     }
 
 
@@ -95,7 +107,7 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
             <div className={styles.fileDetailDiv}>
                 <div className={styles.filePreview}>
                     {
-                        fileHistoryName && fileHistoryName.map((name) => {
+                        fileHistoryName && fileHistoryName.map((name, index) => {
                             return (
                                 <ListItem
                                 button
@@ -103,6 +115,11 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
                                 >
                                 <Checkbox
                                     color='default'
+                                    checked={index == selectedCheckboxIndex ? isChecked : false}
+                                    onChange={handleCheckButton}
+                                    onClick={() => {
+                                        getCheckboxIndexNum(index)
+                                    }}
                                 />
                                 <ListItemText
                                     classes={{primary:classes.listItemText}}
