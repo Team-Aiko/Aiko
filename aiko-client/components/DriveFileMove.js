@@ -11,6 +11,10 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         height: 'auto',
     },
+    moveButton : {
+        textAlign:'center',
+        margin:20
+    }
 }));
 
 const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }) => {
@@ -19,14 +23,22 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }
     //폴더 이동에 필요한 담을 폴더 pk
     const [targetFolderPk, setTargetFolderPk] = useState(undefined);
 
+    console.log('folder,file', [folderKeyPk] ,[fileKeyPk])
+
     //폴더 이동 api
     const moveFolder = () => {
         const url = '/api/store/drive/move-folder';
         const data = {
-            fromFilePKs: fileKeyPk,
-            fromFolderPKs: folderKeyPk,
+            fromFilePKs: [fileKeyPk],
+            fromFolderPKs: [folderKeyPk],
             toFolderPK: targetFolderPk,
         };
+        if( [fileKeyPk][0] === undefined) {
+            data.fromFilePKs = undefined
+        }
+        if( [folderKeyPk][0] === undefined) {
+            data.fromFolderPKs = undefined
+        }
         post(url, data)
             .then((res) => {
                 console.log('moveFolder', res);
@@ -39,6 +51,8 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }
     const [folders, setFolders] = useState([]);
 
     const [selectedFolder, setSelectedFolder] = useState(1);
+
+    const [selectedFolderName, setSelectedFolderName] = useState('');
 
     //현재 존재하는 폴더, checkbox로 이동 관리
     const viewExistingFolder = () => {
@@ -96,6 +110,7 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }
                                         onClick={() => {
                                             getCheckboxIndexNum(index);
                                             setTargetFolderPk(folder.FOLDER_PK);
+                                            setSelectedFolderName(folder.FOLDER_NAME)
                                         }}
                                     />
                                     <ListItemText
@@ -109,10 +124,11 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }
                     </List>
                 </div>
             </div>
+            
 
-            <div>
+            <div className={classes.moveButton}>
                 <Button variant='contained' onClick={moveFolder}>
-                    Move
+                    Move to {selectedFolderName}
                 </Button>
             </div>
         </Modal>
