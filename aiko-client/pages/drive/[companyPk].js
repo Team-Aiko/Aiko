@@ -41,15 +41,15 @@ const drive = () => {
         })
     };
 
-    useEffect(() => {
-        viewFolder()
-    }, [selectedFolderPk])
-
     const [openBin, setOpenBin] = useState(false);
 
     const openPasteBin = (boolean) => {
         setOpenBin(boolean);
     };
+
+    useEffect(() => {
+        viewFolder()
+    }, [selectedFolderPk, openPasteBin])
 
 
     return (
