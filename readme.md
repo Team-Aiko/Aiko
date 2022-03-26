@@ -9,20 +9,12 @@
     -   API sheet: [https://docs.google.com/spreadsheets/d/16IJjCF1XH4mU6COWEjNnHhS4RlIbKMoI/edit#gid=1085105865](https://docs.google.com/spreadsheets/d/16IJjCF1XH4mU6COWEjNnHhS4RlIbKMoI/edit#gid=1085105865)
     -   Design sheet: [https://www.figma.com/file/uP5gGSZIgeqvzlu8WVxCpr/Aiko-UI?node-id=0%3A1](https://www.figma.com/file/uP5gGSZIgeqvzlu8WVxCpr/Aiko-UI?node-id=0%3A1)
 -   `Process`
-    1. 아이디어 제안
-    2. **UI디자인, ERD 설계, 기능 설계**
-    3. **API 구축**
-    4. **View단 구축**
-    5. **테스트**
-    6. **(2)로의 반복 또는 로컬 구축완료**
-    7. 클라우드를 이용한 실서비스화
-    8. CI/CD 방식의 개발 진행
+-   
+![원본1](https://user-images.githubusercontent.com/87627359/160235311-a74524cc-bbed-4c23-935b-89bc105bff3c.png)
 
 # 2. Member (참여인원)
 
--   `member`: 이치호(usernamechiho), 이한결(Aivyss), 조안나(loony5), 조준영(junY97)
--   `Front-end`: 이치호, 조안나
--   `Back-end`: 이한결, 조준영
+![원본2](https://user-images.githubusercontent.com/87627359/160235345-5b097c18-491f-4e6e-ae0b-b09e1525dd05.png)
 
 # 3. functions (기능)
 
