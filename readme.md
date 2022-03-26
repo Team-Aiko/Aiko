@@ -8,13 +8,13 @@
 -   `Document`
     -   API sheet: [https://docs.google.com/spreadsheets/d/16IJjCF1XH4mU6COWEjNnHhS4RlIbKMoI/edit#gid=1085105865](https://docs.google.com/spreadsheets/d/16IJjCF1XH4mU6COWEjNnHhS4RlIbKMoI/edit#gid=1085105865)
     -   Design sheet: [https://www.figma.com/file/uP5gGSZIgeqvzlu8WVxCpr/Aiko-UI?node-id=0%3A1](https://www.figma.com/file/uP5gGSZIgeqvzlu8WVxCpr/Aiko-UI?node-id=0%3A1)
--   `Process`
--   
-![원본1](https://user-images.githubusercontent.com/87627359/160235311-a74524cc-bbed-4c23-935b-89bc105bff3c.png)
+
+![원본수정최종1](https://user-images.githubusercontent.com/87627359/160235922-76635ba6-90eb-4a45-ba7c-3e5d55ea39a5.png)
+
 
 # 2. Member (참여인원)
 
-![원본2](https://user-images.githubusercontent.com/87627359/160235345-5b097c18-491f-4e6e-ae0b-b09e1525dd05.png)
+![원본수정 최종2](https://user-images.githubusercontent.com/87627359/160235947-5f443342-14c1-47ed-bf66-f7d7ec8e20c5.png)
 
 # 3. functions (기능)
 
