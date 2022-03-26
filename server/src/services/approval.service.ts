@@ -137,17 +137,33 @@ export default class ApprovalService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
-            const query1 = await getRepo(ApprovalStepRepository).assignApproval(); // 결재 진행
-            const query2 = await getRepo(ApprovalStepRepository).checkApprovalStep(); // 현재 결재 단계 확인
-            const query3 = await getRepo(ApprovalFrameRepository).updateCurrentStep( 
+            //결제 진행
+            const query1 = await getRepo(ApprovalStepRepository).assignApproval(
+                queryRunner.manager,
+                framePk,
+                userPk,
+                stepStatus,
+                decision,
+            );
+            // 현재 결재 단계 확인
+            const query2 = await getRepo(ApprovalStepRepository).checkApprovalStep(framePk); // 현재 결재 단계 확인
+            const query3 = await getRepo(ApprovalFrameRepository).updateCurrentStep(
                 queryRunner.manager,
                 departmentPk,
                 comPk,
                 framePk,
+                query2,
             ); // 결제 다음단계 진행
-
-            const query4 = await getRepo(ApprovalFrameRepository).frameFinish(); // 결제 단계가 모두 완료 컬럼 DONE =1
+            let endResult;
+            const queryAffected = query3.affected;
             await queryRunner.commitTransaction();
+            if (queryAffected !== undefined) {
+                endResult = '결재 완료';
+                return endResult;
+            } else {
+                endResult = '결재중 오류 발생';
+                return endResult;
+            }
         } catch (err) {
             await queryRunner.rollbackTransaction();
             console.log(err);

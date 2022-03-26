@@ -57,4 +57,21 @@ export default class ApprovalStepRepository extends Repository<ApprovalStep> {
             console.log(err);
         }
     }
+    async assignApproval(@TransactionManager() manager: EntityManager, framePk, userPk, stepStatus, decision) {
+        const time = unixTimeStamp();
+        const result = await manager.update(
+            ApprovalStep,
+            { AF_PK: framePk, USER_PK: userPk },
+            { DECISION: decision, SIGN_DATE: time },
+        );
+        return result;
+    }
+    async checkApprovalStep(afPk: number) {
+        const result = await this.createQueryBuilder('n')
+            .select('MAX(n.STEP_LEVEL) AS MAX_LEVEL')
+            .andWhere('n.DECISION = 1')
+            .andWhere('n.AF_PK =:afPk', { afPk: `${afPk}` })
+            .getRawOne();
+        return result.MAX_LEVEL;
+    }
 }

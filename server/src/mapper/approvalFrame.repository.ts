@@ -24,6 +24,7 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
             CURRENT_STEP_LEVEL: 0,
             START_DATE: time,
             IS_DELETED: 0,
+            DONE: 0,
         });
         return result.identifiers[0];
     }
@@ -124,18 +125,29 @@ export default class ApprovalFrameRepository extends Repository<ApprovalFrame> {
         departmentPk: number,
         comPk: number,
         framePk: number,
+        stepMaxStepLevel: number,
     ) {
-        console.log(departmentPk);
-        console.log(comPk);
-        console.log(framePk);
-        const currentStepLevel = await await this.createQueryBuilder('af')
+        const frame = await await this.createQueryBuilder('af')
             .select(['af.CURRENT_STEP_LEVEL'])
             .andWhere('AF_PK =:framePk', { framePk: `${framePk}` })
             .andWhere('DEPARTMENT_PK =:departmentPk', { departmentPk: `${departmentPk}` })
             .andWhere('COMPANY_PK=:comPk', { comPk: `${comPk}` })
             .getOne();
-        const upStepLevel = currentStepLevel.CURRENT_STEP_LEVEL + 1;
-        const result = await manager.update(ApprovalFrame, { AF_PK: framePk }, { CURRENT_STEP_LEVEL: upStepLevel });
+        let result;
+        console.log(frame.CURRENT_STEP_LEVEL);
+        if (frame.CURRENT_STEP_LEVEL < stepMaxStepLevel) {
+            const upStepLevel = frame.CURRENT_STEP_LEVEL + 1;
+            result = await manager.update(ApprovalFrame, { AF_PK: framePk }, { CURRENT_STEP_LEVEL: upStepLevel });
+        } else {
+            const time = unixTimeStamp();
+            result = await manager.update(ApprovalFrame, { AF_PK: framePk }, { END_DATE: time, DONE: 1 });
+        }
+        /*
+        if (stepMaxStepLevel == currentStepLevel) {
+            
+        }
+        */
+
         return result;
     }
 }

@@ -32,6 +32,9 @@ export default class ApprovalFrame {
     START_DATE: number;
 
     @Column()
+    DONE: number;
+
+    @Column()
     END_DATE: number;
 
     @Column()
