@@ -117,52 +117,49 @@ export default function CComp() {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        status?.emit('handleDisconnect');
-        setStatus(undefined);
-
-        const status = io('http://localhost:5001/status', { withCredentials: true });
-        setStatus(status);
-
         if (userInfo.USER_PK) {
             console.log('###### render ######');
+
+            const status = io('http://localhost:5001/status', { withCredentials: true });
+            setStatus(status);
 
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
+                    console.log('temp-socket-token result : ', result);
                     status.emit('handleConnection', result);
+
+                    status.on('client/status/getStatusList', (payload) => {
+                        console.log('### getStatusList ### : ', payload);
+                        for (const row of payload) {
+                            if (row.userPK === userInfo.USER_PK) {
+                                dispatch(setUserInfo({ status: row.status }));
+                            }
+                        }
+                    });
+
+                    status.on('client/status/loginAlert', (payload) => {
+                        console.log('loginAlert : ', payload);
+                        dispatch(setMemberStatus(payload.user));
+                    });
+                    status.on('client/status/logoutAlert', (payload) => {
+                        console.log('logoutAlert : ', payload);
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/error', (err) => {
+                        console.error('status - error : ', err);
+                    });
+                    status.on('client/status/changeStatus', (payload) => {
+                        console.log('changeStatus : ', payload);
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/logoutEventExecuted', () => {
+                        status.emit('handleDisconnect');
+                    });
                 })
                 .catch((err) => {
                     console.error('handleConnection - error : ', err);
                 });
-
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('### getStatusList ### : ', payload);
-                for (const row of payload) {
-                    if (row.userPK === userInfo.USER_PK) {
-                        dispatch(setUserInfo({ status: row.status }));
-                    }
-                }
-            });
-
-            status.on('client/status/loginAlert', (payload) => {
-                console.log('loginAlert : ', payload);
-                dispatch(setMemberStatus(payload.user));
-            });
-            status.on('client/status/logoutAlert', (payload) => {
-                console.log('logoutAlert : ', payload);
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/error', (err) => {
-                console.error('status - error : ', err);
-            });
-            status.on('client/status/changeStatus', (payload) => {
-                console.log('changeStatus : ', payload);
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/logoutEventExecuted', () => {
-                status.emit('handleDisconnect');
-            });
-            status.on('');
         }
     }, [userInfo.USER_PK]);
 
@@ -170,12 +167,15 @@ export default function CComp() {
         setAnchorEl(null);
         handleMobileMenuClose();
         if (status) {
+            console.log('handleLogout - status : ', status);
             status.emit('server/status/logoutEvent');
 
             (async () => {
                 try {
                     const url = '/api/account/logout';
                     const result = await get(url);
+
+                    console.log('async - result : ', result);
 
                     if (!result) throw new Error('NO_SERVER_RESPONSE');
 
