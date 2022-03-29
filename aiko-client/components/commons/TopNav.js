@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function TopNav({ statusSocket, resetStatusSocket }) {
+export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
     const memberList = useSelector((state) => state.memberReducer);
@@ -116,25 +116,38 @@ export default function TopNav({ statusSocket, resetStatusSocket }) {
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        if (userInfo.USER_PK && statusSocket) {
+        const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
+        setStatus(status);
+
+        if (userInfo.USER_PK) {
             console.log('###### render ######');
 
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
-                    console.log('statusSocket : ', statusSocket);
+                    console.log('status : ', status);
                     console.log('result: ', result);
                     if (result) {
-                        // statusSocket.on('connect', function () {
-                        //     console.log('Called!! : ', result);
-                        // });
+                        console.log('if - result : ', result);
+                        status.on('connect', async function () {
+                            status.emit('handleConnection', result);
+                            console.log('Called!! : ', result);
+                        });
 
-                        statusSocket.open();
-
-                        // statusSocket.emit('handleConnection', result);
+                        status.open((err) => {
+                            if (err) {
+                                console.error('status socket error');
+                            } else {
+                                console.log('연결!');
+                            }
+                        });
                     }
 
-                    statusSocket.on('client/status/getStatusList', (payload) => {
+                    status.on('disconnect', function () {
+                        console.log('연결해제!!!');
+                    });
+
+                    status.on('client/status/getStatusList', (payload) => {
                         console.log('### getStatusList ### : ', payload);
                         for (const row of payload) {
                             if (row.userPK === userInfo.USER_PK) {
@@ -143,36 +156,36 @@ export default function TopNav({ statusSocket, resetStatusSocket }) {
                         }
                     });
 
-                    statusSocket.on('client/status/loginAlert', (payload) => {
+                    status.on('client/status/loginAlert', (payload) => {
                         console.log('loginAlert : ', payload);
                         dispatch(setMemberStatus(payload.user));
                     });
-                    statusSocket.on('client/status/logoutAlert', (payload) => {
+                    status.on('client/status/logoutAlert', (payload) => {
                         console.log('logoutAlert : ', payload);
                         dispatch(setMemberStatus(payload));
                     });
-                    statusSocket.on('client/status/error', (err) => {
+                    status.on('client/status/error', (err) => {
                         console.error('status - error : ', err);
                     });
-                    statusSocket.on('client/status/changeStatus', (payload) => {
+                    status.on('client/status/changeStatus', (payload) => {
                         console.log('changeStatus : ', payload);
                         dispatch(setMemberStatus(payload));
                     });
-                    statusSocket.on('client/status/logoutEventExecuted', () => {
-                        statusSocket.emit('handleDisconnect');
+                    status.on('client/status/logoutEventExecuted', () => {
+                        status.emit('handleDisconnect');
                     });
                 })
                 .catch((err) => {
                     console.error('handleConnection - error : ', err);
                 });
         }
-    }, [userInfo.USER_PK, statusSocket]);
+    }, [userInfo.USER_PK]);
 
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
         if (statusSocket) {
-            console.log('handleLogout - status : ', status);
+            console.log('handleLogout - status');
             statusSocket.emit('server/status/logoutEvent');
 
             (async () => {

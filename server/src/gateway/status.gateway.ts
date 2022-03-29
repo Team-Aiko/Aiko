@@ -36,6 +36,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
         console.log('#### open ####');
+        if (!socketToken) return;
         try {
             console.log('#### handleConnection!!!! - socketToken #### : ', socketToken);
             const { USER_PK, COMPANY_PK } = await this.statusService.decodeSocketToken(socketToken);

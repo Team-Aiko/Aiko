@@ -15,11 +15,11 @@ function MyApp({ Component, pageProps }) {
     const [socketConnect, setSocketConnect] = useState({ status: false, privat: false, group: false });
 
     useEffect(() => {
-        const statusIO = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
+        // const statusIO = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
         const privateIO = io('http://localhost:5001/private-chat', { withCredentials: true, autoConnect: false });
         const groupIO = io('http://localhost:5001/group-chat', { withCredentials: true, autoConnect: false });
 
-        setStatusSocket(statusIO);
+        // setStatusSocket(statusIO);
         setPrivateSocket(privateIO);
         setGroupChatSocket(groupIO);
 
@@ -40,6 +40,7 @@ function MyApp({ Component, pageProps }) {
                         privateChatSocket={privateChatSocket}
                         groupChatSocket={groupChatSocket}
                         resetStatusSocket={resetStatusSocket}
+                        setStatus={(socket) => setStatusSocket(socket)}
                     />
                     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                     <Component {...pageProps} />
