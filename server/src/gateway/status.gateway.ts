@@ -35,7 +35,9 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
+        console.log('#### open ####');
         try {
+            console.log('#### handleConnection!!!! - socketToken #### : ', socketToken);
             const { USER_PK, COMPANY_PK } = await this.statusService.decodeSocketToken(socketToken);
 
             // invalid user filtering
@@ -61,7 +63,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             );
         } catch (err) {
             if ((err as AikoError).appCode === 4000000 + 19) {
-                console.log('no socketToken');
+                console.log('### status - no socketToken');
                 client.disconnect(true);
             } else {
                 this.wss
@@ -83,6 +85,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         try {
+            console.log('#### handleDisconnect!!!! ####');
             console.log('client ID = ', client.id, 'status socket disconnection');
             await this.statusService.statusDisconnect(client.id, this.wss);
             client.disconnect(true);

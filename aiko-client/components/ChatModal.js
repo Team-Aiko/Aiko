@@ -116,75 +116,76 @@ export default function ChatModal(props) {
     //     setGroupSocket(groupChat);
     // }, []);
 
-    useEffect(() => {
-        if (userInfo.USER_PK) {
-            socket && socket.emit('handleDisconnect');
-            groupSocket && groupSocket.emit('handleDisconnect');
+    // useEffect(() => {
+    //     if (userInfo.USER_PK) {
+    //         console.log('### chatModal ###');
+    //         socket && socket.emit('handleDisconnect');
+    //         groupSocket && groupSocket.emit('handleDisconnect');
 
-            const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
-            setSocket(privateChat);
+    //         const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
+    //         setSocket(privateChat);
 
-            const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
-            setGroupSocket(groupChat);
+    //         const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
+    //         setGroupSocket(groupChat);
 
-            const uri = '/api/account/temp-socket-token';
-            get(uri)
-                .then((result) => {
-                    privateChat.emit('handleConnection', result);
-                    groupChat.emit('handleConnection', result);
-                })
-                .catch((err) => {
-                    console.error('handleConnection - error : ', err);
-                });
+    //         const uri = '/api/account/temp-socket-token';
+    //         get(uri)
+    //             .then((result) => {
+    //                 privateChat.emit('handleConnection', result);
+    //                 groupChat.emit('handleConnection', result);
+    //             })
+    //             .catch((err) => {
+    //                 console.error('handleConnection - error : ', err);
+    //             });
 
-            privateChat.on('client/private-chat/connected', (payload) => {
-                let newPayload = [];
-                if (payload.evenCase.length > 0) {
-                    const evenCase = payload.evenCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_1',
-                        };
-                    });
-                    newPayload.push(...evenCase);
-                }
-                if (payload.oddCase.length > 0) {
-                    const oddCase = payload.oddCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_2',
-                        };
-                    });
-                    newPayload.push(...oddCase);
-                }
+    //         privateChat.on('client/private-chat/connected', (payload) => {
+    //             let newPayload = [];
+    //             if (payload.evenCase.length > 0) {
+    //                 const evenCase = payload.evenCase.map((row) => {
+    //                     return {
+    //                         ...row,
+    //                         member: 'USER_1',
+    //                     };
+    //                 });
+    //                 newPayload.push(...evenCase);
+    //             }
+    //             if (payload.oddCase.length > 0) {
+    //                 const oddCase = payload.oddCase.map((row) => {
+    //                     return {
+    //                         ...row,
+    //                         member: 'USER_2',
+    //                     };
+    //                 });
+    //                 newPayload.push(...oddCase);
+    //             }
 
-                dispatch(setMemberChatRoomPK(newPayload));
-                console.log('### privat-chat/connected : ', newPayload);
-            });
-            privateChat.on('client/private-chat/receive-chatlog', (payload) => {
-                console.log('client/private-chat/receive-chatlog : ', payload);
-                setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
-                setChatMember(payload.info.userInfo);
-            });
+    //             dispatch(setMemberChatRoomPK(newPayload));
+    //             console.log('### privat-chat/connected : ', newPayload);
+    //         });
+    //         privateChat.on('client/private-chat/receive-chatlog', (payload) => {
+    //             console.log('client/private-chat/receive-chatlog : ', payload);
+    //             setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
+    //             setChatMember(payload.info.userInfo);
+    //         });
 
-            privateChat.on('client/private-chat/send', (payload) => {
-                console.log('client/private-chat/send');
-                setMessages((messages) => [...messages, payload]);
-                scrollToBottom();
-            });
+    //         privateChat.on('client/private-chat/send', (payload) => {
+    //             console.log('client/private-chat/send');
+    //             setMessages((messages) => [...messages, payload]);
+    //             scrollToBottom();
+    //         });
 
-            groupChat.on('client/gc/connected', (payload) => {
-                console.log('/client/gc/connected : ', payload);
-                setGroupChatList(payload);
-            });
-            groupChat.on('client/gc/join-room-notice', (payload) => {
-                console.log('/client/gc/join-room-notice : ', payload);
-            });
-            groupChat.on('client/gc/read-chat-logs', (payload) => {
-                console.log('/client/gc/read-chat-logs : ', payload);
-            });
-        }
-    }, [userInfo.USER_PK]);
+    //         groupChat.on('client/gc/connected', (payload) => {
+    //             console.log('/client/gc/connected : ', payload);
+    //             setGroupChatList(payload);
+    //         });
+    //         groupChat.on('client/gc/join-room-notice', (payload) => {
+    //             console.log('/client/gc/join-room-notice : ', payload);
+    //         });
+    //         groupChat.on('client/gc/read-chat-logs', (payload) => {
+    //             console.log('/client/gc/read-chat-logs : ', payload);
+    //         });
+    //     }
+    // }, [userInfo.USER_PK]);
 
     useEffect(() => {
         setSelectedMember('');
