@@ -49,7 +49,7 @@ const drive = () => {
 
     useEffect(() => {
         viewFolder()
-    }, [selectedFolderPk, openPasteBin])
+    }, [selectedFolderPk])
 
 
     return (
