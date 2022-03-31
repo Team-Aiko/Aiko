@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }) => {
+const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, isSomethingChanged }) => {
     const classes = useStyles();
 
     //폴더 이동에 필요한 담을 폴더 pk
@@ -42,6 +42,7 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk }
         post(url, data)
             .then((res) => {
                 console.log('moveFolder', res);
+                isSomethingChanged('move folder')
             })
             .catch((error) => {
                 console.log(error);

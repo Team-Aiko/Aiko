@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
+const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk, isSomethingChanged }) => {
     const [files, setFiles] = useState([]);
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -50,7 +50,7 @@ const DriveUpload = ({ fileModalOpen, setFileModalOpen, selectedFolderPk }) => {
             .then((res) => {
                 alert('파일 업로드를 완료했습니다.');
                 setFileModalOpen(false);
-                console.log(res);
+                isSomethingChanged('upload File complete');
             })
             .catch((err) => console.error(err));
     };

@@ -42,7 +42,7 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
     const [file, setFile] = useState([]);
 
     const fileUpload = (e) => {
-        setFile(Object.values(e.target.files))
+        setFile((prev) => [...prev, ...Object.values(e.target.files)])
     }
 
     //map으로 렌더링해줄 파일 이름, 버튼 클릭하면 Pk 값을 useState에 저장, 다운로드에 이용
@@ -85,7 +85,6 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
 
     const getCheckboxIndexNum = (index) => {
         setSelectedCheckboxIndex(index);
-        setSelectedFilePkNum()
     };
 
     const addFileHistory = () => {
@@ -178,7 +177,8 @@ const DriveFileDetailModal = ({ open, onClose, selectedFilePk }) => {
                     }
 
                     <Button variant="contained" color='primary' component="label"
-                    className={file.length > 0 ? classes.historyUploadButton : classes.hideButton}>
+                    className={file.length > 0 ? classes.historyUploadButton : classes.hideButton}
+                    onClick={addFileHistory}>
                     Upload
                     </Button>
                 </div>
