@@ -1,11 +1,11 @@
 import React from 'react';
-import styles from '../../styles/Drive.module.css';
-import DriveFolder from '../../components/DriveFolder';
-import DriveFile from '../../components/DriveFile';
-import DriveBin from '../../components/DriveBin';
+import styles from '../styles/Drive.module.css';
+import DriveFolder from '../components/DriveFolder';
+import DriveFile from '../components/DriveFile';
+import DriveBin from '../components/DriveBin';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { get, post } from '../../_axios';
+import { get, post } from '../_axios';
 
 
 const drive = () => {
@@ -20,10 +20,16 @@ const drive = () => {
     //현재 클릭한 folder의 하위 파일들
     const [folderFile, setFolderFile] = useState([]);
 
+    const [isChanged, setIsChanged] = useState('');
+
     // DriveFile 컴포넌트에서 사용자가 선택한 Folder_Pk 값 추적시 필요한 함수 (부모 <--> 자식)
     const getFolderPk = (number) => {
         setSelectedFolderPk(number)
     };
+
+    const isSomethingChanged = (action) => {
+        setIsChanged(action)
+    }
 
     // 만들어진 폴더 가져오기, 의존값은 selectedFolderPk 삭제된 폴더와 파일 구분함 (휴지통)
     const viewFolder = () => {
@@ -35,6 +41,7 @@ const drive = () => {
             setRootFolder(notDeletedFolder);
             const notDeletedFile = res.filesInFolder.filter(file => file.IS_DELETED === 0);
             setFolderFile(notDeletedFile);
+            setIsChanged('');
         })
         .catch((error) => {
             console.log(error)
@@ -43,7 +50,7 @@ const drive = () => {
 
     useEffect(() => {
         viewFolder()
-    }, [selectedFolderPk])
+    }, [selectedFolderPk, isChanged])
 
     const [openBin, setOpenBin] = useState(false);
 
@@ -59,7 +66,7 @@ const drive = () => {
             {
                 openBin == false
                 ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}
-                    folderFile={folderFile}/>
+                    folderFile={folderFile} getFolderPk={getFolderPk} isSomethingChanged={isSomethingChanged} />
                 : <></>
             }
 

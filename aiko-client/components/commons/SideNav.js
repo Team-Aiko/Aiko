@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import clsx from 'clsx';
 import Router from 'next/router';
 import PropTypes from 'prop-types';
@@ -8,6 +8,7 @@ import { MeetingRoom, GroupAdd, Home, Create, Settings, Assignment, Folder} from
 import { useSelector, useDispatch } from 'react-redux';
 import { handleSideNav } from '../../_redux/popupReducer';
 import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes';
+import { get } from '../../_axios';
 
 // * CSS Styles
 const useStyles = makeStyles({
@@ -58,8 +59,29 @@ function PComp(props) {
         Router.push('/board');
     };
 
+    // const [userCompanyPk, setUserCompanyPk] = useState(false);
+
+    // const getUserCompanyPk = () => {
+    //     const url = ('/api/account/decoding-token');
+    //     get(url)
+    //     .then((res) => {
+    //         console.log('user?');
+    //         console.log(res.result.COMPANY_PK)
+    //         setUserCompanyPk(res.result.COMPANY_PK)
+    //     })
+    //     .catch((error) => {
+    //         console.log(error)
+    //     })
+    // }
+
+    // useEffect(() => {
+    //     getUserCompanyPk()
+    // }, [])
+
+
+
     const goToDrive = () => {
-        Router.push('/drive')
+        Router.push(`/drive/1`)
     }
 
     return (

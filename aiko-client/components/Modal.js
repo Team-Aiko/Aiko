@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
     title: {
         width: '100%',
         textAlign: 'center',
+        fontSize:'1.5vw'
     },
     closeButton: {
         position: 'absolute',

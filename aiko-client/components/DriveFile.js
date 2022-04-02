@@ -15,6 +15,7 @@ import {
     IconButton,
     Menu,
     MenuItem,
+    TextField,
 } from '@material-ui/core';
 import { CreateNewFolder, Folder, NoteAdd, MoreVert, Description } from '@material-ui/icons';
 import Modal from './Modal.js';
@@ -31,16 +32,20 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         margin: theme.spacing(1),
-    },
+        width: '20%',
+        fontSize: '1vw',
+    }
 }));
 
 //rootFolder, getFolderPk, selectedFolderPk, folderFile는 [companyPk].js 폴더와 상호작용, 자세한건 [companyPk].js 페이지 참조
-const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) => {
+const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSomethingChanged }) => {
     const classes = useStyles();
 
     //FOLDER Menu Item 조작
     const ThreeDotsMenu = ({ file, root }) => {
+
         const [anchorEl, setAnchorEl] = React.useState(null);
+
         const handleClick = (e) => {
             setAnchorEl(e.currentTarget);
         };
@@ -86,6 +91,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
         post(url, data)
             .then((res) => {
                 console.log('Delete Items', res);
+                isSomethingChanged('deleteItem');
                 alert('삭제되었습니다.')
             })
             .catch((error) => {
@@ -126,6 +132,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                 console.log('Make Subfolder API', res);
                 setFolderName('');
                 setOpenModal(false);
+                isSomethingChanged('Create Folder')
             })
             .catch((error) => {
                 console.log(error);
@@ -157,6 +164,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                 onClick={() => {
                     setOpenModal(true);
                 }}
+
             >
                 New Folder
             </Button>
@@ -170,7 +178,8 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                     }}
                 >
                     <div className={styles.modalDiv}>
-                        <Input placeholder='Folder Name' value={folderName} onChange={changeFolderName}></Input>{' '}
+                        <Input placeholder='Folder Name' value={folderName} onChange={changeFolderName}
+                        style={{margin: 'auto'}}></Input>{' '}
                         <Button onClick={createFolder} variant='outlined'>
                             Add
                         </Button>
@@ -253,6 +262,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
                     fileModalOpen={fileModalOpen}
                     setFileModalOpen={setFileModalOpen}
                     selectedFolderPk={selectedFolderPk}
+                    isSomethingChanged={isSomethingChanged}
                 ></DriveUpload>
             ) : (
                 <></>
@@ -261,12 +271,13 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile }) =>
             <DriveFileDetailModal open={fileDetailModalOpen}
             onClose={() => {setFileDetailModalOpen(false);}}
             selectedFilePk={selectedFilePk}
+            isSomethingChanged={isSomethingChanged}
             />
 
             {
                 fileMoveModalOpen == true
                 ? <DriveFileMove closeMoveModal={closeMoveModal} openMoveModal={openMoveModal}
-                fileKeyPk={fileKeyPk} folderKeyPk={folderKeyPk} />
+                fileKeyPk={fileKeyPk} folderKeyPk={folderKeyPk} isSomethingChanged={isSomethingChanged}/>
                 : <></>
             }
 
