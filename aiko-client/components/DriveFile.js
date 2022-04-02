@@ -145,12 +145,23 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     const openFileDetailModal = (filePkNum) => {
         setFileDetailModalOpen(true);
         setSelectedFilePk(filePkNum);
-
     };
-    
-    console.log('folderFile', folderFile);
 
-    console.log(selectedFilePk);
+    const [dragItem, setDragItem] = useState(undefined);
+    const [targetFolder, setTargetFolder] = useState(undefined);
+
+    const handleDragStart = (index) => {
+        setDragItem(index);
+        console.log('selected folder', dragItem)
+    };
+
+    const handleDrop = (e, index) => {
+        e.preventDefault()
+        console.log('target mother file' , index)
+    };
+
+    
+
 
     return (
         <div className={styles.fileContainer}>
@@ -191,28 +202,39 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
 
             <Divider />
 
-            <div className={styles.folderDiv}>
-                {rootFolder?.map((root) => (
-                    <div className={classes.root} key={root.FOLDER_PK}>
-                        <ListItem button dense divider selected>
-                            <ListItemIcon
-                                onClick={() => {
-                                    getFolderPk(root.FOLDER_PK);
-                                }}
-                            >
-                                <Folder />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={root.FOLDER_NAME}
-                                onClick={() => {
-                                    getFolderPk(root.FOLDER_PK);
-                                }}
-                            />
-                            <ThreeDotsMenu root={root.FOLDER_PK} />
-                        </ListItem>
+
+                    <div className={styles.folderDiv}>
+                        {rootFolder?.map((root, index) => (
+                                    <div className={classes.root} key={root.FOLDER_PK}>
+                                        <ListItem button dense divider selected draggable
+                                        
+                                        onDragStart={() => handleDragStart(root.FOLDER_PK)}
+
+                                        onDrop={(e) => handleDrop(e, root.FOLDER_PK)}
+                                        onDragOver={(e) => e.preventDefault()}
+                                        
+                                        >
+
+                                            <ListItemIcon
+                                                onClick={() => {
+                                                    getFolderPk(root.FOLDER_PK);
+                                                }}
+                                            >
+                                                <Folder />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={root.FOLDER_NAME}
+                                                onClick={() => {
+                                                    getFolderPk(root.FOLDER_PK);
+                                                }}
+                                            />
+                                            <ThreeDotsMenu root={root.FOLDER_PK} />
+                                        </ListItem>
+                                    </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+
+
 
             <Divider />
 
@@ -235,6 +257,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                 </Button>
             </div>
             <Divider />
+
 
             <div className={styles.folderDiv}>
                 {folderFile?.map((file, index) => (

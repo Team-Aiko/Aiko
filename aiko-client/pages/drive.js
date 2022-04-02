@@ -7,7 +7,6 @@ import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { get, post } from '../_axios';
 
-
 const drive = () => {
 
     const router = useRouter();
@@ -65,8 +64,10 @@ const drive = () => {
 
             {
                 openBin == false
-                ? <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}
-                    folderFile={folderFile} getFolderPk={getFolderPk} isSomethingChanged={isSomethingChanged} />
+                
+                ?
+                    <DriveFile rootFolder={rootFolder} getFolderPk={getFolderPk} selectedFolderPk={selectedFolderPk}
+                folderFile={folderFile} getFolderPk={getFolderPk} isSomethingChanged={isSomethingChanged} />
                 : <></>
             }
 
