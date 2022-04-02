@@ -10,7 +10,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptors } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/guard/user.guard';
 import { resExecutor } from 'src/Helpers';
@@ -59,7 +59,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('save-files')
-    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    @UseInterceptors(FilesInterceptors('file', 100, driveFileOption), UserPayloadParserInterceptor)
     async saveFiles(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
@@ -77,12 +77,12 @@ export default class DriveController {
     }
 
     @Post('add-history')
-    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    @UseInterceptors(FilesInterceptors('files', 100, driveFileOption), UserPayloadParserInterceptor)
     async addHistory(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() files: Express.Multer.File[],
     ) {
         try {
             const { USER_PK, COMPANY_PK } = userPayload;
