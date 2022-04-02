@@ -35,6 +35,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
+        if (!socketToken) return;
         try {
             console.log('groupChat connection clientId : ', client.id);
 

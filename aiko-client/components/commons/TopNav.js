@@ -101,7 +101,16 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
+export default function TopNav({
+    statusSocket,
+    privateChatSocket,
+    groupChatSocket,
+    setStatusSocket,
+    setPrivateChatSocket,
+    setGroupChatSocket,
+    socketConnect,
+    setSocketConnect,
+}) {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
     const memberList = useSelector((state) => state.memberReducer);
@@ -112,12 +121,11 @@ export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { USER_PK } = userInfo;
-    // const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
         const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
-        setStatus(status);
+        setStatusSocket(status);
 
         if (userInfo.USER_PK) {
             console.log('###### render ######');
@@ -125,26 +133,21 @@ export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
-                    console.log('status : ', status);
-                    console.log('result: ', result);
                     if (result) {
-                        console.log('if - result : ', result);
                         status.on('connect', async function () {
                             status.emit('handleConnection', result);
-                            console.log('Called!! : ', result);
+                            console.log('Called!! - status : ', result);
                         });
 
-                        status.open((err) => {
-                            if (err) {
-                                console.error('status socket error');
-                            } else {
-                                console.log('연결!');
-                            }
-                        });
+                        status.open();
                     }
 
                     status.on('disconnect', function () {
-                        console.log('연결해제!!!');
+                        console.log('status disconnect!!!');
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: false,
+                        });
                     });
 
                     status.on('client/status/getStatusList', (payload) => {
@@ -154,6 +157,10 @@ export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
                                 dispatch(setUserInfo({ status: row.status }));
                             }
                         }
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: true,
+                        });
                     });
 
                     status.on('client/status/loginAlert', (payload) => {
@@ -176,7 +183,7 @@ export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
                     });
                 })
                 .catch((err) => {
-                    console.error('handleConnection - error : ', err);
+                    console.error('status handleConnection - error : ', err);
                 });
         }
     }, [userInfo.USER_PK]);
@@ -201,7 +208,14 @@ export default function TopNav({ statusSocket, setStatus, resetStatusSocket }) {
                     dispatch(setMember([]));
 
                     statusSocket.emit('handleDisconnect');
-                    resetStatusSocket();
+                    setStatusSocket(null);
+                    setPrivateChatSocket(null);
+                    setGroupChatSocket(null);
+                    setSocketConnect({
+                        status: false,
+                        private: false,
+                        group: false,
+                    });
 
                     Router.push('/');
                 } catch (e) {

@@ -80,14 +80,23 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function ChatModal(props) {
+export default function ChatModal({
+    open,
+    onClose,
+    statusSocket,
+    privateChatSocket,
+    groupChatSocket,
+    setStatusSocket,
+    setPrivateChatSocket,
+    setGroupChatSocket,
+    socketConnect,
+    setSocketConnect,
+}) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const { open, onClose } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
-    const [socket, setSocket] = useState(undefined);
     const [selectedMember, setSelectedMember] = useState('');
     const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
@@ -102,90 +111,120 @@ export default function ChatModal(props) {
     const [openAddGroup, setOpenAddGroup] = useState(false);
     const [groupChatTitle, setGroupChatTitle] = useState('');
     const [groupChatList, setGroupChatList] = useState([]);
-    const [groupSocket, setGroupSocket] = useState(undefined);
     const [selectedGroup, setSelectedGroup] = useState('');
 
-    // useEffect(() => {
-    //     socket && socket.emit('handleDisconnect');
-    //     groupSocket && groupSocket.emit('handleDisconnect');
+    const statusConnect = socketConnect.status;
+    const privateConnect = socketConnect.private;
 
-    //     const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
-    //     setSocket(privateChat);
+    useEffect(() => {
+        console.log(statusConnect);
+        if (statusConnect) {
+            const privateChatSocket = io('http://localhost:5001/private-chat', {
+                withCredentials: true,
+                autoConnect: false,
+            });
+            setPrivateChatSocket(privateChatSocket);
+            const uri = '/api/account/temp-socket-token';
+            get(uri)
+                .then((result) => {
+                    if (result) {
+                        privateChatSocket.on('connect', async function () {
+                            console.log('private chat result : ', result);
+                            privateChatSocket.emit('handleConnection', result);
+                            console.log('Called!! - private chat : ', result);
+                        });
+                        privateChatSocket.open();
+                    }
+                    privateChatSocket.on('disconnect', function () {
+                        console.log('private chat disconnect!!!');
+                        setSocketConnect({
+                            ...socketConnect,
+                            private: false,
+                        });
+                    });
 
-    //     const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
-    //     setGroupSocket(groupChat);
-    // }, []);
+                    privateChatSocket.on('client/private-chat/connected', (payload) => {
+                        let newPayload = [];
+                        if (payload.evenCase.length > 0) {
+                            const evenCase = payload.evenCase.map((row) => {
+                                return {
+                                    ...row,
+                                    member: 'USER_1',
+                                };
+                            });
+                            newPayload.push(...evenCase);
+                        }
+                        if (payload.oddCase.length > 0) {
+                            const oddCase = payload.oddCase.map((row) => {
+                                return {
+                                    ...row,
+                                    member: 'USER_2',
+                                };
+                            });
+                            newPayload.push(...oddCase);
+                        }
 
-    // useEffect(() => {
-    //     if (userInfo.USER_PK) {
-    //         console.log('### chatModal ###');
-    //         socket && socket.emit('handleDisconnect');
-    //         groupSocket && groupSocket.emit('handleDisconnect');
+                        dispatch(setMemberChatRoomPK(newPayload));
+                        console.log('### privat-chat/connected : ', newPayload);
+                        setSocketConnect({
+                            ...socketConnect,
+                            private: true,
+                        });
+                    });
 
-    //         const privateChat = io('http://localhost:5001/private-chat', { withCredentials: true });
-    //         setSocket(privateChat);
+                    privateChatSocket.on('client/private-chat/receive-chatlog', (payload) => {
+                        console.log('client/private-chat/receive-chatlog : ', payload);
+                        setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
+                        setChatMember(payload.info.userInfo);
+                    });
 
-    //         const groupChat = io('http://localhost:5001/group-chat', { withCredentials: true });
-    //         setGroupSocket(groupChat);
+                    privateChatSocket.on('client/private-chat/send', (payload) => {
+                        console.log('client/private-chat/send');
+                        setMessages((messages) => [...messages, payload]);
+                        scrollToBottom();
+                    });
+                })
+                .catch((err) => {
+                    console.error('privateChat handleConnection - error : ', err);
+                });
+        }
+    }, [statusConnect]);
 
-    //         const uri = '/api/account/temp-socket-token';
-    //         get(uri)
-    //             .then((result) => {
-    //                 privateChat.emit('handleConnection', result);
-    //                 groupChat.emit('handleConnection', result);
-    //             })
-    //             .catch((err) => {
-    //                 console.error('handleConnection - error : ', err);
-    //             });
+    useEffect(() => {
+        if (privateConnect) {
+            const groupChatSocket = io('http://localhost:5001/group-chat', {
+                withCredentials: true,
+                autoConnect: false,
+            });
+            setGroupChatSocket(groupChatSocket);
+            const uri = '/api/account/temp-socket-token';
+            get(uri)
+                .then((result) => {
+                    if (result) {
+                        groupChatSocket.on('connect', async function () {
+                            console.log('group chat result : ', result);
+                            groupChatSocket.emit('handleConnection', result);
+                            console.log('Called!! - group chat : ', result);
+                        });
+                        groupChatSocket.open();
 
-    //         privateChat.on('client/private-chat/connected', (payload) => {
-    //             let newPayload = [];
-    //             if (payload.evenCase.length > 0) {
-    //                 const evenCase = payload.evenCase.map((row) => {
-    //                     return {
-    //                         ...row,
-    //                         member: 'USER_1',
-    //                     };
-    //                 });
-    //                 newPayload.push(...evenCase);
-    //             }
-    //             if (payload.oddCase.length > 0) {
-    //                 const oddCase = payload.oddCase.map((row) => {
-    //                     return {
-    //                         ...row,
-    //                         member: 'USER_2',
-    //                     };
-    //                 });
-    //                 newPayload.push(...oddCase);
-    //             }
-
-    //             dispatch(setMemberChatRoomPK(newPayload));
-    //             console.log('### privat-chat/connected : ', newPayload);
-    //         });
-    //         privateChat.on('client/private-chat/receive-chatlog', (payload) => {
-    //             console.log('client/private-chat/receive-chatlog : ', payload);
-    //             setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
-    //             setChatMember(payload.info.userInfo);
-    //         });
-
-    //         privateChat.on('client/private-chat/send', (payload) => {
-    //             console.log('client/private-chat/send');
-    //             setMessages((messages) => [...messages, payload]);
-    //             scrollToBottom();
-    //         });
-
-    //         groupChat.on('client/gc/connected', (payload) => {
-    //             console.log('/client/gc/connected : ', payload);
-    //             setGroupChatList(payload);
-    //         });
-    //         groupChat.on('client/gc/join-room-notice', (payload) => {
-    //             console.log('/client/gc/join-room-notice : ', payload);
-    //         });
-    //         groupChat.on('client/gc/read-chat-logs', (payload) => {
-    //             console.log('/client/gc/read-chat-logs : ', payload);
-    //         });
-    //     }
-    // }, [userInfo.USER_PK]);
+                        groupChatSocket.on('client/gc/connected', (payload) => {
+                            console.log('/client/gc/connected : ', payload);
+                            setGroupChatList(payload);
+                        });
+                        groupChatSocket.on('client/gc/join-room-notice', (payload) => {
+                            console.log('/client/gc/join-room-notice : ', payload);
+                        });
+                        groupChatSocket.on('client/gc/read-chat-logs', (payload) => {
+                            console.log('/client/gc/read-chat-logs : ', payload);
+                        });
+                    }
+                })
+                .catch((err) => {
+                    console.error('groupChat handleConnection - error : ', err);
+                });
+        }
+    }, [privateConnect]);
 
     useEffect(() => {
         setSelectedMember('');
@@ -244,7 +283,7 @@ export default function ChatModal(props) {
                 message: inputMessage,
                 date: Number(moment().format('X')),
             };
-            socket.emit('server/private-chat/send', data);
+            privateChatSocket.emit('server/private-chat/send', data);
             setInputMessage('');
         }
     };
@@ -259,7 +298,7 @@ export default function ChatModal(props) {
 
     const handleSelectMember = (member) => {
         setSelectedMember(member);
-        socket.emit('server/private-chat/call-chatLog', member.CR_PK);
+        privateChatSocket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
 
     const searchMember = () => {
@@ -308,14 +347,13 @@ export default function ChatModal(props) {
             maxNum: groupChatMember.length + 1,
         };
         console.log('data : ', data);
-        console.log('groupSocket : ', groupSocket);
-        groupSocket.emit('server/gc/create-group-chat-room', data);
+        groupChatSocket.emit('server/gc/create-group-chat-room', data);
         setOpenAddGroup(false);
     };
 
     const handleSelectGroup = (group) => {
         setSelectedGroup(group);
-        groupSocket.emit('server/gc/read-chat-logs', group.GC_PK);
+        groupChatSocket.emit('server/gc/read-chat-logs', group.GC_PK);
     };
 
     return (

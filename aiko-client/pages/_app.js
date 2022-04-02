@@ -10,26 +10,9 @@ import { io } from 'socket.io-client';
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
     const [statusSocket, setStatusSocket] = useState(null);
-    const [privateChatSocket, setPrivateSocket] = useState(null);
+    const [privateChatSocket, setPrivateChatSocket] = useState(null);
     const [groupChatSocket, setGroupChatSocket] = useState(null);
-    const [socketConnect, setSocketConnect] = useState({ status: false, privat: false, group: false });
-
-    useEffect(() => {
-        // const statusIO = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
-        const privateIO = io('http://localhost:5001/private-chat', { withCredentials: true, autoConnect: false });
-        const groupIO = io('http://localhost:5001/group-chat', { withCredentials: true, autoConnect: false });
-
-        // setStatusSocket(statusIO);
-        setPrivateSocket(privateIO);
-        setGroupChatSocket(groupIO);
-
-        console.log('App - setSocket');
-    }, []);
-
-    const resetStatusSocket = () => {
-        console.log('### resetStatusSocket');
-        setStatusSocket(null);
-    };
+    const [socketConnect, setSocketConnect] = useState({ status: false, private: false, group: false });
 
     return (
         <>
@@ -39,12 +22,24 @@ function MyApp({ Component, pageProps }) {
                         statusSocket={statusSocket}
                         privateChatSocket={privateChatSocket}
                         groupChatSocket={groupChatSocket}
-                        resetStatusSocket={resetStatusSocket}
-                        setStatus={(socket) => setStatusSocket(socket)}
+                        setStatusSocket={(socket) => setStatusSocket(socket)}
+                        setPrivateChatSocket={(socket) => setPrivateChatSocket(socket)}
+                        setGroupChatSocket={(socket) => setGroupChatSocket(socket)}
+                        socketConnect={socketConnect}
+                        setSocketConnect={(socket) => setSocketConnect(socket)}
                     />
                     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
                     <Component {...pageProps} />
-                    <ChatBtn />
+                    <ChatBtn
+                        statusSocket={statusSocket}
+                        privateChatSocket={privateChatSocket}
+                        groupChatSocket={groupChatSocket}
+                        setStatusSocket={(socket) => setStatusSocket(socket)}
+                        setPrivateChatSocket={(socket) => setPrivateChatSocket(socket)}
+                        setGroupChatSocket={(socket) => setGroupChatSocket(socket)}
+                        socketConnect={socketConnect}
+                        setSocketConnect={(socket) => setSocketConnect(socket)}
+                    />
                 </PersistGate>
             </ReduxProvider>
         </>
