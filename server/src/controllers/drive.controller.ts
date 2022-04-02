@@ -86,7 +86,7 @@ export default class DriveController {
     ) {
         try {
             const { USER_PK, COMPANY_PK } = userPayload;
-            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, file);
+            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, files);
 
             resExecutor(res, { result });
         } catch (err) {
