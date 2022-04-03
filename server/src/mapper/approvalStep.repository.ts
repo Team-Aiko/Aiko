@@ -74,4 +74,15 @@ export default class ApprovalStepRepository extends Repository<ApprovalStep> {
             .getRawOne();
         return result.MAX_LEVEL;
     }
+
+    //권한확인
+
+    async checkAuthList(afPk: number, userPk: number) {
+        const result = await this.createQueryBuilder('n')
+            .select(['n.USER_PK', 'n.AF_PK'])
+            .andWhere('n.USER_PK =:userPk', { userPk: `${userPk}` })
+            .andWhere('n.AF_PK =:afPk', { afPk: `${afPk}` })
+            .getOne();
+        console.log(result);
+    }
 }

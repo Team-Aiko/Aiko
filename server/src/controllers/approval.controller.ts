@@ -81,4 +81,20 @@ export default class ApprovalController {
             throw resExecutor(res, { err });
         }
     }
+
+    @Post('write-comment')
+    @UseInterceptors(UserPayloadParserInterceptor)
+    async assignComment(@Req() req: Request, @Res() res: Response, @Body('userPayload') userPayload: IUserPayload) {
+        console.log('콘솔로그');
+        try {
+            const departmentPk = userPayload.DEPARTMENT_PK;
+            const comPk = userPayload.COMPANY_PK;
+            const userPk = userPayload.USER_PK;
+            const { framePk } = req.body;
+            const result = await this.approvalService.writeComment(userPk, departmentPk, comPk, framePk);
+            resExecutor(res, { result: result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
 }

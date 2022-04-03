@@ -6,7 +6,7 @@ import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
 import { getConnection } from 'typeorm';
 import ApprovalFrameRepository from 'src/mapper/approvalFrame.repository';
 import ApprovalStepRepository from 'src/mapper/approvalStep.repository';
-
+import ApprovalCommentRepository from 'src/mapper/approvalComment.repository ';
 export default class ApprovalService {
     async createApproval(
         title: string,
@@ -171,5 +171,10 @@ export default class ApprovalService {
         } finally {
             queryRunner.release();
         }
+    }
+
+    async writeComment(userPk: number, departmentPk: number, comPk: number, framePk: number) {
+        // const query1 = await getRepo(ApprovalCommentRepository).getCommentAuth(userPk, departmentPk, comPk, framePk);
+        const query2 = await getRepo(ApprovalCommentRepository).writeComment(userPk, departmentPk, comPk, framePk);
     }
 }

@@ -325,6 +325,15 @@ CREATE_DATE int,
 primary key(AC_PK)
 );
 
+create table APPROVAL_COMMENT_TABLE (
+ACM_PK int auto_increment,
+AF_PK int not null,
+USER_PK int not null,
+COMMENT_DATE int not null,
+CONTENT VARCHAR(6000) not NULL, 
+IS_DELETED int,
+primary key(ACM_PK)
+);
 
 create table STATUS_CODE_TABLE (
 STATUS_CODE_PK int auto_increment,
