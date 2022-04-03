@@ -103,6 +103,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
+        console.log('#### private-chat/logoutEvent ####');
         try {
             const { userPK, companyPK } = await this.privateChatService.getClientInfo(client.id);
             await this.privateChatService.logoutEvent(userPK, companyPK, client.id);

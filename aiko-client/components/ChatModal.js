@@ -208,15 +208,45 @@ export default function ChatModal({
                         });
                         groupChatSocket.open();
 
+                        privateChatSocket.on('disconnect', function () {
+                            console.log('group chat disconnect!!!');
+                            setSocketConnect({
+                                ...socketConnect,
+                                group: false,
+                            });
+                        });
+
                         groupChatSocket.on('client/gc/connected', (payload) => {
                             console.log('/client/gc/connected : ', payload);
                             setGroupChatList(payload);
                         });
                         groupChatSocket.on('client/gc/join-room-notice', (payload) => {
                             console.log('/client/gc/join-room-notice : ', payload);
+                            groupChatSocket.emit('server/gc/join-group-chat-room', payload.GC_PK);
+                            setGroupChatList((groupChatList) => [
+                                ...groupChatList,
+                                {
+                                    GC_PK: payload.GC_PK,
+                                    MAX_NUM: payload.maxNum,
+                                    ROOM_ADMIN: payload.admin,
+                                    ROOM_TITLE: payload.roomTitle,
+                                    members: payload.memberList,
+                                },
+                            ]);
+                        });
+                        groupChatSocket.on('client/gc/joined_gcr', (payload) => {
+                            console.log('client/gc/joined_gcr', payload);
                         });
                         groupChatSocket.on('client/gc/read-chat-logs', (payload) => {
                             console.log('/client/gc/read-chat-logs : ', payload);
+                            console.log('group read : ', payload.userMap);
+                        });
+                        privateChatSocket.on('disconnect', function () {
+                            console.log('private chat disconnect!!!');
+                            setSocketConnect({
+                                ...socketConnect,
+                                private: false,
+                            });
                         });
                     }
                 })

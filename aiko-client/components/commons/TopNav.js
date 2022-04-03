@@ -194,6 +194,8 @@ export default function TopNav({
         if (statusSocket) {
             console.log('handleLogout - status');
             statusSocket.emit('server/status/logoutEvent');
+            privateChatSocket.emit('server/private-chat/logoutEvent');
+            groupChatSocket.emit('server/gc/logoutEvent');
 
             (async () => {
                 try {
@@ -208,6 +210,8 @@ export default function TopNav({
                     dispatch(setMember([]));
 
                     statusSocket.emit('handleDisconnect');
+                    privateChatSocket.emit('handleDisconnect');
+                    groupChatSocket.emit('handleDisconnect');
                     setStatusSocket(null);
                     setPrivateChatSocket(null);
                     setGroupChatSocket(null);

@@ -120,6 +120,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
     @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
+        console.log('#### status logoutEvent ####');
         try {
             const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
             await this.statusService.logoutEvent(userPK, companyPK, client.id);
