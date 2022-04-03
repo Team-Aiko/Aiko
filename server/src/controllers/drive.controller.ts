@@ -77,16 +77,16 @@ export default class DriveController {
     }
 
     @Post('add-history')
-    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    @UseInterceptors(FilesInterceptor('files', 100, driveFileOption), UserPayloadParserInterceptor)
     async addHistory(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
         @Res() res: Response,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() files: Express.Multer.File[],
     ) {
         try {
             const { USER_PK, COMPANY_PK } = userPayload;
-            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, file);
+            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, files);
 
             resExecutor(res, { result });
         } catch (err) {

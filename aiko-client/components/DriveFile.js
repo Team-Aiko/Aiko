@@ -22,7 +22,6 @@ import Modal from './Modal.js';
 import DriveFileMove from './DriveFileMove';
 import DriveFileDetailModal from './DriveFileDetailModal';
 
-
 const useStyles = makeStyles((theme) => ({
     root: {
         width: 'auto',
@@ -34,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(1),
         width: '20%',
         fontSize: '1vw',
-    }
+    },
 }));
 
 //rootFolder, getFolderPk, selectedFolderPk, folderFile는 [companyPk].js 폴더와 상호작용, 자세한건 [companyPk].js 페이지 참조
@@ -43,7 +42,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
 
     //FOLDER Menu Item 조작
     const ThreeDotsMenu = ({ file, root }) => {
-
         const [anchorEl, setAnchorEl] = React.useState(null);
 
         const handleClick = (e) => {
@@ -59,8 +57,20 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                     <MoreVert />
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                    <MenuItem onClick={ ()=>{ deleteItem(file, root) } }>Delete</MenuItem>
-                    <MenuItem onClick={ () => { openMoveModal(file, root) }  }>Move</MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            deleteItem(file, root);
+                        }}
+                    >
+                        Delete
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            openMoveModal(file, root);
+                        }}
+                    >
+                        Move
+                    </MenuItem>
                 </Menu>
             </React.Fragment>
         );
@@ -75,24 +85,24 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
         setFileMoveModalOpen(true);
         setFileKeyPk(file);
         setFolderKeyPk(root);
-        console.log('filekey?, folderKey?', file, root)
-    }
+        console.log('filekey?, folderKey?', file, root);
+    };
     const closeMoveModal = () => {
         setFileMoveModalOpen(false);
-    }
+    };
 
     //폴더 삭제 API props는 Folder의 ThreeDotsMenu에서 받음.
     const deleteItem = (filePk, folderPk) => {
         const url = '/api/store/drive/delete-files';
         const data = {
             filePKs: filePk,
-            folderPKs: folderPk
+            folderPKs: folderPk,
         };
         post(url, data)
             .then((res) => {
                 console.log('Delete Items', res);
                 isSomethingChanged('deleteItem');
-                alert('삭제되었습니다.')
+                alert('삭제되었습니다.');
             })
             .catch((error) => {
                 console.log('delete Items', error);
@@ -123,8 +133,8 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             folderName: folderName,
             parentPK: selectedFolderPk,
         };
-        if(folderName.length == 0){
-            alert('폴더명을 입력해주세요.')
+        if (folderName.length == 0) {
+            alert('폴더명을 입력해주세요.');
             return;
         }
         post(url, data)
@@ -132,7 +142,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                 console.log('Make Subfolder API', res);
                 setFolderName('');
                 setOpenModal(false);
-                isSomethingChanged('Create Folder')
+                isSomethingChanged('Create Folder');
             })
             .catch((error) => {
                 console.log(error);
@@ -149,23 +159,52 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
 
     const [dragItem, setDragItem] = useState(undefined);
     const [targetFolder, setTargetFolder] = useState(undefined);
+    const [isReady, setIsReady] = useState(false);
 
     const handleDragStart = (index) => {
         setDragItem(index);
-        console.log('selected folder', dragItem)
+        setTargetFolder(undefined);
     };
 
-    const handleDrop = (e, index) => {
-        e.preventDefault()
-        console.log('target mother file' , index)
+    const handleDrop = (index) => {
+        setTargetFolder(index);
+        setIsReady(true);
     };
 
-    
+    const moveFolder = () => {
+        const url = '/api/store/drive/move-folder';
+        const data = {
+            fromFilePKs: [fileKeyPk],
+            fromFolderPKs: [dragItem],
+            toFolderPK: targetFolder,
+        };
+        if ([fileKeyPk][0] === undefined) {
+            data.fromFilePKs = undefined;
+        }
+        if ([dragItem][0] === targetFolder) {
+            return;
+        }
+        post(url, data)
+            .then((res) => {
+                console.log('moveFolder', res);
+                isSomethingChanged('move folder');
+                setDragItem(undefined);
+                setTargetFolder(undefined);
+                setIsReady(false);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
+    useEffect(() => {
+        moveFolder();
+    }, [isReady]);
+
+    console.log('from', [dragItem], 'to', targetFolder);
 
     return (
         <div className={styles.fileContainer}>
-
             <Button
                 variant='contained'
                 color='primary'
@@ -175,7 +214,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                 onClick={() => {
                     setOpenModal(true);
                 }}
-
             >
                 New Folder
             </Button>
@@ -189,8 +227,12 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                     }}
                 >
                     <div className={styles.modalDiv}>
-                        <Input placeholder='Folder Name' value={folderName} onChange={changeFolderName}
-                        style={{margin: 'auto'}}></Input>{' '}
+                        <Input
+                            placeholder='Folder Name'
+                            value={folderName}
+                            onChange={changeFolderName}
+                            style={{ margin: 'auto' }}
+                        ></Input>{' '}
                         <Button onClick={createFolder} variant='outlined'>
                             Add
                         </Button>
@@ -202,39 +244,37 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
 
             <Divider />
 
-
-                    <div className={styles.folderDiv}>
-                        {rootFolder?.map((root, index) => (
-                                    <div className={classes.root} key={root.FOLDER_PK}>
-                                        <ListItem button dense divider selected draggable
-                                        
-                                        onDragStart={() => handleDragStart(root.FOLDER_PK)}
-
-                                        onDrop={(e) => handleDrop(e, root.FOLDER_PK)}
-                                        onDragOver={(e) => e.preventDefault()}
-                                        
-                                        >
-
-                                            <ListItemIcon
-                                                onClick={() => {
-                                                    getFolderPk(root.FOLDER_PK);
-                                                }}
-                                            >
-                                                <Folder />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={root.FOLDER_NAME}
-                                                onClick={() => {
-                                                    getFolderPk(root.FOLDER_PK);
-                                                }}
-                                            />
-                                            <ThreeDotsMenu root={root.FOLDER_PK} />
-                                        </ListItem>
-                                    </div>
-                        ))}
+            <div className={styles.folderDiv}>
+                {rootFolder?.map((root) => (
+                    <div className={classes.root} key={root.FOLDER_PK}>
+                        <ListItem
+                            button
+                            dense
+                            divider
+                            selected
+                            draggable
+                            onDragStart={() => handleDragStart(root.FOLDER_PK)}
+                            onDrop={() => handleDrop(root.FOLDER_PK)}
+                            onDragOver={(e) => e.preventDefault()}
+                        >
+                            <ListItemIcon
+                                onClick={() => {
+                                    getFolderPk(root.FOLDER_PK);
+                                }}
+                            >
+                                <Folder />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={root.FOLDER_NAME}
+                                onClick={() => {
+                                    getFolderPk(root.FOLDER_PK);
+                                }}
+                            />
+                            <ThreeDotsMenu root={root.FOLDER_PK} />
+                        </ListItem>
                     </div>
-
-
+                ))}
+            </div>
 
             <Divider />
 
@@ -258,23 +298,24 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             </div>
             <Divider />
 
-
             <div className={styles.folderDiv}>
                 {folderFile?.map((file, index) => (
-                    <div className={classes.root}>
-                        <ListItem
-                            button
-                            dense
-                            divider
-                            selected
-                            
-                        >
-                            <ListItemIcon onClick={() => {openFileDetailModal(file.FILE_KEY_PK)}}>
+                    <div className={classes.root} key={file.FILE_KEY_PK}>
+                        <ListItem button dense divider selected draggable>
+                            <ListItemIcon
+                                onClick={() => {
+                                    openFileDetailModal(file.FILE_KEY_PK);
+                                }}
+                            >
                                 <Description />
                             </ListItemIcon>
-                            <ListItemText primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
-                            onClick={() => {openFileDetailModal(file.FILE_KEY_PK)} } />
-                            <ThreeDotsMenu file={file.FILE_KEY_PK}/>
+                            <ListItemText
+                                primary={file.fileHistories[0]?.ORIGINAL_FILE_NAME}
+                                onClick={() => {
+                                    openFileDetailModal(file.FILE_KEY_PK);
+                                }}
+                            />
+                            <ThreeDotsMenu file={file.FILE_KEY_PK} />
                         </ListItem>
                     </div>
                 ))}
@@ -291,19 +332,26 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                 <></>
             )}
 
-            <DriveFileDetailModal open={fileDetailModalOpen}
-            onClose={() => {setFileDetailModalOpen(false);}}
-            selectedFilePk={selectedFilePk}
-            isSomethingChanged={isSomethingChanged}
+            <DriveFileDetailModal
+                open={fileDetailModalOpen}
+                onClose={() => {
+                    setFileDetailModalOpen(false);
+                }}
+                selectedFilePk={selectedFilePk}
+                isSomethingChanged={isSomethingChanged}
             />
 
-            {
-                fileMoveModalOpen == true
-                ? <DriveFileMove closeMoveModal={closeMoveModal} openMoveModal={openMoveModal}
-                fileKeyPk={fileKeyPk} folderKeyPk={folderKeyPk} isSomethingChanged={isSomethingChanged}/>
-                : <></>
-            }
-
+            {fileMoveModalOpen == true ? (
+                <DriveFileMove
+                    closeMoveModal={closeMoveModal}
+                    openMoveModal={openMoveModal}
+                    fileKeyPk={fileKeyPk}
+                    folderKeyPk={folderKeyPk}
+                    isSomethingChanged={isSomethingChanged}
+                />
+            ) : (
+                <></>
+            )}
         </div>
     );
 };
