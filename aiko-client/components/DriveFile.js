@@ -158,6 +158,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     };
 
     const [dragItem, setDragItem] = useState(undefined);
+    const [dragFile, setDragFile] = useState(undefined);
     const [targetFolder, setTargetFolder] = useState(undefined);
     const [isReady, setIsReady] = useState(false);
 
@@ -165,6 +166,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
         setDragItem(index);
         setTargetFolder(undefined);
     };
+
+    const handleFileDragStart = (index) => {
+        setDragFile(index);
+        setTargetFolder(undefined);
+    }
 
     const handleDrop = (index) => {
         setTargetFolder(index);
@@ -174,12 +180,12 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     const moveFolder = () => {
         const url = '/api/store/drive/move-folder';
         const data = {
-            fromFilePKs: [fileKeyPk],
+            fromFilePKs: [dragFile],
             fromFolderPKs: [dragItem],
             toFolderPK: targetFolder,
         };
-        if ([fileKeyPk][0] === undefined) {
-            data.fromFilePKs = undefined;
+        if (data.fromFolderPKs[0] == null) {
+            delete data.fromFolderPKs
         }
         if ([dragItem][0] === targetFolder) {
             return;
@@ -200,8 +206,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     useEffect(() => {
         moveFolder();
     }, [isReady]);
-
-    console.log('from', [dragItem], 'to', targetFolder);
 
     return (
         <div className={styles.fileContainer}>
@@ -301,7 +305,16 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             <div className={styles.folderDiv}>
                 {folderFile?.map((file, index) => (
                     <div className={classes.root} key={file.FILE_KEY_PK}>
-                        <ListItem button dense divider selected draggable>
+                        <ListItem
+                            button
+                            dense
+                            divider
+                            selected
+                            draggable
+                            onDragStart={() => handleFileDragStart(file.FILE_KEY_PK)}
+                            onDrop={() => handleDrop(file.FILE_KEY_PK)}
+                            onDragOver={(e) => e.preventDefault()}
+                        >
                             <ListItemIcon
                                 onClick={() => {
                                     openFileDetailModal(file.FILE_KEY_PK);
