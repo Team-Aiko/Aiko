@@ -183,6 +183,10 @@ export default function ChatModal({
                         setMessages((messages) => [...messages, payload]);
                         scrollToBottom();
                     });
+                    privateChatSocket.on('client/private-chat/logoutEventExecuted', () => {
+                        console.log('private-logout');
+                        privateChatSocket.emit('handleDisconnect');
+                    });
                 })
                 .catch((err) => {
                     console.error('privateChat handleConnection - error : ', err);
@@ -241,12 +245,9 @@ export default function ChatModal({
                             console.log('/client/gc/read-chat-logs : ', payload);
                             console.log('group read : ', payload.userMap);
                         });
-                        privateChatSocket.on('disconnect', function () {
-                            console.log('private chat disconnect!!!');
-                            setSocketConnect({
-                                ...socketConnect,
-                                private: false,
-                            });
+                        groupChatSocket.on('client/gc/logoutEventExecuted', () => {
+                            console.log('gc logout');
+                            groupChatSocket.emit('handleDisconnect');
                         });
                     }
                 })

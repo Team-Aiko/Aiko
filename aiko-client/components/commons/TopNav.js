@@ -179,6 +179,7 @@ export default function TopNav({
                         dispatch(setMemberStatus(payload));
                     });
                     status.on('client/status/logoutEventExecuted', () => {
+                        console.log('status logout');
                         status.emit('handleDisconnect');
                     });
                 })
@@ -193,9 +194,30 @@ export default function TopNav({
         handleMobileMenuClose();
         if (statusSocket) {
             console.log('handleLogout - status');
-            statusSocket.emit('server/status/logoutEvent');
-            privateChatSocket.emit('server/private-chat/logoutEvent');
-            groupChatSocket.emit('server/gc/logoutEvent');
+            statusSocket.emit('server/status/logoutEvent', () => {
+                console.log('server/status/logoutEvent');
+                setStatusSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    status: false,
+                });
+            });
+            privateChatSocket.emit('server/private-chat/logoutEvent', () => {
+                console.log('server/private-chat/logoutEvent');
+                setPrivateChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    private: false,
+                });
+            });
+            groupChatSocket.emit('server/gc/logoutEvent', () => {
+                console.log('server/gc/logoutEvent');
+                setGroupChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    group: false,
+                });
+            });
 
             (async () => {
                 try {
@@ -208,18 +230,6 @@ export default function TopNav({
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
-
-                    statusSocket.emit('handleDisconnect');
-                    privateChatSocket.emit('handleDisconnect');
-                    groupChatSocket.emit('handleDisconnect');
-                    setStatusSocket(null);
-                    setPrivateChatSocket(null);
-                    setGroupChatSocket(null);
-                    setSocketConnect({
-                        status: false,
-                        private: false,
-                        group: false,
-                    });
 
                     Router.push('/');
                 } catch (e) {
