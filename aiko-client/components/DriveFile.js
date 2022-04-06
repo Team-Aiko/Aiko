@@ -3,7 +3,7 @@ import styles from '../styles/Drive.module.css';
 import DriveUpload from './DriveUpload';
 import { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { get, post } from '../_axios';
+import { post } from '../_axios';
 import {
     Button,
     Input,
@@ -12,10 +12,8 @@ import {
     ListItemIcon,
     ListItemText,
     Typography,
-    IconButton,
     Menu,
     MenuItem,
-    TextField,
 } from '@material-ui/core';
 import { CreateNewFolder, Folder, NoteAdd, MoreVert, Description } from '@material-ui/icons';
 import Modal from './Modal.js';
@@ -157,6 +155,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
         setSelectedFilePk(filePkNum);
     };
 
+
     const [dragItem, setDragItem] = useState(undefined);
     const [dragFile, setDragFile] = useState(undefined);
     const [targetFolder, setTargetFolder] = useState(undefined);
@@ -184,10 +183,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             fromFolderPKs: [dragItem],
             toFolderPK: targetFolder,
         };
-        if (data.fromFolderPKs[0] == null) {
+        if (data.fromFolderPKs == [null]) {
             delete data.fromFolderPKs
         }
-        if ([dragItem][0] === targetFolder) {
+        if ([dragItem][0] === targetFolder || [dragFile][0] === targetFolder) {
             return;
         }
         post(url, data)
@@ -195,6 +194,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                 console.log('moveFolder', res);
                 isSomethingChanged('move folder');
                 setDragItem(undefined);
+                setDragFile(undefined);
                 setTargetFolder(undefined);
                 setIsReady(false);
             })
@@ -206,6 +206,33 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     useEffect(() => {
         moveFolder();
     }, [isReady]);
+
+
+    const getFileValue = Object.values(folderFile)
+    const getFirstPkNum = getFileValue[0]?.FILE_KEY_PK
+
+    const [firstPk, setFirstPk] = useState(undefined);
+
+    const setFirstPkNum = () => {
+        setFirstPk(getFirstPkNum)
+    }
+
+    useEffect(() => {
+        if(folderFile) {
+            setFirstPkNum();
+        }
+    })
+
+    const [validityCheck, setValidityCheck] = useState(false)
+
+    useEffect(() => {
+        const check = () => {
+            if(getFileValue.includes(firstPk) == true ) {
+                setValidityCheck(true)
+            }
+        }
+        check();
+    }, [setFirstPk])
 
     return (
         <div className={styles.fileContainer}>
@@ -311,7 +338,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                             divider
                             selected
                             draggable
-                            onDragStart={() => handleFileDragStart(file.FILE_KEY_PK)}
+                            onDragStart={() => {handleFileDragStart(file.FILE_KEY_PK)} }
                             onDrop={() => handleDrop(file.FILE_KEY_PK)}
                             onDragOver={(e) => e.preventDefault()}
                         >

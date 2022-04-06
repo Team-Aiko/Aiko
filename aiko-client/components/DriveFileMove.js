@@ -43,6 +43,7 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, 
             .then((res) => {
                 console.log('moveFolder', res);
                 isSomethingChanged('move folder');
+                closeMoveModal();
             })
             .catch((error) => {
                 console.log(error);
