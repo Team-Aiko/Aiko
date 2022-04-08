@@ -161,9 +161,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
     const [targetFolder, setTargetFolder] = useState(undefined);
     const [isReady, setIsReady] = useState(false);
 
-    const handleDragStart = (index) => {
+    const handleDragStart = (e, index) => {
         setDragItem(index);
         setTargetFolder(undefined);
+        e.style.backgroundColor = 'black';
     };
 
     const handleFileDragStart = (index) => {
@@ -183,8 +184,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             fromFolderPKs: [dragItem],
             toFolderPK: targetFolder,
         };
-        if (data.fromFolderPKs == [null]) {
+        if (data.fromFolderPKs[0] == null) {
             delete data.fromFolderPKs
+        }
+        if (data.fromFilePKs[0] == null) {
+            delete data.fromFilePKs
         }
         if ([dragItem][0] === targetFolder || [dragFile][0] === targetFolder) {
             return;
@@ -283,10 +287,11 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                             dense
                             divider
                             selected
-                            draggable
+
                             onDragStart={() => handleDragStart(root.FOLDER_PK)}
                             onDrop={() => handleDrop(root.FOLDER_PK)}
                             onDragOver={(e) => e.preventDefault()}
+                            
                         >
                             <ListItemIcon
                                 onClick={() => {
@@ -330,7 +335,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             <Divider />
 
             <div className={styles.folderDiv}>
-                {folderFile?.map((file, index) => (
+                {folderFile?.map((filter) => (
                     <div className={classes.root} key={file.FILE_KEY_PK}>
                         <ListItem
                             button
@@ -359,6 +364,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                         </ListItem>
                     </div>
                 ))}
+            </div>
+
+            <div style={{width: 20,height: 20, backgroundColor:'black'}} draggable>
+                hello
             </div>
 
             {fileModalOpen ? (

@@ -17,6 +17,7 @@ const htmlToDraft = dynamic(
     { ssr: false },
 );
 import { stateToHTML } from 'draft-js-export-html';
+import useInputCustom from '../customHook/custom';
 
 const MyBlock = styled.div`
     .wrapper-class {
@@ -34,56 +35,46 @@ const MyBlock = styled.div`
 
 const writePost = () => {
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
-
     const editorToHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
-
     const onEditorStateChange = (editorState) => {
         setEditorState(editorState);
         console.log(stateToHTML(editorState.getCurrentContent()));
     };
 
-    const [title, setTitle] = useState('');
+    const title = useInputCustom('');
     const [name, setName] = useState('');
     const [files, setFiles] = useState([]);
-
-    const titleChange = (e) => {
-        setTitle(e.target.value);
-    };
 
     const handleFile = (e) => {
         setFiles((prev) => [...prev, ...Object.values(e.target.files)]);
     };
 
     const deleteSelectedFile = (name) => {
-        setFiles(files.filter(file => file.name !== name))
-    };
-
-    const maxFileWarning = () => {
-        if (files.length > 3) {
-            alert('3개까지 전송 가능합니다.');
-            setFiles(files.splice(0, 3));
-        }
+        setFiles(files.filter((file) => file.name !== name));
     };
 
     useEffect(() => {
+        const maxFileWarning = () => {
+            if (files.length > 3) {
+                alert('3개까지 전송 가능합니다.');
+                setFiles(files.splice(0, 3));
+            }
+        };
         maxFileWarning();
     }, [files]);
 
-    console.log(files);
-
-    const getCurrentUserName = async () => {
-        await axios
-            .get('/api/account/decoding-token')
-            .then((res) => {
-                console.log(res);
-                setName(res.data.result.FIRST_NAME + ' ' + res.data.result.LAST_NAME);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
-
     useEffect(() => {
+        const getCurrentUserName = async () => {
+            await axios
+                .get('/api/account/decoding-token')
+                .then((res) => {
+                    console.log(res);
+                    setName(res.data.result.FIRST_NAME + ' ' + res.data.result.LAST_NAME);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        };
         getCurrentUserName();
     }, []);
 
@@ -91,7 +82,7 @@ const writePost = () => {
         const formData = new FormData();
         const url = '/api/notice-board/write';
         const obj = {
-            title: title,
+            title: title.value,
             content: editorToHtml,
         };
         formData.append('obj', JSON.stringify(obj));
@@ -103,21 +94,15 @@ const writePost = () => {
                 'content-type': 'multipart/form-data',
             },
         };
-        if (title.length < 1) {
-            alert('제목을 입력하세요.');
-            return;
-        }
-        if (editorState.length < 1) {
-            alert('내용을 입력하세요.');
+        if (title.length < 1 || editorState.length < 1) {
+            alert('제목 혹은 내용을 입력해주세요.');
             return;
         }
         post(url, formData, config)
-            .then((response) => {
-                console.log(response);
+            .then(() => {
                 router.push('/board');
             })
-            .catch((error) => {
-                console.log('작성 실패 이유' + error);
+            .catch(() => {
                 alert('게시글 작성에 실패하셨습니다.');
             });
     };
@@ -131,13 +116,7 @@ const writePost = () => {
             <div className={styles.titleName} style={{ marginBottom: '20px' }}>
                 <div style={{ width: '50%' }}>
                     <h4 style={{ color: '#656565' }}>Title</h4>
-                    <input
-                        className={styles.titleInput}
-                        type='text'
-                        value={title}
-                        placeholder='제목을 입력해주세요'
-                        onChange={titleChange}
-                    />
+                    <input className={styles.titleInput} type='text' placeholder='제목을 입력해주세요' {...title} />
                 </div>
                 <div style={{ width: '20%' }}>
                     <h4 style={{ color: '#656565' }}>Name</h4>
