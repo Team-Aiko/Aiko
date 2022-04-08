@@ -1,0 +1,6 @@
+.approvalPageMainDiv {
+    margin: 10px;
+    height: calc(100% - 106px);
+    display: flex;
+    flex-wrap: wrap;
+}

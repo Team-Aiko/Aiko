@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
+import styles from '../../styles/components/EApprovalList.module.css';
+import { List, ListItem, ListItemText, Button, makeStyles, ListItemIcon } from '@material-ui/core';
+import { Check } from '@material-ui/icons';
+
+const useStyles = makeStyles({
+    list: {
+        padding: 0,
+    },
+});
 
 const E_Approval_List = ({ getCurrentValueFromList, getWriteStatus }) => {
+    const classes = useStyles();
+
     const writeButton = {
         desc: '기안서 작성',
         status: 'writeNewApproval',
@@ -30,18 +41,40 @@ const E_Approval_List = ({ getCurrentValueFromList, getWriteStatus }) => {
         getWriteStatus(writeButton.status);
     };
 
+    const [selectedList, setSelectedList] = useState('');
+
     return (
-        <div>
-            <button onClick={sendWritingStatus}>{writeButton.desc}</button>
-            {buttonList.map((button) => (
-                <button
-                    onClick={() => {
-                        getCurrentValueFromList(button.status);
-                    }}
+        <div className={styles['EApprovalListDiv']}>
+            <div className={styles['buttonListDiv']}>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={sendWritingStatus}
+                    style={{ height: '46px', margin: '15px 20px 25px', fontSize: '1vw' }}
                 >
-                    {button.desc}
-                </button>
-            ))}
+                    {writeButton.desc}
+                </Button>
+                {buttonList.map((button) => (
+                    <List
+                        className={classes.list}
+                        onClick={() => {
+                            getCurrentValueFromList(button.status);
+                            setSelectedList(button.status);
+                        }}
+                    >
+                        <ListItem button>
+                            {selectedList == button.status ? (
+                                <ListItemIcon>
+                                    <Check/>
+                                </ListItemIcon>
+                            ) : (
+                                <></>
+                            )}
+                            <ListItemText primary={button.desc} />
+                        </ListItem>
+                    </List>
+                ))}
+            </div>
         </div>
     );
 };

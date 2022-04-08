@@ -1,9 +1,10 @@
-import React from 'react'
+import React from 'react';
+import styles from '../../styles/components/EApprovalWrite.module.css';
 
 const E_Approval_Write = () => {
     return (
-        <div>
-            기안서 작성 페이지입니다.
+        <div className={styles['EApprovalWriteDiv']}>
+            하이요 ㅋ
         </div>
     )
 }
