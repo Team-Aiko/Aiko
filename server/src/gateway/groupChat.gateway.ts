@@ -196,11 +196,10 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
 
     @SubscribeMessage(groupChatPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
-        console.log('#### gc/logoutEvent ####');
         try {
             const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
             await this.groupChatService.logoutEvent(userPK, companyPK, client.id);
-            this.wss.to(client.id).emit(groupChatPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_LOGOUT_EVENT_EXECUTED, true);
         } catch (err) {
             this.wss
                 .to(client.id)

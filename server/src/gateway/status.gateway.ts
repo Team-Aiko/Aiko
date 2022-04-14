@@ -35,10 +35,8 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
-        console.log('#### open ####');
         if (!socketToken) return;
         try {
-            console.log('#### handleConnection!!!! - socketToken #### : ', socketToken);
             const { USER_PK, COMPANY_PK } = await this.statusService.decodeSocketToken(socketToken);
 
             // invalid user filtering
@@ -64,7 +62,6 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             );
         } catch (err) {
             if ((err as AikoError).appCode === 4000000 + 19) {
-                console.log('### status - no socketToken');
                 client.disconnect(true);
             } else {
                 this.wss
@@ -86,7 +83,6 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
     @SubscribeMessage(statusPath.HANDLE_DISCONNECT)
     async handleDisconnect(client: Socket) {
         try {
-            console.log('#### handleDisconnect!!!! ####');
             console.log('client ID = ', client.id, 'status socket disconnection');
             await this.statusService.statusDisconnect(client.id, this.wss);
             client.disconnect(true);
@@ -120,11 +116,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
 
     @SubscribeMessage(statusPath.SERVER_LOGOUT_EVENT)
     async logoutEvent(client: Socket) {
-        console.log('#### status logoutEvent ####');
         try {
             const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
             await this.statusService.logoutEvent(userPK, companyPK, client.id);
-            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED, true);
         } catch (err) {
             this.wss
                 .to(client.id)
