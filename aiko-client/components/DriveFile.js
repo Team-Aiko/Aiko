@@ -155,22 +155,20 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
         setSelectedFilePk(filePkNum);
     };
 
-
     const [dragItem, setDragItem] = useState(undefined);
     const [dragFile, setDragFile] = useState(undefined);
     const [targetFolder, setTargetFolder] = useState(undefined);
     const [isReady, setIsReady] = useState(false);
 
-    const handleDragStart = (e, index) => {
+    const handleDragStart = (index) => {
         setDragItem(index);
         setTargetFolder(undefined);
-        e.style.backgroundColor = 'black';
     };
 
     const handleFileDragStart = (index) => {
         setDragFile(index);
         setTargetFolder(undefined);
-    }
+    };
 
     const handleDrop = (index) => {
         setTargetFolder(index);
@@ -185,10 +183,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             toFolderPK: targetFolder,
         };
         if (data.fromFolderPKs[0] == null) {
-            delete data.fromFolderPKs
+            delete data.fromFolderPKs;
         }
         if (data.fromFilePKs[0] == null) {
-            delete data.fromFilePKs
+            delete data.fromFilePKs;
         }
         if ([dragItem][0] === targetFolder || [dragFile][0] === targetFolder) {
             return;
@@ -211,32 +209,31 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
         moveFolder();
     }, [isReady]);
 
-
-    const getFileValue = Object.values(folderFile)
-    const getFirstPkNum = getFileValue[0]?.FILE_KEY_PK
+    const getFileValue = Object.values(folderFile);
+    const getFirstPkNum = getFileValue[0]?.FILE_KEY_PK;
 
     const [firstPk, setFirstPk] = useState(undefined);
 
     const setFirstPkNum = () => {
-        setFirstPk(getFirstPkNum)
-    }
+        setFirstPk(getFirstPkNum);
+    };
 
     useEffect(() => {
-        if(folderFile) {
+        if (folderFile) {
             setFirstPkNum();
         }
-    })
+    });
 
-    const [validityCheck, setValidityCheck] = useState(false)
+    const [validityCheck, setValidityCheck] = useState(false);
 
     useEffect(() => {
         const check = () => {
-            if(getFileValue.includes(firstPk) == true ) {
-                setValidityCheck(true)
+            if (getFileValue.includes(firstPk) == true) {
+                setValidityCheck(true);
             }
-        }
+        };
         check();
-    }, [setFirstPk])
+    }, [setFirstPk]);
 
     return (
         <div className={styles.fileContainer}>
@@ -287,11 +284,10 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                             dense
                             divider
                             selected
-
+                            draggable
                             onDragStart={() => handleDragStart(root.FOLDER_PK)}
                             onDrop={() => handleDrop(root.FOLDER_PK)}
                             onDragOver={(e) => e.preventDefault()}
-                            
                         >
                             <ListItemIcon
                                 onClick={() => {
@@ -335,7 +331,7 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
             <Divider />
 
             <div className={styles.folderDiv}>
-                {folderFile?.map((filter) => (
+                {folderFile?.map((file, index) => (
                     <div className={classes.root} key={file.FILE_KEY_PK}>
                         <ListItem
                             button
@@ -343,7 +339,9 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                             divider
                             selected
                             draggable
-                            onDragStart={() => {handleFileDragStart(file.FILE_KEY_PK)} }
+                            onDragStart={() => {
+                                handleFileDragStart(file.FILE_KEY_PK);
+                            }}
                             onDrop={() => handleDrop(file.FILE_KEY_PK)}
                             onDragOver={(e) => e.preventDefault()}
                         >
@@ -364,10 +362,6 @@ const DriveFile = ({ rootFolder, getFolderPk, selectedFolderPk, folderFile, isSo
                         </ListItem>
                     </div>
                 ))}
-            </div>
-
-            <div style={{width: 20,height: 20, backgroundColor:'black'}} draggable>
-                hello
             </div>
 
             {fileModalOpen ? (

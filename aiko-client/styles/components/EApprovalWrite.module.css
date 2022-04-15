@@ -17,18 +17,44 @@
     justify-content: space-between;
 }
 
+.addApprovalButtonDiv {
+    display: flex;
+    margin-left: 30px;
+    align-items: center;
+}
+
+.approvalDirectionDiv {
+    display: flex;
+    align-items: center;
+    color: grey;
+    margin-left: 30px;
+    margin-top: 10px;
+}
+
 .authDiv {
     display: flex;
-    flex-direction: column;
-    width: 100px;
+    flex-direction: row;
     margin-left: 30px;
+    flex-wrap: wrap;
+}
+
+.approvalTable {
+    border-collapse:collapse;
+    width:100px;
+    margin-right:5px;
+    margin-bottom:5px;
+    text-align:center;
 }
 
 .approval {
-    border-collapse: collapse;
+    border-collapse:collapse
 }
 
 .approval td {
+    border: 1px solid #bdbdbd;
+}
+
+.approval th {
     border: 1px solid #bdbdbd;
 }
 
@@ -53,5 +79,5 @@
 .submitButton {
     display: flex;
     justify-content: right;
-    margin: 30px 100px 30px 30px;
+    margin: 20px 10% 30px 30px;
 }

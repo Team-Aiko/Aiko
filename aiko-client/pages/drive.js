@@ -3,13 +3,10 @@ import styles from '../styles/Drive.module.css';
 import DriveFolder from '../components/DriveFolder';
 import DriveFile from '../components/DriveFile';
 import DriveBin from '../components/DriveBin';
-import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { get, post } from '../_axios';
+import { get } from '../_axios';
 
 const drive = () => {
-    const router = useRouter();
-    const { companyPk } = router.query;
 
     //폴더들, DriveFile.js의 Props
     const [rootFolder, setRootFolder] = useState([]);

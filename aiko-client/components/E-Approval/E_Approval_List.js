@@ -57,6 +57,7 @@ const E_Approval_List = ({ getCurrentValueFromList, getWriteStatus }) => {
                 {buttonList.map((button) => (
                     <List
                         className={classes.list}
+                        key={button.desc}
                         onClick={() => {
                             getCurrentValueFromList(button.status);
                             setSelectedList(button.status);

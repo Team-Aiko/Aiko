@@ -1,12 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import styles from '../../styles/components/EApprovalWrite.module.css';
-import { Typography, Input, TextField, Divider, makeStyles, Button } from '@material-ui/core';
-
-const useStyles = makeStyles({});
+import { Typography, Input, TextField, Divider, Button, IconButton, Tooltip } from '@material-ui/core';
+import ApprovalTableElement from './E_Approval_Element.js';
+import { AddCircle, TrendingFlat } from '@material-ui/icons';
+import { post } from '../../_axios';
 
 const E_Approval_Write = () => {
+    const [inputs, setInputs] = useState({
+        title: '',
+        description: '',
+    });
+
+    const { title, description } = inputs;
+
+    const onChange = useCallback((e) => {
+        const { value, name } = e.target;
+        setInputs((prevInput) => ({
+            ...prevInput,
+            [name]: value,
+        }));
+    }, []);
+
     const [writer, setWriter] = useState('이치호');
-    const classes = useStyles();
+
+    //JSX of E_Approval_Element.js
+    const [approvalElement, setApprovalElement] = useState([ApprovalTableElement]);
+
+    //Add one more approval column
+    const addApprovalSpace = () => {
+        setApprovalElement([...approvalElement, ApprovalTableElement]);
+    };
+
+    const removeApprovalSpace = (index) => {
+        setApprovalElement((items) => items.filter((item, i) => i !== index));
+    };
+
+    const [approvalInfoArray, setApprovalInfoArray] = useState([]);
+
+    const getObjectFromChild = (data) => {
+        setApprovalInfoArray((approvalInfoArray) => [...approvalInfoArray, data]);
+    };
+
+    console.log(approvalInfoArray);
+
     return (
         <div className={styles['EApprovalWriteDiv']}>
             <div className={styles['titleWriterDiv']}>
@@ -18,21 +54,31 @@ const E_Approval_Write = () => {
                 </Typography>
             </div>
 
-            <Typography variant='h7' style={{ margin: 20, marginLeft: 30, marginTop: 0 }}>
-                결재선
-            </Typography>
+            <div className={styles['addApprovalButtonDiv']}>
+                <Typography variant='h7'>결재선</Typography>
+                <Tooltip title='결재선을 추가합니다.'>
+                    <IconButton onClick={addApprovalSpace}>
+                        <AddCircle fontSize='small' />
+                    </IconButton>
+                </Tooltip>
+            </div>
 
             <div className={styles['authDiv']}>
-                <table className={styles['approval']}>
-                    <tbody>
-                        <tr className={styles['name']}>
-                            <td></td>
-                        </tr>
-                        <tr className={styles['signature']}>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+                {approvalElement.map((element, index) => (
+                    <ApprovalTableElement
+                        index={index}
+                        removeApprovalSpace={removeApprovalSpace}
+                        getObjectFromChild={getObjectFromChild}
+                    />
+                ))}
+            </div>
+
+            <div className={styles['approvalDirectionDiv']}>
+                <Typography variant='caption' style={{ marginRight: 5 }}>
+                    {' '}
+                    * 결재 순서{' '}
+                </Typography>
+                <TrendingFlat fontSize='small' />
             </div>
 
             <Divider style={{ margin: 30 }} />
@@ -43,10 +89,25 @@ const E_Approval_Write = () => {
 
             <div className={styles['detailDiv']}>
                 <div className={styles['title']}>
-                    <Typography style={{ flexShrink: 0, margin: 'auto' }}>제목</Typography>
-                    <TextField name='title' variant='outlined' size='small' style={{ width: '70%', margin: 'auto' }} />
+                    <Typography style={{ margin: 'auto' }}>제목</Typography>
+                    <TextField
+                        name='title'
+                        value={title}
+                        onChange={onChange}
+                        variant='outlined'
+                        size='small'
+                        style={{ width: '65%', margin: 'auto', marginLeft: 0 }}
+                    />
                 </div>
-                <TextField multiline variant='outlined' minRows='15' style={{ width: '90%', margin: '20px auto' }} />
+                <TextField
+                    name='description'
+                    value={description}
+                    onChange={onChange}
+                    multiline
+                    variant='outlined'
+                    minRows='15'
+                    style={{ width: '80%', margin: '20px auto' }}
+                />
             </div>
 
             <div className={styles['submitButton']}>
