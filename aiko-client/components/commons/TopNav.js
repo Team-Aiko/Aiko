@@ -128,22 +128,18 @@ export default function TopNav({
         setStatusSocket(status);
 
         if (userInfo.USER_PK) {
-            console.log('###### render ######');
-
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
                     if (result) {
                         status.on('connect', async function () {
                             status.emit('handleConnection', result);
-                            console.log('Called!! - status : ', result);
                         });
 
                         status.open();
                     }
 
                     status.on('disconnect', function () {
-                        console.log('status disconnect!!!');
                         setSocketConnect({
                             ...socketConnect,
                             status: false,
@@ -151,7 +147,6 @@ export default function TopNav({
                     });
 
                     status.on('client/status/getStatusList', (payload) => {
-                        console.log('### getStatusList ### : ', payload);
                         for (const row of payload) {
                             if (row.userPK === userInfo.USER_PK) {
                                 dispatch(setUserInfo({ status: row.status }));
@@ -164,22 +159,18 @@ export default function TopNav({
                     });
 
                     status.on('client/status/loginAlert', (payload) => {
-                        console.log('loginAlert : ', payload);
                         dispatch(setMemberStatus(payload.user));
                     });
                     status.on('client/status/logoutAlert', (payload) => {
-                        console.log('logoutAlert : ', payload);
                         dispatch(setMemberStatus(payload));
                     });
                     status.on('client/status/error', (err) => {
                         console.error('status - error : ', err);
                     });
                     status.on('client/status/changeStatus', (payload) => {
-                        console.log('changeStatus : ', payload);
                         dispatch(setMemberStatus(payload));
                     });
                     status.on('client/status/logoutEventExecuted', () => {
-                        console.log('status logout');
                         status.emit('handleDisconnect');
                     });
                 })
@@ -193,9 +184,7 @@ export default function TopNav({
         setAnchorEl(null);
         handleMobileMenuClose();
         if (statusSocket) {
-            console.log('handleLogout - status');
             statusSocket.emit('server/status/logoutEvent', () => {
-                console.log('server/status/logoutEvent');
                 setStatusSocket(null);
                 setSocketConnect({
                     ...socketConnect,
@@ -203,7 +192,6 @@ export default function TopNav({
                 });
             });
             privateChatSocket.emit('server/private-chat/logoutEvent', () => {
-                console.log('server/private-chat/logoutEvent');
                 setPrivateChatSocket(null);
                 setSocketConnect({
                     ...socketConnect,
@@ -211,7 +199,6 @@ export default function TopNav({
                 });
             });
             groupChatSocket.emit('server/gc/logoutEvent', () => {
-                console.log('server/gc/logoutEvent');
                 setGroupChatSocket(null);
                 setSocketConnect({
                     ...socketConnect,
@@ -223,8 +210,6 @@ export default function TopNav({
                 try {
                     const url = '/api/account/logout';
                     const result = await get(url);
-
-                    console.log('async - result : ', result);
 
                     if (!result) throw new Error('NO_SERVER_RESPONSE');
 

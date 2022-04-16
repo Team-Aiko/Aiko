@@ -97,7 +97,7 @@ export default function ChatModal({
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
-    const [selectedMember, setSelectedMember] = useState('');
+    const [selectedMember, setSelectedMember] = useState({});
     const [inputMessage, setInputMessage] = useState('');
     const userInfo = useSelector((state) => state.accountReducer);
     const [messages, setMessages] = useState([]);
@@ -112,12 +112,12 @@ export default function ChatModal({
     const [groupChatTitle, setGroupChatTitle] = useState('');
     const [groupChatList, setGroupChatList] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
+    const [groupMembers, setGroupMembers] = useState([]);
 
     const statusConnect = socketConnect.status;
     const privateConnect = socketConnect.private;
 
     useEffect(() => {
-        console.log(statusConnect);
         if (statusConnect) {
             const privateChatSocket = io('http://localhost:5001/private-chat', {
                 withCredentials: true,
@@ -129,14 +129,11 @@ export default function ChatModal({
                 .then((result) => {
                     if (result) {
                         privateChatSocket.on('connect', async function () {
-                            console.log('private chat result : ', result);
                             privateChatSocket.emit('handleConnection', result);
-                            console.log('Called!! - private chat : ', result);
                         });
                         privateChatSocket.open();
                     }
                     privateChatSocket.on('disconnect', function () {
-                        console.log('private chat disconnect!!!');
                         setSocketConnect({
                             ...socketConnect,
                             private: false,
@@ -165,7 +162,6 @@ export default function ChatModal({
                         }
 
                         dispatch(setMemberChatRoomPK(newPayload));
-                        console.log('### privat-chat/connected : ', newPayload);
                         setSocketConnect({
                             ...socketConnect,
                             private: true,
@@ -173,18 +169,15 @@ export default function ChatModal({
                     });
 
                     privateChatSocket.on('client/private-chat/receive-chatlog', (payload) => {
-                        console.log('client/private-chat/receive-chatlog : ', payload);
                         setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
                         setChatMember(payload.info.userInfo);
                     });
 
                     privateChatSocket.on('client/private-chat/send', (payload) => {
-                        console.log('client/private-chat/send');
                         setMessages((messages) => [...messages, payload]);
                         scrollToBottom();
                     });
                     privateChatSocket.on('client/private-chat/logoutEventExecuted', () => {
-                        console.log('private-logout');
                         privateChatSocket.emit('handleDisconnect');
                     });
                 })
@@ -193,6 +186,8 @@ export default function ChatModal({
                 });
         }
     }, [statusConnect]);
+
+    useEffect(() => {}, [selectedMember]);
 
     useEffect(() => {
         if (privateConnect) {
@@ -206,14 +201,11 @@ export default function ChatModal({
                 .then((result) => {
                     if (result) {
                         groupChatSocket.on('connect', async function () {
-                            console.log('group chat result : ', result);
                             groupChatSocket.emit('handleConnection', result);
-                            console.log('Called!! - group chat : ', result);
                         });
                         groupChatSocket.open();
 
                         privateChatSocket.on('disconnect', function () {
-                            console.log('group chat disconnect!!!');
                             setSocketConnect({
                                 ...socketConnect,
                                 group: false,
@@ -243,10 +235,19 @@ export default function ChatModal({
                         });
                         groupChatSocket.on('client/gc/read-chat-logs', (payload) => {
                             console.log('/client/gc/read-chat-logs : ', payload);
-                            console.log('group read : ', payload.userMap);
+                            setMessages(() => (payload.chatLogs ? [...payload.chatLogs.chatLog] : []));
+                            const members = Object.keys(payload.userMap).map((key) => {
+                                if (payload.userMap[key].USER_PK !== userInfo.USER_PK) {
+                                    return payload.userMap[key];
+                                }
+                            });
+                            setGroupMembers(members);
+                        });
+                        groupChatSocket.on('client/gc/send-message', (payload) => {
+                            setMessages((messages) => [...messages, payload]);
+                            scrollToBottom();
                         });
                         groupChatSocket.on('client/gc/logoutEventExecuted', () => {
-                            console.log('gc logout');
                             groupChatSocket.emit('handleDisconnect');
                         });
                     }
@@ -258,7 +259,10 @@ export default function ChatModal({
     }, [privateConnect]);
 
     useEffect(() => {
-        setSelectedMember('');
+        setSelectedMember({});
+        setSelectedGroup({});
+        setGroupMembers([]);
+        setMessages([]);
     }, [tabValue]);
 
     useEffect(() => {
@@ -308,13 +312,24 @@ export default function ChatModal({
 
     const send = () => {
         if (inputMessage) {
-            const data = {
-                roomId: selectedMember.CR_PK,
-                sender: userInfo.USER_PK,
-                message: inputMessage,
-                date: Number(moment().format('X')),
-            };
-            privateChatSocket.emit('server/private-chat/send', data);
+            const data =
+                tabValue === 0
+                    ? {
+                          roomId: selectedMember.CR_PK,
+                          sender: userInfo.USER_PK,
+                          message: inputMessage,
+                          date: Number(moment().format('X')),
+                      }
+                    : {
+                          GC_PK: selectedGroup.GC_PK,
+                          sender: userInfo.USER_PK,
+                          file: null,
+                          message: inputMessage,
+                          date: Number(moment().format('X')),
+                      };
+            selectedMember
+                ? privateChatSocket.emit('server/private-chat/send', data)
+                : groupChatSocket.emit('server/gc/send-message', data);
             setInputMessage('');
         }
     };
@@ -377,7 +392,6 @@ export default function ChatModal({
             roomTitle: groupChatTitle,
             maxNum: groupChatMember.length + 1,
         };
-        console.log('data : ', data);
         groupChatSocket.emit('server/gc/create-group-chat-room', data);
         setOpenAddGroup(false);
     };
@@ -512,7 +526,7 @@ export default function ChatModal({
                         >
                             <Grid container spacing={2} style={{ padding: '20px', maxWidth: '460px', width: '100%' }}>
                                 <Grid item xs={3}>
-                                    <Typography>룸 제목</Typography>
+                                    <Typography>룸 이름</Typography>
                                 </Grid>
                                 <Grid item xs={9}>
                                     <TextField
@@ -583,11 +597,8 @@ export default function ChatModal({
                 )}
 
                 <div className={styles['message-container']}>
-                    <Toolbar
-                        classes={{ root: classes.toolbar }}
-                        style={{ justifyContent: selectedMember ? 'space-between' : 'flex-end' }}
-                    >
-                        {selectedMember && (
+                    <Toolbar classes={{ root: classes.toolbar }} style={{ justifyContent: 'space-between' }}>
+                        {selectedMember.NICKNAME ? (
                             <div className={styles['member-info']}>
                                 <Avatar
                                     src={
@@ -599,13 +610,24 @@ export default function ChatModal({
                                 />
                                 <Typography className={classes.title}>{selectedMember.NICKNAME}</Typography>
                             </div>
+                        ) : (
+                            <div className={styles['member-info']}>
+                                <Typography className={classes.title}>{selectedGroup.ROOM_TITLE}</Typography>
+                                {groupMembers.map((member, index) => (
+                                    <Typography className={classes.title} key={index}>{`${
+                                        index === 0 ? '\u00A0(' : ''
+                                    }${member.NICKNAME}${
+                                        index < groupMembers.length - 1 ? ',\u00A0' : ')'
+                                    }`}</Typography>
+                                ))}
+                            </div>
                         )}
 
                         <IconButton className={classes.closeButton} onClick={handleClose}>
                             <CloseIcon className={classes.closeIcon} />
                         </IconButton>
                     </Toolbar>
-                    {selectedMember ? (
+                    {selectedMember || selectedGroup ? (
                         <>
                             <div className={styles['messages-wrapper']}>
                                 {messages &&
@@ -657,6 +679,13 @@ export default function ChatModal({
                                                                 : styles['message-wrapper-right']
                                                         }
                                                     >
+                                                        {tabValue === 1
+                                                            ? groupMembers.map((member) => {
+                                                                  if (member.USER_PK === message.sender) {
+                                                                      return <Typography>{member.NICKNAME}</Typography>;
+                                                                  }
+                                                              })
+                                                            : null}
                                                         {message.sender === chatMember.USER_PK ? (
                                                             <Typography variant='body2'>
                                                                 {chatMember.NICKNAME}
