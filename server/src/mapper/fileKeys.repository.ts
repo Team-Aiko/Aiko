@@ -1,6 +1,7 @@
+import { FileFolder } from 'src/entity';
 import FileKeys from 'src/entity/fileKeys.entity';
 import { AikoError } from 'src/Helpers';
-import { stackAikoError } from 'src/Helpers/functions';
+import { stackAikoError, propsRemover } from 'src/Helpers/functions';
 import { headErrorCode } from 'src/interfaces/MVC/errorEnums';
 import { EntityRepository, Repository, TransactionManager, EntityManager } from 'typeorm';
 
@@ -14,9 +15,11 @@ enum fileKeysError {
     getFilesInfoInFolder = 7,
     moveFile = 8,
     deleteFlagFiles = 9,
+    moveFolder = 10,
 }
 
 type FileOrFiles = Express.Multer.File | Express.Multer.File[];
+const criticalUserInfo: string[] = ['PASSWORD', 'SALT', 'IS_VERIFIED', 'IS_DELETED', 'CREATE_DATE'];
 
 @EntityRepository(FileKeys)
 export default class FileKeysRepository extends Repository<FileKeys> {
@@ -59,7 +62,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 .leftJoinAndSelect('fileHistories.user', 'user')
                 .leftJoinAndSelect('user.department', 'department')
                 .where(whereCondition, { filePKs })
-                .andWhere('fk.IS_DELETED = 0');
+                .andWhere('fk.IS_DELETED = 0')
+                .orderBy('fileHistories.DATE', 'DESC');
 
             if (optional) fraction = fraction.andWhere('fk.COMPANY_PK = :COMPANY_PK', { COMPANY_PK });
 
@@ -93,8 +97,12 @@ export default class FileKeysRepository extends Repository<FileKeys> {
     async getFilesInFolder(folderPKs: number | number[], companyPK: number) {
         try {
             const isArray = Array.isArray(folderPKs);
-            const whereCondition = `FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
-            return await this.createQueryBuilder().where(whereCondition, { folderPKs }).getMany();
+            const whereCondition = `f.FOLDER_PK ${isArray ? 'IN(:...folderPKs)' : '= :folderPKs'}`;
+            return await this.createQueryBuilder('f')
+                .leftJoinAndSelect('f.fileHistories', 'fileHistories')
+                .where(whereCondition, { folderPKs })
+                .orderBy('fileHistories.DATE', 'ASC')
+                .getMany();
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -144,12 +152,30 @@ export default class FileKeysRepository extends Repository<FileKeys> {
 
     async getFilesInfoInFolder(FOLDER_PK: number, COMPANY_PK: number) {
         try {
-            return await this.createQueryBuilder('fk')
+            let result = await this.createQueryBuilder('fk')
                 .leftJoinAndSelect('fk.fileHistories', 'fileHistories')
                 .leftJoinAndSelect('fileHistories.user', 'user')
                 .where(`fk.FOLDER_PK = ${FOLDER_PK}`)
                 .andWhere(`fk.COMPANY_PK = ${COMPANY_PK}`)
+                .orderBy('fileHistories.DATE', 'DESC')
                 .getMany();
+            result = result.sort((a, b) => {
+                const aFileName = a.fileHistories ? a.fileHistories[0].ORIGINAL_FILE_NAME : '';
+                const bFileName = b.fileHistories ? b.fileHistories[0].ORIGINAL_FILE_NAME : '';
+
+                return aFileName.localeCompare(bFileName);
+            });
+
+            result = result.map((fileKey) => {
+                fileKey.fileHistories = fileKey.fileHistories.map((history) => {
+                    history.user = propsRemover(history.user, ...criticalUserInfo);
+                    return history;
+                });
+
+                return fileKey;
+            });
+
+            return result;
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -164,9 +190,8 @@ export default class FileKeysRepository extends Repository<FileKeys> {
         try {
             await manager
                 .createQueryBuilder()
-                .update(FileKeys)
-                .set({ FOLDER_PK: toFolderPK })
-                .where('FILE_KEY_PK IN (...:fromFilePKs)', { fromFilePKs })
+                .update(FileKeys, { FOLDER_PK: toFolderPK })
+                .where('FILE_KEY_PK IN (:...fromFilePKs)', { fromFilePKs })
                 .execute();
         } catch (err) {
             throw stackAikoError(
@@ -174,6 +199,24 @@ export default class FileKeysRepository extends Repository<FileKeys> {
                 'FileKeysRepository/moveFile',
                 500,
                 headErrorCode.fileKeysDB + fileKeysError.moveFile,
+            );
+        }
+    }
+
+    async moveFolder(toFolderPK: number, fromFolderPKs: number[], @TransactionManager() manager: EntityManager) {
+        try {
+            await manager
+                .createQueryBuilder()
+                .update(FileFolder)
+                .set({ PARENT_PK: toFolderPK })
+                .where('FOLDER_PK IN (:...fromFolderPKs)', { fromFolderPKs })
+                .execute();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileKeysRepository/moveFolder',
+                500,
+                headErrorCode.fileKeysDB + fileKeysError.moveFolder,
             );
         }
     }

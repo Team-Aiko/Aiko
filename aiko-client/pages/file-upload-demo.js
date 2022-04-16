@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sendPost } from '../_axios';
 
 export default function fileUploadDemo(props) {
+    
     const [file, setFile] = useState(undefined);
 
     const onChangeFile = () => {

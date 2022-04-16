@@ -59,7 +59,7 @@ export default class DriveController {
 
     // ! api doc
     @Post('save-files')
-    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    @UseInterceptors(FilesInterceptor('files', 100, driveFileOption), UserPayloadParserInterceptor)
     async saveFiles(
         @Req() req: Request,
         @Body('userPayload') userPayload: IUserPayload,
@@ -69,6 +69,25 @@ export default class DriveController {
         try {
             const { USER_PK, COMPANY_PK } = userPayload;
             const result = await this.driveService.saveFiles(Number(req.body.folderPK), USER_PK, COMPANY_PK, files);
+            resExecutor(res, { result });
+        } catch (err) {
+            console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Post('add-history')
+    @UseInterceptors(FilesInterceptor('file', 100, driveFileOption), UserPayloadParserInterceptor)
+    async addHistory(
+        @Req() req: Request,
+        @Body('userPayload') userPayload: IUserPayload,
+        @Res() res: Response,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        try {
+            const { USER_PK, COMPANY_PK } = userPayload;
+            const result = await this.driveService.addHistory(Number(req.body.filePK), USER_PK, COMPANY_PK, file);
+
             resExecutor(res, { result });
         } catch (err) {
             console.log('🚀 ~ file: drive.controller.ts ~ line 44 ~ DriveController ~ saveFiles ~ err', err);
@@ -140,12 +159,20 @@ export default class DriveController {
     @Post('move-folder')
     async moveFolder(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
         try {
-            const { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
+            // eslint-disable-next-line prefer-const
+            let { fromFilePKs, fromFolderPKs, toFolderPK } = req.body;
             const { COMPANY_PK } = userPayload;
             bodyChecker(
                 { fromFilePKs, fromFolderPKs, toFolderPK },
-                { fromFilePKs: ['number[]'], fromFolderPKs: ['number[]'], toFolderPK: ['number'] },
+                {
+                    fromFilePKs: ['number[]', 'undefined', 'null'],
+                    fromFolderPKs: ['number[]', 'undefined', 'null'],
+                    toFolderPK: ['number'],
+                },
             );
+
+            if (!fromFilePKs) fromFilePKs = [];
+            if (!fromFolderPKs) fromFolderPKs = [];
 
             const result = await this.driveService.moveFolder(fromFilePKs, fromFolderPKs, toFolderPK, COMPANY_PK);
             resExecutor(res, { result });
@@ -161,6 +188,18 @@ export default class DriveController {
             const { fileKey } = req.query;
 
             const result = await this.driveService.getFileHistory(Number(fileKey), COMPANY_PK);
+            resExecutor(res, { result });
+        } catch (err) {
+            throw resExecutor(res, { err });
+        }
+    }
+
+    @Get('bin')
+    async showBin(@Req() req: Request, @Body('userPayload') userPayload: IUserPayload, @Res() res: Response) {
+        try {
+            const { COMPANY_PK, USER_PK } = userPayload;
+            const result = await this.driveService.showBin(COMPANY_PK);
+
             resExecutor(res, { result });
         } catch (err) {
             throw resExecutor(res, { err });

@@ -19,6 +19,7 @@ enum fileFolderError {
     updateDeleteFlag = 9,
     checkValidDeleteFolder = 10,
     getDirectChildren = 11,
+    getRootFolder = 12,
 }
 
 @EntityRepository(FileFolder)
@@ -56,17 +57,19 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getFolderInfo(folderPKs: number | number[]) {
+    async getFolderInfo(folderPKs: number | number[], companyPK: number) {
         console.log(
             '🚀 ~ file: fileFolder.repository.ts ~ line 48 ~ FileFolderRepository ~ getFolderInfo ~ folderPKs',
             folderPKs,
         );
         try {
             const isArray = Array.isArray(folderPKs);
-            const whereCondition = `FOLDER_PK ${isArray ? 'IN (...:folderPKs)' : '= :folderPKs'}`;
+            const whereCondition = `FOLDER_PK ${isArray ? 'IN (:...folderPKs)' : '= :folderPKs'}`;
             let result: FileFolder[] | FileFolder;
 
-            const fraction = this.createQueryBuilder().where(whereCondition, { folderPKs });
+            const fraction = this.createQueryBuilder()
+                .where(whereCondition, { folderPKs })
+                .orderBy('FOLDER_NAME', 'ASC');
             if (isArray) result = await fraction.getMany();
             else result = await fraction.getOneOrFail();
 
@@ -74,7 +77,7 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         } catch (err) {
             throw stackAikoError(
                 err,
-                'FileFolderRepository/createFolder',
+                'FileFolderRepository/getFolderInfo',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.getFolderInfo,
             );
@@ -88,37 +91,76 @@ export default class FileFolderRepository extends Repository<FileFolder> {
     async getAllChildrenWithMyself(folderPKs: number | number[], companyPK: number) {
         try {
             const isArray = Array.isArray(folderPKs);
-            let result: FileFolder[] = [];
+            const result: FileFolder[] = [];
 
             if (isArray) {
                 await Promise.all(
                     folderPKs.map(async (folderPK) => {
-                        result = result.concat((await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]);
+                        await bootstrap(folderPK, companyPK, this, result);
                     }),
                 );
             } else {
-                result = (await getManager().query(getSQL(folderPKs, companyPK))) as FileFolder[];
+                bootstrap(folderPKs, companyPK, this, result);
             }
 
             return result;
 
-            function getSQL(folderPK: number, companyPK: number) {
-                const sql = `with recursive GET_ALL_CHILDREN as (
-                    select
-                        *
-                    from FILE_FOLDER_TABLE
-                    where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
-                    union all
-                    select
-                        FF1.*
-                    from
-                        FILE_FOLDER_TABLE as FF1, GET_ALL_CHILDREN as FF2
-                    where
-                        FF1.PARENT_PK = FF2.FOLDER_PK
-                 ) select * from GET_ALL_CHILDREN`;
+            async function bootstrap(
+                primaryKey: number,
+                companyKey: number,
+                obj: FileFolderRepository,
+                list: FileFolder[],
+            ) {
+                const children = await obj
+                    .createQueryBuilder()
+                    .where('PARENT_PK = :primaryKey', { primaryKey })
+                    .andWhere('COMPANY_PK = :companyKey', { companyKey })
+                    .andWhere('IS_DELETED = 0')
+                    .getMany();
+                if (children.length > 1) {
+                    await Promise.all(
+                        children.map(async (folder) => {
+                            await bootstrap(folder.FOLDER_PK, companyKey, obj, list);
+                        }),
+                    );
 
-                return sql;
+                    list = list.concat(children);
+                }
             }
+
+            /* MySQL v 8.x (Our cloud server use MySQL v5.6 so we can't use CTE syntax)
+                if (isArray) {
+                    await Promise.all(
+                        folderPKs.map(async (folderPK) => {
+                            result = result.concat(
+                                (await getManager().query(getSQL(folderPK, companyPK))) as FileFolder[]
+                            );
+                        }),
+                    );
+                } else {
+                    result = (await getManager().query(getSQL(folderPKs, companyPK))) as FileFolder[];
+                }
+
+                return result;
+
+                function getSQL(folderPK: number, companyPK: number) {
+                    const sql = `with recursive GET_ALL_CHILDREN as (
+                        select
+                            *
+                        from FILE_FOLDER_TABLE
+                        where FOLDER_PK = ${folderPK} and COMPANY_PK = ${companyPK} and IS_DELETED = 0
+                        union all
+                        select
+                            FF1.*
+                        from
+                            FILE_FOLDER_TABLE as FF1, GET_ALL_CHILDREN as FF2
+                        where
+                            FF1.PARENT_PK = FF2.FOLDER_PK
+                    ) select * from GET_ALL_CHILDREN`;
+
+                    return sql;
+                }
+            */
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -160,8 +202,10 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                         }),
                     );
 
-                    await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
-                    await getRepo(FileBinRepository).deleteFiles(filePKs, companyPK, userPK, manager);
+                    if (filePKs && filePKs.length > 0) {
+                        await getRepo(FileKeysRepository).deleteFiles(filePKs, companyPK, manager);
+                        await getRepo(FileBinRepository).deleteFiles(filePKs, companyPK, userPK, manager);
+                    }
                 }
             }
         } catch (err) {
@@ -213,7 +257,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
 
     async getDirectChildren(FOLDER_PK: number, COMPANY_PK: number) {
         try {
-            return await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
+            const result = await this.find({ PARENT_PK: FOLDER_PK, COMPANY_PK });
+            return result.sort((a, b) => a.FOLDER_NAME.localeCompare(b.FOLDER_NAME));
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -231,13 +276,21 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         @TransactionManager() manager: EntityManager,
     ) {
         try {
-            const folderList = await this.getAllParentWithMyself(FOLDER_PK, COMPANY_PK);
-            await Promise.all(
-                folderList.map(async (folder) => {
-                    folder.SIZE += fileSize;
-                    await manager.update(FileFolder, { FOLDER_PK: folder.FOLDER_PK }, { SIZE: folder.SIZE });
-                }),
-            );
+            const myself = await this.createQueryBuilder()
+                .where('FOLDER_PK = :FOLDER_PK', { FOLDER_PK })
+                .andWhere('COMPANY_PK = :COMPANY_PK', { COMPANY_PK })
+                .getOne();
+            const parentList: FileFolder[] = [];
+
+            if (myself) {
+                await this.getAllParentWithMyself(FOLDER_PK, COMPANY_PK, parentList);
+                await Promise.all(
+                    parentList.map(async (folder) => {
+                        folder.SIZE += fileSize;
+                        await manager.update(FileFolder, { FOLDER_PK: folder.FOLDER_PK }, { SIZE: folder.SIZE });
+                    }),
+                );
+            }
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -248,9 +301,21 @@ export default class FileFolderRepository extends Repository<FileFolder> {
         }
     }
 
-    async getAllParentWithMyself(FOLDER_PK: number, COMPANY_PK: number) {
+    async getAllParentWithMyself(PARENT_PK: number, COMPANY_PK: number, parentList: FileFolder[]) {
         try {
-            return (await getManager().query(`with recursive GET_ALL_PARENT as (
+            const parent = await this.createQueryBuilder()
+                .where(`FOLDER_PK = ${PARENT_PK}`)
+                .andWhere(`COMPANY_PK = ${COMPANY_PK}`)
+                .getOne();
+
+            if (parent) {
+                parentList.push(parent);
+                if (parent.PARENT_PK) await this.getAllParentWithMyself(parent.PARENT_PK, COMPANY_PK, parentList);
+            }
+
+            /*  MySQL v 8.x (Our cloud server use MySQL v5.6 so we can't use CTE syntax)
+
+                return (await getManager().query(`with recursive GET_ALL_PARENT as (
                 select
                     *
                 from FILE_FOLDER_TABLE
@@ -263,6 +328,8 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 where
                     FF1.FOLDER_PK = FF2.PARENT_PK
              ) select * from GET_ALL_PARENT`)) as FileFolder[];
+            
+            */
         } catch (err) {
             throw stackAikoError(
                 err,
@@ -305,6 +372,25 @@ export default class FileFolderRepository extends Repository<FileFolder> {
                 'FileFolderRepository/deleteFolderForScheduler',
                 500,
                 headErrorCode.fileFolderDB + fileFolderError.deleteFolderForScheduler,
+            );
+        }
+    }
+
+    async getRootFolder(companyPK: number) {
+        try {
+            return await this.createQueryBuilder('f')
+                .leftJoinAndSelect('f.fileKeys', 'fileKeys')
+                .leftJoinAndSelect('fileKeys.fileHistories', 'fileHistories')
+                .where(`f.PARENT_PK IS NULL`)
+                .andWhere(`f.COMPANY_PK = ${companyPK}`)
+                .orderBy('fileHistories.DATE', 'DESC')
+                .getOneOrFail();
+        } catch (err) {
+            throw stackAikoError(
+                err,
+                'FileFolderRepository/getRootFolder',
+                500,
+                headErrorCode.fileFolderDB + fileFolderError.getRootFolder,
             );
         }
     }

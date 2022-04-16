@@ -52,22 +52,49 @@ export default class DepartmentRepository extends Repository<Department> {
         const userList: User[] = [];
 
         try {
-            const sqlOne = `with recursive DEPARTMENT_TREE as (
-            select
-                *
-            from DEPARTMENT_TABLE
-            where DEPARTMENT_PK = ? AND COMPANY_PK = ?
-            union all
-            select
-                D1.*
-            from
-                DEPARTMENT_TABLE AS D1, DEPARTMENT_TREE AS D2
-            where
-                D1.PARENT_PK = D2.DEPARTMENT_PK
-            ) select * from DEPARTMENT_TREE`;
+            const result1: Department[] = [];
 
-            const entityManager = getManager();
-            const result1 = (await entityManager.query(sqlOne, [departmentPK, companyPK])) as Department[];
+            await bootstrap(departmentPK, companyPK, this, result1);
+
+            async function bootstrap(
+                primaryKey: number,
+                companyKey: number,
+                obj: DepartmentRepository,
+                list: Department[],
+            ) {
+                const children = await obj
+                    .createQueryBuilder()
+                    .where('PARENT_PK = :primaryKey', { companyPK })
+                    .getMany();
+                if (children.length > 1) {
+                    await Promise.all(
+                        children.map(async (company) => {
+                            await bootstrap(company.COMPANY_PK, companyKey, obj, list);
+                        }),
+                    );
+
+                    list = list.concat(children);
+                }
+            }
+            /* MySQL v 8.x (Our cloud server use MySQL v5.6 so we can't use CTE syntax)
+                const sqlOne = `with recursive DEPARTMENT_TREE as (
+                select
+                    *
+                from DEPARTMENT_TABLE
+                where DEPARTMENT_PK = ? AND COMPANY_PK = ?
+                union all
+                select
+                    D1.*
+                from
+                    DEPARTMENT_TABLE AS D1, DEPARTMENT_TREE AS D2
+                where
+                    D1.PARENT_PK = D2.DEPARTMENT_PK
+                ) select * from DEPARTMENT_TREE`;
+
+                const entityManager = getManager();
+                const result1 = (await entityManager.query(sqlOne, [departmentPK, companyPK])) as Department[];
+            */
+
             const result2 = await Promise.all(
                 result1.map(async (dept) => {
                     return await getRepo(UserRepository)
