@@ -181,7 +181,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!GC_PK) return;
             const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
-            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, 1);
+            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, companyPK);
             const userMap = await this.groupChatService.getUserInfos(GC_PK, companyPK, userPK);
             this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userMap });
         } catch (err) {
