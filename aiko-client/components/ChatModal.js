@@ -680,9 +680,13 @@ export default function ChatModal({
                                                         }
                                                     >
                                                         {tabValue === 1
-                                                            ? groupMembers.map((member) => {
+                                                            ? groupMembers.map((member, index) => {
                                                                   if (member.USER_PK === message.sender) {
-                                                                      return <Typography>{member.NICKNAME}</Typography>;
+                                                                      return (
+                                                                          <Typography key={index}>
+                                                                              {member.NICKNAME}
+                                                                          </Typography>
+                                                                      );
                                                                   }
                                                               })
                                                             : null}
