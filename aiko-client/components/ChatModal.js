@@ -244,7 +244,6 @@ export default function ChatModal({
                             setGroupMembers(members);
                         });
                         groupChatSocket.on('client/gc/send-message', (payload) => {
-                            console.log('messages : ', messages);
                             console.log('payload : ', payload);
                             setMessages((messages) => [...messages, payload]);
                             scrollToBottom();
@@ -325,13 +324,12 @@ export default function ChatModal({
                     : {
                           GC_PK: selectedGroup.GC_PK,
                           sender: userInfo.USER_PK,
-                          file: null,
                           message: inputMessage,
                           date: Number(moment().format('X')),
                       };
 
             console.log('data : ', data);
-            selectedMember
+            tabValue === 0
                 ? privateChatSocket.emit('server/private-chat/send', data)
                 : groupChatSocket.emit('server/gc/send-message', data);
             setInputMessage('');
@@ -347,6 +345,7 @@ export default function ChatModal({
     };
 
     const handleSelectMember = (member) => {
+        setMessages([]);
         setSelectedMember(member);
         privateChatSocket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
