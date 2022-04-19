@@ -1,0 +1,6 @@
+.main-container {
+    padding: 40px;
+    display: flex;
+    flex: 1;
+    height: calc(100% - 64px);
+}
