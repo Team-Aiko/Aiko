@@ -1,10 +1,13 @@
 import axios from 'axios';
+import { resetUserInfo } from '../_redux/accountReducer';
+import { setMember } from '../_redux/memberReducer';
+import Router from 'next/router';
+import store from '../_redux/store';
 
 const axiosInstance = axios.create();
 
 axiosInstance.interceptors.response.use(
     async (response) => {
-        console.log('res = ', response);
         return response.data.result;
     },
     async (error) => {
@@ -13,6 +16,13 @@ axiosInstance.interceptors.response.use(
         const { appCode, httpCode, description } = obj.response.data;
 
         switch (appCode) {
+            case -1: {
+                store.dispatch(resetUserInfo());
+                store.dispatch(setMember([]));
+
+                Router.push('/');
+                break;
+            }
             case 0: {
                 break;
             }

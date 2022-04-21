@@ -26,7 +26,6 @@ export default function LoginView() {
     useEffect(() => {
         (async () => {
             const loadBoard = await get(`/api/notice-board/list?option=10&pageNum=1`);
-            console.log('### loadBoard : ', loadBoard);
             setBoardList(loadBoard);
         })();
     }, []);
@@ -62,20 +61,21 @@ export default function LoginView() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {boardList.map((row) => (
-                                    <TableRow
-                                        key={row.NOTICE_BOARD_PK}
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => {
-                                            router.push(`/innerPost/${row.NOTICE_BOARD_PK}`);
-                                        }}
-                                    >
-                                        <TableCell>{row.TITLE}</TableCell>
-                                        <TableCell align='center'>
-                                            {moment.unix(row.CREATE_DATE).format('YYYY-MM-DD')}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {boardList.length > 0 &&
+                                    boardList.map((row) => (
+                                        <TableRow
+                                            key={row.NOTICE_BOARD_PK}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                router.push(`/innerPost/${row.NOTICE_BOARD_PK}`);
+                                            }}
+                                        >
+                                            <TableCell>{row.TITLE}</TableCell>
+                                            <TableCell align='center'>
+                                                {moment.unix(row.CREATE_DATE).format('YYYY-MM-DD')}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                             </TableBody>
                         </Table>
                     </div>

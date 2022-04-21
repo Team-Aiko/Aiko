@@ -175,6 +175,7 @@ export default function TopNav({
                     });
                 })
                 .catch((err) => {
+                    handleLogout();
                     console.error('status handleConnection - error : ', err);
                 });
         }
@@ -191,37 +192,41 @@ export default function TopNav({
                     status: false,
                 });
             });
-            privateChatSocket.emit('server/private-chat/logoutEvent', () => {
-                setPrivateChatSocket(null);
-                setSocketConnect({
-                    ...socketConnect,
-                    private: false,
+            if (privateChatSocket) {
+                privateChatSocket.emit('server/private-chat/logoutEvent', () => {
+                    setPrivateChatSocket(null);
+                    setSocketConnect({
+                        ...socketConnect,
+                        private: false,
+                    });
                 });
-            });
-            groupChatSocket.emit('server/gc/logoutEvent', () => {
-                setGroupChatSocket(null);
-                setSocketConnect({
-                    ...socketConnect,
-                    group: false,
+            }
+
+            if (groupChatSocket) {
+                groupChatSocket.emit('server/gc/logoutEvent', () => {
+                    setGroupChatSocket(null);
+                    setSocketConnect({
+                        ...socketConnect,
+                        group: false,
+                    });
                 });
-            });
-
-            (async () => {
-                try {
-                    const url = '/api/account/logout';
-                    const result = await get(url);
-
-                    if (!result) throw new Error('NO_SERVER_RESPONSE');
-
-                    dispatch(resetUserInfo());
-                    dispatch(setMember([]));
-
-                    Router.push('/');
-                } catch (e) {
-                    console.error(e);
-                }
-            })();
+            }
         }
+        (async () => {
+            try {
+                const url = '/api/account/logout';
+                const result = await get(url);
+
+                if (!result) throw new Error('NO_SERVER_RESPONSE');
+
+                dispatch(resetUserInfo());
+                dispatch(setMember([]));
+
+                Router.push('/');
+            } catch (e) {
+                console.error(e);
+            }
+        })();
     };
 
     const statusList = [
