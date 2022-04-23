@@ -17,7 +17,6 @@ function ApprovalTableElement({ index, removeApprovalSpace, getObjectFromChild }
     //멤버 선택
     const [selectedUser, setSelectedUser] = useState([]);
 
-
     const [stepStatusValue, setStepStatusValue] = useState(undefined);
     const [userPkValue, setUserPkValue] = useState(undefined);
     const [stepLevelValue, setStepLevelValue] = useState(undefined);
@@ -33,18 +32,19 @@ function ApprovalTableElement({ index, removeApprovalSpace, getObjectFromChild }
     };
 
     useEffect(() => {
-        if(selectedUser[0]) {
-            setUserPkValue(selectedUser[0].USER_PK)
+        if (selectedUser[0]) {
+            setUserPkValue(selectedUser[0].USER_PK);
         }
-    })
+    });
 
     useEffect(() => {
-        if(approvalInfo[key1] && approvalInfo[key2] && approvalInfo[key3]){
-            getObjectFromChild(approvalInfo)
+        if (approvalInfo[key1] && approvalInfo[key2] && approvalInfo[key3]) {
+            getObjectFromChild(approvalInfo);
         }
-    }
-
-    console.log(approvalInfo)
+        setStepStatusValue(undefined);
+        setUserPkValue(undefined);
+        setStepLevelValue(undefined);
+    });
 
     return (
         <>
@@ -61,7 +61,12 @@ function ApprovalTableElement({ index, removeApprovalSpace, getObjectFromChild }
                 <tbody className={styles['approval']}>
                     <tr className={styles['name']}>
                         <th>
-                            <select style={{ marginLeft: 10 }} onChange={(e) => {setStepStatusValue(e.target.value)}}>
+                            <select
+                                style={{ marginLeft: 10 }}
+                                onChange={(e) => {
+                                    setStepStatusValue(e.target.value);
+                                }}
+                            >
                                 <option value=''>선택</option>
                                 <option value='0'>결재자</option>
                                 <option value='1'>합의자</option>
@@ -79,7 +84,14 @@ function ApprovalTableElement({ index, removeApprovalSpace, getObjectFromChild }
                                 selectedUser[0].LAST_NAME + selectedUser[0].FIRST_NAME
                             ) : (
                                 <Typography variant='button' display='block'>
-                                    <Button size='small' onClick={() => {setStepLevelValue(index)}}>검색</Button>
+                                    <Button
+                                        size='small'
+                                        onClick={() => {
+                                            setStepLevelValue(index);
+                                        }}
+                                    >
+                                        검색
+                                    </Button>
                                 </Typography>
                             )}
                         </td>

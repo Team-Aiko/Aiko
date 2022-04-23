@@ -35,6 +35,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
      */
     @SubscribeMessage(statusPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
+<<<<<<< HEAD
+=======
+        if (!socketToken) return;
+>>>>>>> 589d57fe3a81238da2f677eafaef3b56bf97f84c
         try {
             const { USER_PK, COMPANY_PK } = await this.statusService.decodeSocketToken(socketToken);
 
@@ -61,7 +65,10 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
             );
         } catch (err) {
             if ((err as AikoError).appCode === 4000000 + 19) {
+<<<<<<< HEAD
                 console.log('no socketToken');
+=======
+>>>>>>> 589d57fe3a81238da2f677eafaef3b56bf97f84c
                 client.disconnect(true);
             } else {
                 this.wss
@@ -119,7 +126,7 @@ export default class StatusGateway implements OnGatewayInit, OnGatewayConnection
         try {
             const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
             await this.statusService.logoutEvent(userPK, companyPK, client.id);
-            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+            this.wss.to(client.id).emit(statusPath.CLIENT_LOGOUT_EVENT_EXECUTED, true);
         } catch (err) {
             this.wss
                 .to(client.id)

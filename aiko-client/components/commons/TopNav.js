@@ -124,12 +124,51 @@ export default function CComp() {
         setStatus(status);
 
         if (userInfo.USER_PK) {
-            console.log('###### render ######');
-
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
-                    status.emit('handleConnection', result);
+                    if (result) {
+                        status.on('connect', async function () {
+                            status.emit('handleConnection', result);
+                        });
+
+                        status.open();
+                    }
+
+                    status.on('disconnect', function () {
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: false,
+                        });
+                    });
+
+                    status.on('client/status/getStatusList', (payload) => {
+                        for (const row of payload) {
+                            if (row.userPK === userInfo.USER_PK) {
+                                dispatch(setUserInfo({ status: row.status }));
+                            }
+                        }
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: true,
+                        });
+                    });
+
+                    status.on('client/status/loginAlert', (payload) => {
+                        dispatch(setMemberStatus(payload.user));
+                    });
+                    status.on('client/status/logoutAlert', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/error', (err) => {
+                        console.error('status - error : ', err);
+                    });
+                    status.on('client/status/changeStatus', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/logoutEventExecuted', () => {
+                        status.emit('handleDisconnect');
+                    });
                 })
                 .catch((err) => {
                     console.error('handleConnection - error : ', err);
@@ -169,8 +208,28 @@ export default function CComp() {
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
-        if (status) {
-            status.emit('server/status/logoutEvent');
+        if (statusSocket) {
+            statusSocket.emit('server/status/logoutEvent', () => {
+                setStatusSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    status: false,
+                });
+            });
+            privateChatSocket.emit('server/private-chat/logoutEvent', () => {
+                setPrivateChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    private: false,
+                });
+            });
+            groupChatSocket.emit('server/gc/logoutEvent', () => {
+                setGroupChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    group: false,
+                });
+            });
 
             (async () => {
                 try {

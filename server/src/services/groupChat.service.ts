@@ -249,9 +249,10 @@ export default class GroupChatService {
         try {
             let memberList = await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
             memberList = memberList.filter((member) => member.USER_PK !== userPK);
-
-            const userMap = new Map<number, User>();
-            memberList.forEach((member) => userMap.set(member.USER_PK, member));
+            const userMap: { [idx: number]: User } = {};
+            memberList.forEach((member) => {
+                userMap[member.USER_PK] = member;
+            });
 
             return userMap;
         } catch (err) {

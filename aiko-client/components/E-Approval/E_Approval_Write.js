@@ -41,8 +41,6 @@ const E_Approval_Write = () => {
         setApprovalInfoArray((approvalInfoArray) => [...approvalInfoArray, data]);
     };
 
-    console.log(approvalInfoArray);
-
     return (
         <div className={styles['EApprovalWriteDiv']}>
             <div className={styles['titleWriterDiv']}>
