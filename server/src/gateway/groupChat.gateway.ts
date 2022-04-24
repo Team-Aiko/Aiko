@@ -35,6 +35,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
      */
     @SubscribeMessage(groupChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
+        if (!socketToken) return;
         try {
             console.log('groupChat connection clientId : ', client.id);
 
@@ -180,7 +181,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
             if (!GC_PK) return;
             const { companyPK, userPK } = await this.groupChatService.getOneClientInfo(client.id);
 
-            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, 1);
+            const chatLogs = await this.groupChatService.readChatLogs(GC_PK, companyPK);
             const userMap = await this.groupChatService.getUserInfos(GC_PK, companyPK, userPK);
             this.wss.to(client.id).emit(groupChatPath.CLIENT_READ_CHAT_LOGS, { chatLogs, userMap });
         } catch (err) {
@@ -198,7 +199,7 @@ export default class GroupChatGateway implements OnGatewayInit, OnGatewayConnect
         try {
             const { userPK, companyPK } = await this.statusService.getClientInfo(client.id);
             await this.groupChatService.logoutEvent(userPK, companyPK, client.id);
-            this.wss.to(client.id).emit(groupChatPath.CLIENT_LOGOUT_EVENT_EXECUTED);
+            this.wss.to(client.id).emit(groupChatPath.CLIENT_LOGOUT_EVENT_EXECUTED, true);
         } catch (err) {
             this.wss
                 .to(client.id)

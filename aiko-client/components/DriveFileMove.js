@@ -11,10 +11,10 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         height: 'auto',
     },
-    moveButton : {
-        textAlign:'center',
-        margin:20
-    }
+    moveButton: {
+        textAlign: 'center',
+        margin: 20,
+    },
 }));
 
 const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, isSomethingChanged }) => {
@@ -23,7 +23,7 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, 
     //폴더 이동에 필요한 담을 폴더 pk
     const [targetFolderPk, setTargetFolderPk] = useState(undefined);
 
-    console.log('folder,file', [folderKeyPk] ,[fileKeyPk])
+    console.log('folder,file', [folderKeyPk], [fileKeyPk]);
 
     //폴더 이동 api
     const moveFolder = () => {
@@ -33,16 +33,17 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, 
             fromFolderPKs: [folderKeyPk],
             toFolderPK: targetFolderPk,
         };
-        if( [fileKeyPk][0] === undefined) {
-            data.fromFilePKs = undefined
+        if ([fileKeyPk][0] === undefined) {
+            data.fromFilePKs = undefined;
         }
-        if( [folderKeyPk][0] === undefined) {
-            data.fromFolderPKs = undefined
+        if ([folderKeyPk][0] === undefined) {
+            data.fromFolderPKs = undefined;
         }
         post(url, data)
             .then((res) => {
                 console.log('moveFolder', res);
-                isSomethingChanged('move folder')
+                isSomethingChanged('move folder');
+                closeMoveModal();
             })
             .catch((error) => {
                 console.log(error);
@@ -111,7 +112,7 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, 
                                         onClick={() => {
                                             getCheckboxIndexNum(index);
                                             setTargetFolderPk(folder.FOLDER_PK);
-                                            setSelectedFolderName(folder.FOLDER_NAME)
+                                            setSelectedFolderName(folder.FOLDER_NAME);
                                         }}
                                     />
                                     <ListItemText
@@ -125,7 +126,6 @@ const DriveFileMove = ({ openMoveModal, closeMoveModal, fileKeyPk, folderKeyPk, 
                     </List>
                 </div>
             </div>
-            
 
             <div className={classes.moveButton}>
                 <Button variant='contained' onClick={moveFolder}>

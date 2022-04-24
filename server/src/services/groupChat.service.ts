@@ -111,12 +111,13 @@ export default class GroupChatService {
             );
 
             await queryRunner.commitTransaction();
+
             const memberList = (await this.groupChatClientModel
                 .find()
                 .where('userPK')
-                .in(verifiedList)
-                .select('clientId userPK companyPK')) as GroupChatClientInfo[];
-
+                .in(verifiedList.map((user) => user.USER_PK))
+                .select('clientId userPK companyPK')
+                .exec()) as GroupChatClientInfo[];
             return { memberList, GC_PK, companyPK, userPK };
         } catch (err) {
             await this.deleteChatRoom(GC_PK);
@@ -249,9 +250,10 @@ export default class GroupChatService {
         try {
             let memberList = await getRepo(GroupChatUserListRepository).getMembersInGroupChatRoom(GC_PK, companyPK);
             memberList = memberList.filter((member) => member.USER_PK !== userPK);
-
-            const userMap = new Map<number, User>();
-            memberList.forEach((member) => userMap.set(member.USER_PK, member));
+            const userMap: { [idx: number]: User } = {};
+            memberList.forEach((member) => {
+                userMap[member.USER_PK] = member;
+            });
 
             return userMap;
         } catch (err) {

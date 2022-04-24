@@ -1,5 +1,5 @@
-import { makeStyles, TextField, Typography } from '@material-ui/core';
-import React from 'react';
+import { makeStyles, TextField, Typography, Input, Divider } from '@material-ui/core';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from '../styles/components/Report.module.css';
 
 const useStyles = makeStyles({
@@ -9,12 +9,32 @@ const useStyles = makeStyles({
     input: {
         height: '100%',
     },
+    divider: {
+        marginTop: 10,
+        marginBottom: 10,
+    }
 });
 
 export default function Report(props) {
+
     const { mode, containerStyles } = props;
     const classes = useStyles();
 
+    const [inputs, setInputs] = useState({
+        writer: '',
+        title: '',
+        description: '',
+    });
+
+    const { writer, title, description } = inputs;
+
+    const onChange = useCallback((e) => {
+        const { value, name } = e.target;
+        setInputs((prevInput) => ({
+            ...prevInput,
+            [name]:value
+        }))
+    }, []);
 
 
     return (
@@ -26,11 +46,23 @@ export default function Report(props) {
                         <tbody>
                             <tr>
                                 <td>작성자</td>
-                                <td>soso</td>
+                                <td>
+                                    <Input name='writer' onChange={onChange} value={writer} disableUnderline/>
+                                </td>
                             </tr>
                             <tr>
                                 <td>문서종류</td>
-                                <td>{mode === 'write' ? <select /> : <></>}</td>
+                                <td>
+                                    {mode === 'write' ? (
+                                        <select name='pets' id='pet-select' style={{width:'10vw'}}>
+                                            <option value=''>선택해주세요</option>
+                                            <option value='dog'>Dog</option>
+                                            <option value='cat'>Cat</option>
+                                        </select>
+                                    ) : (
+                                        <></>
+                                    )}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -56,12 +88,12 @@ export default function Report(props) {
                 </div>
             </div>
             <div className={styles['body-container']}>
-                {mode === 'write' && <Typography>상세입력</Typography>}
+                {mode === 'write' && <div><Typography>상세입력</Typography><Divider className={classes.divider} /></div>}
                 <div className={styles.title}>
                     {mode === 'write' ? (
                         <>
                             <Typography style={{ flexShrink: 0, marginRight: '60px' }}>제목</Typography>
-                            <TextField fullWidth variant='outlined' size='small' />
+                            <TextField name='title' fullWidth variant='outlined' size='small' value={title} onChange={onChange}/>
                         </>
                     ) : (
                         <Typography>제목ㄱㄱㄱㄱㄱ</Typography>
@@ -80,6 +112,9 @@ export default function Report(props) {
                         }}
                         InputProps={{ className: classes.input }}
                         classes={{ root: classes.textField }}
+                        onChange={onChange}
+                        name='description'
+                        value={description}
                     />
                 ) : (
                     <Typography>내용ㅇㅇㅇㅇㅇ</Typography>

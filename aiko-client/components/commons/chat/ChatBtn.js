@@ -17,7 +17,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // * Container Component
-export default function ChatBtn(props) {
+export default function ChatBtn({
+    statusSocket,
+    privateChatSocket,
+    groupChatSocket,
+    setStatusSocket,
+    setPrivateChatSocket,
+    setGroupChatSocket,
+    socketConnect,
+    setSocketConnect,
+}) {
     const userInfo = useSelector((state) => state.accountReducer);
     const theme = unstable_createMuiStrictModeTheme();
     const classes = useStyles();
@@ -41,6 +50,14 @@ export default function ChatBtn(props) {
                     onClose={() => {
                         setOpenChatModal(false);
                     }}
+                    statusSocket={statusSocket}
+                    privateChatSocket={privateChatSocket}
+                    groupChatSocket={groupChatSocket}
+                    setStatusSocket={(socket) => setStatusSocket(socket)}
+                    setPrivateChatSocket={(socket) => setPrivateChatSocket(socket)}
+                    setGroupChatSocket={(socket) => setGroupChatSocket(socket)}
+                    socketConnect={socketConnect}
+                    setSocketConnect={(socket) => setSocketConnect(socket)}
                 />
             </ThemeProvider>
         </>

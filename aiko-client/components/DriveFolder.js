@@ -53,7 +53,7 @@ const DriveFolder = ({ getFolderPk, openPasteBin }) => {
                     <ListItemIcon>
                         <FolderOpenIcon />
                     </ListItemIcon>
-                    <ListItemText primary='Folders' style={{overflow:'hidden'}} />
+                    <ListItemText primary='Folders' style={{ overflow: 'hidden' }} />
                 </ListItem>
                 {/* <ListItem button onClick={handleClick}>
                     <ListItemIcon>
@@ -81,7 +81,7 @@ const DriveFolder = ({ getFolderPk, openPasteBin }) => {
                     <ListItemIcon>
                         <DeleteIcon />
                     </ListItemIcon>
-                    <ListItemText primary='Bin' style={{overflow:'hidden'}}/>
+                    <ListItemText primary='Bin' style={{ overflow: 'hidden' }} />
                 </ListItem>
             </List>
         </div>

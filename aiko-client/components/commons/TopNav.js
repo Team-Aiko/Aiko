@@ -101,8 +101,16 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-// * Container Component
-export default function CComp() {
+export default function TopNav({
+    statusSocket,
+    privateChatSocket,
+    groupChatSocket,
+    setStatusSocket,
+    setPrivateChatSocket,
+    setGroupChatSocket,
+    socketConnect,
+    setSocketConnect,
+}) {
     const userInfo = useSelector((state) => state.accountReducer);
     const dispatch = useDispatch();
     const memberList = useSelector((state) => state.memberReducer);
@@ -113,64 +121,90 @@ export default function CComp() {
     const isMenuOpen = Boolean(anchorEl);
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
     const { USER_PK } = userInfo;
-    const [status, setStatus] = useState(undefined);
     const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
     useEffect(() => {
-        status?.emit('handleDisconnect');
-        setStatus(undefined);
-
-        const status = io('http://localhost:5001/status', { withCredentials: true });
-        setStatus(status);
+        const status = io('http://localhost:5001/status', { withCredentials: true, autoConnect: false });
+        setStatusSocket(status);
 
         if (userInfo.USER_PK) {
-            console.log('###### render ######');
-
             const uri = '/api/account/temp-socket-token';
             get(uri)
                 .then((result) => {
-                    status.emit('handleConnection', result);
+                    if (result) {
+                        status.on('connect', async function () {
+                            status.emit('handleConnection', result);
+                        });
+
+                        status.open();
+                    }
+
+                    status.on('disconnect', function () {
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: false,
+                        });
+                    });
+
+                    status.on('client/status/getStatusList', (payload) => {
+                        for (const row of payload) {
+                            if (row.userPK === userInfo.USER_PK) {
+                                dispatch(setUserInfo({ status: row.status }));
+                            }
+                        }
+                        setSocketConnect({
+                            ...socketConnect,
+                            status: true,
+                        });
+                    });
+
+                    status.on('client/status/loginAlert', (payload) => {
+                        dispatch(setMemberStatus(payload.user));
+                    });
+                    status.on('client/status/logoutAlert', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/error', (err) => {
+                        console.error('status - error : ', err);
+                    });
+                    status.on('client/status/changeStatus', (payload) => {
+                        dispatch(setMemberStatus(payload));
+                    });
+                    status.on('client/status/logoutEventExecuted', () => {
+                        status.emit('handleDisconnect');
+                    });
                 })
                 .catch((err) => {
-                    console.error('handleConnection - error : ', err);
+                    console.error('status handleConnection - error : ', err);
                 });
-
-            status.on('client/status/getStatusList', (payload) => {
-                console.log('### getStatusList ### : ', payload);
-                for (const row of payload) {
-                    if (row.userPK === userInfo.USER_PK) {
-                        dispatch(setUserInfo({ status: row.status }));
-                    }
-                }
-            });
-
-            status.on('client/status/loginAlert', (payload) => {
-                console.log('loginAlert : ', payload);
-                dispatch(setMemberStatus(payload.user));
-            });
-            status.on('client/status/logoutAlert', (payload) => {
-                console.log('logoutAlert : ', payload);
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/error', (err) => {
-                console.error('status - error : ', err);
-            });
-            status.on('client/status/changeStatus', (payload) => {
-                console.log('changeStatus : ', payload);
-                dispatch(setMemberStatus(payload));
-            });
-            status.on('client/status/logoutEventExecuted', () => {
-                status.emit('handleDisconnect');
-            });
-            status.on('');
         }
     }, [userInfo.USER_PK]);
 
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
-        if (status) {
-            status.emit('server/status/logoutEvent');
+        if (statusSocket) {
+            statusSocket.emit('server/status/logoutEvent', () => {
+                setStatusSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    status: false,
+                });
+            });
+            privateChatSocket.emit('server/private-chat/logoutEvent', () => {
+                setPrivateChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    private: false,
+                });
+            });
+            groupChatSocket.emit('server/gc/logoutEvent', () => {
+                setGroupChatSocket(null);
+                setSocketConnect({
+                    ...socketConnect,
+                    group: false,
+                });
+            });
 
             (async () => {
                 try {
@@ -181,9 +215,6 @@ export default function CComp() {
 
                     dispatch(resetUserInfo());
                     dispatch(setMember([]));
-
-                    status.emit('handleDisconnect');
-                    setStatus(undefined);
 
                     Router.push('/');
                 } catch (e) {
@@ -197,7 +228,7 @@ export default function CComp() {
         {
             status: 1,
             onClick: () => {
-                status.emit('server/status/changeStatus', 1);
+                statusSocket.emit('server/status/changeStatus', 1);
                 dispatch(setUserInfo({ status: 1 }));
                 setStatusMenuOpen(false);
             },
@@ -207,7 +238,7 @@ export default function CComp() {
         {
             status: 2,
             onClick: () => {
-                status.emit('server/status/changeStatus', 2);
+                statusSocket.emit('server/status/changeStatus', 2);
                 dispatch(setUserInfo({ status: 2 }));
                 setStatusMenuOpen(false);
             },
@@ -217,7 +248,7 @@ export default function CComp() {
         {
             status: 3,
             onClick: () => {
-                status.emit('server/status/changeStatus', 3);
+                statusSocket.emit('server/status/changeStatus', 3);
                 dispatch(setUserInfo({ status: 3 }));
                 setStatusMenuOpen(false);
             },
@@ -227,7 +258,7 @@ export default function CComp() {
         {
             status: 4,
             onClick: () => {
-                status.emit('server/status/changeStatus', 4);
+                statusSocket.emit('server/status/changeStatus', 4);
                 dispatch(setUserInfo({ status: 4 }));
                 setStatusMenuOpen(false);
             },
