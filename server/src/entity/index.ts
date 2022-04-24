@@ -27,6 +27,7 @@ import FolderBin from './folderBin.entity';
 import ChatLogStorage from './chatLogStorage.entity';
 import GroupChatStorage from './groupChatStorage.entity';
 import GroupChatUserList from './groupChatUL.entity';
+import ApprovalComment from './approvalComment.entity';
 
 export {
     GroupChatUserList,
@@ -58,4 +59,5 @@ export {
     NoticeBoard,
     Refresh,
     NoticeBoardFile,
+    ApprovalComment,
 };

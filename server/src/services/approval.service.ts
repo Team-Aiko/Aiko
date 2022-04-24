@@ -6,7 +6,7 @@ import NoticeBoardRepository from 'src/mapper/noticeBoard.repository';
 import { getConnection } from 'typeorm';
 import ApprovalFrameRepository from 'src/mapper/approvalFrame.repository';
 import ApprovalStepRepository from 'src/mapper/approvalStep.repository';
-
+import ApprovalCommentRepository from 'src/mapper/approvalComment.repository ';
 export default class ApprovalService {
     async createApproval(
         title: string,
@@ -50,31 +50,131 @@ export default class ApprovalService {
         // const result = await getRepo(ApprovalStepRepository).list(userPk, comPk, departmentPk, view);
         // 결제 전체보기 => 내가 결제 해야할 건 + 이미 결제가 완료난 건들 + 진행중인 결제
         // 대기중인 결제 => 내가 결제 해야할 건
-        // 진행중인 결제 => 내가 올린 결제건 - 내가 결제해야할 건
+        // 진행중인 결제 => 내가 올린 결제건
         // 완료난 건 => 이미 결제 완료된 건
+
+        const framePks = []; // 결제 프레임 Pk
         if (view === 'done') {
             const result = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
             return result;
         } // 완료된 결제
+        //////////////////////
         else if (view === 'wait') {
-            const infos = await getRepo(ApprovalFrameRepository).myRelatedList(userPk, comPk, departmentPk);
-            let result;
-            for (const info of infos) {
-                result = await getRepo(ApprovalStepRepository).needToDoList(info.AF_PK, info.CURRENT_STEP_LEVEL);
-                console.log(result);
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const result = await getRepo(ApprovalStepRepository).needToDoPks(
+                    userPk,
+                    info.AF_PK,
+                    info.CURRENT_STEP_LEVEL,
+                );
+                framePks.push(result?.AF_PK);
             }
-            return result;
         } // 대기중인 결제
-        else if (view === 'all') {
-            const done = await getRepo(ApprovalFrameRepository).doneList(comPk, departmentPk);
-            const infos = await getRepo(ApprovalFrameRepository).myRelatedList(userPk, comPk, departmentPk);
-            for (const info of infos) {
-                const result = await getRepo(ApprovalStepRepository).needToDoList(info.AF_PK, info.CURRENT_STEP_LEVEL);
-                console.log(result);
+        /////////////////////
+        else if (view === 'process') {
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const doingPks = await getRepo(ApprovalFrameRepository).doingPks(
+                    userPk,
+                    info.AF_PK,
+                    comPk,
+                    departmentPk,
+                );
+                framePks.push(doingPks?.AF_PK);
             }
-            return done;
-        } // 전체보기 건
+        } // 내가올린 결제
+        /////////////////////
+        else if (view === 'all') {
+            const stepLevels = await getRepo(ApprovalFrameRepository).generateStepLevels(userPk, comPk, departmentPk);
+            for (const info of stepLevels) {
+                const needPks = await getRepo(ApprovalStepRepository).needToDoPks(
+                    userPk,
+                    info.AF_PK,
+                    info.CURRENT_STEP_LEVEL,
+                );
+                const donePks = await getRepo(ApprovalFrameRepository).donePks(info.AF_PK, comPk, departmentPk);
+                const doingPks = await getRepo(ApprovalFrameRepository).doingPks(
+                    userPk,
+                    info.AF_PK,
+                    comPk,
+                    departmentPk,
+                );
+                console.log(donePks);
+                framePks.push(needPks?.AF_PK);
+                framePks.push(donePks?.AF_PK);
+                framePks.push(doingPks?.AF_PK);
+            }
+        } // 전체 결제
+        //////////////
+        const result = await getRepo(ApprovalFrameRepository).generateList(framePks);
+        console.log(result);
+        return result; /// 결과반환
+    }
+    async detailApproval(departmentPk: number, comPk: number, framePk: number) {
+        const frame = await getRepo(ApprovalFrameRepository).detailFrame(departmentPk, comPk, framePk);
+        const step = await getRepo(ApprovalStepRepository).detailStep(departmentPk, comPk, framePk);
+        for (const num1 in frame) {
+            const arr = [];
+            for (const num2 in step) {
+                if (frame[num1].AF_PK === step[num2].AF_PK) {
+                    arr.push(step[num2]);
+                }
+            }
+            const obj2 = { step: arr };
+            frame[num1] = Object.assign(frame[num1], obj2);
+        }
+        return frame;
+    }
+    async assignApproval(
+        userPk: number,
+        departmentPk: number,
+        comPk: number,
+        framePk: number,
+        stepStatus: number,
+        decision: number,
+    ) {
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            //결제 진행
+            const query1 = await getRepo(ApprovalStepRepository).assignApproval(
+                queryRunner.manager,
+                framePk,
+                userPk,
+                stepStatus,
+                decision,
+            );
+            // 현재 결재 단계 확인
+            const query2 = await getRepo(ApprovalStepRepository).checkApprovalStep(framePk); // 현재 결재 단계 확인
+            const query3 = await getRepo(ApprovalFrameRepository).updateCurrentStep(
+                queryRunner.manager,
+                departmentPk,
+                comPk,
+                framePk,
+                query2,
+            ); // 결제 다음단계 진행
+            let endResult;
+            const queryAffected = query3.affected;
+            await queryRunner.commitTransaction();
+            if (queryAffected !== undefined) {
+                endResult = '결재 완료';
+                return endResult;
+            } else {
+                endResult = '결재중 오류 발생';
+                return endResult;
+            }
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            console.log(err);
+            throw new AikoError(err.message, 451, 500000);
+        } finally {
+            queryRunner.release();
+        }
+    }
 
-        // process
+    async writeComment(userPk: number, departmentPk: number, comPk: number, framePk: number) {
+        // const query1 = await getRepo(ApprovalCommentRepository).getCommentAuth(userPk, departmentPk, comPk, framePk);
+        const query2 = await getRepo(ApprovalCommentRepository).writeComment(userPk, departmentPk, comPk, framePk);
     }
 }

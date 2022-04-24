@@ -3,39 +3,27 @@ import { User } from '.';
 import ApprovalStep from './approvalStep.entity';
 
 @Entity({ name: 'APPROVAL_FRAME_TABLE' })
-export default class ApprovalFrame {
+export default class ApprovalComment {
     @PrimaryGeneratedColumn()
+    ACM_PK: number;
+
+    @Column()
     AF_PK: number;
 
     @Column()
     USER_PK: number;
 
     @Column()
-    TITLE: string;
-
-    @Column()
-    CONTENT: string;
+    COMMENT_DATE: number;
 
     @Column()
     COMPANY_PK: number;
 
     @Column()
-    AC_PK: number;
-
-    @Column()
     DEPARTMENT_PK: number;
 
     @Column()
-    CURRENT_STEP_LEVEL: number;
-
-    @Column()
-    START_DATE: number;
-
-    @Column()
-    DONE: number;
-
-    @Column()
-    END_DATE: number;
+    CONTENT: string;
 
     @Column()
     IS_DELETED: number;

@@ -252,7 +252,7 @@ create table NOTICE_BOARD_TABLE (
 	UPDATE_USER_PK int,
 	IS_DELETE int,
 	primary key (NOTICE_BOARD_PK)
-); -- 수정자 추가
+);
 
 
 -- 공지 게시판 파일 테이블 생성 
@@ -310,7 +310,9 @@ AC_PK int not null,
 DEPARTMENT_PK int not null,
 CURRENT_STEP_LEVEL int not null,
 START_DATE int not null,
+DONE int not null,
 END_DATE int,
+IS_DELETED int,
 primary key(AF_PK)
 );
 
@@ -332,6 +334,15 @@ CREATE_DATE int,
 primary key(AC_PK)
 );
 
+create table APPROVAL_COMMENT_TABLE (
+ACM_PK int auto_increment,
+AF_PK int not null,
+USER_PK int not null,
+COMMENT_DATE int not null,
+CONTENT VARCHAR(6000) not NULL, 
+IS_DELETED int,
+primary key(ACM_PK)
+);
 
 create table STATUS_CODE_TABLE (
 STATUS_CODE_PK int auto_increment,
