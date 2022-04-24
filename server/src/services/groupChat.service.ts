@@ -111,12 +111,13 @@ export default class GroupChatService {
             );
 
             await queryRunner.commitTransaction();
+
             const memberList = (await this.groupChatClientModel
                 .find()
                 .where('userPK')
-                .in(verifiedList)
-                .select('clientId userPK companyPK')) as GroupChatClientInfo[];
-
+                .in(verifiedList.map((user) => user.USER_PK))
+                .select('clientId userPK companyPK')
+                .exec()) as GroupChatClientInfo[];
             return { memberList, GC_PK, companyPK, userPK };
         } catch (err) {
             await this.deleteChatRoom(GC_PK);

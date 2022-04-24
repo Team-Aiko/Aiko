@@ -27,10 +27,7 @@ export default class PrivateChatGateway implements OnGatewayInit, OnGatewayConne
 
     @SubscribeMessage(privateChatPath.HANDLE_CONNECTION)
     async handleConnection(client: Socket, socketToken: string) {
-<<<<<<< HEAD
-=======
         if (!socketToken) return;
->>>>>>> 589d57fe3a81238da2f677eafaef3b56bf97f84c
         try {
             const { COMPANY_PK, USER_PK } = await this.privateChatService.decodeSocketToken(socketToken);
             await this.privateChatService.addClient(client.id, USER_PK, COMPANY_PK); // 해당 유저의 소켓 접속정보를 저장

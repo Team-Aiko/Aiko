@@ -80,10 +80,20 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function ChatModal(props) {
+export default function ChatModal({
+    open,
+    onClose,
+    statusSocket,
+    privateChatSocket,
+    groupChatSocket,
+    setStatusSocket,
+    setPrivateChatSocket,
+    setGroupChatSocket,
+    socketConnect,
+    setSocketConnect,
+}) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const { open, onClose } = props;
     const theme = unstable_createMuiStrictModeTheme();
     const memberList = useSelector((state) => state.memberReducer);
     const statusEl = useRef(null);
@@ -101,13 +111,11 @@ export default function ChatModal(props) {
     const [openAddGroup, setOpenAddGroup] = useState(false);
     const [groupChatTitle, setGroupChatTitle] = useState('');
     const [groupChatList, setGroupChatList] = useState([]);
-    const [groupSocket, setGroupSocket] = useState(undefined);
     const [selectedGroup, setSelectedGroup] = useState('');
     const [groupMembers, setGroupMembers] = useState([]);
 
-    // useEffect(() => {
-    //     socket && socket.emit('handleDisconnect');
-    //     groupSocket && groupSocket.emit('handleDisconnect');
+    const statusConnect = socketConnect.status;
+    const privateConnect = socketConnect.private;
 
     useEffect(() => {
         if (statusConnect) {
@@ -246,57 +254,10 @@ export default function ChatModal(props) {
                     }
                 })
                 .catch((err) => {
-                    console.error('handleConnection - error : ', err);
+                    console.error('groupChat handleConnection - error : ', err);
                 });
-
-            privateChat.on('client/private-chat/connected', (payload) => {
-                let newPayload = [];
-                if (payload.evenCase.length > 0) {
-                    const evenCase = payload.evenCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_1',
-                        };
-                    });
-                    newPayload.push(...evenCase);
-                }
-                if (payload.oddCase.length > 0) {
-                    const oddCase = payload.oddCase.map((row) => {
-                        return {
-                            ...row,
-                            member: 'USER_2',
-                        };
-                    });
-                    newPayload.push(...oddCase);
-                }
-
-                dispatch(setMemberChatRoomPK(newPayload));
-                console.log('### privat-chat/connected : ', newPayload);
-            });
-            privateChat.on('client/private-chat/receive-chatlog', (payload) => {
-                console.log('client/private-chat/receive-chatlog : ', payload);
-                setMessages(() => (payload.chatlog ? [...payload.chatlog.messages] : []));
-                setChatMember(payload.info.userInfo);
-            });
-
-            privateChat.on('client/private-chat/send', (payload) => {
-                console.log('client/private-chat/send');
-                setMessages((messages) => [...messages, payload]);
-                scrollToBottom();
-            });
-
-            groupChat.on('client/gc/connected', (payload) => {
-                console.log('/client/gc/connected : ', payload);
-                setGroupChatList(payload);
-            });
-            groupChat.on('client/gc/join-room-notice', (payload) => {
-                console.log('/client/gc/join-room-notice : ', payload);
-            });
-            groupChat.on('client/gc/read-chat-logs', (payload) => {
-                console.log('/client/gc/read-chat-logs : ', payload);
-            });
         }
-    }, [userInfo.USER_PK]);
+    }, [privateConnect]);
 
     useEffect(() => {
         setSelectedMember({});
@@ -386,7 +347,7 @@ export default function ChatModal(props) {
     const handleSelectMember = (member) => {
         setMessages([]);
         setSelectedMember(member);
-        socket.emit('server/private-chat/call-chatLog', member.CR_PK);
+        privateChatSocket.emit('server/private-chat/call-chatLog', member.CR_PK);
     };
 
     const searchMember = () => {
@@ -440,7 +401,7 @@ export default function ChatModal(props) {
 
     const handleSelectGroup = (group) => {
         setSelectedGroup(group);
-        groupSocket.emit('server/gc/read-chat-logs', group.GC_PK);
+        groupChatSocket.emit('server/gc/read-chat-logs', group.GC_PK);
     };
 
     return (
