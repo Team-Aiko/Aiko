@@ -1,0 +1,83 @@
+.EApprovalWriteDiv {
+    width: 75%;
+    height: 100%;
+    border: 1px solid #b1b1b1;
+    border-radius: 4px;
+    min-width: 10vw;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+}
+
+.titleWriterDiv {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.addApprovalButtonDiv {
+    display: flex;
+    margin-left: 30px;
+    align-items: center;
+}
+
+.approvalDirectionDiv {
+    display: flex;
+    align-items: center;
+    color: grey;
+    margin-left: 30px;
+    margin-top: 10px;
+}
+
+.authDiv {
+    display: flex;
+    flex-direction: row;
+    margin-left: 30px;
+    flex-wrap: wrap;
+}
+
+.approvalTable {
+    border-collapse:collapse;
+    width:100px;
+    margin-right:5px;
+    margin-bottom:5px;
+    text-align:center;
+}
+
+.approval {
+    border-collapse:collapse
+}
+
+.approval td {
+    border: 1px solid #bdbdbd;
+}
+
+.approval th {
+    border: 1px solid #bdbdbd;
+}
+
+.approval .name {
+    height: 35px;
+}
+
+.approval .signature {
+    height: 70px;
+}
+
+.detailDiv {
+    display: flex;
+    flex-direction: column;
+}
+
+.detailDiv .title {
+    display: flex;
+    align-items: center;
+}
+
+.submitButton {
+    display: flex;
+    justify-content: right;
+    margin: 20px 10% 30px 30px;
+}

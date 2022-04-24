@@ -1,0 +1,14 @@
+.EApprovalListDiv {
+    width: 20%;
+    height: 100%;
+    border: 1px solid #b1b1b1;
+    border-radius: 4px;
+    flex-wrap: wrap;
+    margin: 20px 0px 10px auto;
+    overflow: scroll;
+}
+
+.buttonListDiv {
+    display: flex;
+    flex-direction: column;
+}

@@ -79,20 +79,22 @@ export default class DriveService {
         }
     }
 
-    async addHistory(filePK: number, USER_PK: number, COMPANY_PK: number, file: Express.Multer.File) {
+    async addHistory(filePK: number, USER_PK: number, COMPANY_PK: number, files: Express.Multer.File[]) {
         try {
             if (!filePK) throw unknownError;
 
-            const dto: Omit<FileHistory, 'FH_PK' | 'fileKey' | 'user'> = {
-                DATE: unixTimeStamp(),
-                FILE_KEY_PK: filePK,
-                NAME: file.filename,
-                ORIGINAL_FILE_NAME: file.originalname,
-                SIZE: file.size,
-                USER_PK,
-            };
+            const dtos = files.map((file) => {
+                return {
+                    DATE: unixTimeStamp(),
+                    FILE_KEY_PK: filePK,
+                    NAME: file.filename,
+                    ORIGINAL_FILE_NAME: file.originalname,
+                    SIZE: file.size,
+                    USER_PK,
+                };
+            });
 
-            await getRepo(FileHistoryRepository).createFileHistory([dto]);
+            await getRepo(FileHistoryRepository).createFileHistory(dtos);
 
             return true;
         } catch (err) {

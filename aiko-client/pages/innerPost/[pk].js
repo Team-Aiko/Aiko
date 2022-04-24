@@ -105,9 +105,6 @@ const innerPost = () => {
     const [updatedTime, setUpdatedTime] = useState('');
     const [updateUserPk, setUpdateUserPk] = useState('');
 
-    console.log(files);
-    console.log(addedFile);
-
     const [isAdmin, setIsAdmin] = useState(false);
     const adminCheck = async () => {
         const url = '/api/company/check-admin';
@@ -123,10 +120,6 @@ const innerPost = () => {
     useEffect(() => {
         adminCheck()   
     },[])
-
-    //페이지 이동에 필요한 변수
-    const goNext = Number(pk) + 1;
-    const goPrev = Number(pk) - 1;
 
     //삭제할 파일들 pk값 받기
     const [deletedFilePk, setDeletedFilePk] = useState([]);
@@ -183,36 +176,6 @@ const innerPost = () => {
 
     useEffect(() => {
         getDetails();
-    }, [pk]);
-
-
-    const [nextPage, setNextPage] = useState('');
-
-    const next = Number(pk) + 1;
-
-    const [previousPage, setPreviousPage] = useState('');
-    //Post, Previous Post Title
-    const getNextPage = async () => {
-        await get(`/api/notice-board/detail?num=${next}`).then((res) => {
-            setNextPage(res.TITLE);
-        });
-    };
-
-    const previous = Number(pk) - 1;
-
-    const getPreviousPage = async () => {
-        await get(`/api/notice-board/detail?num=${previous}`).then((res) => {
-            setPreviousPage(res.TITLE);
-        });
-    };
-
-    useEffect(() => {
-        getNextPage();
-        getPreviousPage();
-        if (previousPage == '') {
-            previous - 1;
-            getPreviousPage();
-        }
     }, [pk]);
 
     const handleTitle = (e) => {
@@ -568,38 +531,6 @@ const innerPost = () => {
                 ) : (
                     <></>
                 )}
-
-                <div className={styles.anotherPost} style={{ marginTop: '15px' }}>
-                    <Link
-                        href={
-                            previousPage == null
-                                ? `/innerPost/${encodeURIComponent(pk)}`
-                                : `/innerPost/${encodeURIComponent(goPrev)}`
-                        }
-                    >
-                        <div className={styles.previousPost}>
-                            <Button size='small' style={{ width: '20%' }}>
-                                이전 글 보기
-                            </Button>
-                            <p className={classes.prevNext}>{previousPage}</p>
-                        </div>
-                    </Link>
-
-                    <Link
-                        href={
-                            nextPage == null
-                                ? `/innerPost/${encodeURIComponent(pk)}`
-                                : `/innerPost/${encodeURIComponent(goNext)}`
-                        }
-                    >
-                        <div className={styles.nextPost}>
-                            <Button size='small' style={{ width: '20%' }}>
-                                다음 글 보기
-                            </Button>
-                            <p className={classes.prevNext}>{nextPage}</p>
-                        </div>
-                    </Link>
-                </div>
             </div>
         </>
     );

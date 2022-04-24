@@ -78,7 +78,7 @@ const DriveBin = () => {
             <div className={styles.folderBinDiv}>
                 {deletedRootFolder?.map((folder) => (
                     <div className={classes.root}>
-                        <ListItem button dense divider selected>
+                        <ListItem dense divider selected disabled>
                             <ListItemIcon>
                                 <Folder />
                             </ListItemIcon>
@@ -89,7 +89,7 @@ const DriveBin = () => {
 
                 {deletedFile?.map((file) => (
                     <div className={classes.root}>
-                        <ListItem button dense divider selected>
+                        <ListItem dense divider selected disabled>
                             <ListItemIcon>
                                 <Description />
                             </ListItemIcon>
