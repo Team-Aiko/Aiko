@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LoginView from '../components/LoginView';
+import NoLoginView from '../components/NoLoginView';
 import styles from '../styles/Main.module.css';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -13,5 +14,5 @@ export default function main() {
         }
     }, [userInfo.USER_PK]);
 
-    return <div className={styles['main-container']}>{userInfo.USER_PK ? <LoginView /> : '비로그인'}</div>;
+    return <div className={styles['main-container']}>{userInfo.USER_PK ? <LoginView /> : <NoLoginView />}</div>;
 }
