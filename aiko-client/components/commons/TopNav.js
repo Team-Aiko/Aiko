@@ -470,7 +470,7 @@ export default function TopNav({
         <div className={classes.grow}>
             <ThemeProvider theme={theme}>
                 <AppBar position='static'>
-                    <Toolbar>
+                    <Toolbar style={{ zIndex: 5 }}>
                         <IconButton
                             edge='start'
                             className={classes.menuButton}
