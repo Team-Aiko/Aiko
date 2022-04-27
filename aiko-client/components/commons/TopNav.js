@@ -184,6 +184,7 @@ export default function TopNav({
     const handleLogout = () => {
         setAnchorEl(null);
         handleMobileMenuClose();
+        router.push('/');
         if (statusSocket) {
             statusSocket.emit('server/status/logoutEvent', () => {
                 setStatusSocket(null);

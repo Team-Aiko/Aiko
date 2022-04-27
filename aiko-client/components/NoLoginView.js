@@ -4,6 +4,10 @@ import ReactFullpage from '@fullpage/react-fullpage';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { Tooltip, IconButton } from '@material-ui/core';
+import GitHubIcon from '@material-ui/icons/GitHub';
+import Developer from '../public/images/developers.png';
+import Image from 'next/image';
 
 const FirstContent = () => {
     return (
@@ -41,7 +45,25 @@ const SecondContent = () => {
 };
 
 const ThirdContent = () => {
-    return <div>Third Content.</div>;
+    return (
+        <div className={styles.thirdContainer}>
+            <h2 style={{ fontFamily: 'sans-serif' }}>Contributors !</h2>
+            <Image
+                className='image'
+                src='/../public/images/developers.png'
+                alt='Contributors'
+                width={700}
+                height={300}
+            />
+            <a target='_blank' href='https://github.com/Team-Aiko/Aiko' rel='noreferrer'>
+                <Tooltip title='개발자 깃허브로 이동'>
+                    <IconButton>
+                        <GitHubIcon style={{ width: 100, height: 100 }} />
+                    </IconButton>
+                </Tooltip>
+            </a>
+        </div>
+    );
 };
 
 const NoLoginView = () => {
