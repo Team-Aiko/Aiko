@@ -1,13 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/components/NoLoginView.module.css';
 import ReactFullpage from '@fullpage/react-fullpage';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const FirstContent = () => {
-    return <div>First Content.</div>;
+    return (
+        <div className={styles.firstContainer}>
+            <div className={styles.descContainer}>
+                <h1>Aiko</h1>
+                <div>하이</div>
+                <div>하이ㅋ</div>
+            </div>
+        </div>
+    );
 };
 
 const SecondContent = () => {
-    return <div>Second Content</div>;
+    const settings = {
+        dots: true,
+        infinite: true,
+        speed: 1000,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+    };
+    return (
+        <Slider {...settings} className={styles.slider}>
+            <div>
+                <h3>1</h3>
+            </div>
+            <div>
+                <h3>2</h3>
+            </div>
+            <div>
+                <h3>3</h3>
+            </div>
+        </Slider>
+    );
 };
 
 const ThirdContent = () => {
@@ -15,7 +45,7 @@ const ThirdContent = () => {
 };
 
 const NoLoginView = () => {
-    const [sectionsColor, setsectionsColor] = useState(['#ff5f45', '#0798ec', '#fc6c7c']);
+    const [sectionsColor, setsectionsColor] = useState(['rgba(206,235,251)', '#0798ec', 'rgba(183,175,163)']);
     const [fullpages, setfullpages] = useState([
         { content: <FirstContent /> },
         { content: <SecondContent /> },
@@ -32,7 +62,7 @@ const NoLoginView = () => {
                     <ReactFullpage.Wrapper>
                         {fullpages.map(({ content }) => (
                             <div key={content} className='section'>
-                                <div style={{ display: 'flex', width: '100px', height: '100px', margin: '0 auto' }}>
+                                <div>
                                     <h2>{content}</h2>
                                 </div>
                             </div>

@@ -1,0 +1,21 @@
+.descContainer {
+    border-radius: 42px;
+    background: #ceebfb;
+    box-shadow: 19px 19px 38px #a9c1ce, -19px -19px 38px #f3ffff;
+    width: 70%;
+    height: 60vh;
+    margin: 0 auto;
+    margin-bottom: 50px;
+    display:flex;
+}
+
+.slider {
+    background: white;
+    width: 60%;
+    height: 75vh;
+    margin: auto;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 50px;
+}
