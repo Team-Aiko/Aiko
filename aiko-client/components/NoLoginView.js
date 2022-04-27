@@ -6,17 +6,42 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { Tooltip, IconButton } from '@material-ui/core';
 import GitHubIcon from '@material-ui/icons/GitHub';
-import Developer from '../public/images/developers.png';
 import Image from 'next/image';
 
 const FirstContent = () => {
+    function getWindowDimensions() {
+        const { innerWidth: width } = window;
+        return {
+            width,
+        };
+    }
+
+    function useWindowDimensions() {
+        const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+
+        useEffect(() => {
+            function handleResize() {
+                setWindowDimensions(getWindowDimensions());
+            }
+
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+        }, []);
+
+        return windowDimensions;
+    }
+
+    const { width } = useWindowDimensions();
+
     return (
         <div className={styles.firstContainer}>
-            <div className={styles.descContainer}>
-                <h1>Aiko</h1>
-                <div>하이</div>
-                <div>하이ㅋ</div>
-            </div>
+            {width > 600 ? (
+                <Image src='/../public/images/Main.png' alt='About Aiko' width={900} height={500} />
+            ) : (
+                <div style={{ marginLeft: '20px' }}>
+                    <Image src='/../public/images/Main2.png' alt='About Aiko' width={450} height={500} />
+                </div>
+            )}
         </div>
     );
 };
