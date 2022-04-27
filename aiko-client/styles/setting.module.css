@@ -1,0 +1,27 @@
+.container {
+    width: 80vw;
+    height: auto;
+    margin: 30px auto;
+    border: 1px solid #adb5bd;
+    border-radius: 10px;
+    overflow: scroll;
+}
+
+@media all and (max-width: 500px) {
+    .email {
+        display: none !important;
+    }
+}
+
+.pageName {
+    padding: 40px;
+    color: #3f51b5;
+}
+
+.container Table :hover {
+    background: #e9ecef;
+}
+
+.container Table :active {
+    background: #dee2e6;
+}
