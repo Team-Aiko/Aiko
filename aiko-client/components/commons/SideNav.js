@@ -81,7 +81,7 @@ function PComp(props) {
 
 
     const goToDrive = () => {
-        Router.push(`/drive/1`)
+        Router.push(`/drive`)
     }
 
     return (
