@@ -36,7 +36,7 @@ const FirstContent = () => {
     return (
         <div className={styles.firstContainer}>
             {width > 600 ? (
-                <Image src='/../public/images/Main.png' alt='About Aiko' width={900} height={500} />
+                <Image src='/../public/images/Main.png' alt='About Aiko' width={1000} height={500} />
             ) : (
                 <div style={{ marginLeft: '20px' }}>
                     <Image src='/../public/images/Main2.png' alt='About Aiko' width={450} height={500} />
