@@ -127,6 +127,7 @@ export default function board() {
                 <div className={styles.paginateDiv}>
                     {btnNumbers.map((btn) => (
                         <a
+                            key={btn}
                             className={styles.aTag}
                             onClick={() => {
                                 setCurrentPage(btn);
